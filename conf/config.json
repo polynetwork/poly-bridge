@@ -1,0 +1,50 @@
+{
+  "DBConfig": {
+    "URL": "localhost:3306",
+    "User": "root",
+    "Password": "",
+    "Scheme": "polyswap"
+  },
+
+  "ChainListenConfig": {
+    "EthereumChainListenConfig": {
+      "RestURL": ["http://onto-eth.ont.io:10331"],
+      "Contract": "a4a0919ba5a2a89cb2eb1cb4018a16841b2e943f"
+    },
+    "NeoChainListenConfig": {
+      "RestURL": ["http://seed10.ngd.network:11332","http://seed9.ngd.network:11332"],
+      "Contract": "82a3401fb9a60db42c6fa2ea2b6d62e872d6257f"
+    },
+    "BscChainListenConfig": {
+      "RestURL": ["http://192.168.1.244:22001"],
+      "Contract": "0xf3A9d42C01635A585f1721463842F8936075105F"
+    }
+  },
+
+  "CoinPriceListenConfig": {
+    "PriceUpdateSlot": 720,
+    "CoinMarketCapPriceListenConfig": {
+      "RestURL": ["https://pro-api.coinmarketcap.com/v1/cryptocurrency/"],
+      "Key": ["8efe5156-8b37-4c77-8e1d-a140c97bf466"]
+    },
+    "BinancePriceListenConfig": {
+      "RestURL": ["https://api1.binance.com/"]
+    }
+  },
+
+  "GasListenConfig": {
+    "GasUpdateSlot": 720,
+    "EthereumGasListenConfig": {
+      "RestURL": ["http://192.168.1.244:22001"],
+      "ProxyFee": 120
+    },
+    "NeoGasListenConfig": {
+      "RestURL": ["http://192.168.1.244:22001"],
+      "ProxyFee": 120
+    },
+    "BscGasListenConfig": {
+      "RestURL": ["http://192.168.1.244:22001"],
+      "ProxyFee": 120
+    }
+  }
+}

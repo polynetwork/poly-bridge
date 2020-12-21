@@ -1,0 +1,8 @@
+{
+  "DBConfig": {
+    "URL": "localhost:3306",
+    "User": "root",
+    "Password": "",
+    "Scheme": "polyswap"
+  }
+}
