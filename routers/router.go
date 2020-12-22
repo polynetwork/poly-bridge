@@ -13,6 +13,8 @@ func init() {
 		beego.NSRouter("/tokenmap/", &controllers.TokenMapController{}, "post:TokenMap"),
 		beego.NSRouter("/getfee/", &controllers.FeeController{}, "post:GetFee"),
 		beego.NSRouter("/checkfee/", &controllers.FeeController{}, "post:CheckFee"),
+		beego.NSRouter("/transactoins/", &controllers.TransactionController{}, "post:Transactions"),
+		beego.NSRouter("/transactoinsofuser/", &controllers.TransactionController{}, "post:TransactoinsOfUser"),
 	)
 	beego.AddNamespace(ns)
 	beego.Router("/", &controllers.InfoController{}, "*:Get")

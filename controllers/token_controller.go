@@ -18,7 +18,7 @@ func (c *TokenController) Tokens() {
 	}
 	db := newDB()
 	tokens := make([]*models.Token, 0)
-	db.Where("chain_id = ?", tokensReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").Find(tokens)
+	db.Where("chain_id = ?", tokensReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").Find(&tokens)
 	c.Data["json"] = models.MakeTokensRsp(tokens)
 	c.ServeJSON()
 }

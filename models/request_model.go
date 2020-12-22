@@ -156,3 +156,85 @@ func MakeCheckFeeRsp(hashPay bool, amount float64) *CheckFeeRsp {
 	}
 	return checkFeeRsp
 }
+
+type TransactionReq struct {
+	Hash string
+}
+
+type TransactionRsp struct {
+	Hash           string
+	User           string
+	SrcChainId        uint64
+	BlockHeight           uint64
+	Time uint64
+	DstChainId     uint64
+	FeeTokenHash      string
+	FeeAmount   uint64
+}
+
+func MakeTransactionRsp(transaction *Transaction) *TransactionRsp {
+	transactionRsp := &TransactionRsp{
+		Hash:           transaction.Hash,
+		User:        transaction.User,
+		SrcChainId:           transaction.SrcChainId,
+		BlockHeight:        transaction.BlockHeight,
+		Time:           transaction.Time,
+		DstChainId:        transaction.DstChainId,
+		FeeTokenHash:           transaction.FeeTokenHash,
+		FeeAmount:           transaction.FeeAmount,
+	}
+	return transactionRsp
+}
+
+type TransactionsReq struct {
+	PageSize int
+	PageNo int
+}
+
+type TransactionsRsp struct {
+	PageSize  int
+	PageNo int
+	TotalPage int
+	TotalCount int
+	Transactions     []*TransactionRsp
+}
+
+func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*Transaction) *TransactionsRsp {
+	transactionsRsp := &TransactionsRsp{
+		PageSize: pageSize,
+		PageNo: pageNo,
+		TotalPage: totalPage,
+		TotalCount: totalCount,
+	}
+	for _, transaction := range transactions {
+		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeTransactionRsp(transaction))
+	}
+	return transactionsRsp
+}
+
+type TransactionsOfUserReq struct {
+	User string
+	PageSize int
+	PageNo int
+}
+
+type TransactionsOfUserRsp struct {
+	PageSize  int
+	PageNo int
+	TotalPage int
+	TotalCount int
+	Transactions     []*TransactionRsp
+}
+
+func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*Transaction) *TransactionsRsp {
+	transactionsRsp := &TransactionsRsp{
+		PageSize: pageSize,
+		PageNo: pageNo,
+		TotalPage: totalPage,
+		TotalCount: totalCount,
+	}
+	for _, transaction := range transactions {
+		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeTransactionRsp(transaction))
+	}
+	return transactionsRsp
+}
