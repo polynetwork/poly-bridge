@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"poly-swap/conf"
 	"poly-swap/models"
-	"gorm.io/driver/mysql"
 )
 
 func dumpStatus(dbCfg *conf.DBConfig) {
-	db, err := gorm.Open(mysql.Open(dbCfg.User + ":" + dbCfg.Password + "@tcp(" + dbCfg.URL + ")/" +
-		dbCfg.Scheme + "?charset=utf8"), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}

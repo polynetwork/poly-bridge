@@ -10,9 +10,9 @@ import (
 )
 
 type CoinMarketCapSdk struct {
-	client    *http.Client
-	url       []string
-	key       []string
+	client *http.Client
+	url    []string
+	key    []string
 }
 
 func DefaultCoinMarketCapSdk() *CoinMarketCapSdk {
@@ -23,8 +23,8 @@ func NewCoinMarketCapSdk(url []string, key []string) *CoinMarketCapSdk {
 	client := &http.Client{}
 	sdk := &CoinMarketCapSdk{
 		client: client,
-		url: url,
-		key: key,
+		url:    url,
+		key:    key,
 	}
 	return sdk
 }
@@ -34,7 +34,7 @@ type ListingsMedia struct {
 }
 
 func (sdk *CoinMarketCapSdk) ListingsLatest() ([]*Listing, error) {
-	for i := 0;i < len(sdk.url);i ++ {
+	for i := 0; i < len(sdk.url); i++ {
 		listings, err := sdk.listingsLatest(i)
 		if err != nil {
 			log.Errorf("CoinMarketCap ListingsLatest err: %s", err.Error())
@@ -46,8 +46,8 @@ func (sdk *CoinMarketCapSdk) ListingsLatest() ([]*Listing, error) {
 	return nil, fmt.Errorf("Cannot get CoinMarketCap ListingsLatest!")
 }
 
-func (sdk  *CoinMarketCapSdk) listingsLatest(node int) ([]*Listing, error) {
-	req, err := http.NewRequest("GET", sdk.url[node] + "listings/latest", nil)
+func (sdk *CoinMarketCapSdk) listingsLatest(node int) ([]*Listing, error) {
+	req, err := http.NewRequest("GET", sdk.url[node]+"listings/latest", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -79,11 +79,11 @@ func (sdk  *CoinMarketCapSdk) listingsLatest(node int) ([]*Listing, error) {
 }
 
 type QuotesLatestMedia struct {
-	Data  map[string]*Ticker `json:"data"`
+	Data map[string]*Ticker `json:"data"`
 }
 
 func (sdk *CoinMarketCapSdk) QuotesLatest(coins string) (map[string]*Ticker, error) {
-	for i := 0;i < len(sdk.url);i ++ {
+	for i := 0; i < len(sdk.url); i++ {
 		quotes, err := sdk.quotesLatest(coins, i)
 		if err != nil {
 			log.Errorf("CoinMarketCap QuotesLatest err: %s", err.Error())
@@ -95,8 +95,8 @@ func (sdk *CoinMarketCapSdk) QuotesLatest(coins string) (map[string]*Ticker, err
 	return nil, fmt.Errorf("Cannot get CoinMarketCap QuotesLatest!")
 }
 
-func (sdk  *CoinMarketCapSdk) quotesLatest(coins string, node int) (map[string]*Ticker, error) {
-	req, err := http.NewRequest("GET", sdk.url[node] + "quotes/latest", nil)
+func (sdk *CoinMarketCapSdk) quotesLatest(coins string, node int) (map[string]*Ticker, error) {
+	req, err := http.NewRequest("GET", sdk.url[node]+"quotes/latest", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (sdk  *CoinMarketCapSdk) quotesLatest(coins string, node int) (map[string]*
 	req.Header.Add("X-CMC_PRO_API_KEY", sdk.key[node])
 	req.URL.RawQuery = q.Encode()
 
-	resp, err := sdk.client.Do(req);
+	resp, err := sdk.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

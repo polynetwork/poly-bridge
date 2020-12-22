@@ -12,20 +12,20 @@ import (
 )
 
 type EthereumSdk struct {
-	rpcClient   *rpc.Client
-	rawClient   *ethclient.Client
-	urls        []string
-	node        int
+	rpcClient *rpc.Client
+	rawClient *ethclient.Client
+	urls      []string
+	node      int
 }
 
-func NewEthereumSdk(url []string) (*EthereumSdk,error) {
+func NewEthereumSdk(url []string) (*EthereumSdk, error) {
 	node := -1
 	var rpcClient *rpc.Client
 	var rawClient *ethclient.Client
 	var err1 error
 	var err2 error
 	for (node + 1) < len(url) {
-		node ++
+		node++
 		rpcClient, err1 = rpc.Dial(url[node])
 		rawClient, err2 = ethclient.Dial(url[node])
 		if err1 == nil && err2 == nil {
@@ -38,13 +38,13 @@ func NewEthereumSdk(url []string) (*EthereumSdk,error) {
 	return &EthereumSdk{
 		rpcClient: rpcClient,
 		rawClient: rawClient,
-		urls: url,
-		node: node,
+		urls:      url,
+		node:      node,
 	}, nil
 }
 
 func (ec *EthereumSdk) NextClient() (int, error) {
-	ec.node ++
+	ec.node++
 	ec.node = ec.node % len(ec.urls)
 	var err1 error
 	ec.rpcClient, err1 = rpc.Dial(ec.urls[ec.node])
@@ -106,4 +106,3 @@ func (ec *EthereumSdk) GetHeaderByNumber(number uint64) (*types.Header, error) {
 	}
 	return header, err
 }
-

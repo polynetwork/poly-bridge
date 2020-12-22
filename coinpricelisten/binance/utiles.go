@@ -9,8 +9,8 @@ import (
 )
 
 type BinanceSdk struct {
-	client    *http.Client
-	url       []string
+	client *http.Client
+	url    []string
 }
 
 func DefaultBinanceSdk() *BinanceSdk {
@@ -22,13 +22,13 @@ func NewBinanceSdk(url []string) *BinanceSdk {
 	client := &http.Client{}
 	sdk := &BinanceSdk{
 		client: client,
-		url: url,
+		url:    url,
 	}
 	return sdk
 }
 
 func (sdk *BinanceSdk) QuotesLatest() ([]*Ticker, error) {
-	for i := 0;i < len(sdk.url);i ++ {
+	for i := 0; i < len(sdk.url); i++ {
 		quotes, err := sdk.quotesLatest(i)
 		if err != nil {
 			log.Errorf("CoinMarketCap QuotesLatest err: %s", err.Error())
@@ -40,8 +40,8 @@ func (sdk *BinanceSdk) QuotesLatest() ([]*Ticker, error) {
 	return nil, fmt.Errorf("Cannot get Binance QuotesLatest!")
 }
 
-func (sdk  *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
-	req, err := http.NewRequest("GET", sdk.url[node] + "api/v3/ticker/price", nil)
+func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
+	req, err := http.NewRequest("GET", sdk.url[node]+"api/v3/ticker/price", nil)
 	if err != nil {
 		return nil, err
 	}

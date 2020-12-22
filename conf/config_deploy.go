@@ -7,11 +7,11 @@ import (
 )
 
 type DeployConfig struct {
-	Chains  []*models.Chain
-	ChainFees []*models.ChainFee
+	Chains      []*models.Chain
+	ChainFees   []*models.ChainFee
 	TokenBasics []*models.TokenBasic
-	TokenMaps []*models.TokenMap
-	DBConfig         *DBConfig
+	TokenMaps   []*models.TokenMap
+	DBConfig    *DBConfig
 }
 
 func NewDeployConfig(filePath string) *DeployConfig {

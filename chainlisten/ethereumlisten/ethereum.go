@@ -2,33 +2,33 @@ package ethereumlisten
 
 import (
 	"context"
+	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"poly-swap/chainlisten/ethereumlisten/lock_proxy_abi"
 	"poly-swap/conf"
 	"poly-swap/models"
-	"fmt"
-	"github.com/astaxie/beego/logs"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"runtime/debug"
 	"time"
 )
 
 type EthereumChainListen struct {
-	ethCfg   *conf.EthereumChainListenConfig
-	dbCfg    *conf.DBConfig
-	db       *gorm.DB
-	ethSdk   *EthereumSdk
-	chain    *models.Chain
+	ethCfg *conf.EthereumChainListenConfig
+	dbCfg  *conf.DBConfig
+	db     *gorm.DB
+	ethSdk *EthereumSdk
+	chain  *models.Chain
 }
 
 func NewEthereumChainListen(cfg *conf.EthereumChainListenConfig, dbCfg *conf.DBConfig) *EthereumChainListen {
 	ethListen := &EthereumChainListen{}
 	ethListen.ethCfg = cfg
 	ethListen.dbCfg = dbCfg
-	db, err := gorm.Open(mysql.Open(dbCfg.User + ":" + dbCfg.Password + "@tcp(" + dbCfg.URL + ")/" +
-		dbCfg.Scheme + "?charset=utf8"), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -84,11 +84,11 @@ func (this *EthereumChainListen) listenChain() {
 				logs.Error("ListenChain - cannot get height, err: %s", err)
 				continue
 			}
-			if this.chain.Height >= height - 1 {
+			if this.chain.Height >= height-1 {
 				continue
 			}
 			logs.Info("ListenChain - ethereum latest height is %d, parser height: %d", height, this.chain.Height)
-			for this.chain.Height < height - 1 {
+			for this.chain.Height < height-1 {
 				err := this.HandleNewBlock(this.chain.Height + 1)
 				if err != nil {
 					logs.Error("HandleNewBlock err: %v", err)
@@ -142,11 +142,11 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 		evt := lockEvents.Event
 		ethCrossChainTxs = append(ethCrossChainTxs, &models.Transaction{
 			Hash:         evt.Raw.TxHash.String()[2:],
-			User:       evt.FromAddress.String(),
-			SrcChainId:     uint64(evt.ToChainId),
+			User:         evt.FromAddress.String(),
+			SrcChainId:   uint64(evt.ToChainId),
 			DstChainId:   uint64(evt.ToChainId),
 			FeeTokenHash: evt.Raw.TxHash.String()[2:],
-			FeeAmount: evt.Amount.Uint64(),
+			FeeAmount:    evt.Amount.Uint64(),
 		})
 	}
 	return ethCrossChainTxs, nil

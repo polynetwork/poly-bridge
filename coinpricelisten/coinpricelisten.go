@@ -17,11 +17,11 @@ import (
 )
 
 type CoinPriceListen struct {
-	cmcCfg   *conf.CoinMarketCapPriceListenConfig
-	binCfg   *conf.BinancePriceListenConfig
-	dbCfg    *conf.DBConfig
+	cmcCfg          *conf.CoinMarketCapPriceListenConfig
+	binCfg          *conf.BinancePriceListenConfig
+	dbCfg           *conf.DBConfig
 	priceUpdateSlot int64
-	db       *gorm.DB
+	db              *gorm.DB
 }
 
 func StartCoinPriceListen(cfg *conf.CoinPriceListenConfig, dbCfg *conf.DBConfig) {
@@ -35,8 +35,8 @@ func NewCoinPriceListen(cmcCfg *conf.CoinMarketCapPriceListenConfig, binCfg *con
 	cpListen.binCfg = binCfg
 	cpListen.dbCfg = dbCfg
 	cpListen.priceUpdateSlot = priceUpdateSlot
-	db, err := gorm.Open(mysql.Open(dbCfg.User + ":" + dbCfg.Password + "@tcp(" + dbCfg.URL + ")/" +
-		dbCfg.Scheme + "?charset=utf8"), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +54,6 @@ func NewCoinPriceListen(cmcCfg *conf.CoinMarketCapPriceListenConfig, binCfg *con
 	db.Save(tokenBasics)
 	return cpListen
 }
-
 
 func (this *CoinPriceListen) Start() {
 	go this.ListenPrice()
@@ -79,7 +78,7 @@ func (this *CoinPriceListen) listenPrice() {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now % this.priceUpdateSlot != 0 {
+			if now%this.priceUpdateSlot != 0 {
 				continue
 			}
 			log.Infof("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
@@ -153,7 +152,6 @@ func avg(data []uint64) uint64 {
 	return sum / uint64(len(data))
 }
 
-
 func (this *CoinPriceListen) getCmcCoinPrice(coins []string) (map[string]float64, error) {
 	var cmcSdk *coinmarketcap.CoinMarketCapSdk
 	if this.cmcCfg == nil || len(this.cmcCfg.RestURL) == 0 {
@@ -225,4 +223,3 @@ func (this *CoinPriceListen) getBinancePrice(coins []string) (map[string]float64
 	}
 	return coinPrice, nil
 }
-

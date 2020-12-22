@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"poly-swap/controllers"
 	"github.com/astaxie/beego"
+	"poly-swap/controllers"
 )
 
 func init() {

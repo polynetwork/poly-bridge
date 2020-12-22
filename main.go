@@ -1,11 +1,10 @@
 package main
 
 import (
-	_ "poly-swap/routers"
 	"github.com/astaxie/beego"
+	_ "poly-swap/routers"
 )
 
 func main() {
 	beego.Run()
 }
-

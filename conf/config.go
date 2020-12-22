@@ -9,81 +9,81 @@ import (
 
 var (
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
-	ETHEREUM_CHAIN_NAME = "Ethereum"
-	NEO_CROSSCHAIN_ID = uint64(4)
-	NEO_CHAIN_NAME = "NEO"
-	BSC_CROSSCHAIN_ID = uint64(8)
-	BSC_CHAIN_NAME = "BSC"
+	ETHEREUM_CHAIN_NAME    = "Ethereum"
+	NEO_CROSSCHAIN_ID      = uint64(4)
+	NEO_CHAIN_NAME         = "NEO"
+	BSC_CROSSCHAIN_ID      = uint64(8)
+	BSC_CHAIN_NAME         = "BSC"
 )
 
 type DBConfig struct {
-	URL          string
-	User         string
-	Password     string
-	Scheme       string
+	URL      string
+	User     string
+	Password string
+	Scheme   string
 }
 
 type ChainListenConfig struct {
-	EthereumChainListenConfig   *EthereumChainListenConfig
-	NeoChainListenConfig        *NeoChainListenConfig
-	BscChainListenConfig        *BscChainListenConfig
+	EthereumChainListenConfig *EthereumChainListenConfig
+	NeoChainListenConfig      *NeoChainListenConfig
+	BscChainListenConfig      *BscChainListenConfig
 }
 
 type EthereumChainListenConfig struct {
-	RestURL                 []string
-	Contract                string
+	RestURL  []string
+	Contract string
 }
 
 type NeoChainListenConfig struct {
-	RestURL                 []string
-	Contract                string
+	RestURL  []string
+	Contract string
 }
 
 type BscChainListenConfig struct {
-	RestURL                 []string
-	Contract                string
+	RestURL  []string
+	Contract string
 }
 
 type CoinPriceListenConfig struct {
-	PriceUpdateSlot      int64
-	CoinMarketCapPriceListenConfig  *CoinMarketCapPriceListenConfig
-	BinancePriceListenConfig        *BinancePriceListenConfig
+	PriceUpdateSlot                int64
+	CoinMarketCapPriceListenConfig *CoinMarketCapPriceListenConfig
+	BinancePriceListenConfig       *BinancePriceListenConfig
 }
 
 type CoinMarketCapPriceListenConfig struct {
-	RestURL                 []string
-	Key                     []string
+	RestURL []string
+	Key     []string
 }
 
 type BinancePriceListenConfig struct {
-	RestURL                 []string
+	RestURL []string
 }
 
 type FeeListenConfig struct {
-	FeeUpdateSlot      int64
-	EthereumFeeListenConfig  *EthereumFeeListenConfig
-	NeoFeeListenConfig       *NeoFeeListenConfig
-	BscFeeListenConfig       *BscFeeListenConfig
+	FeeUpdateSlot           int64
+	EthereumFeeListenConfig *EthereumFeeListenConfig
+	NeoFeeListenConfig      *NeoFeeListenConfig
+	BscFeeListenConfig      *BscFeeListenConfig
 }
 
 type EthereumFeeListenConfig struct {
-	RestURL                 []string
-	ProxyFee                uint64
+	RestURL  []string
+	ProxyFee uint64
 }
 
 type NeoFeeListenConfig struct {
-	ProxyFee                uint64
+	ProxyFee uint64
 }
 
 type BscFeeListenConfig struct {
-	ProxyFee                uint64
+	ProxyFee uint64
 }
 
 type Config struct {
-	ChainListenConfig      *ChainListenConfig
-	CoinPriceListenConfig  *CoinPriceListenConfig
-	FeeListenConfig   *FeeListenConfig
-	DBConfig               *DBConfig
+	ChainListenConfig     *ChainListenConfig
+	CoinPriceListenConfig *CoinPriceListenConfig
+	FeeListenConfig       *FeeListenConfig
+	DBConfig              *DBConfig
 }
 
 func ReadFile(fileName string) ([]byte, error) {

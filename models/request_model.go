@@ -1,26 +1,26 @@
 package models
 
 type PolySwapResp struct {
-	Version   string
-	URL       string
+	Version string
+	URL     string
 }
 
 type TokenBasicReq struct {
-	Name   string
+	Name string
 }
 
 type TokenBasicRsp struct {
-	Name           string
-	CmcName        string
-	CmcPrice       uint64
-	CmcInd         uint64
-	BinName        string
-	BinPrice       uint64
-	BinInd         uint64
-	AvgPrice       uint64
-	AvgInd         uint64
-	Time           uint64
-	Tokens         []*TokenRsp
+	Name     string
+	CmcName  string
+	CmcPrice uint64
+	CmcInd   uint64
+	BinName  string
+	BinPrice uint64
+	BinInd   uint64
+	AvgPrice uint64
+	AvgInd   uint64
+	Time     uint64
+	Tokens   []*TokenRsp
 }
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
@@ -46,23 +46,23 @@ func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 }
 
 type TokenReq struct {
-	Hash   string
+	Hash string
 }
 
 type TokenRsp struct {
 	Hash           string
 	ChainId        uint64
 	Name           string
-	TokenBasicName  string
-	TokenBasic  *TokenBasicRsp
-	TokenMaps   []*TokenMapRsp
+	TokenBasicName string
+	TokenBasic     *TokenBasicRsp
+	TokenMaps      []*TokenMapRsp
 }
 
 func MakeTokenRsp(token *Token) *TokenRsp {
 	tokenRsp := &TokenRsp{
-		Hash:         token.Hash,
-		ChainId:     token.ChainId,
-		Name:      token.Name,
+		Hash:           token.Hash,
+		ChainId:        token.ChainId,
+		Name:           token.Name,
 		TokenBasicName: token.TokenBasicName,
 	}
 	if token.TokenBasic != nil {
@@ -82,7 +82,7 @@ type TokensReq struct {
 
 type TokensRsp struct {
 	TotalCount uint64
-	Tokens []*TokenRsp
+	Tokens     []*TokenRsp
 }
 
 func MakeTokensRsp(tokens []*Token) *TokensRsp {
@@ -95,22 +95,21 @@ func MakeTokensRsp(tokens []*Token) *TokensRsp {
 	return tokensRsp
 }
 
-
 type TokenMapReq struct {
-	Hash   string
+	Hash string
 }
 
 type TokenMapRsp struct {
-	SrcTokenHash     string
-	SrcToken  *TokenRsp
-	DstTokenHash     string
-	DstToken  *TokenRsp
+	SrcTokenHash string
+	SrcToken     *TokenRsp
+	DstTokenHash string
+	DstToken     *TokenRsp
 }
 
 func MakeTokenMapRsp(tokenMap *TokenMap) *TokenMapRsp {
 	tokenMapRsp := &TokenMapRsp{
-		SrcTokenHash:     tokenMap.SrcTokenHash,
-		DstTokenHash:     tokenMap.DstTokenHash,
+		SrcTokenHash: tokenMap.SrcTokenHash,
+		DstTokenHash: tokenMap.DstTokenHash,
 	}
 	if tokenMap.SrcToken != nil {
 		tokenMapRsp.SrcToken = MakeTokenRsp(tokenMap.SrcToken)
@@ -122,36 +121,36 @@ func MakeTokenMapRsp(tokenMap *TokenMap) *TokenMapRsp {
 }
 
 type GetFeeReq struct {
-	ChainId  uint64
-	Hash  string
+	ChainId uint64
+	Hash    string
 }
 
 type GetFeeRsp struct {
-	ChainId  uint64
-	Hash  string
-	Amount float64
+	ChainId uint64
+	Hash    string
+	Amount  float64
 }
 
 func MakeGetFeeRsp(chainId uint64, hash string, amount float64) *GetFeeRsp {
 	getFeeRsp := &GetFeeRsp{
-		ChainId : chainId,
-		Hash: hash,
-		Amount: amount,
+		ChainId: chainId,
+		Hash:    hash,
+		Amount:  amount,
 	}
 	return getFeeRsp
 }
 
 type CheckFeeReq struct {
-	Hash  string
+	Hash string
 }
 
 type CheckFeeRsp struct {
-	HasPay   bool
-	Amount   float64
+	HasPay bool
+	Amount float64
 }
 
 func MakeCheckFeeRsp(hashPay bool, amount float64) *CheckFeeRsp {
-	checkFeeRsp := &CheckFeeRsp {
+	checkFeeRsp := &CheckFeeRsp{
 		HasPay: hashPay,
 		Amount: amount,
 	}

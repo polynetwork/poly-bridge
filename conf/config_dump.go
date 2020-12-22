@@ -6,7 +6,7 @@ import (
 )
 
 type DumpConfig struct {
-	DBConfig         *DBConfig
+	DBConfig *DBConfig
 }
 
 func NewDumpConfig(filePath string) *DumpConfig {

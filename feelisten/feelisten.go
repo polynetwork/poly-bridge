@@ -13,12 +13,12 @@ import (
 )
 
 type FeeListen struct {
-	ethCfg   *conf.EthereumFeeListenConfig
-	neoCfg   *conf.NeoFeeListenConfig
-	bscCfg   *conf.BscFeeListenConfig
-	dbCfg    *conf.DBConfig
+	ethCfg        *conf.EthereumFeeListenConfig
+	neoCfg        *conf.NeoFeeListenConfig
+	bscCfg        *conf.BscFeeListenConfig
+	dbCfg         *conf.DBConfig
 	feeUpdateSlot int64
-	db       *gorm.DB
+	db            *gorm.DB
 }
 
 func StartFeeListen(cfg *conf.FeeListenConfig, dbCfg *conf.DBConfig) {
@@ -33,8 +33,8 @@ func NewFeeListen(ethCfg *conf.EthereumFeeListenConfig, neoCfg *conf.NeoFeeListe
 	feeListen.bscCfg = bscCfg
 	feeListen.dbCfg = dbCfg
 	feeListen.feeUpdateSlot = feeUpdateSlot
-	db, err := gorm.Open(mysql.Open(dbCfg.User + ":" + dbCfg.Password + "@tcp(" + dbCfg.URL + ")/" +
-		dbCfg.Scheme + "?charset=utf8"), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +52,6 @@ func NewFeeListen(ethCfg *conf.EthereumFeeListenConfig, neoCfg *conf.NeoFeeListe
 	db.Save(chainFees)
 	return feeListen
 }
-
 
 func (this *FeeListen) Start() {
 	go this.ListenFee()
@@ -77,7 +76,7 @@ func (this *FeeListen) listenFee() {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now % this.feeUpdateSlot != 0 {
+			if now%this.feeUpdateSlot != 0 {
 				continue
 			}
 			log.Infof("do fee update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
@@ -147,5 +146,3 @@ func (this *FeeListen) getNeoFee() (uint64, uint64, error) {
 func (this *FeeListen) getBscFee() (uint64, uint64, error) {
 	return 1000000000, 1000000000, nil
 }
-
-
