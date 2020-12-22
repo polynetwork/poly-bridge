@@ -3,11 +3,11 @@ package ethereumlisten
 import (
 	"context"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/prometheus/common/log"
 	"math/big"
 )
 
@@ -62,7 +62,7 @@ func (ec *EthereumSdk) GetCurrentBlockHeight() (uint64, error) {
 	cur := ec.node
 	err := ec.rpcClient.CallContext(context.Background(), &result, "eth_blockNumber")
 	for err != nil {
-		log.Errorf("EthereumClient.GetCurrentBlockHeight err:%s, url: %s", err.Error(), ec.urls[ec.node])
+		logs.Error("EthereumClient.GetCurrentBlockHeight err:%s, url: %s", err.Error(), ec.urls[ec.node])
 		next, err := ec.NextClient()
 		if next == cur {
 			return 0, fmt.Errorf("all node is not working!")
@@ -94,7 +94,7 @@ func (ec *EthereumSdk) GetHeaderByNumber(number uint64) (*types.Header, error) {
 	}
 	err := ec.rpcClient.CallContext(context.Background(), &header, "eth_getBlockByNumber", toBlockNumArg(newNumber), false)
 	for err != nil {
-		log.Errorf("EthereumClient.GetHeaderByNumber err:%s, url: %s", err.Error(), ec.urls[ec.node])
+		logs.Error("EthereumClient.GetHeaderByNumber err:%s, url: %s", err.Error(), ec.urls[ec.node])
 		next, err := ec.NextClient()
 		if next == cur {
 			return nil, fmt.Errorf("all node is not working!")

@@ -3,7 +3,7 @@ package binance
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/prometheus/common/log"
+	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net/http"
 )
@@ -31,7 +31,7 @@ func (sdk *BinanceSdk) QuotesLatest() ([]*Ticker, error) {
 	for i := 0; i < len(sdk.url); i++ {
 		quotes, err := sdk.quotesLatest(i)
 		if err != nil {
-			log.Errorf("CoinMarketCap QuotesLatest err: %s", err.Error())
+			logs.Error("CoinMarketCap QuotesLatest err: %s", err.Error())
 			continue
 		} else {
 			return quotes, nil
@@ -58,7 +58,7 @@ func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
 		return nil, fmt.Errorf("response status code: %d", resp.StatusCode)
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	fmt.Printf("resp body: %s\n", string(respBody))
+	//fmt.Printf("resp body: %s\n", string(respBody))
 	tickers := make([]*Ticker, 0)
 	err = json.Unmarshal(respBody, &tickers)
 	if err != nil {

@@ -3,7 +3,6 @@ package coinpricelisten
 import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
-	"github.com/prometheus/common/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"math/big"
@@ -81,16 +80,16 @@ func (this *CoinPriceListen) listenPrice() {
 			if now%this.priceUpdateSlot != 0 {
 				continue
 			}
-			log.Infof("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
+			logs.Info("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
 			tokenBasics := make([]*models.TokenBasic, 0)
 			res := this.db.Find(&tokenBasics)
 			if res.RowsAffected == 0 {
-				log.Errorf("there is no token basic!")
+				logs.Error("there is no token basic!")
 				continue
 			}
 			err := this.getCoinPrice(tokenBasics)
 			if err != nil {
-				log.Errorf("updateCoinPrice err: %v", err)
+				logs.Error("updateCoinPrice err: %v", err)
 				continue
 			}
 			this.db.Save(tokenBasics)
@@ -121,7 +120,7 @@ func (this *CoinPriceListen) getCoinPrice(tokenBasics []*models.TokenBasic) erro
 			avgPrices = append(avgPrices, price)
 		} else {
 			token.CmcInd = 0
-			log.Errorf("can not get the coinmarketcap price of coin %s", token.CmcName)
+			logs.Error("can not get the coinmarketcap price of coin %s", token.CmcName)
 		}
 		binPrice, ok := binPrices[token.BinName]
 		if ok {
@@ -132,7 +131,7 @@ func (this *CoinPriceListen) getCoinPrice(tokenBasics []*models.TokenBasic) erro
 			avgPrices = append(avgPrices, price)
 		} else {
 			token.BinInd = 0
-			log.Errorf("can not get the binance price of coin %s", token.BinName)
+			logs.Error("can not get the binance price of coin %s", token.BinName)
 		}
 		if len(avgPrices) > 0 {
 			token.AvgPrice = avg(avgPrices)
@@ -173,7 +172,7 @@ func (this *CoinPriceListen) getCmcCoinPrice(coins []string) (map[string]float64
 	for _, coin := range coins {
 		coinId, ok := coinName2Id[coin]
 		if !ok {
-			log.Warnf("There is no coin %s in CoinMarketCap!", coin)
+			logs.Warn("There is no coin %s in CoinMarketCap!", coin)
 			continue
 		}
 		coinIds = append(coinIds, coinId)
@@ -189,7 +188,7 @@ func (this *CoinPriceListen) getCmcCoinPrice(coins []string) (map[string]float64
 	for _, v := range quotes {
 		name := v.Name
 		if v.Quote == nil || v.Quote["USD"] == nil {
-			log.Warnf(" There is no price for coin %s in CoinMarketCap!", name)
+			logs.Warn(" There is no price for coin %s in CoinMarketCap!", name)
 			continue
 		}
 		coinName2Price[name] = v.Quote["USD"].Price
@@ -216,7 +215,7 @@ func (this *CoinPriceListen) getBinancePrice(coins []string) (map[string]float64
 	for _, coin := range coins {
 		price, ok := coinSymbol2Price[coin]
 		if !ok {
-			log.Warnf("There is no coin price %s in Binance!", coin)
+			logs.Warn("There is no coin price %s in Binance!", coin)
 			continue
 		}
 		coinPrice[coin] = price

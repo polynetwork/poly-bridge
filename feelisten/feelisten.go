@@ -3,7 +3,6 @@ package feelisten
 import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
-	"github.com/prometheus/common/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"poly-swap/conf"
@@ -79,7 +78,7 @@ func (this *FeeListen) listenFee() {
 			if now%this.feeUpdateSlot != 0 {
 				continue
 			}
-			log.Infof("do fee update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
+			logs.Info("do fee update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
 			chainFees := make([]*models.ChainFee, 0)
 			res := this.db.Find(&chainFees)
 			if res.RowsAffected == 0 {
@@ -107,7 +106,7 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 		chainFee.MinFee = minFee
 		chainFee.ProxyFee = minFee * this.ethCfg.ProxyFee / 100
 	} else {
-		log.Errorf("get eth fee err: %v", err1)
+		logs.Error("get eth fee err: %v", err1)
 	}
 	//
 	maxFee, minFee, err2 := this.getNeoFee()
@@ -117,7 +116,7 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 		chainFee.MinFee = minFee
 		chainFee.ProxyFee = minFee * this.neoCfg.ProxyFee / 100
 	} else {
-		log.Errorf("get neo fee err: %v", err2)
+		logs.Error("get neo fee err: %v", err2)
 	}
 	//
 	maxFee, minFee, err3 := this.getBscFee()
@@ -127,7 +126,7 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 		chainFee.MinFee = minFee
 		chainFee.ProxyFee = minFee * this.bscCfg.ProxyFee / 100
 	} else {
-		log.Errorf("get bsc fee err: %v", err2)
+		logs.Error("get bsc fee err: %v", err2)
 	}
 	if err1 != nil || err2 != nil || err3 != nil {
 		return fmt.Errorf("can not get the fee information of all chains!")

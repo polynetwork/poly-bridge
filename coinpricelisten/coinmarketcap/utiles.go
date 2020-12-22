@@ -3,7 +3,7 @@ package coinmarketcap
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/prometheus/common/log"
+	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -37,7 +37,7 @@ func (sdk *CoinMarketCapSdk) ListingsLatest() ([]*Listing, error) {
 	for i := 0; i < len(sdk.url); i++ {
 		listings, err := sdk.listingsLatest(i)
 		if err != nil {
-			log.Errorf("CoinMarketCap ListingsLatest err: %s", err.Error())
+			logs.Error("CoinMarketCap ListingsLatest err: %s", err.Error())
 			continue
 		} else {
 			return listings, nil
@@ -86,7 +86,7 @@ func (sdk *CoinMarketCapSdk) QuotesLatest(coins string) (map[string]*Ticker, err
 	for i := 0; i < len(sdk.url); i++ {
 		quotes, err := sdk.quotesLatest(coins, i)
 		if err != nil {
-			log.Errorf("CoinMarketCap QuotesLatest err: %s", err.Error())
+			logs.Error("CoinMarketCap QuotesLatest err: %s", err.Error())
 			continue
 		} else {
 			return quotes, nil
