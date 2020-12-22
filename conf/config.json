@@ -32,17 +32,17 @@
     }
   },
 
-  "GasListenConfig": {
-    "GasUpdateSlot": 720,
-    "EthereumGasListenConfig": {
+  "FeeListenConfig": {
+    "FeeUpdateSlot": 720,
+    "EthereumFeeListenConfig": {
       "RestURL": ["http://192.168.1.244:22001"],
       "ProxyFee": 120
     },
-    "NeoGasListenConfig": {
+    "NeoFeeListenConfig": {
       "RestURL": ["http://192.168.1.244:22001"],
       "ProxyFee": 120
     },
-    "BscGasListenConfig": {
+    "BscFeeListenConfig": {
       "RestURL": ["http://192.168.1.244:22001"],
       "ProxyFee": 120
     }

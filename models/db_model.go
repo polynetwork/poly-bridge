@@ -13,7 +13,9 @@ type Transaction struct {
 	BlockHeight  uint64 `gorm:"type:bigint(20);not null"`
 	Time  uint64 `gorm:"type:bigint(20);not null"`
 	DstChainId  uint64 `gorm:"type:bigint(20);not null"`
-	Fee   uint64 `gorm:"type:bigint(20);not null"`
+	FeeTokenHash  string `gorm:"size:66;not null"`
+	FeeToken  *Token `gorm:"foreignKey:FeeTokenHash;references:Hash"`
+	FeeAmount   uint64 `gorm:"type:bigint(20);not null"`
 }
 
 type TokenBasic struct {
@@ -30,7 +32,7 @@ type TokenBasic struct {
 	Tokens         []*Token  `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
-type ChainGas struct {
+type ChainFee struct {
 	ChainId        uint64 `gorm:"primaryKey;type:bigint(20);not null"`
 	TokenBasicName  string `gorm:"size:64;not null"`
 	TokenBasic  *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
@@ -45,11 +47,12 @@ type Token struct {
 	Name           string `gorm:"size:64"`
 	TokenBasicName  string `gorm:"size:64;not null"`
 	TokenBasic  *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
+	TokenMaps         []*TokenMap  `gorm:"foreignKey:SrcTokenHash;references:Hash"`
 }
 
 type TokenMap struct {
 	SrcTokenHash     string  `gorm:"primaryKey;size:66;not null"`
 	SrcToken  *Token `gorm:"foreignKey:SrcTokenHash;references:Hash"`
-	DstTokenHash     string  `gorm:"size:66;not null"`
+	DstTokenHash     string  `gorm:"primaryKey;size:66;not null"`
 	DstToken  *Token `gorm:"foreignKey:DstTokenHash;references:Hash"`
 }

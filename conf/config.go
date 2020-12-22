@@ -59,30 +59,30 @@ type BinancePriceListenConfig struct {
 	RestURL                 []string
 }
 
-type GasListenConfig struct {
-	GasUpdateSlot      int64
-	EthereumGasListenConfig  *EthereumGasListenConfig
-	NeoGasListenConfig       *NeoGasListenConfig
-	BscGasListenConfig       *BscGasListenConfig
+type FeeListenConfig struct {
+	FeeUpdateSlot      int64
+	EthereumFeeListenConfig  *EthereumFeeListenConfig
+	NeoFeeListenConfig       *NeoFeeListenConfig
+	BscFeeListenConfig       *BscFeeListenConfig
 }
 
-type EthereumGasListenConfig struct {
+type EthereumFeeListenConfig struct {
 	RestURL                 []string
 	ProxyFee                uint64
 }
 
-type NeoGasListenConfig struct {
+type NeoFeeListenConfig struct {
 	ProxyFee                uint64
 }
 
-type BscGasListenConfig struct {
+type BscFeeListenConfig struct {
 	ProxyFee                uint64
 }
 
 type Config struct {
 	ChainListenConfig      *ChainListenConfig
 	CoinPriceListenConfig  *CoinPriceListenConfig
-	GasListenConfig   *GasListenConfig
+	FeeListenConfig   *FeeListenConfig
 	DBConfig               *DBConfig
 }
 

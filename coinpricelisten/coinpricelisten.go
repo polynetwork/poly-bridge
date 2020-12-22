@@ -51,7 +51,7 @@ func NewCoinPriceListen(cmcCfg *conf.CoinMarketCapPriceListenConfig, binCfg *con
 	if err != nil {
 		panic(err)
 	}
-	db.Debug().Save(tokenBasics)
+	db.Save(tokenBasics)
 	return cpListen
 }
 

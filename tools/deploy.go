@@ -14,14 +14,14 @@ func startDeploy(cfg *conf.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	err = db.AutoMigrate(&models.Chain{}, &models.Transaction{}, &models.TokenBasic{}, &models.ChainGas{}, &models.Token{}, &models.TokenMap{})
+	err = db.AutoMigrate(&models.Chain{}, &models.Transaction{}, &models.TokenBasic{}, &models.ChainFee{}, &models.Token{}, &models.TokenMap{})
 	if err != nil {
 		panic(err)
 	}
 	//
 	db.Save(cfg.Chains)
 	db.Save(cfg.TokenBasics)
-	db.Save(cfg.ChainGases)
+	db.Save(cfg.ChainFees)
 	db.Save(cfg.TokenMaps)
 }
 /*

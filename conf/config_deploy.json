@@ -15,7 +15,7 @@
     "ChainId": 8,
     "Name": "BSC"
   }],
-  "ChainGases": [{
+  "ChainFees": [{
     "ChainId": 2,
     "TokenBasic": {
       "Name": "Ethereum"

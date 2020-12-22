@@ -26,7 +26,7 @@ import (
 	"poly-swap/chainlisten"
 	"poly-swap/coinpricelisten"
 	"poly-swap/conf"
-	"poly-swap/gaslisten"
+	"poly-swap/feelisten"
 	"runtime"
 	"strings"
 	"syscall"
@@ -94,7 +94,7 @@ func startServer(ctx *cli.Context) {
 
 	chainlisten.StartChainListen(config.ChainListenConfig, config.DBConfig)
 	coinpricelisten.StartCoinPriceListen(config.CoinPriceListenConfig, config.DBConfig)
-	gaslisten.StartGasListen(config.GasListenConfig, config.DBConfig)
+	feelisten.StartFeeListen(config.FeeListenConfig, config.DBConfig)
 	waitToExit()
 }
 

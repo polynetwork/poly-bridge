@@ -145,7 +145,8 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 			User:       evt.FromAddress.String(),
 			SrcChainId:     uint64(evt.ToChainId),
 			DstChainId:   uint64(evt.ToChainId),
-			Fee: evt.Amount.Uint64(),
+			FeeTokenHash: evt.Raw.TxHash.String()[2:],
+			FeeAmount: evt.Amount.Uint64(),
 		})
 	}
 	return ethCrossChainTxs, nil

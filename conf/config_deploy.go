@@ -8,7 +8,7 @@ import (
 
 type DeployConfig struct {
 	Chains  []*models.Chain
-	ChainGases []*models.ChainGas
+	ChainFees []*models.ChainFee
 	TokenBasics []*models.TokenBasic
 	TokenMaps []*models.TokenMap
 	DBConfig         *DBConfig

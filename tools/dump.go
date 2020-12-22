@@ -50,12 +50,12 @@ func dumpStatus(dbCfg *conf.DBConfig) {
 		}
 	}
 	{
-		chainGases := make([]*models.ChainGas, 0)
-		db.Find(&chainGases)
-		fmt.Printf("chain gas info:\nchainid\t\t\t\tTokenBasicName\t\t\t\tmaxfee\t\t\t\tminfee\t\t\t\tproxyfee\t\t\t\t\n")
-		for _, chainGas := range chainGases {
+		chainFees := make([]*models.ChainFee, 0)
+		db.Find(&chainFees)
+		fmt.Printf("chain fee info:\nchainid\t\t\t\tTokenBasicName\t\t\t\tmaxfee\t\t\t\tminfee\t\t\t\tproxyfee\t\t\t\t\n")
+		for _, chainFee := range chainFees {
 			fmt.Printf("%d\t\t\t\t%s\t\t\t\t%d\t\t\t\t%d\t\t\t\t%d\t\t\t\t\n",
-				chainGas.ChainId, chainGas.TokenBasicName, chainGas.MaxFee, chainGas.MinFee, chainGas.ProxyFee)
+				chainFee.ChainId, chainFee.TokenBasicName, chainFee.MaxFee, chainFee.MinFee, chainFee.ProxyFee)
 		}
 	}
 }
