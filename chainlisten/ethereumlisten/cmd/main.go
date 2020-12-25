@@ -24,8 +24,9 @@ import (
 	"os"
 	"os/signal"
 	"poly-swap/chainlisten"
-	"poly-swap/coinpricelisten"
+	"poly-swap/chainlisten/ethereumlisten"
 	"poly-swap/conf"
+	"poly-swap/dao/swap_dao"
 	"runtime"
 	"strings"
 	"syscall"
@@ -62,7 +63,7 @@ func getFlagName(flag cli.Flag) string {
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
-	app.Usage = "poly-swap Service"
+	app.Usage = "ethereum listen Service"
 	app.Action = startServer
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
@@ -90,9 +91,12 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		fmt.Printf("%s\n", string(conf))
 	}
-	chainlisten.StartChainListen(config.ChainListenConfig, config.DBConfig)
-	coinpricelisten.StartCoinPriceListen(config.CoinPriceListenConfig, config.DBConfig)
-	coinpricelisten.StartFeeListen(config.FeeListenConfig, config.DBConfig)
+
+	db := swap_dao.NewSwapDao(config.DBConfig)
+	db.Start()
+	ethereumListen := ethereumlisten.NewEthereumChainListen(config.ChainListenConfig.EthereumChainListenConfig)
+	chainListen := chainlisten.NewChainListen(ethereumListen, db)
+	chainListen.Start()
 	waitToExit()
 }
 

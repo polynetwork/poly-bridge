@@ -8,12 +8,23 @@ import (
 )
 
 var (
+	POLY_CROSSCHAIN_ID      = uint64(0)
+	POLY_CHAIN_NAME         = "Poly"
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
 	ETHEREUM_CHAIN_NAME    = "Ethereum"
 	NEO_CROSSCHAIN_ID      = uint64(4)
 	NEO_CHAIN_NAME         = "NEO"
 	BSC_CROSSCHAIN_ID      = uint64(8)
 	BSC_CHAIN_NAME         = "BSC"
+)
+
+const (
+	FINISHED = iota
+	PENDDING
+	SOURCE_DONE
+	SOURCE_CONFIRMED
+	POLY_CONFIRMED
+	TAGET_CONFIRMED
 )
 
 type DBConfig struct {
@@ -24,22 +35,46 @@ type DBConfig struct {
 }
 
 type ChainListenConfig struct {
+	PolyChainListenConfig     *PolyChainListenConfig
 	EthereumChainListenConfig *EthereumChainListenConfig
 	NeoChainListenConfig      *NeoChainListenConfig
 	BscChainListenConfig      *BscChainListenConfig
 }
 
 type EthereumChainListenConfig struct {
+	ChainName string
+	ChainId uint64
+	ListenSlot uint64
+	BackwardBlockNumber uint64
 	RestURL  []string
-	Contract string
+	ExtendNodeURL string
+	WrapperContract string
+	CCMContract string
+	ProxyContract string
 }
 
 type NeoChainListenConfig struct {
+	ChainName string
+	ChainId uint64
+	ListenSlot uint64
+	BackwardBlockNumber uint64
 	RestURL  []string
-	Contract string
+	ExtendNodeURL string
+	WrapperContract string
+	ProxyContract string
 }
 
 type BscChainListenConfig struct {
+	RestURL  []string
+	Contract string
+	BackwardBlockNumber uint64
+}
+
+type PolyChainListenConfig struct {
+	ChainName string
+	ChainId uint64
+	ListenSlot uint64
+	BackwardBlockNumber uint64
 	RestURL  []string
 	Contract string
 }
@@ -79,10 +114,19 @@ type BscFeeListenConfig struct {
 	ProxyFee uint64
 }
 
+type TxStatusListenConfig struct {
+	UpdateSlot           int64
+	RestURL  []string
+	EthereumConfirmed uint64
+	NeoConfirmed uint64
+	BscConfirmed uint64
+}
+
 type Config struct {
 	ChainListenConfig     *ChainListenConfig
 	CoinPriceListenConfig *CoinPriceListenConfig
 	FeeListenConfig       *FeeListenConfig
+	TxStatusListenConfig  *TxStatusListenConfig
 	DBConfig              *DBConfig
 }
 

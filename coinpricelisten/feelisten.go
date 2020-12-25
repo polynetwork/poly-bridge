@@ -1,4 +1,4 @@
-package feelisten
+package coinpricelisten
 
 import (
 	"fmt"
@@ -70,7 +70,7 @@ func (this *FeeListen) listenFee() {
 	}()
 
 	logs.Debug("listen fee......")
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Minute)
 	for {
 		select {
 		case <-ticker.C:
@@ -78,17 +78,23 @@ func (this *FeeListen) listenFee() {
 			if now%this.feeUpdateSlot != 0 {
 				continue
 			}
-			logs.Info("do fee update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
-			chainFees := make([]*models.ChainFee, 0)
-			res := this.db.Find(&chainFees)
-			if res.RowsAffected == 0 {
-				continue
+			counter := 0
+			for counter < 5 {
+				time.Sleep(time.Second * 5)
+				counter ++
+				logs.Info("do fee update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
+				chainFees := make([]*models.ChainFee, 0)
+				res := this.db.Find(&chainFees)
+				if res.RowsAffected == 0 {
+					continue
+				}
+				err := this.getChainFee(chainFees)
+				if err != nil {
+					continue
+				}
+				this.db.Save(chainFees)
+				break
 			}
-			err := this.getChainFee(chainFees)
-			if err != nil {
-				continue
-			}
-			this.db.Save(chainFees)
 		}
 	}
 }
@@ -139,7 +145,7 @@ func (this *FeeListen) getEthFee() (uint64, uint64, error) {
 }
 
 func (this *FeeListen) getNeoFee() (uint64, uint64, error) {
-	return 1000000000, 1000000000, nil
+	return 100000000, 100000000, nil
 }
 
 func (this *FeeListen) getBscFee() (uint64, uint64, error) {

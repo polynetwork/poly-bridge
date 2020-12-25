@@ -14,7 +14,8 @@ func startDeploy(cfg *conf.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	err = db.AutoMigrate(&models.Chain{}, &models.Transaction{}, &models.TokenBasic{}, &models.ChainFee{}, &models.Token{}, &models.TokenMap{})
+	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.TokenBasic{}, &models.ChainFee{}, &models.Token{}, &models.TokenMap{},
+		&models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
 	if err != nil {
 		panic(err)
 	}
@@ -22,106 +23,24 @@ func startDeploy(cfg *conf.DeployConfig) {
 	db.Save(cfg.Chains)
 	db.Save(cfg.TokenBasics)
 	db.Save(cfg.ChainFees)
-	db.Save(cfg.TokenMaps)
+	tokenMaps := getTokenMapsFromToken(cfg.TokenBasics)
+	tokenMaps = append(tokenMaps, cfg.TokenMaps...)
+	db.Save(tokenMaps)
 }
 
-/*
-func updateChains() []*models.Chain {
-	// todo, add your chain
-	chains := []*models.Chain {
-		{
-			ChainId: conf.ETHEREUM_CROSSCHAIN_ID,
-			Name:    conf.ETHEREUM_CHAIN_NAME,
-		},
-		{
-			ChainId: conf.NEO_CROSSCHAIN_ID,
-			Name:    conf.NEO_CHAIN_NAME,
-		},
-		{
-			ChainId: conf.BSC_CROSSCHAIN_ID,
-			Name:    conf.BSC_CHAIN_NAME,
-		},
-	}
-	return chains
-}
-
-func updateChainGases() []*models.ChainGas {
-	// todo, add your chain gas
-	chainGases := []*models.ChainGas {
-		{
-			ChainId:  conf.ETHEREUM_CROSSCHAIN_ID,
-		},
-		{
-			ChainId:  conf.NEO_CROSSCHAIN_ID,
-		},
-		{
-			ChainId:  conf.BSC_CROSSCHAIN_ID,
-		},
-	}
-	return chainGases
-}
-
-func updateTokens() []*models.TokenBasic {
-	// todo, add your token
-	tokens := []*models.TokenBasic {
-		{
-			Name:     "Bitcoin",
-			Tokens:   []*models.Token {
-				{
-					ChainId:      conf.ETHEREUM_CROSSCHAIN_ID,
-					Hash:         "",
-					Name:         "",
-				},
-				{
-					ChainId:      conf.NEO_CROSSCHAIN_ID,
-					Hash:         "",
-					Name:         "",
-				},
-			},
-		},
-		{
-			Name:     "Ethereum",
-			Tokens:   []*models.Token {
-				{
-					ChainId:      conf.ETHEREUM_CROSSCHAIN_ID,
-					Hash:         "",
-					Name:         "",
-				},
-				{
-					ChainId:      conf.NEO_CROSSCHAIN_ID,
-					Hash:         "",
-					Name:         "",
-				},
-			},
-		},
-	}
-	return tokens
-}
-
-func updateTokenMap(tokens []*models.Token) []*models.TokenMap {
-	hash2Token := make(map[string]*models.Token, 0)
-	for _, token := range tokens {
-		hash2Token[token.Hash] = token
-	}
-	// todo, add your token map
-	crosschainTokens := map[string]string {
-		"aaa" : "bbb",
-	}
+func getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*models.TokenMap {
 	tokenMaps := make([]*models.TokenMap, 0)
-	for k, v := range crosschainTokens {
-		srcTokenId, ok := hash2Token[k]
-		if !ok {
-			continue
+	for _, tokenBasic := range tokenBasics {
+		for _, tokenSrc := range tokenBasic.Tokens {
+			for _, tokenDst := range tokenBasic.Tokens {
+				if tokenDst.ChainId != tokenSrc.ChainId {
+					tokenMaps = append(tokenMaps, &models.TokenMap{
+						SrcTokenHash: tokenSrc.Hash,
+						DstTokenHash: tokenDst.Hash,
+					})
+				}
+			}
 		}
-		dstTokenId, ok := hash2Token[v]
-		if !ok {
-			continue
-		}
-		tokenMaps = append(tokenMaps, &models.TokenMap {
-			SrcTokenId: srcTokenId.Id,
-			DstTokenId: dstTokenId.Id,
-		})
 	}
 	return tokenMaps
 }
-*/

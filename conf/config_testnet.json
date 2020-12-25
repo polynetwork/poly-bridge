@@ -12,21 +12,16 @@
       "ChainId": 2,
       "ListenSlot": 1,
       "BackwardBlockNumber": 10,
-      "RestURL": ["http://onto-eth.ont.io:10331"],
+      "RestURL": ["https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144"],
       "ExtendNodeURL": "https://teth.bitaps.com/js/get/update",
       "WrapperContract": "8bc7E7304120b88D111431F6A4853589D10e8132",
-      "CCMContract": "a4a0919ba5a2a89cb2eb1cb4018a16841b2e943f",
-      "ProxyContract": "a4a0919ba5a2a89cb2eb1cb4018a16841b2e943f"
+      "CCMContract": "726532586c50ec9f4080b71f906a3d9779bbd64f",
+      "ProxyContract": "D8aE73e06552E270340b63A8bcAbf9277a1aac99"
     },
     "NeoChainListenConfig": {
-      "ChainName": "Neo",
-      "ChainId": 4,
-      "ListenSlot": 1,
-      "BackwardBlockNumber": 10,
       "RestURL": ["http://seed10.ngd.network:11332","http://seed9.ngd.network:11332"],
-      "ExtendNodeURL": "https://teth.bitaps.com/js/get/update",
-      "WrapperContract": "8bc7E7304120b88D111431F6A4853589D10e8132",
-      "ProxyContract": "82a3401fb9a60db42c6fa2ea2b6d62e872d6257f"
+      "Contract": "82a3401fb9a60db42c6fa2ea2b6d62e872d6257f",
+      "BackwardBlockNumber": 10
     },
     "BscChainListenConfig": {
       "RestURL": ["http://192.168.1.244:22001"],
@@ -34,12 +29,9 @@
       "BackwardBlockNumber": 10
     },
     "PolyChainListenConfig": {
-      "ChainName": "Poly",
-      "ChainId": 0,
-      "ListenSlot": 1,
-      "BackwardBlockNumber": 10,
       "RestURL": ["http://192.168.1.244:22001"],
-      "Contract": "0xf3A9d42C01635A585f1721463842F8936075105F"
+      "Contract": "0xf3A9d42C01635A585f1721463842F8936075105F",
+      "BackwardBlockNumber": 10
     }
   },
 

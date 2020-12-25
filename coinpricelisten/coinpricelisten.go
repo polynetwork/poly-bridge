@@ -72,27 +72,33 @@ func (this *CoinPriceListen) listenPrice() {
 	}()
 
 	logs.Debug("listen price......")
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Minute)
 	for {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now%this.priceUpdateSlot != 0 {
+			if now % this.priceUpdateSlot != 0 {
 				continue
 			}
-			logs.Info("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
-			tokenBasics := make([]*models.TokenBasic, 0)
-			res := this.db.Find(&tokenBasics)
-			if res.RowsAffected == 0 {
-				logs.Error("there is no token basic!")
-				continue
+			counter := 0
+			for counter < 5 {
+				logs.Info("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
+				time.Sleep(time.Second * 5)
+				counter ++
+				tokenBasics := make([]*models.TokenBasic, 0)
+				res := this.db.Find(&tokenBasics)
+				if res.RowsAffected == 0 {
+					logs.Error("there is no token basic!")
+					continue
+				}
+				err := this.getCoinPrice(tokenBasics)
+				if err != nil {
+					logs.Error("updateCoinPrice err: %v", err)
+					continue
+				}
+				this.db.Save(tokenBasics)
+				break
 			}
-			err := this.getCoinPrice(tokenBasics)
-			if err != nil {
-				logs.Error("updateCoinPrice err: %v", err)
-				continue
-			}
-			this.db.Save(tokenBasics)
 		}
 	}
 }
@@ -106,7 +112,7 @@ func (this *CoinPriceListen) getCoinPrice(tokenBasics []*models.TokenBasic) erro
 	}
 	cmcPrices, cmcerr := this.getCmcCoinPrice(tokenCmcNames)
 	binPrices, binerr := this.getBinancePrice(tokenBinNames)
-	if cmcerr != nil && binerr != nil {
+	if cmcerr != nil || binerr != nil || cmcPrices == nil || binPrices == nil {
 		return fmt.Errorf("cmcerr: %s, binerr: %s", cmcerr.Error(), binerr.Error())
 	}
 	for _, token := range tokenBasics {

@@ -24,8 +24,9 @@ import (
 	"os"
 	"os/signal"
 	"poly-swap/chainlisten"
-	"poly-swap/coinpricelisten"
+	"poly-swap/chainlisten/neolisten"
 	"poly-swap/conf"
+	"poly-swap/dao/swap_dao"
 	"runtime"
 	"strings"
 	"syscall"
@@ -90,9 +91,11 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		fmt.Printf("%s\n", string(conf))
 	}
-	chainlisten.StartChainListen(config.ChainListenConfig, config.DBConfig)
-	coinpricelisten.StartCoinPriceListen(config.CoinPriceListenConfig, config.DBConfig)
-	coinpricelisten.StartFeeListen(config.FeeListenConfig, config.DBConfig)
+	db := swap_dao.NewSwapDao(config.DBConfig)
+	db.Start()
+	neoListen := neolisten.NewNeoChainListen(config.ChainListenConfig.NeoChainListenConfig)
+	chainListen := chainlisten.NewChainListen(neoListen, db)
+	chainListen.Start()
 	waitToExit()
 }
 

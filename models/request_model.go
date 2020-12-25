@@ -172,7 +172,7 @@ type TransactionRsp struct {
 	FeeAmount   uint64
 }
 
-func MakeTransactionRsp(transaction *Transaction) *TransactionRsp {
+func MakeTransactionRsp(transaction *WrapperTransaction) *TransactionRsp {
 	transactionRsp := &TransactionRsp{
 		Hash:           transaction.Hash,
 		User:        transaction.User,
@@ -199,7 +199,7 @@ type TransactionsRsp struct {
 	Transactions     []*TransactionRsp
 }
 
-func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*Transaction) *TransactionsRsp {
+func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
 	transactionsRsp := &TransactionsRsp{
 		PageSize: pageSize,
 		PageNo: pageNo,
@@ -226,7 +226,7 @@ type TransactionsOfUserRsp struct {
 	Transactions     []*TransactionRsp
 }
 
-func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*Transaction) *TransactionsRsp {
+func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
 	transactionsRsp := &TransactionsRsp{
 		PageSize: pageSize,
 		PageNo: pageNo,

@@ -40,11 +40,13 @@
         {
           "ChainId":      2,
           "Hash":         "0000000000000000000000000000000000000000",
-          "Name":         "Ethereum"
+          "Name":         "Ethereum",
+          "Precision":    18
         }, {
           "ChainId":      4,
           "Hash":         "0000000000000000000000000000000000000005",
-          "Name":         "Ethereum"
+          "Name":         "Ethereum",
+          "Precision":    18
         }
       ]
     }, {
@@ -55,11 +57,13 @@
         {
           "ChainId":      2,
           "Hash":         "0000000000000000000000000000000000000001",
-          "Name":         "Neo"
+          "Name":         "Neo",
+          "Precision":    9
         }, {
           "ChainId":      4,
           "Hash":         "0000000000000000000000000000000000000006",
-          "Name":         "Neo"
+          "Name":         "Neo",
+          "Precision":    9
         }
       ]
     }
