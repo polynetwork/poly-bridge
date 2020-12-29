@@ -24,6 +24,11 @@ func NewStakeDao() *StakeDao {
 		Name:    "Poly",
 		Height:  1641496,
 	}
+	chains[8] = &models.Chain{
+		ChainId: 0,
+		Name:    "BSC",
+		Height:  4810050,
+	}
 	stakeDao.chains = chains
 	return stakeDao
 }

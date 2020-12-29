@@ -12,12 +12,12 @@ type TokenBasicReq struct {
 type TokenBasicRsp struct {
 	Name     string
 	CmcName  string
-	CmcPrice uint64
+	CmcPrice int64
 	CmcInd   uint64
 	BinName  string
-	BinPrice uint64
+	BinPrice int64
 	BinInd   uint64
-	AvgPrice uint64
+	AvgPrice int64
 	AvgInd   uint64
 	Time     uint64
 	Tokens   []*TokenRsp

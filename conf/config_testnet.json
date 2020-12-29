@@ -31,12 +31,12 @@
       "ChainId": 8,
       "ListenSlot": 1,
       "BackwardBlockNumber": 10,
-      "RestURL": ["http://192.168.1.244:22001"],
+      "RestURL": ["https://data-seed-prebsc-1-s1.binance.org:8545"],
       "ExtendNodeURL": "",
       "ExtendNodeApiKey": "",
-      "WrapperContract": "8bc7E7304120b88D111431F6A4853589D10e8132",
-      "CCMContract": "726532586c50ec9f4080b71f906a3d9779bbd64f",
-      "ProxyContract": "D8aE73e06552E270340b63A8bcAbf9277a1aac99"
+      "WrapperContract": "",
+      "CCMContract": "5f00Ea21bdeE20969B4E11E856e2Ca8e53fd51e7",
+      "ProxyContract": "8A0283BB46CBC957CEDa71c77f85F0a71a89157A"
     },
     "PolyChainListenConfig": {
       "ChainName": "Poly",

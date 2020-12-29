@@ -149,6 +149,8 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				if v.TxHash == unLockEvent.TxHash {
 					dstTransfer := &models.DstTransfer{}
 					dstTransfer.Hash = unLockEvent.TxHash
+					dstTransfer.Time = tt
+					dstTransfer.ChainId = this.GetChainId()
 					dstTransfer.From = utils.Hash2Address(this.GetChainId(), unLockEvent.Contract)
 					dstTransfer.To = utils.Hash2Address(this.GetChainId(), v.ToAddress)
 					dstTransfer.Asset = strings.ToLower(v.ToAssetHash)
@@ -164,6 +166,9 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 }
 
 func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string, height uint64) ([]*models.WrapperTransaction, error) {
+	if len(contractAddr) == 0 {
+		return nil, nil
+	}
 	wrapperAddress := common.HexToAddress(contractAddr)
 	wrapperContract, err := polywrapper.NewIPolyWrapper(wrapperAddress, this.ethSdk.rawClient)
 	if err != nil {

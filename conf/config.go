@@ -20,6 +20,7 @@ var (
 
 var (
 	PRICE_PRECISION = int64(100000000)
+	FEE_PRECISION = int64(100000000)
 )
 
 const (
@@ -76,9 +77,16 @@ type NeoChainListenConfig struct {
 }
 
 type BscChainListenConfig struct {
-	RestURL  []string
-	Contract string
+	ChainName string
+	ChainId uint64
+	ListenSlot uint64
 	BackwardBlockNumber uint64
+	RestURL  []string
+	ExtendNodeURL string
+	ExtendNodeApiKey string
+	WrapperContract string
+	CCMContract string
+	ProxyContract string
 }
 
 type PolyChainListenConfig struct {

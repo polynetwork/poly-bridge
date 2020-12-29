@@ -17,6 +17,9 @@ func Hash2Address(chainId uint64, value string) string {
 		addrHex, _ := hex.DecodeString(value)
 		addr, _ := helper.UInt160FromBytes(addrHex)
 		return helper.ScriptHashToAddress(addr)
+	} else if chainId == conf.BSC_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -42,4 +45,12 @@ func String2Float64(value string) float64 {
 		return 0
 	}
 	return v
+}
+
+func Int64FromFigure(figure int) int64 {
+	x := int64(1)
+	for i := 0;i < figure;i ++ {
+		x *= 10
+	}
+	return x
 }
