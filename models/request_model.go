@@ -162,48 +162,48 @@ type TransactionReq struct {
 }
 
 type TransactionRsp struct {
-	Hash           string
-	User           string
-	SrcChainId        uint64
-	BlockHeight           uint64
-	Time uint64
-	DstChainId     uint64
-	FeeTokenHash      string
-	FeeAmount   uint64
+	Hash         string
+	User         string
+	SrcChainId   uint64
+	BlockHeight  uint64
+	Time         uint64
+	DstChainId   uint64
+	FeeTokenHash string
+	FeeAmount    uint64
 }
 
 func MakeTransactionRsp(transaction *WrapperTransaction) *TransactionRsp {
 	transactionRsp := &TransactionRsp{
-		Hash:           transaction.Hash,
-		User:        transaction.User,
-		SrcChainId:           transaction.SrcChainId,
-		BlockHeight:        transaction.BlockHeight,
-		Time:           transaction.Time,
-		DstChainId:        transaction.DstChainId,
-		FeeTokenHash:           transaction.FeeTokenHash,
-		FeeAmount:           transaction.FeeAmount.Uint64(),
+		Hash:         transaction.Hash,
+		User:         transaction.User,
+		SrcChainId:   transaction.SrcChainId,
+		BlockHeight:  transaction.BlockHeight,
+		Time:         transaction.Time,
+		DstChainId:   transaction.DstChainId,
+		FeeTokenHash: transaction.FeeTokenHash,
+		FeeAmount:    transaction.FeeAmount.Uint64(),
 	}
 	return transactionRsp
 }
 
 type TransactionsReq struct {
 	PageSize int
-	PageNo int
+	PageNo   int
 }
 
 type TransactionsRsp struct {
-	PageSize  int
-	PageNo int
-	TotalPage int
-	TotalCount int
-	Transactions     []*TransactionRsp
+	PageSize     int
+	PageNo       int
+	TotalPage    int
+	TotalCount   int
+	Transactions []*TransactionRsp
 }
 
 func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
 	transactionsRsp := &TransactionsRsp{
-		PageSize: pageSize,
-		PageNo: pageNo,
-		TotalPage: totalPage,
+		PageSize:   pageSize,
+		PageNo:     pageNo,
+		TotalPage:  totalPage,
 		TotalCount: totalCount,
 	}
 	for _, transaction := range transactions {
@@ -213,24 +213,24 @@ func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int
 }
 
 type TransactionsOfUserReq struct {
-	User string
+	User     string
 	PageSize int
-	PageNo int
+	PageNo   int
 }
 
 type TransactionsOfUserRsp struct {
-	PageSize  int
-	PageNo int
-	TotalPage int
-	TotalCount int
-	Transactions     []*TransactionRsp
+	PageSize     int
+	PageNo       int
+	TotalPage    int
+	TotalCount   int
+	Transactions []*TransactionRsp
 }
 
 func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
 	transactionsRsp := &TransactionsRsp{
-		PageSize: pageSize,
-		PageNo: pageNo,
-		TotalPage: totalPage,
+		PageSize:   pageSize,
+		PageNo:     pageNo,
+		TotalPage:  totalPage,
 		TotalCount: totalCount,
 	}
 	for _, transaction := range transactions {
@@ -239,26 +239,22 @@ func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCou
 	return transactionsRsp
 }
 
-
-
-
-
 type AddressReq struct {
 	ChainId     uint64
 	AddressHash string
 }
 
 type AddressRsp struct {
-	AddressHash      string
-	Address          string
-	ChainId        uint64
+	AddressHash string
+	Address     string
+	ChainId     uint64
 }
 
 func MakeAddressRsp(addressHash string, chainId uint64, address string) *AddressRsp {
 	addressRsp := &AddressRsp{
-		AddressHash:          addressHash,
-		Address:        address,
-		ChainId:           chainId,
+		AddressHash: addressHash,
+		Address:     address,
+		ChainId:     chainId,
 	}
 	return addressRsp
 }

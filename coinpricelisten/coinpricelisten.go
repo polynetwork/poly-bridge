@@ -77,14 +77,14 @@ func (this *CoinPriceListen) listenPrice() {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now % this.priceUpdateSlot != 0 {
+			if now%this.priceUpdateSlot != 0 {
 				continue
 			}
 			counter := 0
 			for counter < 5 {
 				logs.Info("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
 				time.Sleep(time.Second * 5)
-				counter ++
+				counter++
 				tokenBasics := make([]*models.TokenBasic, 0)
 				res := this.db.Find(&tokenBasics)
 				if res.RowsAffected == 0 {

@@ -21,13 +21,13 @@ import (
 	"poly-swap/utils"
 	"strings"
 )
+
 const (
 	_eth_crosschainlock   = "CrossChainLockEvent"
 	_eth_crosschainunlock = "CrossChainUnlockEvent"
-	_eth_lock = "LockEvent"
-	_eth_unlock = "UnlockEvent"
+	_eth_lock             = "LockEvent"
+	_eth_unlock           = "UnlockEvent"
 )
-
 
 type EthereumChainListen struct {
 	ethCfg *conf.EthereumChainListenConfig
@@ -191,7 +191,7 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 			Hash:         evt.Raw.TxHash.String()[2:],
 			User:         strings.ToLower(evt.Sender.String()[2:]),
 			DstChainId:   evt.ToChainId,
-			FeeTokenHash:  evt.FromAsset.String()[2:],
+			FeeTokenHash: evt.FromAsset.String()[2:],
 			FeeAmount:    &models.BigInt{*evt.Fee},
 		})
 	}
@@ -240,7 +240,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 			Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
 			Value:    evt.Rawdata,
 			Height:   height,
-			Fee: Fee,
+			Fee:      Fee,
 		})
 	}
 	// ethereum unlock events from given block
@@ -254,13 +254,13 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 		evt := executeTxEvent.Event
 		Fee := this.GetConsumeGas(evt.Raw.TxHash)
 		eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
-			Method:    _eth_crosschainunlock,
-			TxHash:    evt.Raw.TxHash.String()[2:],
-			RTxHash:   utils.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
-			Contract:  hex.EncodeToString(evt.ToContract),
-			FChainId:  uint32(evt.FromChainID),
-			Height:    height,
-			Fee: Fee,
+			Method:   _eth_crosschainunlock,
+			TxHash:   evt.Raw.TxHash.String()[2:],
+			RTxHash:  utils.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
+			Contract: hex.EncodeToString(evt.ToContract),
+			FChainId: uint32(evt.FromChainID),
+			Height:   height,
+			Fee:      Fee,
 		})
 	}
 	return eccmLockEvents, eccmUnlockEvents, nil
@@ -286,14 +286,14 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 	for lockEvents.Next() {
 		evt := lockEvents.Event
 		proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
-			Method:   _eth_lock,
-			TxHash:         evt.Raw.TxHash.String()[2:],
-			FromAddress:     evt.FromAddress.String()[2:],
-			FromAssetHash:   evt.FromAssetHash.String()[2:],
+			Method:        _eth_lock,
+			TxHash:        evt.Raw.TxHash.String()[2:],
+			FromAddress:   evt.FromAddress.String()[2:],
+			FromAssetHash: evt.FromAssetHash.String()[2:],
 			ToChainId:     uint32(evt.ToChainId),
 			ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
-			ToAddress:  hex.EncodeToString(evt.ToAddress),
-			Amount:    evt.Amount,
+			ToAddress:     hex.EncodeToString(evt.ToAddress),
+			Amount:        evt.Amount,
 		})
 	}
 
@@ -306,11 +306,11 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 	for unlockEvents.Next() {
 		evt := unlockEvents.Event
 		proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
-			Method:    _eth_unlock,
-			TxHash:    evt.Raw.TxHash.String()[2:],
-			ToAssetHash:    evt.ToAssetHash.String()[2:],
+			Method:      _eth_unlock,
+			TxHash:      evt.Raw.TxHash.String()[2:],
+			ToAssetHash: evt.ToAssetHash.String()[2:],
 			ToAddress:   evt.ToAddress.String()[2:],
-			Amount:  evt.Amount,
+			Amount:      evt.Amount,
 		})
 	}
 	return proxyLockEvents, proxyUnlockEvents, nil
@@ -320,7 +320,7 @@ func (this *EthereumChainListen) GetConsumeGas(hash common.Hash) uint64 {
 	if err != nil {
 		return 0
 	}
-	receipt, err :=  this.ethSdk.GetTransactionReceipt(hash)
+	receipt, err := this.ethSdk.GetTransactionReceipt(hash)
 	if err != nil {
 		return 0
 	}
@@ -328,9 +328,9 @@ func (this *EthereumChainListen) GetConsumeGas(hash common.Hash) uint64 {
 }
 
 type ExtendHeightRsp struct {
-	Status  uint64  `json:"status,string"`
-	Message  string  `json:"message"`
-	Result  string  `json:"result"`
+	Status  uint64 `json:"status,string"`
+	Message string `json:"message"`
+	Result  string `json:"result"`
 }
 
 func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
@@ -370,6 +370,3 @@ func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
 	}
 	return height.Uint64(), nil
 }
-
-
-

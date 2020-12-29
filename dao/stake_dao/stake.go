@@ -11,8 +11,7 @@ type StakeDao struct {
 }
 
 func NewStakeDao() *StakeDao {
-	stakeDao := &StakeDao{
-	}
+	stakeDao := &StakeDao{}
 	chains := make(map[uint64]*models.Chain)
 	chains[2] = &models.Chain{
 		ChainId: 2,

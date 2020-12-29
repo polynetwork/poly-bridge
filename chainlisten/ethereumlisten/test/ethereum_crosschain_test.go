@@ -31,12 +31,12 @@ func waitTransactionConfirm(ethSdk *ethereumlisten.EthereumSdk, hash common.Hash
 	for errNum < 100 {
 		time.Sleep(time.Second * 1)
 		_, ispending, err := ethSdk.TransactionByHash(hash)
-		fmt.Printf("transaction %s is pending: %v\n",  hash.String(), ispending)
+		fmt.Printf("transaction %s is pending: %v\n", hash.String(), ispending)
 		if err != nil {
-			errNum ++
+			errNum++
 			continue
 		}
-		if ispending == true{
+		if ispending == true {
 			continue
 		} else {
 			break

@@ -106,7 +106,7 @@ func startServer(ctx *cli.Context) {
 		swap_db := swap_dao.NewSwapDao(config.DBConfig)
 		swap_db.Start()
 		db = swap_db
-	} else if config.Server == conf.SERVER_EXPLORER{
+	} else if config.Server == conf.SERVER_EXPLORER {
 		explorer_db := explorer_dao.NewExplorerDao(config.DBConfig)
 		explorer_db.Start()
 		db = explorer_db

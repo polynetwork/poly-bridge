@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego/logs"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"poly-swap/conf"
 	"poly-swap/models"
-	"gorm.io/driver/mysql"
 	"runtime/debug"
 	"time"
 )
@@ -16,8 +16,8 @@ type Chain struct {
 	ChainId uint64 `gorm:"column:id"`
 	Name    string `gorm:"column:xname"`
 	Height  uint64 `gorm:"column:height"`
-	In     uint64 `gorm:"column:txin"`
-	Out uint64 `gorm:"column:txout"`
+	In      uint64 `gorm:"column:txin"`
+	Out     uint64 `gorm:"column:txout"`
 }
 
 func (Chain) TableName() string {
@@ -25,18 +25,18 @@ func (Chain) TableName() string {
 }
 
 type SrcTransaction struct {
-	Hash  string `gorm:"column:txhash"`
-	ChainId uint64 `gorm:"column:chain_id"`
-	State uint64 `gorm:"column:state"`
-	Time uint64 `gorm:"column:tt"`
-	Fee uint64 `gorm:"column:fee"`
-	Height uint64 `gorm:"column:height"`
-	User string `gorm:"column:xuser"`
-	DstChainId uint64 `gorm:"column:tchain"`
-	Contract string `gorm:"column:contract"`
-	Key string `gorm:"column:xkey"`
-	Param string `gorm:"column:xparam"`
-	SrcTransfer     *SrcTransfer `gorm:"foreignKey:Hash;references:Hash"`
+	Hash        string       `gorm:"column:txhash"`
+	ChainId     uint64       `gorm:"column:chain_id"`
+	State       uint64       `gorm:"column:state"`
+	Time        uint64       `gorm:"column:tt"`
+	Fee         uint64       `gorm:"column:fee"`
+	Height      uint64       `gorm:"column:height"`
+	User        string       `gorm:"column:xuser"`
+	DstChainId  uint64       `gorm:"column:tchain"`
+	Contract    string       `gorm:"column:contract"`
+	Key         string       `gorm:"column:xkey"`
+	Param       string       `gorm:"column:xparam"`
+	SrcTransfer *SrcTransfer `gorm:"foreignKey:Hash;references:Hash"`
 }
 
 func (SrcTransaction) TableName() string {
@@ -44,16 +44,16 @@ func (SrcTransaction) TableName() string {
 }
 
 type SrcTransfer struct {
-	Hash  string `gorm:"column:txhash"`
-	ChainId uint64 `gorm:"column:chain_id"`
-	Time uint64 `gorm:"column:tt"`
-	Asset string `gorm:"column:asset"`
-	From string `gorm:"column:xfrom"`
-	To string `gorm:"column:xto"`
-	Amount *models.BigInt `gorm:"column:amount"`
-	DstChainId uint64 `gorm:"column:tochainid"`
-	DstAsset string `gorm:"column:toasset"`
-	DstUser string `gorm:"column:touser"`
+	Hash       string         `gorm:"column:txhash"`
+	ChainId    uint64         `gorm:"column:chain_id"`
+	Time       uint64         `gorm:"column:tt"`
+	Asset      string         `gorm:"column:asset"`
+	From       string         `gorm:"column:xfrom"`
+	To         string         `gorm:"column:xto"`
+	Amount     *models.BigInt `gorm:"column:amount"`
+	DstChainId uint64         `gorm:"column:tochainid"`
+	DstAsset   string         `gorm:"column:toasset"`
+	DstUser    string         `gorm:"column:touser"`
 }
 
 func (SrcTransfer) TableName() string {
@@ -61,16 +61,16 @@ func (SrcTransfer) TableName() string {
 }
 
 type PolyTransaction struct {
-	Hash  string `gorm:"column:txhash"`
-	ChainId uint64 `gorm:"column:chain_id"`
-	State uint64 `gorm:"column:state"`
-	Time uint64 `gorm:"column:tt"`
-	Fee uint64 `gorm:"column:fee"`
-	Height uint64 `gorm:"column:height"`
+	Hash       string `gorm:"column:txhash"`
+	ChainId    uint64 `gorm:"column:chain_id"`
+	State      uint64 `gorm:"column:state"`
+	Time       uint64 `gorm:"column:tt"`
+	Fee        uint64 `gorm:"column:fee"`
+	Height     uint64 `gorm:"column:height"`
 	SrcChainId uint64 `gorm:"column:fchain"`
-	SrcHash  string `gorm:"column:ftxhash"`
+	SrcHash    string `gorm:"column:ftxhash"`
 	DstChainId uint64 `gorm:"column:tchain"`
-	Key string `gorm:"column:xkey"`
+	Key        string `gorm:"column:xkey"`
 }
 
 func (PolyTransaction) TableName() string {
@@ -78,23 +78,23 @@ func (PolyTransaction) TableName() string {
 }
 
 type PolySrcRelation struct {
-	SrcHash  string
-	SrcTransaction     *SrcTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
-	PolyHash string
-	PolyTransaction     *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
+	SrcHash         string
+	SrcTransaction  *SrcTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
+	PolyHash        string
+	PolyTransaction *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
 }
 
 type DstTransaction struct {
-	Hash  string `gorm:"column:txhash"`
-	ChainId uint64 `gorm:"column:chain_id"`
-	State uint64 `gorm:"column:state"`
-	Time uint64 `gorm:"column:tt"`
-	Fee uint64 `gorm:"column:fee"`
-	Height uint64 `gorm:"column:height"`
-	SrcChainId uint64 `gorm:"column:fchain"`
-	Contract string `gorm:"column:contract"`
-	PolyHash  string `gorm:"column:rtxhash"`
-	DstTransfer     *DstTransfer `gorm:"foreignKey:Hash;references:Hash"`
+	Hash        string       `gorm:"column:txhash"`
+	ChainId     uint64       `gorm:"column:chain_id"`
+	State       uint64       `gorm:"column:state"`
+	Time        uint64       `gorm:"column:tt"`
+	Fee         uint64       `gorm:"column:fee"`
+	Height      uint64       `gorm:"column:height"`
+	SrcChainId  uint64       `gorm:"column:fchain"`
+	Contract    string       `gorm:"column:contract"`
+	PolyHash    string       `gorm:"column:rtxhash"`
+	DstTransfer *DstTransfer `gorm:"foreignKey:Hash;references:Hash"`
 }
 
 func (DstTransaction) TableName() string {
@@ -102,13 +102,13 @@ func (DstTransaction) TableName() string {
 }
 
 type DstTransfer struct {
-	Hash  string `gorm:"column:txhash"`
-	ChainId uint64 `gorm:"column:chain_id"`
-	Time uint64 `gorm:"column:tt"`
-	Asset string `gorm:"column:asset"`
-	From string `gorm:"column:xfrom"`
-	To string `gorm:"column:xto"`
-	Amount *models.BigInt `gorm:"column:amount"`
+	Hash    string         `gorm:"column:txhash"`
+	ChainId uint64         `gorm:"column:chain_id"`
+	Time    uint64         `gorm:"column:tt"`
+	Asset   string         `gorm:"column:asset"`
+	From    string         `gorm:"column:xfrom"`
+	To      string         `gorm:"column:xto"`
+	Amount  *models.BigInt `gorm:"column:amount"`
 }
 
 func (DstTransfer) TableName() string {
@@ -116,8 +116,8 @@ func (DstTransfer) TableName() string {
 }
 
 type ExplorerDao struct {
-	dbCfg  *conf.DBConfig
-	db     *gorm.DB
+	dbCfg *conf.DBConfig
+	db    *gorm.DB
 }
 
 func NewExplorerDao(dbCfg *conf.DBConfig) *ExplorerDao {
@@ -201,8 +201,8 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		newChain.In = uint64(len(srcTransactions))
 		newChain.Out = uint64(len(dstTransactions))
 		res := dao.db.Debug().Model(newChain).Updates(map[string]interface{}{
-			"txin": gorm.Expr("txin + ?", newChain.In),
-			"txout": gorm.Expr("txout + ?", newChain.Out),
+			"txin":   gorm.Expr("txin + ?", newChain.In),
+			"txout":  gorm.Expr("txout + ?", newChain.Out),
 			"height": gorm.Expr("?", newChain.Height)})
 		if res.Error != nil {
 			return res.Error

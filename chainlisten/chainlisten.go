@@ -39,13 +39,13 @@ type ChainHandle interface {
 
 type ChainListen struct {
 	handle ChainHandle
-	db dao.CrossChainEventDao
+	db     dao.CrossChainEventDao
 }
 
 func NewChainListen(handle ChainHandle, db dao.CrossChainEventDao) *ChainListen {
-	chainListen := &ChainListen {
+	chainListen := &ChainListen{
 		handle: handle,
-		db: db,
+		db:     db,
 	}
 	return chainListen
 }
@@ -91,7 +91,7 @@ func (this *ChainListen) listenChain() {
 			extendHeight, err := this.handle.GetExtendLatestHeight()
 			if err != nil || extendHeight == 0 {
 				logs.Error("ListenChain - cannot get chain %s extend height, err: %s", this.handle.GetChainName(), err)
-			} else if extendHeight - height >= this.handle.GetBackwardBlockNumber() {
+			} else if extendHeight-height >= this.handle.GetBackwardBlockNumber() {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", this.handle.GetChainName(), height, extendHeight)
 			}
 			if chain.Height >= height {

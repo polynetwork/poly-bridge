@@ -12,10 +12,10 @@ import (
 )
 
 type TxStatusListen struct {
-	txStatusCfg        *conf.TxStatusListenConfig
-	dbCfg         *conf.DBConfig
-	db            *gorm.DB
-	sdk           *PolyExplorerSdk
+	txStatusCfg *conf.TxStatusListenConfig
+	dbCfg       *conf.DBConfig
+	db          *gorm.DB
+	sdk         *PolyExplorerSdk
 }
 
 func StartTxStatusListen(txStatusCfg *conf.TxStatusListenConfig, dbCfg *conf.DBConfig) {
@@ -126,4 +126,3 @@ func (this *TxStatusListen) getTxStatus(txHash string) (uint64, error) {
 	}
 	return conf.FINISHED, nil
 }
-

@@ -5019,4 +5019,3 @@ func (_ZeroCopySource *ZeroCopySourceTransactorRaw) Transfer(opts *bind.Transact
 func (_ZeroCopySource *ZeroCopySourceTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	return _ZeroCopySource.Contract.contract.Transact(opts, method, params...)
 }
-

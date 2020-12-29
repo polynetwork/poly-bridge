@@ -12,8 +12,8 @@ import (
 )
 
 type SwapDao struct {
-	dbCfg  *conf.DBConfig
-	db     *gorm.DB
+	dbCfg *conf.DBConfig
+	db    *gorm.DB
 }
 
 func NewSwapDao(dbCfg *conf.DBConfig) *SwapDao {

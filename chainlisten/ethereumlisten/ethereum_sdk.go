@@ -190,7 +190,6 @@ func (ec *EthereumSdk) NonceAt(addr common.Address) (uint64, error) {
 	return nonce, nil
 }
 
-
 func (ec *EthereumSdk) SendRawTransaction(tx *types.Transaction) error {
 	data, err := rlp.EncodeToBytes(tx)
 	if err != nil {
@@ -262,5 +261,3 @@ func (ec *EthereumSdk) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
 	}
 	return gasLimit, err
 }
-
-

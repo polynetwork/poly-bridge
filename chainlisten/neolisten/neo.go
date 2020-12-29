@@ -15,12 +15,12 @@ import (
 )
 
 const (
-	_neo_crosschainlock = "CrossChainLockEvent"
+	_neo_crosschainlock   = "CrossChainLockEvent"
 	_neo_crosschainunlock = "CrossChainUnlockEvent"
-	_neo_lock               = "Lock"
-	_neo_lock2              = "LockEvent"
-	_neo_unlock             = "UnlockEvent"
-	_neo_unlock2            = "Unlock"
+	_neo_lock             = "Lock"
+	_neo_lock2            = "LockEvent"
+	_neo_unlock           = "UnlockEvent"
+	_neo_unlock2          = "Unlock"
 )
 
 type NeoChainListen struct {
@@ -209,7 +209,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 }
 
 type ExtendHeight struct {
-	last_block_height  uint64  `json:"last_block_height,string"`
+	last_block_height uint64 `json:"last_block_height,string"`
 }
 
 func (this *NeoChainListen) GetExtendLatestHeight() (uint64, error) {
@@ -236,4 +236,3 @@ func (this *NeoChainListen) GetExtendLatestHeight() (uint64, error) {
 	}
 	return extendHeight.last_block_height, nil
 }
-

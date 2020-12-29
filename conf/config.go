@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	POLY_CROSSCHAIN_ID      = uint64(0)
-	POLY_CHAIN_NAME         = "Poly"
+	POLY_CROSSCHAIN_ID     = uint64(0)
+	POLY_CHAIN_NAME        = "Poly"
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
 	ETHEREUM_CHAIN_NAME    = "Ethereum"
 	NEO_CROSSCHAIN_ID      = uint64(4)
@@ -20,7 +20,7 @@ var (
 
 var (
 	PRICE_PRECISION = int64(100000000)
-	FEE_PRECISION = int64(100000000)
+	FEE_PRECISION   = int64(100000000)
 )
 
 const (
@@ -34,8 +34,8 @@ const (
 
 const (
 	SERVER_POLY_SWAP = "polyswap"
-	SERVER_EXPLORER = "explorer"
-	SERVER_ADDRESS = "address"
+	SERVER_EXPLORER  = "explorer"
+	SERVER_ADDRESS   = "address"
 )
 
 type DBConfig struct {
@@ -53,49 +53,49 @@ type ChainListenConfig struct {
 }
 
 type EthereumChainListenConfig struct {
-	ChainName string
-	ChainId uint64
-	ListenSlot uint64
+	ChainName           string
+	ChainId             uint64
+	ListenSlot          uint64
 	BackwardBlockNumber uint64
-	RestURL  []string
-	ExtendNodeURL string
-	ExtendNodeApiKey string
-	WrapperContract string
-	CCMContract string
-	ProxyContract string
+	RestURL             []string
+	ExtendNodeURL       string
+	ExtendNodeApiKey    string
+	WrapperContract     string
+	CCMContract         string
+	ProxyContract       string
 }
 
 type NeoChainListenConfig struct {
-	ChainName string
-	ChainId uint64
-	ListenSlot uint64
+	ChainName           string
+	ChainId             uint64
+	ListenSlot          uint64
 	BackwardBlockNumber uint64
-	RestURL  []string
-	ExtendNodeURL string
-	WrapperContract string
-	ProxyContract string
+	RestURL             []string
+	ExtendNodeURL       string
+	WrapperContract     string
+	ProxyContract       string
 }
 
 type BscChainListenConfig struct {
-	ChainName string
-	ChainId uint64
-	ListenSlot uint64
+	ChainName           string
+	ChainId             uint64
+	ListenSlot          uint64
 	BackwardBlockNumber uint64
-	RestURL  []string
-	ExtendNodeURL string
-	ExtendNodeApiKey string
-	WrapperContract string
-	CCMContract string
-	ProxyContract string
+	RestURL             []string
+	ExtendNodeURL       string
+	ExtendNodeApiKey    string
+	WrapperContract     string
+	CCMContract         string
+	ProxyContract       string
 }
 
 type PolyChainListenConfig struct {
-	ChainName string
-	ChainId uint64
-	ListenSlot uint64
+	ChainName           string
+	ChainId             uint64
+	ListenSlot          uint64
 	BackwardBlockNumber uint64
-	RestURL  []string
-	Contract string
+	RestURL             []string
+	Contract            string
 }
 
 type CoinPriceListenConfig struct {
@@ -134,15 +134,15 @@ type BscFeeListenConfig struct {
 }
 
 type TxStatusListenConfig struct {
-	UpdateSlot           int64
-	RestURL  []string
+	UpdateSlot        int64
+	RestURL           []string
 	EthereumConfirmed uint64
-	NeoConfirmed uint64
-	BscConfirmed uint64
+	NeoConfirmed      uint64
+	BscConfirmed      uint64
 }
 
 type Config struct {
-	Server string
+	Server                string
 	ChainListenConfig     *ChainListenConfig
 	CoinPriceListenConfig *CoinPriceListenConfig
 	FeeListenConfig       *FeeListenConfig

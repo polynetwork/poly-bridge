@@ -82,7 +82,7 @@ func (this *FeeListen) listenFee() {
 			counter := 0
 			for counter < 5 {
 				time.Sleep(time.Second * 5)
-				counter ++
+				counter++
 				logs.Info("do fee update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
 				chainFees := make([]*models.ChainFee, 0)
 				res := this.db.Find(&chainFees)
@@ -109,11 +109,11 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 	maxFee, minFee, err1 := this.getEthFee()
 	chainFee, ok := chainName2Item[conf.ETHEREUM_CROSSCHAIN_ID]
 	if err1 == nil && ok {
-		chainFee.MaxFee = &models.BigInt{Int:*maxFee}
-		chainFee.MinFee = &models.BigInt{Int:*minFee}
+		chainFee.MaxFee = &models.BigInt{Int: *maxFee}
+		chainFee.MinFee = &models.BigInt{Int: *minFee}
 		x := new(big.Int).Mul(minFee, big.NewInt(int64(this.ethCfg.ProxyFee)))
 		y := new(big.Int).Div(x, big.NewInt(100))
-		chainFee.ProxyFee = &models.BigInt{Int:*y}
+		chainFee.ProxyFee = &models.BigInt{Int: *y}
 	} else {
 		logs.Error("get eth fee err: %v", err1)
 	}
@@ -121,11 +121,11 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 	maxFee, minFee, err2 := this.getNeoFee()
 	chainFee, ok = chainName2Item[conf.NEO_CROSSCHAIN_ID]
 	if err2 == nil && ok {
-		chainFee.MaxFee = &models.BigInt{Int:*maxFee}
-		chainFee.MinFee = &models.BigInt{Int:*minFee}
+		chainFee.MaxFee = &models.BigInt{Int: *maxFee}
+		chainFee.MinFee = &models.BigInt{Int: *minFee}
 		x := new(big.Int).Mul(minFee, big.NewInt(int64(this.neoCfg.ProxyFee)))
 		y := new(big.Int).Div(x, big.NewInt(100))
-		chainFee.ProxyFee = &models.BigInt{Int:*y}
+		chainFee.ProxyFee = &models.BigInt{Int: *y}
 	} else {
 		logs.Error("get neo fee err: %v", err2)
 	}
@@ -133,11 +133,11 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 	maxFee, minFee, err3 := this.getBscFee()
 	chainFee, ok = chainName2Item[conf.BSC_CROSSCHAIN_ID]
 	if err2 == nil && ok {
-		chainFee.MaxFee = &models.BigInt{Int:*maxFee}
-		chainFee.MinFee = &models.BigInt{Int:*minFee}
+		chainFee.MaxFee = &models.BigInt{Int: *maxFee}
+		chainFee.MinFee = &models.BigInt{Int: *minFee}
 		x := new(big.Int).Mul(minFee, big.NewInt(int64(this.bscCfg.ProxyFee)))
 		y := new(big.Int).Div(x, big.NewInt(100))
-		chainFee.ProxyFee = &models.BigInt{Int:*y}
+		chainFee.ProxyFee = &models.BigInt{Int: *y}
 	} else {
 		logs.Error("get bsc fee err: %v", err2)
 	}

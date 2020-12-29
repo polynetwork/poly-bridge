@@ -49,7 +49,7 @@ func String2Float64(value string) float64 {
 
 func Int64FromFigure(figure int) int64 {
 	x := int64(1)
-	for i := 0;i < figure;i ++ {
+	for i := 0; i < figure; i++ {
 		x *= 10
 	}
 	return x

@@ -26,16 +26,16 @@ import (
 )
 
 type PolySDK struct {
-	sdk 	*sdk.PolySdk
-	urls     []string
-	node     int
+	sdk  *sdk.PolySdk
+	urls []string
+	node int
 }
 
 func NewPolySDK(urls []string) *PolySDK {
 	rawsdk := sdk.NewPolySdk()
 	rawsdk.NewRpcClient().SetAddress(urls[0])
 	return &PolySDK{
-		sdk: rawsdk,
+		sdk:  rawsdk,
 		urls: urls,
 		node: 0,
 	}
@@ -68,7 +68,7 @@ func (ps *PolySDK) GetLatestHeight() (uint64, error) {
 	return uint64(latestHeight), nil
 }
 
-func (client *PolySDK) GetCurrentBlockHeight () (uint64, error) {
+func (client *PolySDK) GetCurrentBlockHeight() (uint64, error) {
 	cur := client.node
 	height, err := client.sdk.GetCurrentBlockHeight()
 	for err != nil {

@@ -31,28 +31,28 @@ type ECCMLockEvent struct {
 	Fee      uint64
 }
 type ECCMUnlockEvent struct {
-	Method string
-	TxHash string
+	Method   string
+	TxHash   string
 	RTxHash  string
 	FChainId uint32
-	Contract  string
-	Height uint64
-	Fee     uint64
+	Contract string
+	Height   uint64
+	Fee      uint64
 }
 type ProxyLockEvent struct {
-	Method          string
-	TxHash          string
-	FromAddress     string
-	FromAssetHash   string
-	ToChainId       uint32
-	ToAssetHash     string
-	ToAddress       string
-	Amount          *big.Int
+	Method        string
+	TxHash        string
+	FromAddress   string
+	FromAssetHash string
+	ToChainId     uint32
+	ToAssetHash   string
+	ToAddress     string
+	Amount        *big.Int
 }
 type ProxyUnlockEvent struct {
-	Method          string
-	TxHash          string
-	ToAssetHash     string
-	ToAddress       string
-	Amount          *big.Int
+	Method      string
+	TxHash      string
+	ToAssetHash string
+	ToAddress   string
+	Amount      *big.Int
 }

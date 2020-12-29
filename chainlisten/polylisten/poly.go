@@ -111,5 +111,3 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 func (this *PolyChainListen) GetExtendLatestHeight() (uint64, error) {
 	return this.GetLatestHeight()
 }
-
-
