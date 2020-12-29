@@ -5,6 +5,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"math/big"
 	"poly-swap/conf"
 	"poly-swap/models"
 	"runtime/debug"
@@ -108,9 +109,11 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 	maxFee, minFee, err1 := this.getEthFee()
 	chainFee, ok := chainName2Item[conf.ETHEREUM_CROSSCHAIN_ID]
 	if err1 == nil && ok {
-		chainFee.MaxFee = maxFee
-		chainFee.MinFee = minFee
-		chainFee.ProxyFee = minFee * this.ethCfg.ProxyFee / 100
+		chainFee.MaxFee = &models.BigInt{Int:*maxFee}
+		chainFee.MinFee = &models.BigInt{Int:*minFee}
+		x := new(big.Int).Mul(minFee, big.NewInt(int64(this.ethCfg.ProxyFee)))
+		y := new(big.Int).Div(x, big.NewInt(100))
+		chainFee.ProxyFee = &models.BigInt{Int:*y}
 	} else {
 		logs.Error("get eth fee err: %v", err1)
 	}
@@ -118,9 +121,11 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 	maxFee, minFee, err2 := this.getNeoFee()
 	chainFee, ok = chainName2Item[conf.NEO_CROSSCHAIN_ID]
 	if err2 == nil && ok {
-		chainFee.MaxFee = maxFee
-		chainFee.MinFee = minFee
-		chainFee.ProxyFee = minFee * this.neoCfg.ProxyFee / 100
+		chainFee.MaxFee = &models.BigInt{Int:*maxFee}
+		chainFee.MinFee = &models.BigInt{Int:*minFee}
+		x := new(big.Int).Mul(minFee, big.NewInt(int64(this.neoCfg.ProxyFee)))
+		y := new(big.Int).Div(x, big.NewInt(100))
+		chainFee.ProxyFee = &models.BigInt{Int:*y}
 	} else {
 		logs.Error("get neo fee err: %v", err2)
 	}
@@ -128,9 +133,11 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 	maxFee, minFee, err3 := this.getBscFee()
 	chainFee, ok = chainName2Item[conf.BSC_CROSSCHAIN_ID]
 	if err2 == nil && ok {
-		chainFee.MaxFee = maxFee
-		chainFee.MinFee = minFee
-		chainFee.ProxyFee = minFee * this.bscCfg.ProxyFee / 100
+		chainFee.MaxFee = &models.BigInt{Int:*maxFee}
+		chainFee.MinFee = &models.BigInt{Int:*minFee}
+		x := new(big.Int).Mul(minFee, big.NewInt(int64(this.bscCfg.ProxyFee)))
+		y := new(big.Int).Div(x, big.NewInt(100))
+		chainFee.ProxyFee = &models.BigInt{Int:*y}
 	} else {
 		logs.Error("get bsc fee err: %v", err2)
 	}
@@ -140,14 +147,14 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 	return nil
 }
 
-func (this *FeeListen) getEthFee() (uint64, uint64, error) {
-	return 1000000000, 1000000000, nil
+func (this *FeeListen) getEthFee() (*big.Int, *big.Int, error) {
+	return big.NewInt(1000000000), big.NewInt(1000000000), nil
 }
 
-func (this *FeeListen) getNeoFee() (uint64, uint64, error) {
-	return 100000000, 100000000, nil
+func (this *FeeListen) getNeoFee() (*big.Int, *big.Int, error) {
+	return big.NewInt(1000000000), big.NewInt(1000000000), nil
 }
 
-func (this *FeeListen) getBscFee() (uint64, uint64, error) {
-	return 1000000000, 1000000000, nil
+func (this *FeeListen) getBscFee() (*big.Int, *big.Int, error) {
+	return big.NewInt(1000000000), big.NewInt(1000000000), nil
 }

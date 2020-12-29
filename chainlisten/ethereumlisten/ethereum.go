@@ -8,8 +8,11 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io/ioutil"
+	"math/big"
 	"net/http"
+	"net/url"
 	"poly-swap/chainlisten/ethereumlisten/eccm_abi"
 	"poly-swap/chainlisten/ethereumlisten/lock_proxy_abi"
 	"poly-swap/chainlisten/ethereumlisten/wrapper_abi"
@@ -95,64 +98,66 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	for _, lockEvent := range eccmLockEvents {
 		if lockEvent.Method == _eth_crosschainlock {
 			logs.Info("from chain %s: txhash: %s, txid: %s\n", this.GetChainName(), lockEvent.TxHash, lockEvent.Txid)
-			fctx := &models.SrcTransaction{}
-			fctx.ChainId = this.GetChainId()
-			fctx.Hash = lockEvent.TxHash
-			fctx.State = 1
-			fctx.Fee = lockEvent.Fee
-			fctx.Time = tt
-			fctx.Height = height
-			fctx.User = utils.Hash2Address(this.GetChainId(), lockEvent.User)
-			fctx.DstChainId = uint64(lockEvent.Tchain)
-			fctx.Contract = lockEvent.Contract
-			fctx.Key = lockEvent.Txid
-			fctx.Param = hex.EncodeToString(lockEvent.Value)
+			srcTransaction := &models.SrcTransaction{}
+			srcTransaction.ChainId = this.GetChainId()
+			srcTransaction.Hash = lockEvent.TxHash
+			srcTransaction.State = 1
+			srcTransaction.Fee = &models.BigInt{*big.NewInt(int64(lockEvent.Fee))}
+			srcTransaction.Time = tt
+			srcTransaction.Height = height
+			srcTransaction.User = utils.Hash2Address(this.GetChainId(), lockEvent.User)
+			srcTransaction.DstChainId = uint64(lockEvent.Tchain)
+			srcTransaction.Contract = lockEvent.Contract
+			srcTransaction.Key = lockEvent.Txid
+			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			for _, v := range proxyLockEvents {
 				if v.TxHash == lockEvent.TxHash {
 					toAssetHash := v.ToAssetHash
-					fctransfer := &models.SrcTransfer{}
-					fctransfer.Hash = lockEvent.TxHash
-					fctransfer.From = utils.Hash2Address(this.GetChainId(), v.FromAddress)
-					fctransfer.To = utils.Hash2Address(this.GetChainId(), lockEvent.Contract)
-					fctransfer.Asset = strings.ToLower(v.FromAssetHash)
-					fctransfer.Amount = v.Amount.Uint64()
-					fctransfer.DstChainId = uint64(v.ToChainId)
-					fctransfer.DstAsset = toAssetHash
-					fctransfer.DstUser = utils.Hash2Address(uint64(v.ToChainId), v.ToAddress)
-					fctx.SrcTransfer = fctransfer
+					srcTransfer := &models.SrcTransfer{}
+					srcTransfer.Time = tt
+					srcTransfer.ChainId = this.GetChainId()
+					srcTransfer.Hash = lockEvent.TxHash
+					srcTransfer.From = utils.Hash2Address(this.GetChainId(), v.FromAddress)
+					srcTransfer.To = utils.Hash2Address(this.GetChainId(), lockEvent.Contract)
+					srcTransfer.Asset = strings.ToLower(v.FromAssetHash)
+					srcTransfer.Amount = &models.BigInt{*v.Amount}
+					srcTransfer.DstChainId = uint64(v.ToChainId)
+					srcTransfer.DstAsset = toAssetHash
+					srcTransfer.DstUser = utils.Hash2Address(uint64(v.ToChainId), v.ToAddress)
+					srcTransaction.SrcTransfer = srcTransfer
 					break
 				}
 			}
-			srcTransactions = append(srcTransactions, fctx)
+			srcTransactions = append(srcTransactions, srcTransaction)
 		}
 	}
 	// save unLockEvent to db
 	for _, unLockEvent := range eccmUnLockEvents {
 		if unLockEvent.Method == _eth_crosschainunlock {
-			logs.Info("to chain: txhash: %s\n", unLockEvent.TxHash)
-			tctx := &models.DstTransaction{}
-			tctx.ChainId = this.GetChainId()
-			tctx.Hash = unLockEvent.TxHash
-			tctx.State = 1
-			tctx.Fee = unLockEvent.Fee
-			tctx.Time = uint64(tt)
-			tctx.Height = height
-			tctx.SrcChainId = uint64(unLockEvent.FChainId)
-			tctx.Contract = unLockEvent.Contract
-			tctx.PolyHash = unLockEvent.RTxHash
+			logs.Info("to chain %s: txhash: %s\n", this.GetChainName(), unLockEvent.TxHash)
+			dstTransaction := &models.DstTransaction{}
+			dstTransaction.ChainId = this.GetChainId()
+			dstTransaction.Hash = unLockEvent.TxHash
+			dstTransaction.State = 1
+			dstTransaction.Fee = &models.BigInt{*big.NewInt(int64(unLockEvent.Fee))}
+			dstTransaction.Time = tt
+			dstTransaction.Height = height
+			dstTransaction.SrcChainId = uint64(unLockEvent.FChainId)
+			dstTransaction.Contract = unLockEvent.Contract
+			dstTransaction.PolyHash = unLockEvent.RTxHash
 			for _, v := range proxyUnlockEvents {
 				if v.TxHash == unLockEvent.TxHash {
-					tctransfer := &models.DstTransfer{}
-					tctransfer.Hash = unLockEvent.TxHash
-					tctransfer.From = utils.Hash2Address(this.GetChainId(), unLockEvent.Contract)
-					tctransfer.To = utils.Hash2Address(this.GetChainId(), v.ToAddress)
-					tctransfer.Asset = strings.ToLower(v.ToAssetHash)
-					tctransfer.Amount = v.Amount.Uint64()
-					tctx.DstTransfer = tctransfer
+					dstTransfer := &models.DstTransfer{}
+					dstTransfer.Hash = unLockEvent.TxHash
+					dstTransfer.From = utils.Hash2Address(this.GetChainId(), unLockEvent.Contract)
+					dstTransfer.To = utils.Hash2Address(this.GetChainId(), v.ToAddress)
+					dstTransfer.Asset = strings.ToLower(v.ToAssetHash)
+					dstTransfer.Amount = &models.BigInt{*v.Amount}
+					dstTransaction.DstTransfer = dstTransfer
 					break
 				}
 			}
-			dstTransactions = append(dstTransactions, tctx)
+			dstTransactions = append(dstTransactions, dstTransaction)
 		}
 	}
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
@@ -179,10 +184,10 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 		evt := lockEvents.Event
 		wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 			Hash:         evt.Raw.TxHash.String()[2:],
-			User:         evt.Sender.String(),
-			DstChainId:   uint64(evt.ToChainId),
-			FeeTokenHash: evt.FromAsset.String(),
-			FeeAmount:    evt.Fee.Uint64(),
+			User:         strings.ToLower(evt.Sender.String()[2:]),
+			DstChainId:   evt.ToChainId,
+			FeeTokenHash:  evt.FromAsset.String()[2:],
+			FeeAmount:    &models.BigInt{*evt.Fee},
 		})
 	}
 	speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)
@@ -195,7 +200,7 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 			Hash:         evt.TxHash.String(),
 			User:         evt.Sender.String(),
 			FeeTokenHash: evt.FromAsset.String(),
-			FeeAmount:    evt.Efee.Uint64(),
+			FeeAmount:    &models.BigInt{*evt.Efee},
 		})
 	}
 	return wrapperTransactions, nil
@@ -267,14 +272,12 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 		End:     &height,
 		Context: context.Background(),
 	}
-
 	// get ethereum lock events from given block
 	proxyLockEvents := make([]*models.ProxyLockEvent, 0)
 	lockEvents, err := proxyContract.FilterLockEvent(opt)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
 	}
-
 	for lockEvents.Next() {
 		evt := lockEvents.Event
 		proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
@@ -295,7 +298,6 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
 	}
-
 	for unlockEvents.Next() {
 		evt := unlockEvents.Event
 		proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
@@ -320,8 +322,10 @@ func (this *EthereumChainListen) GetConsumeGas(hash common.Hash) uint64 {
 	return tx.GasPrice().Uint64() * receipt.GasUsed
 }
 
-type ExtendHeight struct {
-	last_block_height  uint64  `json:"last_block_height,string"`
+type ExtendHeightRsp struct {
+	Status  uint64  `json:"status,string"`
+	Message  string  `json:"message"`
+	Result  string  `json:"result"`
 }
 
 func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
@@ -330,6 +334,11 @@ func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
 		return 0, err
 	}
 	req.Header.Set("Accepts", "application/json")
+	q := url.Values{}
+	q.Add("module", "proxy")
+	q.Add("action", "eth_blockNumber")
+	q.Add("apikey", this.ethCfg.ExtendNodeApiKey)
+	req.URL.RawQuery = q.Encode()
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -341,12 +350,20 @@ func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	//fmt.Printf("resp body: %s\n", string(respBody))
-	extendHeight := new(ExtendHeight)
+	extendHeight := new(ExtendHeightRsp)
+	extendHeight.Status = 1
 	err = json.Unmarshal(respBody, extendHeight)
 	if err != nil {
 		return 0, err
 	}
-	return extendHeight.last_block_height, nil
+	if extendHeight.Status == 0 {
+		return 0, fmt.Errorf(extendHeight.Result)
+	}
+	height, err := hexutil.DecodeBig(extendHeight.Result)
+	if err != nil {
+		return 0, err
+	}
+	return height.Uint64(), nil
 }
 
 

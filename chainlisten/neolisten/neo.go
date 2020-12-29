@@ -101,7 +101,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							SrcChainId:   xx,
 							DstChainId:   xx,
 							FeeTokenHash: notify.State.Value[4].Value,
-							FeeAmount:    xx,
+							FeeAmount:    &models.BigInt{*big.NewInt(int64(xx))},
 						})
 					}
 				} else if notify.Contract[2:] == this.neoCfg.ProxyContract {
@@ -132,7 +132,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								} else {
 									amount, _ = new(big.Int).SetString(utils.HexStringReverse(notifynew.State.Value[6].Value), 16)
 								}
-								fctransfer.Amount = amount.Uint64()
+								fctransfer.Amount = &models.BigInt{*amount}
 								tchainId, _ := strconv.ParseUint(notifynew.State.Value[3].Value, 10, 32)
 								fctransfer.DstChainId = uint64(tchainId)
 								if len(notifynew.State.Value[5].Value) != 40 {
@@ -147,7 +147,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						fctx.ChainId = this.GetChainId()
 						fctx.Hash = tx.Txid[2:]
 						fctx.State = 1
-						fctx.Fee = uint64(utils.String2Float64(exeitem.GasConsumed))
+						fctx.Fee = &models.BigInt{*big.NewInt(int64(utils.String2Float64(exeitem.GasConsumed)))}
 						fctx.Time = uint64(tt)
 						fctx.Height = height
 						fctx.User = fctransfer.From
@@ -181,7 +181,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								} else {
 									amount, _ = new(big.Int).SetString(utils.HexStringReverse(notifynew.State.Value[3].Value), 16)
 								}
-								tctransfer.Amount = amount.Uint64()
+								tctransfer.Amount = &models.BigInt{*amount}
 								break
 							}
 						}
@@ -189,7 +189,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						tctx.ChainId = this.GetChainId()
 						tctx.Hash = tx.Txid[2:]
 						tctx.State = 1
-						tctx.Fee = uint64(utils.String2Float64(exeitem.GasConsumed))
+						tctx.Fee = &models.BigInt{*big.NewInt(int64(utils.String2Float64(exeitem.GasConsumed)))}
 						tctx.Time = uint64(tt)
 						tctx.Height = height
 						fchainId, _ := strconv.ParseUint(notify.State.Value[1].Value, 10, 32)

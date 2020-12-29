@@ -116,10 +116,10 @@ func (this *CoinPriceListen) getCoinPrice(tokenBasics []*models.TokenBasic) erro
 		return fmt.Errorf("cmcerr: %s, binerr: %s", cmcerr.Error(), binerr.Error())
 	}
 	for _, token := range tokenBasics {
-		avgPrices := make([]uint64, 0)
+		avgPrices := make([]int64, 0)
 		cmcPrice, ok := cmcPrices[token.CmcName]
 		if ok {
-			price, _ := new(big.Float).Mul(big.NewFloat(cmcPrice), big.NewFloat(100000000)).Uint64()
+			price, _ := new(big.Float).Mul(big.NewFloat(cmcPrice), big.NewFloat(float64(conf.PRICE_PRECISION))).Int64()
 			token.CmcPrice = price
 			token.CmcInd = 1
 			token.Time = uint64(time.Now().Unix())
@@ -130,7 +130,7 @@ func (this *CoinPriceListen) getCoinPrice(tokenBasics []*models.TokenBasic) erro
 		}
 		binPrice, ok := binPrices[token.BinName]
 		if ok {
-			price, _ := new(big.Float).Mul(big.NewFloat(binPrice), big.NewFloat(100000000)).Uint64()
+			price, _ := new(big.Float).Mul(big.NewFloat(binPrice), big.NewFloat(float64(conf.PRICE_PRECISION))).Int64()
 			token.BinPrice = price
 			token.BinInd = 1
 			token.Time = uint64(time.Now().Unix())
@@ -149,12 +149,12 @@ func (this *CoinPriceListen) getCoinPrice(tokenBasics []*models.TokenBasic) erro
 	return nil
 }
 
-func avg(data []uint64) uint64 {
-	sum := uint64(0)
+func avg(data []int64) int64 {
+	sum := int64(0)
 	for _, item := range data {
 		sum += item
 	}
-	return sum / uint64(len(data))
+	return sum / int64(len(data))
 }
 
 func (this *CoinPriceListen) getCmcCoinPrice(coins []string) (map[string]float64, error) {

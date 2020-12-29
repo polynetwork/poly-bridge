@@ -15,4 +15,7 @@ require (
 	gorm.io/gorm v1.20.8
 )
 
-replace github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20200824102609-fddf06a45f66
+replace (
+    github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20200824102609-fddf06a45f66
+    github.com/ethereum/go-ethereum v1.9.15 => github.com/ethereum/go-ethereum v1.9.13
+)

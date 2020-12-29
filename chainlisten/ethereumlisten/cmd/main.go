@@ -26,6 +26,8 @@ import (
 	"poly-swap/chainlisten"
 	"poly-swap/chainlisten/ethereumlisten"
 	"poly-swap/conf"
+	"poly-swap/dao"
+	"poly-swap/dao/explorer_dao"
 	"poly-swap/dao/swap_dao"
 	"runtime"
 	"strings"
@@ -50,6 +52,12 @@ var (
 		Usage: "log directory",
 		Value: "./Log/",
 	}
+
+	chainFlag = cli.UintFlag{
+		Name:  "chain",
+		Usage: "Set chain. 2:Ethereum 8:Bsc",
+		Value: 0,
+	}
 )
 
 //getFlagName deal with short flag, and return the flag name whether flag name have short name
@@ -63,7 +71,7 @@ func getFlagName(flag cli.Flag) string {
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
-	app.Usage = "ethereum listen Service"
+	app.Usage = "listen Service"
 	app.Action = startServer
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
@@ -71,6 +79,7 @@ func setupApp() *cli.App {
 		logLevelFlag,
 		configPathFlag,
 		logDirFlag,
+		chainFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -91,12 +100,39 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		fmt.Printf("%s\n", string(conf))
 	}
-
-	db := swap_dao.NewSwapDao(config.DBConfig)
-	db.Start()
-	ethereumListen := ethereumlisten.NewEthereumChainListen(config.ChainListenConfig.EthereumChainListenConfig)
-	chainListen := chainlisten.NewChainListen(ethereumListen, db)
-	chainListen.Start()
+	chain := ctx.GlobalUint64(getFlagName(chainFlag))
+	var db dao.CrossChainEventDao
+	if config.Server == conf.SERVER_POLY_SWAP {
+		swap_db := swap_dao.NewSwapDao(config.DBConfig)
+		swap_db.Start()
+		db = swap_db
+	} else if config.Server == conf.SERVER_EXPLORER{
+		explorer_db := explorer_dao.NewExplorerDao(config.DBConfig)
+		explorer_db.Start()
+		db = explorer_db
+	} else {
+		panic("server is invalid")
+	}
+	if chain == conf.ETHEREUM_CROSSCHAIN_ID {
+		ethereumListen := ethereumlisten.NewEthereumChainListen(config.ChainListenConfig.EthereumChainListenConfig)
+		chainListen := chainlisten.NewChainListen(ethereumListen, db)
+		chainListen.Start()
+	} else if chain == conf.BSC_CROSSCHAIN_ID {
+		ethereumListenConfig := new(conf.EthereumChainListenConfig)
+		chainJson, err := json.Marshal(config.ChainListenConfig.BscChainListenConfig)
+		if err != nil {
+			panic(err)
+		}
+		err = json.Unmarshal(chainJson, ethereumListenConfig)
+		if err != nil {
+			panic(err)
+		}
+		ethereumListen := ethereumlisten.NewEthereumChainListen(ethereumListenConfig)
+		chainListen := chainlisten.NewChainListen(ethereumListen, db)
+		chainListen.Start()
+	} else {
+		panic("chain is invalid")
+	}
 	waitToExit()
 }
 

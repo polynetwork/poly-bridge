@@ -20,6 +20,7 @@ package polylisten
 import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
+	"math/big"
 	"poly-swap/conf"
 	"poly-swap/models"
 	"poly-swap/utils"
@@ -90,7 +91,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 				mctx.ChainId = this.GetChainId()
 				mctx.Hash = event.TxHash
 				mctx.State = uint64(event.State)
-				mctx.Fee = 0
+				mctx.Fee = &models.BigInt{*big.NewInt(0)}
 				mctx.Time = uint64(tt)
 				mctx.Height = height
 				mctx.SrcChainId = uint64(fchainid)

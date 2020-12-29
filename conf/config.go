@@ -18,6 +18,10 @@ var (
 	BSC_CHAIN_NAME         = "BSC"
 )
 
+var (
+	PRICE_PRECISION = int64(100000000)
+)
+
 const (
 	FINISHED = iota
 	PENDDING
@@ -25,6 +29,12 @@ const (
 	SOURCE_CONFIRMED
 	POLY_CONFIRMED
 	TAGET_CONFIRMED
+)
+
+const (
+	SERVER_POLY_SWAP = "polyswap"
+	SERVER_EXPLORER = "explorer"
+	SERVER_ADDRESS = "address"
 )
 
 type DBConfig struct {
@@ -48,6 +58,7 @@ type EthereumChainListenConfig struct {
 	BackwardBlockNumber uint64
 	RestURL  []string
 	ExtendNodeURL string
+	ExtendNodeApiKey string
 	WrapperContract string
 	CCMContract string
 	ProxyContract string
@@ -123,6 +134,7 @@ type TxStatusListenConfig struct {
 }
 
 type Config struct {
+	Server string
 	ChainListenConfig     *ChainListenConfig
 	CoinPriceListenConfig *CoinPriceListenConfig
 	FeeListenConfig       *FeeListenConfig

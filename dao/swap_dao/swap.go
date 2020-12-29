@@ -3,10 +3,10 @@ package swap_dao
 import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"poly-swap/conf"
 	"poly-swap/models"
-	"gorm.io/driver/mysql"
 	"runtime/debug"
 	"time"
 )
@@ -31,7 +31,7 @@ func NewSwapDao(dbCfg *conf.DBConfig) *SwapDao {
 
 func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
 	if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
-		res := dao.db.Save(wrapperTransactions)
+		res := dao.db.Create(wrapperTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -40,7 +40,7 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		}
 	}
 	if srcTransactions != nil && len(srcTransactions) > 0 {
-		res := dao.db.Save(srcTransactions)
+		res := dao.db.Create(srcTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -49,7 +49,7 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		}
 	}
 	if polyTransactions != nil && len(polyTransactions) > 0 {
-		res := dao.db.Save(polyTransactions)
+		res := dao.db.Create(polyTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -58,7 +58,7 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		}
 	}
 	if dstTransactions != nil && len(dstTransactions) > 0 {
-		res := dao.db.Save(dstTransactions)
+		res := dao.db.Create(dstTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -125,7 +125,7 @@ func (dao *SwapDao) check() {
 	for {
 		select {
 		case <-ticker.C:
-			err := dao.CheckHash()
+			err := dao.checkHash()
 			if err != nil {
 				logs.Error("check - err: %s", err)
 			}
@@ -133,15 +133,14 @@ func (dao *SwapDao) check() {
 	}
 }
 
-func (dao *SwapDao) CheckHash() error {
-	unUpdatePolyTransactions := make([]*models.PolyTransaction, 0)
-	dao.db.Where("left(src_hash, 8) = ?", "00000000").Preload("SrcTransaction0").Find(&unUpdatePolyTransactions)
+func (dao *SwapDao) checkHash() error {
+	polySrcRelations := make([]*models.PolySrcRelation, 0)
+	dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	updatePolyTransactions := make([]*models.PolyTransaction, 0)
-	for _, unUpdatePolyTransaction := range unUpdatePolyTransactions {
-		if unUpdatePolyTransaction.SrcTransaction0 != nil {
-			unUpdatePolyTransaction.SrcHash = unUpdatePolyTransaction.SrcTransaction0.Hash
-			unUpdatePolyTransaction.SrcTransaction0 = nil
-			updatePolyTransactions = append(updatePolyTransactions, unUpdatePolyTransaction)
+	for _, polySrcRelation := range polySrcRelations {
+		if polySrcRelation.SrcTransaction != nil {
+			polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
+			updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
 		}
 	}
 	if len(updatePolyTransactions) > 0 {

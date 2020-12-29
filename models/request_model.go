@@ -181,7 +181,7 @@ func MakeTransactionRsp(transaction *WrapperTransaction) *TransactionRsp {
 		Time:           transaction.Time,
 		DstChainId:        transaction.DstChainId,
 		FeeTokenHash:           transaction.FeeTokenHash,
-		FeeAmount:           transaction.FeeAmount,
+		FeeAmount:           transaction.FeeAmount.Uint64(),
 	}
 	return transactionRsp
 }
@@ -237,4 +237,28 @@ func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCou
 		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeTransactionRsp(transaction))
 	}
 	return transactionsRsp
+}
+
+
+
+
+
+type AddressReq struct {
+	ChainId     uint64
+	AddressHash string
+}
+
+type AddressRsp struct {
+	AddressHash      string
+	Address          string
+	ChainId        uint64
+}
+
+func MakeAddressRsp(addressHash string, chainId uint64, address string) *AddressRsp {
+	addressRsp := &AddressRsp{
+		AddressHash:          addressHash,
+		Address:        address,
+		ChainId:           chainId,
+	}
+	return addressRsp
 }

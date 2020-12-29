@@ -1,6 +1,7 @@
 package explorer_dao
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"gorm.io/gorm"
@@ -10,6 +11,109 @@ import (
 	"runtime/debug"
 	"time"
 )
+
+type Chain struct {
+	ChainId uint64 `gorm:"column:id"`
+	Name    string `gorm:"column:xname"`
+	Height  uint64 `gorm:"column:height"`
+	In     uint64 `gorm:"column:txin"`
+	Out uint64 `gorm:"column:txout"`
+}
+
+func (Chain) TableName() string {
+	return "chain_info"
+}
+
+type SrcTransaction struct {
+	Hash  string `gorm:"column:txhash"`
+	ChainId uint64 `gorm:"column:chain_id"`
+	State uint64 `gorm:"column:state"`
+	Time uint64 `gorm:"column:tt"`
+	Fee uint64 `gorm:"column:fee"`
+	Height uint64 `gorm:"column:height"`
+	User string `gorm:"column:xuser"`
+	DstChainId uint64 `gorm:"column:tchain"`
+	Contract string `gorm:"column:contract"`
+	Key string `gorm:"column:xkey"`
+	Param string `gorm:"column:xparam"`
+	SrcTransfer     *SrcTransfer `gorm:"foreignKey:Hash;references:Hash"`
+}
+
+func (SrcTransaction) TableName() string {
+	return "fchain_tx"
+}
+
+type SrcTransfer struct {
+	Hash  string `gorm:"column:txhash"`
+	ChainId uint64 `gorm:"column:chain_id"`
+	Time uint64 `gorm:"column:tt"`
+	Asset string `gorm:"column:asset"`
+	From string `gorm:"column:xfrom"`
+	To string `gorm:"column:xto"`
+	Amount *models.BigInt `gorm:"column:amount"`
+	DstChainId uint64 `gorm:"column:tochainid"`
+	DstAsset string `gorm:"column:toasset"`
+	DstUser string `gorm:"column:touser"`
+}
+
+func (SrcTransfer) TableName() string {
+	return "fchain_transfer"
+}
+
+type PolyTransaction struct {
+	Hash  string `gorm:"column:txhash"`
+	ChainId uint64 `gorm:"column:chain_id"`
+	State uint64 `gorm:"column:state"`
+	Time uint64 `gorm:"column:tt"`
+	Fee uint64 `gorm:"column:fee"`
+	Height uint64 `gorm:"column:height"`
+	SrcChainId uint64 `gorm:"column:fchain"`
+	SrcHash  string `gorm:"column:ftxhash"`
+	DstChainId uint64 `gorm:"column:tchain"`
+	Key string `gorm:"column:xkey"`
+}
+
+func (PolyTransaction) TableName() string {
+	return "mchain_tx"
+}
+
+type PolySrcRelation struct {
+	SrcHash  string
+	SrcTransaction     *SrcTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
+	PolyHash string
+	PolyTransaction     *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
+}
+
+type DstTransaction struct {
+	Hash  string `gorm:"column:txhash"`
+	ChainId uint64 `gorm:"column:chain_id"`
+	State uint64 `gorm:"column:state"`
+	Time uint64 `gorm:"column:tt"`
+	Fee uint64 `gorm:"column:fee"`
+	Height uint64 `gorm:"column:height"`
+	SrcChainId uint64 `gorm:"column:fchain"`
+	Contract string `gorm:"column:contract"`
+	PolyHash  string `gorm:"column:rtxhash"`
+	DstTransfer     *DstTransfer `gorm:"foreignKey:Hash;references:Hash"`
+}
+
+func (DstTransaction) TableName() string {
+	return "tchain_tx"
+}
+
+type DstTransfer struct {
+	Hash  string `gorm:"column:txhash"`
+	ChainId uint64 `gorm:"column:chain_id"`
+	Time uint64 `gorm:"column:tt"`
+	Asset string `gorm:"column:asset"`
+	From string `gorm:"column:xfrom"`
+	To string `gorm:"column:xto"`
+	Amount *models.BigInt `gorm:"column:amount"`
+}
+
+func (DstTransfer) TableName() string {
+	return "tchain_transfer"
+}
 
 type ExplorerDao struct {
 	dbCfg  *conf.DBConfig
@@ -30,17 +134,17 @@ func NewExplorerDao(dbCfg *conf.DBConfig) *ExplorerDao {
 }
 
 func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
-	if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
-		res := dao.db.Save(wrapperTransactions)
-		if res.Error != nil {
-			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update wrapper Transactions failed!")
-		}
-	}
 	if srcTransactions != nil && len(srcTransactions) > 0 {
-		res := dao.db.Save(srcTransactions)
+		srcTransactionsJson, err := json.Marshal(srcTransactions)
+		if err != nil {
+			return err
+		}
+		newSrcTransactions := make([]*SrcTransaction, 0)
+		err = json.Unmarshal(srcTransactionsJson, &newSrcTransactions)
+		if err != nil {
+			return err
+		}
+		res := dao.db.Save(newSrcTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -49,7 +153,16 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		}
 	}
 	if polyTransactions != nil && len(polyTransactions) > 0 {
-		res := dao.db.Save(polyTransactions)
+		polyTransactionsJson, err := json.Marshal(polyTransactions)
+		if err != nil {
+			return err
+		}
+		newPolyTransactions := make([]*PolyTransaction, 0)
+		err = json.Unmarshal(polyTransactionsJson, &newPolyTransactions)
+		if err != nil {
+			return err
+		}
+		res := dao.db.Save(newPolyTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -58,7 +171,16 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		}
 	}
 	if dstTransactions != nil && len(dstTransactions) > 0 {
-		res := dao.db.Save(dstTransactions)
+		dstTransactionsJson, err := json.Marshal(dstTransactions)
+		if err != nil {
+			return err
+		}
+		newDstTransactions := make([]*DstTransaction, 0)
+		err = json.Unmarshal(dstTransactionsJson, &newDstTransactions)
+		if err != nil {
+			return err
+		}
+		res := dao.db.Save(newDstTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -67,7 +189,21 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		}
 	}
 	if chain != nil {
-		res := dao.db.Save(chain)
+		chainJson, err := json.Marshal(chain)
+		if err != nil {
+			return err
+		}
+		newChain := new(Chain)
+		err = json.Unmarshal(chainJson, newChain)
+		if err != nil {
+			return err
+		}
+		newChain.In = uint64(len(srcTransactions))
+		newChain.Out = uint64(len(dstTransactions))
+		res := dao.db.Debug().Model(newChain).Updates(map[string]interface{}{
+			"txin": gorm.Expr("txin + ?", newChain.In),
+			"txout": gorm.Expr("txout + ?", newChain.Out),
+			"height": gorm.Expr("?", newChain.Height)})
 		if res.Error != nil {
 			return res.Error
 		}
@@ -79,27 +215,43 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 }
 
 func (dao *ExplorerDao) GetChain(chainId uint64) (*models.Chain, error) {
-	chain := new(models.Chain)
-	res := dao.db.Where("chain_id = ?", chainId).First(chain)
+	chain := new(Chain)
+	res := dao.db.Where("id = ?", chainId).First(chain)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 	if res.RowsAffected == 0 {
 		return nil, fmt.Errorf("no record!")
 	}
-	return chain, nil
+	chainJson, err := json.Marshal(chain)
+	if err != nil {
+		return nil, err
+	}
+	newChain := new(models.Chain)
+	err = json.Unmarshal(chainJson, newChain)
+	if err != nil {
+		return nil, err
+	}
+	return newChain, nil
 }
 
 func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
-	if chain != nil {
-		return fmt.Errorf("no value!")
+	chainJson, err := json.Marshal(chain)
+	if err != nil {
+		return err
 	}
-	res := dao.db.Save(chain)
+	newChain := new(Chain)
+	err = json.Unmarshal(chainJson, newChain)
+	if err != nil {
+		return err
+	}
+	res := dao.db.Model(newChain).Updates(map[string]interface{}{
+		"height": gorm.Expr("?", newChain.Height)})
 	if res.Error != nil {
 		return res.Error
 	}
 	if res.RowsAffected == 0 {
-		return fmt.Errorf("no update!")
+		return fmt.Errorf("update chain failed!")
 	}
 	return nil
 }
@@ -134,14 +286,13 @@ func (dao *ExplorerDao) check() {
 }
 
 func (dao *ExplorerDao) CheckHash() error {
-	unUpdatePolyTransactions := make([]*models.PolyTransaction, 0)
-	dao.db.Where("src_chain_id != ? and left(src_hash, 8) = ?", conf.ETHEREUM_CROSSCHAIN_ID, "00000000").Preload("SrcTransaction0").Find(&unUpdatePolyTransactions)
-	updatePolyTransactions := make([]*models.PolyTransaction, 0)
-	for _, unUpdatePolyTransaction := range unUpdatePolyTransactions {
-		if unUpdatePolyTransaction.SrcTransaction0 != nil {
-			unUpdatePolyTransaction.SrcHash = unUpdatePolyTransaction.SrcTransaction0.Hash
-			unUpdatePolyTransaction.SrcTransaction0 = nil
-			updatePolyTransactions = append(updatePolyTransactions, unUpdatePolyTransaction)
+	polySrcRelations := make([]*PolySrcRelation, 0)
+	dao.db.Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and fchain != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("left join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+	updatePolyTransactions := make([]*PolyTransaction, 0)
+	for _, polySrcRelation := range polySrcRelations {
+		if polySrcRelation.SrcTransaction != nil {
+			polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
+			updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
 		}
 	}
 	if len(updatePolyTransactions) > 0 {

@@ -1,5 +1,11 @@
 package models
 
+import (
+	"database/sql/driver"
+	"fmt"
+	"math/big"
+)
+
 type Chain struct {
 	ChainId uint64 `gorm:"primaryKey;type:bigint(20);not null"`
 	Name    string `gorm:"size:64"`
@@ -11,7 +17,7 @@ type SrcTransaction struct {
 	ChainId uint64 `gorm:"type:bigint(20);not null"`
 	State uint64 `gorm:"type:bigint(20);not null"`
 	Time uint64 `gorm:"type:bigint(20);not null"`
-	Fee uint64 `gorm:"type:bigint(20);not null"`
+	Fee *BigInt `gorm:"type:varchar(64);not null"`
 	Height uint64 `gorm:"type:bigint(20);not null"`
 	User string `gorm:"type:varchar(66);not null"`
 	DstChainId uint64 `gorm:"type:bigint(20);not null"`
@@ -28,11 +34,10 @@ type SrcTransfer struct {
 	Asset string `gorm:"type:varchar(66);not null"`
 	From string `gorm:"type:varchar(66);not null"`
 	To string `gorm:"type:varchar(66);not null"`
-	Amount uint64 `gorm:"type:bigint(20);not null"`
+	Amount *BigInt `gorm:"type:varchar(64);not null"`
 	DstChainId uint64 `gorm:"type:bigint(20);not null"`
 	DstAsset string `gorm:"type:varchar(66);not null"`
 	DstUser string `gorm:"type:varchar(66);not null"`
-	SrcTransaction     *SrcTransaction `gorm:"foreignKey:Hash;references:Hash"`
 }
 
 type PolyTransaction struct {
@@ -40,14 +45,19 @@ type PolyTransaction struct {
 	ChainId uint64 `gorm:"type:bigint(20);not null"`
 	State uint64 `gorm:"type:bigint(20);not null"`
 	Time uint64 `gorm:"type:bigint(20);not null"`
-	Fee uint64 `gorm:"type:bigint(20);not null"`
+	Fee *BigInt `gorm:"type:varchar(64);not null"`
 	Height uint64 `gorm:"type:bigint(20);not null"`
 	SrcChainId uint64 `gorm:"type:bigint(20);not null"`
 	SrcHash  string `gorm:"size:66;not null"`
 	DstChainId uint64 `gorm:"type:bigint(20);not null"`
 	Key string `gorm:"type:varchar(8192);not null"`
-	SrcTransaction *SrcTransaction `gorm:"foreignKey:SrcHash;references:Hash"`
-	SrcTransaction0 *SrcTransaction `gorm:"foreignKey:SrcHash;references:Key"`
+}
+
+type PolySrcRelation struct {
+	SrcHash  string
+	SrcTransaction     *SrcTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
+	PolyHash string
+	PolyTransaction     *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
 }
 
 type DstTransaction struct {
@@ -55,7 +65,7 @@ type DstTransaction struct {
 	ChainId uint64 `gorm:"type:bigint(20);not null"`
 	State uint64 `gorm:"type:bigint(20);not null"`
 	Time uint64 `gorm:"type:bigint(20);not null"`
-	Fee uint64 `gorm:"type:bigint(20);not null"`
+	Fee *BigInt `gorm:"type:varchar(64);not null"`
 	Height uint64 `gorm:"type:bigint(20);not null"`
 	SrcChainId uint64 `gorm:"type:bigint(20);not null"`
 	Contract string `gorm:"type:varchar(66);not null"`
@@ -70,8 +80,7 @@ type DstTransfer struct {
 	Asset string `gorm:"type:varchar(66);not null"`
 	From string `gorm:"type:varchar(66);not null"`
 	To string `gorm:"type:varchar(66);not null"`
-	Amount uint64 `gorm:"type:bigint(20);not null"`
-	DstTransaction     *DstTransaction `gorm:"foreignKey:Hash;references:Hash"`
+	Amount *BigInt `gorm:"type:varchar(64);not null"`
 }
 
 type WrapperTransaction struct {
@@ -83,19 +92,20 @@ type WrapperTransaction struct {
 	DstChainId   uint64 `gorm:"type:bigint(20);not null"`
 	FeeTokenHash string `gorm:"size:66;not null"`
 	FeeToken     *Token `gorm:"foreignKey:FeeTokenHash;references:Hash"`
-	FeeAmount    uint64 `gorm:"type:bigint(20);not null"`
+	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status   uint64 `gorm:"type:bigint(20);not null"`
 }
 
 type TokenBasic struct {
 	Name     string   `gorm:"primaryKey;size:64;not null"`
+	Precision     uint64      `gorm:"type:bigint(20);not null"`
 	CmcName  string   `gorm:"size:64;not null"`
-	CmcPrice uint64   `gorm:"type:bigint(20);not null"`
+	CmcPrice int64   `gorm:"size:64;not null"`
 	CmcInd   uint64   `gorm:"type:bigint(20);not null"`
 	BinName  string   `gorm:"size:64;not null"`
-	BinPrice uint64   `gorm:"type:bigint(20);not null"`
+	BinPrice int64   `gorm:"size:64;not null"`
 	BinInd   uint64   `gorm:"type:bigint(20);not null"`
-	AvgPrice uint64   `gorm:"type:bigint(20);not null"`
+	AvgPrice int64   `gorm:"size:64;not null"`
 	AvgInd   uint64   `gorm:"type:bigint(20);not null"`
 	Time     uint64   `gorm:"type:bigint(20);not null"`
 	Tokens   []*Token `gorm:"foreignKey:TokenBasicName;references:Name"`
@@ -105,9 +115,9 @@ type ChainFee struct {
 	ChainId        uint64      `gorm:"primaryKey;type:bigint(20);not null"`
 	TokenBasicName string      `gorm:"size:64;not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
-	MaxFee         uint64      `gorm:"type:bigint(20);not null"`
-	MinFee         uint64      `gorm:"type:bigint(20);not null"`
-	ProxyFee       uint64      `gorm:"type:bigint(20);not null"`
+	MaxFee         *BigInt      `gorm:"type:varchar(64);not null"`
+	MinFee         *BigInt      `gorm:"type:varchar(64);not null"`
+	ProxyFee       *BigInt      `gorm:"type:varchar(64);not null"`
 }
 
 type Token struct {
@@ -125,4 +135,50 @@ type TokenMap struct {
 	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash;references:Hash"`
 	DstTokenHash string `gorm:"primaryKey;size:66;not null"`
 	DstToken     *Token `gorm:"foreignKey:DstTokenHash;references:Hash"`
+}
+
+type BigInt struct {
+	big.Int
+}
+
+func (bigInt *BigInt) Value() (driver.Value, error) {
+	if bigInt == nil {
+		return "null", nil
+	}
+	return bigInt.String(), nil
+}
+
+func (bigInt *BigInt) Scan(v interface{}) error {
+	value, ok := v.([]byte)
+	if !ok {
+		return fmt.Errorf("type error, %v", v)
+	}
+	if string(value) == "null" {
+		return nil
+	}
+	data, ok := new(big.Int).SetString(string(value), 10)
+	if !ok {
+		return fmt.Errorf("not a valid big integer: %s", value)
+	}
+	bigInt.Int = *data
+	return nil
+}
+
+func (bigInt *BigInt) MarshalJSON() ([]byte, error) {
+	if  bigInt == nil {
+		return []byte("null"), nil
+	}
+	return []byte(bigInt.String()), nil
+}
+
+func (bigInt *BigInt) UnmarshalJSON(p []byte) error {
+	if string(p) == "null" {
+		return nil
+	}
+	data, ok := new(big.Int).SetString(string(p), 10)
+	if !ok {
+		return fmt.Errorf("not a valid big integer: %s", p)
+	}
+	bigInt.Int = *data
+	return nil
 }

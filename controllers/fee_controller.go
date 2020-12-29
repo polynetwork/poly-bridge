@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
+	"math/big"
 	"poly-swap/models"
 )
 
@@ -21,8 +22,10 @@ func (c *FeeController) GetFee() {
 	db.Where("hash = ?", getFeeReq.Hash).Preload("TokenBasic").First(token)
 	chainFee := new(models.ChainFee)
 	db.Where("chain_id = ?", getFeeReq.ChainId).Preload("TokenBasic").First(chainFee)
-	fee := chainFee.ProxyFee * chainFee.TokenBasic.AvgPrice / token.TokenBasic.AvgPrice
-	c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.ChainId, getFeeReq.Hash, float64(fee))
+	//proxyFee := &chainFee.ProxyFee.Int
+	x := new(big.Int).Mul(&chainFee.ProxyFee.Int, big.NewInt(chainFee.TokenBasic.AvgPrice))
+	y := new(big.Int).Div(x, big.NewInt(token.TokenBasic.AvgPrice))
+	c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.ChainId, getFeeReq.Hash, float64(y.Int64()))
 	c.ServeJSON()
 }
 
@@ -33,16 +36,16 @@ func (c *FeeController) CheckFee() {
 		panic(err)
 	}
 	db := newDB()
-	transaction := new(models.Transaction)
+	transaction := new(models.WrapperTransaction)
 	db.Where("hash = ?", checkFeeReq.Hash).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(transaction)
 	chainFee := new(models.ChainFee)
 	db.Where("chain_id = ?", transaction.DstChainId).Preload("TokenBasic").First(chainFee)
 	hasPay := false
-	feePay := transaction.FeeAmount * transaction.FeeToken.TokenBasic.AvgPrice
-	feeMin := chainFee.MinFee * chainFee.TokenBasic.AvgPrice
-	if feePay >= feeMin {
+	feePay := new(big.Int).Mul(&transaction.FeeAmount.Int, big.NewInt(transaction.FeeToken.TokenBasic.AvgPrice))
+	feeMin := new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.AvgPrice))
+	if feePay.Cmp(feeMin) >= 0 {
 		hasPay = true
 	}
-	c.Data["json"] = models.MakeCheckFeeRsp(hasPay, float64(feePay))
+	c.Data["json"] = models.MakeCheckFeeRsp(hasPay, float64(feePay.Int64()))
 	c.ServeJSON()
 }
