@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2020 The poly network Authors
+ * This file is part of The poly network library.
+ *
+ * The  poly network  is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The  poly network  is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package test
 
 import (
@@ -10,8 +27,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
-	"poly-swap/chainlisten/ethereumlisten"
 	"poly-swap/chainlisten/ethereumlisten/wrapper_abi"
+	"poly-swap/chainsdk"
 	"poly-swap/conf"
 	"strings"
 	"testing"
@@ -26,7 +43,7 @@ func NewPrivateKey(key string) *ecdsa.PrivateKey {
 	return priKey
 }
 
-func waitTransactionConfirm(ethSdk *ethereumlisten.EthereumSdk, hash common.Hash) {
+func waitTransactionConfirm(ethSdk *chainsdk.EthereumSdk, hash common.Hash) {
 	errNum := 0
 	for errNum < 100 {
 		time.Sleep(time.Second * 1)
@@ -49,7 +66,7 @@ func TestEthereumCross(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ethSdk, err := ethereumlisten.NewEthereumSdk(config.ChainListenConfig.EthereumChainListenConfig.RestURL)
+	ethSdk, err := chainsdk.NewEthereumSdk(config.ChainListenConfig.EthereumChainListenConfig.RestURL)
 	if err != nil {
 		panic(err)
 	}

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2020 The poly network Authors
+ * This file is part of The poly network library.
+ *
+ * The  poly network  is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The  poly network  is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package coinpricelisten
 
 import (
@@ -6,6 +23,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"math/big"
+	"poly-swap/chainsdk"
 	"poly-swap/conf"
 	"poly-swap/models"
 	"runtime/debug"
@@ -148,7 +166,17 @@ func (this *FeeListen) getChainFee(chainFees []*models.ChainFee) error {
 }
 
 func (this *FeeListen) getEthFee() (*big.Int, *big.Int, error) {
-	return big.NewInt(1000000000), big.NewInt(1000000000), nil
+	sdk, err := chainsdk.NewEthereumSdk(this.ethCfg.RestURL)
+	if err != nil {
+		return nil, nil, err
+	}
+	gasPrice, err := sdk.SuggestGasPrice()
+	if err != nil {
+		return nil, nil, err
+	}
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(conf.PRICE_PRECISION))
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(this.ethCfg.GasLimit))
+	return gasPrice, gasPrice, nil
 }
 
 func (this *FeeListen) getNeoFee() (*big.Int, *big.Int, error) {
@@ -156,5 +184,15 @@ func (this *FeeListen) getNeoFee() (*big.Int, *big.Int, error) {
 }
 
 func (this *FeeListen) getBscFee() (*big.Int, *big.Int, error) {
-	return big.NewInt(1000000000), big.NewInt(1000000000), nil
+	sdk, err := chainsdk.NewEthereumSdk(this.bscCfg.RestURL)
+	if err != nil {
+		return nil, nil, err
+	}
+	gasPrice, err := sdk.SuggestGasPrice()
+	if err != nil {
+		return nil, nil, err
+	}
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(conf.PRICE_PRECISION))
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(this.bscCfg.GasLimit))
+	return gasPrice, gasPrice, nil
 }

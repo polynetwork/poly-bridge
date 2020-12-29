@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2020 The poly network Authors
+ * This file is part of The poly network library.
+ *
+ * The  poly network  is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The  poly network  is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package ethereumlisten
 
 import (
@@ -16,6 +33,7 @@ import (
 	"poly-swap/chainlisten/ethereumlisten/eccm_abi"
 	"poly-swap/chainlisten/ethereumlisten/lock_proxy_abi"
 	"poly-swap/chainlisten/ethereumlisten/wrapper_abi"
+	"poly-swap/chainsdk"
 	"poly-swap/conf"
 	"poly-swap/models"
 	"poly-swap/utils"
@@ -31,14 +49,14 @@ const (
 
 type EthereumChainListen struct {
 	ethCfg *conf.EthereumChainListenConfig
-	ethSdk *EthereumSdk
+	ethSdk *chainsdk.EthereumSdk
 }
 
 func NewEthereumChainListen(cfg *conf.EthereumChainListenConfig) *EthereumChainListen {
 	ethListen := &EthereumChainListen{}
 	ethListen.ethCfg = cfg
 	//
-	sdk, err := NewEthereumSdk(cfg.RestURL)
+	sdk, err := chainsdk.NewEthereumSdk(cfg.RestURL)
 	if err != nil {
 		panic(err)
 	}
@@ -102,7 +120,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.ChainId = this.GetChainId()
 			srcTransaction.Hash = lockEvent.TxHash
 			srcTransaction.State = 1
-			srcTransaction.Fee = &models.BigInt{*big.NewInt(int64(lockEvent.Fee))}
+			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
 			srcTransaction.Time = tt
 			srcTransaction.Height = height
 			srcTransaction.User = utils.Hash2Address(this.GetChainId(), lockEvent.User)
@@ -120,7 +138,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.From = utils.Hash2Address(this.GetChainId(), v.FromAddress)
 					srcTransfer.To = utils.Hash2Address(this.GetChainId(), lockEvent.Contract)
 					srcTransfer.Asset = strings.ToLower(v.FromAssetHash)
-					srcTransfer.Amount = &models.BigInt{*v.Amount}
+					srcTransfer.Amount = models.NewBigInt(v.Amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
 					srcTransfer.DstAsset = toAssetHash
 					srcTransfer.DstUser = utils.Hash2Address(uint64(v.ToChainId), v.ToAddress)
@@ -170,7 +188,7 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 		return nil, nil
 	}
 	wrapperAddress := common.HexToAddress(contractAddr)
-	wrapperContract, err := polywrapper.NewIPolyWrapper(wrapperAddress, this.ethSdk.rawClient)
+	wrapperContract, err := polywrapper.NewIPolyWrapper(wrapperAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
@@ -213,7 +231,7 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 
 func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, height uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
-	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.rawClient)
+	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
@@ -268,7 +286,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 
 func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string, height uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
 	proxyAddress := common.HexToAddress(contractAddr)
-	proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, this.ethSdk.rawClient)
+	proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}

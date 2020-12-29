@@ -15,7 +15,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package neolisten
+package chainsdk
 
 import (
 	"fmt"

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"math/big"
+	"poly-swap/chainsdk"
 	"poly-swap/conf"
 	"poly-swap/models"
 	"poly-swap/utils"
@@ -28,13 +29,13 @@ import (
 
 type PolyChainListen struct {
 	polyCfg *conf.PolyChainListenConfig
-	polySdk *PolySDK
+	polySdk *chainsdk.PolySDK
 }
 
 func NewPolyChainListen(cfg *conf.PolyChainListenConfig) *PolyChainListen {
 	polyListen := &PolyChainListen{}
 	polyListen.polyCfg = cfg
-	sdk := NewPolySDK(cfg.RestURL)
+	sdk := chainsdk.NewPolySDK(cfg.RestURL)
 	polyListen.polySdk = sdk
 	return polyListen
 }

@@ -56,9 +56,10 @@
   },
 
   "FeeListenConfig": {
-    "FeeUpdateSlot": 720,
+    "FeeUpdateSlot": 5,
     "EthereumFeeListenConfig": {
       "RestURL": ["http://192.168.1.244:22001"],
+      "GasLimit": 10000,
       "ProxyFee": 120
     },
     "NeoFeeListenConfig": {
@@ -67,6 +68,7 @@
     },
     "BscFeeListenConfig": {
       "RestURL": ["http://192.168.1.244:22001"],
+      "GasLimit": 10000,
       "ProxyFee": 120
     }
   },
