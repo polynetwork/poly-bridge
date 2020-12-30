@@ -58,3 +58,19 @@ func (c *TransactionController) TransactoinsOfUser() {
 		(int(transactionNum)+transactionsOfUserReq.PageSize-1)/transactionsOfUserReq.PageSize, int(transactionNum), transactions)
 	c.ServeJSON()
 }
+
+func (c *TransactionController) TransactoinsOfState() {
+	var transactionsOfStateReq models.TransactionsOfStateReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfStateReq); err != nil {
+		panic(err)
+	}
+	db := newDB()
+	transactions := make([]*models.WrapperTransaction, 0)
+	db.Where("status = ?", transactionsOfStateReq.State).Limit(transactionsOfStateReq.PageSize).Offset(transactionsOfStateReq.PageSize * transactionsOfStateReq.PageNo).Order("time asc").Find(&transactions)
+	var transactionNum int64
+	db.Model(&models.WrapperTransaction{}).Where("status = ?", transactionsOfStateReq.State).Count(&transactionNum)
+	c.Data["json"] = models.MakeTransactionsOfUserRsp(transactionsOfStateReq.PageSize, transactionsOfStateReq.PageNo,
+		(int(transactionNum)+transactionsOfStateReq.PageSize-1)/transactionsOfStateReq.PageSize, int(transactionNum), transactions)
+	c.ServeJSON()
+}

@@ -31,8 +31,8 @@ func startDeploy(cfg *conf.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.TokenBasic{}, &models.ChainFee{}, &models.Token{}, &models.TokenMap{},
-		&models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
+	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.TokenBasic{}, &models.ChainFee{}, &models.Token{}, &models.PriceMarket{},
+		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
 	if err != nil {
 		panic(err)
 	}

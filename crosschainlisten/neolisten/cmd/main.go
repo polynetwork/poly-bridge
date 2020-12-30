@@ -23,8 +23,9 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
-	"poly-swap/coinpricelisten"
 	"poly-swap/conf"
+	"poly-swap/crosschaindao"
+	"poly-swap/crosschainlisten"
 	"runtime"
 	"strings"
 	"syscall"
@@ -89,9 +90,20 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		fmt.Printf("%s\n", string(conf))
 	}
-
-	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
-	coinpricelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
+	db := crosschaindao.NewCrossChainDao(config.Server, config.DBConfig)
+	if db == nil {
+		panic("server is invalid")
+	}
+	chainListenConfig := config.GetChainListenConfig(conf.NEO_CROSSCHAIN_ID)
+	if chainListenConfig == nil {
+		panic("chain is invalid")
+	}
+	chainHandler := crosschainlisten.NewChainHandle(chainListenConfig)
+	if db == nil {
+		panic("chain handler is invalid")
+	}
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandler, db)
+	chainListen.Start()
 	waitToExit()
 }
 

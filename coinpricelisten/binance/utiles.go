@@ -23,6 +23,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net/http"
+	"poly-swap/conf"
 )
 
 type BinanceSdk struct {
@@ -31,15 +32,19 @@ type BinanceSdk struct {
 }
 
 func DefaultBinanceSdk() *BinanceSdk {
-	//return NewCoinMarketCapSdk("https://api.coinmarketcap.com/v2")
-	return NewBinanceSdk([]string{"https://api1.binance.com/"})
-}
-
-func NewBinanceSdk(url []string) *BinanceSdk {
 	client := &http.Client{}
 	sdk := &BinanceSdk{
 		client: client,
-		url:    url,
+		url:    []string{"https://api1.binance.com/"},
+	}
+	return sdk
+}
+
+func NewBinanceSdk(cfg *conf.CoinPriceListenConfig) *BinanceSdk {
+	client := &http.Client{}
+	sdk := &BinanceSdk{
+		client: client,
+		url:    cfg.RestURL,
 	}
 	return sdk
 }
@@ -82,4 +87,29 @@ func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
 		return nil, err
 	}
 	return tickers, nil
+}
+
+func (sdk *BinanceSdk) GetMarketName() string {
+	return conf.MARKET_BINANCE
+}
+
+func (this *BinanceSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
+	quotes, err := this.QuotesLatest()
+	if err != nil {
+		return nil, err
+	}
+	coinSymbol2Price := make(map[string]float64, 0)
+	for _, v := range quotes {
+		coinSymbol2Price[v.Symbol] = v.Price
+	}
+	coinPrice := make(map[string]float64, 0)
+	for _, coin := range coins {
+		price, ok := coinSymbol2Price[coin]
+		if !ok {
+			logs.Warn("There is no coin price %s in Binance!", coin)
+			continue
+		}
+		coinPrice[coin] = price
+	}
+	return coinPrice, nil
 }

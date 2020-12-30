@@ -24,6 +24,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"poly-swap/conf"
+	"strings"
 )
 
 type CoinMarketCapSdk struct {
@@ -33,15 +35,21 @@ type CoinMarketCapSdk struct {
 }
 
 func DefaultCoinMarketCapSdk() *CoinMarketCapSdk {
-	//return NewCoinMarketCapSdk("https://api.coinmarketcap.com/v2")
-	return NewCoinMarketCapSdk([]string{"https://pro-api.coinmarketcap.com/v1/cryptocurrency/"}, []string{"8efe5156-8b37-4c77-8e1d-a140c97bf466"})
-}
-func NewCoinMarketCapSdk(url []string, key []string) *CoinMarketCapSdk {
 	client := &http.Client{}
 	sdk := &CoinMarketCapSdk{
 		client: client,
-		url:    url,
-		key:    key,
+		url:    []string{"https://pro-api.coinmarketcap.com/v1/cryptocurrency/"},
+		key:    []string{"8efe5156-8b37-4c77-8e1d-a140c97bf466"},
+	}
+	return sdk
+}
+
+func NewCoinMarketCapSdk(cfg *conf.CoinPriceListenConfig) *CoinMarketCapSdk {
+	client := &http.Client{}
+	sdk := &CoinMarketCapSdk{
+		client: client,
+		url:    cfg.RestURL,
+		key:    cfg.Key,
 	}
 	return sdk
 }
@@ -141,4 +149,47 @@ func (sdk *CoinMarketCapSdk) quotesLatest(coins string, node int) (map[string]*T
 		return nil, err
 	}
 	return body.Data, nil
+}
+
+func (sdk *CoinMarketCapSdk) GetMarketName() string {
+	return conf.MARKET_COINMARKETCAP
+}
+
+func (sdk *CoinMarketCapSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
+	listings, err := sdk.ListingsLatest()
+	if err != nil {
+		return nil, err
+	}
+	//
+	coinName2Id := make(map[string]string, 0)
+	for _, listing := range listings {
+		coinName2Id[listing.Name] = fmt.Sprintf("%d", listing.ID)
+	}
+	//
+	coinIds := make([]string, 0)
+	for _, coin := range coins {
+		coinId, ok := coinName2Id[coin]
+		if !ok {
+			logs.Warn("There is no coin %s in CoinMarketCap!", coin)
+			continue
+		}
+		coinIds = append(coinIds, coinId)
+	}
+	//
+	requestCoinIds := strings.Join(coinIds, ",")
+	quotes, err := sdk.QuotesLatest(requestCoinIds)
+	if err != nil {
+		return nil, err
+	}
+	//
+	coinName2Price := make(map[string]float64)
+	for _, v := range quotes {
+		name := v.Name
+		if v.Quote == nil || v.Quote["USD"] == nil {
+			logs.Warn(" There is no price for coin %s in CoinMarketCap!", name)
+			continue
+		}
+		coinName2Price[name] = v.Quote["USD"].Price
+	}
+	return coinName2Price, nil
 }

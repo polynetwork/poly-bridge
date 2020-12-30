@@ -27,36 +27,29 @@ type TokenBasicReq struct {
 }
 
 type TokenBasicRsp struct {
-	Name     string
-	CmcName  string
-	CmcPrice int64
-	CmcInd   uint64
-	BinName  string
-	BinPrice int64
-	BinInd   uint64
-	AvgPrice int64
-	AvgInd   uint64
-	Time     uint64
-	Tokens   []*TokenRsp
+	Name      string
+	Precision uint64
+	Price  int64
+	Ind    uint64
+	Time      int64
+	PriceMarkets []*PriceMarketRsp
+	Tokens    []*TokenRsp
 }
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 	tokenBasicRsp := &TokenBasicRsp{
 		Name:     tokenBasic.Name,
-		CmcName:  tokenBasic.CmcName,
-		CmcPrice: tokenBasic.CmcPrice,
-		CmcInd:   tokenBasic.CmcInd,
-		BinName:  tokenBasic.BinName,
-		BinPrice: tokenBasic.BinPrice,
-		BinInd:   tokenBasic.BinInd,
-		AvgPrice: tokenBasic.AvgPrice,
-		AvgInd:   tokenBasic.AvgInd,
 		Time:     tokenBasic.Time,
 		Tokens:   nil,
 	}
 	if tokenBasic.Tokens != nil {
 		for _, token := range tokenBasic.Tokens {
 			tokenBasicRsp.Tokens = append(tokenBasicRsp.Tokens, MakeTokenRsp(token))
+		}
+	}
+	if tokenBasic.PriceMarkets != nil {
+		for _, priceMarket := range tokenBasic.PriceMarkets {
+			tokenBasicRsp.PriceMarkets = append(tokenBasicRsp.PriceMarkets, MakePriceMarketRsp(priceMarket))
 		}
 	}
 	return tokenBasicRsp
@@ -91,6 +84,31 @@ func MakeTokenRsp(token *Token) *TokenRsp {
 		}
 	}
 	return tokenRsp
+}
+
+type PriceMarketRsp struct {
+	TokenBasicName      string
+	MarketName      string
+	Name   string
+	Price  int64
+	Ind    uint64
+	Time      int64
+	TokenBasic     *TokenBasicRsp
+}
+
+func MakePriceMarketRsp(priceMarket *PriceMarket) *PriceMarketRsp {
+	priceMarketRsp := &PriceMarketRsp{
+		TokenBasicName:           priceMarket.TokenBasicName,
+		MarketName:        priceMarket.MarketName,
+		Name:           priceMarket.Name,
+		Price: priceMarket.Price,
+		Ind: priceMarket.Ind,
+		Time: priceMarket.Time,
+	}
+	if priceMarket.TokenBasic != nil {
+		priceMarketRsp.TokenBasic = MakeTokenBasicRsp(priceMarket.TokenBasic)
+	}
+	return priceMarketRsp
 }
 
 type TokensReq struct {
@@ -244,6 +262,33 @@ type TransactionsOfUserRsp struct {
 }
 
 func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
+	transactionsRsp := &TransactionsRsp{
+		PageSize:   pageSize,
+		PageNo:     pageNo,
+		TotalPage:  totalPage,
+		TotalCount: totalCount,
+	}
+	for _, transaction := range transactions {
+		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeTransactionRsp(transaction))
+	}
+	return transactionsRsp
+}
+
+type TransactionsOfStateReq struct {
+	State     string
+	PageSize int
+	PageNo   int
+}
+
+type TransactionsOfStateRsp struct {
+	PageSize     int
+	PageNo       int
+	TotalPage    int
+	TotalCount   int
+	Transactions []*TransactionRsp
+}
+
+func MakeTransactionsOfStateRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
 	transactionsRsp := &TransactionsRsp{
 		PageSize:   pageSize,
 		PageNo:     pageNo,

@@ -18,57 +18,78 @@
 package coinpricelisten
 
 import (
-	"fmt"
 	"github.com/astaxie/beego/logs"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"math/big"
+	"poly-swap/coinpricedao"
 	"poly-swap/coinpricelisten/binance"
 	"poly-swap/coinpricelisten/coinmarketcap"
 	"poly-swap/conf"
 	"poly-swap/models"
 	"runtime/debug"
-	"strings"
 	"time"
 )
 
-type CoinPriceListen struct {
-	cmcCfg          *conf.CoinMarketCapPriceListenConfig
-	binCfg          *conf.BinancePriceListenConfig
-	dbCfg           *conf.DBConfig
-	priceUpdateSlot int64
-	db              *gorm.DB
+type PriceMarket interface {
+	GetCoinPrice(coins []string) (map[string]float64, error)
+	GetMarketName() string
 }
 
-func StartCoinPriceListen(cfg *conf.CoinPriceListenConfig, dbCfg *conf.DBConfig) {
-	cpListen := NewCoinPriceListen(cfg.CoinMarketCapPriceListenConfig, cfg.BinancePriceListenConfig, cfg.PriceUpdateSlot, dbCfg)
+func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket{
+	if cfg.MarketName == conf.MARKET_COINMARKETCAP {
+		return coinmarketcap.NewCoinMarketCapSdk(cfg)
+	} else if cfg.MarketName == conf.MARKET_BINANCE {
+		return binance.NewBinanceSdk(cfg)
+	} else {
+		return nil
+	}
+}
+
+type CoinPriceListen struct {
+	priceUpdateSlot int64
+	priceMarket           map[string]PriceMarket
+	db     coinpricedao.CoinPriceDao
+}
+
+func StartCoinPriceListen(server string, priceUpdateSlot int64, coinPricecfg []*conf.CoinPriceListenConfig, dbCfg *conf.DBConfig) {
+	dao := coinpricedao.NewCoinPriceDao(server, dbCfg)
+	if dao == nil {
+		panic("server is not valid")
+	}
+	priceMarkets := make([]PriceMarket, 0)
+	for _, cfg := range coinPricecfg {
+		priceMarket := NewPriceMarket(cfg)
+		priceMarkets = append(priceMarkets, priceMarket)
+	}
+	cpListen := NewCoinPriceListen(priceUpdateSlot, priceMarkets, dao)
 	cpListen.Start()
 }
 
-func NewCoinPriceListen(cmcCfg *conf.CoinMarketCapPriceListenConfig, binCfg *conf.BinancePriceListenConfig, priceUpdateSlot int64, dbCfg *conf.DBConfig) *CoinPriceListen {
+func NewCoinPriceListen(priceUpdateSlot int64, priceMarkets []PriceMarket, db coinpricedao.CoinPriceDao) *CoinPriceListen {
 	cpListen := &CoinPriceListen{}
-	cpListen.cmcCfg = cmcCfg
-	cpListen.binCfg = binCfg
-	cpListen.dbCfg = dbCfg
 	cpListen.priceUpdateSlot = priceUpdateSlot
-	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
 	cpListen.db = db
-	//
-	tokenBasics := make([]*models.TokenBasic, 0)
-	res := db.Find(&tokenBasics)
-	if res.RowsAffected == 0 {
-		panic("there is no token basic!")
+	cpListen.priceMarket = make(map[string]PriceMarket)
+	for _, market := range priceMarkets {
+		cpListen.priceMarket[market.GetMarketName()] = market
 	}
-	err = cpListen.getCoinPrice(tokenBasics)
+	//
+	tokenBasics, err := db.GetTokens()
 	if err != nil {
 		panic(err)
 	}
-	db.Save(tokenBasics)
+	err = cpListen.updateCoinPrice(tokenBasics)
+	if err != nil {
+		panic(err)
+	}
+	err = db.SavePrices(tokenBasics)
+	if err != nil {
+		panic(err)
+	}
 	return cpListen
+}
+
+func (this *CoinPriceListen) RegisterPriceQuery(priceMarket PriceMarket) {
+	this.priceMarket[priceMarket.GetMarketName()] = priceMarket
 }
 
 func (this *CoinPriceListen) Start() {
@@ -94,7 +115,7 @@ func (this *CoinPriceListen) listenPrice() {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now%this.priceUpdateSlot != 0 {
+			if now % this.priceUpdateSlot != 0 {
 				continue
 			}
 			counter := 0
@@ -102,146 +123,86 @@ func (this *CoinPriceListen) listenPrice() {
 				logs.Info("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
 				time.Sleep(time.Second * 5)
 				counter++
-				tokenBasics := make([]*models.TokenBasic, 0)
-				res := this.db.Find(&tokenBasics)
-				if res.RowsAffected == 0 {
-					logs.Error("there is no token basic!")
+				tokenBasics, err := this.db.GetTokens()
+				if err != nil {
+					logs.Error("get token basic err: %v", err)
 					continue
 				}
-				err := this.getCoinPrice(tokenBasics)
+				err = this.updateCoinPrice(tokenBasics)
 				if err != nil {
 					logs.Error("updateCoinPrice err: %v", err)
 					continue
 				}
-				this.db.Save(tokenBasics)
+				err = this.db.SavePrices(tokenBasics)
+				if err != nil {
+					logs.Error("save price err: %v", err)
+					continue
+				}
 				break
 			}
 		}
 	}
 }
 
-func (this *CoinPriceListen) getCoinPrice(tokenBasics []*models.TokenBasic) error {
-	tokenCmcNames := make([]string, 0)
-	tokenBinNames := make([]string, 0)
-	for _, item := range tokenBasics {
-		tokenCmcNames = append(tokenCmcNames, item.CmcName)
-		tokenBinNames = append(tokenBinNames, item.BinName)
-	}
-	cmcPrices, cmcerr := this.getCmcCoinPrice(tokenCmcNames)
-	binPrices, binerr := this.getBinancePrice(tokenBinNames)
-	if cmcerr != nil || binerr != nil || cmcPrices == nil || binPrices == nil {
-		return fmt.Errorf("cmcerr: %s, binerr: %s", cmcerr.Error(), binerr.Error())
-	}
-	for _, token := range tokenBasics {
-		avgPrices := make([]int64, 0)
-		cmcPrice, ok := cmcPrices[token.CmcName]
-		if ok {
-			price, _ := new(big.Float).Mul(big.NewFloat(cmcPrice), big.NewFloat(float64(conf.PRICE_PRECISION))).Int64()
-			token.CmcPrice = price
-			token.CmcInd = 1
-			token.Time = uint64(time.Now().Unix())
-			avgPrices = append(avgPrices, price)
-		} else {
-			token.CmcInd = 0
-			logs.Error("can not get the coinmarketcap price of coin %s", token.CmcName)
+func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) error {
+	marketCoins := make(map[string][]string)
+	marketCoinPrices := make(map[string]*models.PriceMarket)
+	for _, tokenBasic := range tokenBasics {
+		for _, priceMarket := range tokenBasic.PriceMarkets {
+			coins, ok := marketCoins[priceMarket.MarketName]
+			if !ok {
+				coins = make([]string, 0)
+				marketCoins[priceMarket.MarketName] = coins
+			}
+			coins = append(coins, priceMarket.Name)
+			marketCoins[priceMarket.MarketName] = coins
+			marketCoinPrices[priceMarket.MarketName + priceMarket.Name] = priceMarket
+			priceMarket.Ind = 0
 		}
-		binPrice, ok := binPrices[token.BinName]
-		if ok {
-			price, _ := new(big.Float).Mul(big.NewFloat(binPrice), big.NewFloat(float64(conf.PRICE_PRECISION))).Int64()
-			token.BinPrice = price
-			token.BinInd = 1
-			token.Time = uint64(time.Now().Unix())
-			avgPrices = append(avgPrices, price)
-		} else {
-			token.BinInd = 0
-			logs.Error("can not get the binance price of coin %s", token.BinName)
+	}
+	for market, query := range this.priceMarket {
+		coins, ok := marketCoins[market]
+		if !ok {
+			logs.Error("this is no coins of market: %s", market)
+			continue
 		}
-		if len(avgPrices) > 0 {
-			token.AvgPrice = avg(avgPrices)
-			token.AvgInd = 1
-		} else {
-			token.AvgInd = 0
+		coinPrices, err := query.GetCoinPrice(coins)
+		if err != nil {
+			logs.Error("get coin price of market: %s err: %v", market, err)
+			continue
+		}
+		for name, price := range coinPrices {
+			tokenPrice := marketCoinPrices[market + name]
+			if !ok {
+				logs.Error("this is no coins of market: %s and token: %s", market, name)
+				continue
+			}
+			price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(conf.PRICE_PRECISION))).Int64()
+			tokenPrice.Price = price
+			tokenPrice.Time = time.Now().Unix()
+			tokenPrice.Ind = 1
+		}
+	}
+	for _, tokenBasic := range tokenBasics {
+		price := int64(0)
+		counter := int64(0)
+		for _, tokenPrice := range tokenBasic.PriceMarkets {
+			if tokenPrice.Ind == 1 {
+				price += tokenPrice.Price
+				counter ++
+			}
+		}
+		if counter > 0 {
+			price = price / counter
+			tokenBasic.Price = price
+			tokenBasic.Ind = 1
+			tokenBasic.Time = time.Now().Unix()
+		}
+	}
+	for _, tokenBasic := range tokenBasics {
+		if tokenBasic.Ind == 0 {
+			logs.Error("Price of token %s is not update", tokenBasic.Name)
 		}
 	}
 	return nil
-}
-
-func avg(data []int64) int64 {
-	sum := int64(0)
-	for _, item := range data {
-		sum += item
-	}
-	return sum / int64(len(data))
-}
-
-func (this *CoinPriceListen) getCmcCoinPrice(coins []string) (map[string]float64, error) {
-	var cmcSdk *coinmarketcap.CoinMarketCapSdk
-	if this.cmcCfg == nil || len(this.cmcCfg.RestURL) == 0 {
-		cmcSdk = coinmarketcap.DefaultCoinMarketCapSdk()
-	} else {
-		cmcSdk = coinmarketcap.NewCoinMarketCapSdk(this.cmcCfg.RestURL, this.cmcCfg.Key)
-	}
-	listings, err := cmcSdk.ListingsLatest()
-	if err != nil {
-		return nil, err
-	}
-	//
-	coinName2Id := make(map[string]string, 0)
-	for _, listing := range listings {
-		coinName2Id[listing.Name] = fmt.Sprintf("%d", listing.ID)
-	}
-	//
-	coinIds := make([]string, 0)
-	for _, coin := range coins {
-		coinId, ok := coinName2Id[coin]
-		if !ok {
-			logs.Warn("There is no coin %s in CoinMarketCap!", coin)
-			continue
-		}
-		coinIds = append(coinIds, coinId)
-	}
-	//
-	requestCoinIds := strings.Join(coinIds, ",")
-	quotes, err := cmcSdk.QuotesLatest(requestCoinIds)
-	if err != nil {
-		return nil, err
-	}
-	//
-	coinName2Price := make(map[string]float64)
-	for _, v := range quotes {
-		name := v.Name
-		if v.Quote == nil || v.Quote["USD"] == nil {
-			logs.Warn(" There is no price for coin %s in CoinMarketCap!", name)
-			continue
-		}
-		coinName2Price[name] = v.Quote["USD"].Price
-	}
-	return coinName2Price, nil
-}
-
-func (this *CoinPriceListen) getBinancePrice(coins []string) (map[string]float64, error) {
-	var binSdk *binance.BinanceSdk
-	if this.binCfg == nil || len(this.binCfg.RestURL) == 0 {
-		binSdk = binance.DefaultBinanceSdk()
-	} else {
-		binSdk = binance.NewBinanceSdk(this.binCfg.RestURL)
-	}
-	quotes, err := binSdk.QuotesLatest()
-	if err != nil {
-		return nil, err
-	}
-	coinSymbol2Price := make(map[string]float64, 0)
-	for _, v := range quotes {
-		coinSymbol2Price[v.Symbol] = v.Price
-	}
-	coinPrice := make(map[string]float64, 0)
-	for _, coin := range coins {
-		price, ok := coinSymbol2Price[coin]
-		if !ok {
-			logs.Warn("There is no coin price %s in Binance!", coin)
-			continue
-		}
-		coinPrice[coin] = price
-	}
-	return coinPrice, nil
 }

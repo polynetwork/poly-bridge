@@ -51,10 +51,10 @@ func dumpStatus(dbCfg *conf.DBConfig) {
 	{
 		tokenBasics := make([]*models.TokenBasic, 0)
 		db.Find(&tokenBasics)
-		fmt.Printf("token basic info:\nName\t\t\t\tCMCPrice\t\t\t\tCMCInd\t\t\t\tBinPrice\t\t\t\tBinInd\t\t\t\tAvgPrice\t\t\t\tAvgInd\t\t\t\tTime\t\t\t\t\n")
+		fmt.Printf("token basic info:\nName\t\t\t\tAvgPrice\t\t\t\tAvgInd\t\t\t\tTime\t\t\t\t\n")
 		for _, tokenBasic := range tokenBasics {
-			fmt.Printf("%s\t\t\t\t%d\t\t\t\t%d\t\t\t\t%d\t\t\t\t%d\t\t\t\t%d\t\t\t\t%d\t\t\t\t%d\t\t\t\t\n",
-				tokenBasic.Name, tokenBasic.CmcPrice, tokenBasic.CmcInd, tokenBasic.BinPrice, tokenBasic.BinInd, tokenBasic.AvgPrice, tokenBasic.AvgInd,
+			fmt.Printf("%s\t\t\t\t%d\t\t\t\t%d\t\t\t\t%d\t\t\t\t\n",
+				tokenBasic.Name, tokenBasic.Price, tokenBasic.Ind,
 				tokenBasic.Time)
 		}
 	}

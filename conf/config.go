@@ -40,6 +40,12 @@ var (
 	FEE_PRECISION   = int64(100000000)
 )
 
+var (
+	MARKET_COINMARKETCAP = "coinmarketcap"
+	MARKET_BINANCE = "binance"
+	MARKET_HUOBI = "huobi"
+)
+
 const (
 	FINISHED = iota
 	PENDDING
@@ -53,6 +59,7 @@ const (
 	SERVER_POLY_SWAP = "polyswap"
 	SERVER_EXPLORER  = "explorer"
 	SERVER_ADDRESS   = "address"
+	SERVER_STAKE = "stake"
 )
 
 type DBConfig struct {
@@ -63,13 +70,6 @@ type DBConfig struct {
 }
 
 type ChainListenConfig struct {
-	PolyChainListenConfig     *PolyChainListenConfig
-	EthereumChainListenConfig *EthereumChainListenConfig
-	NeoChainListenConfig      *NeoChainListenConfig
-	BscChainListenConfig      *BscChainListenConfig
-}
-
-type EthereumChainListenConfig struct {
 	ChainName           string
 	ChainId             uint64
 	ListenSlot          uint64
@@ -80,94 +80,28 @@ type EthereumChainListenConfig struct {
 	WrapperContract     string
 	CCMContract         string
 	ProxyContract       string
-}
-
-type NeoChainListenConfig struct {
-	ChainName           string
-	ChainId             uint64
-	ListenSlot          uint64
-	BackwardBlockNumber uint64
-	RestURL             []string
-	ExtendNodeURL       string
-	WrapperContract     string
-	ProxyContract       string
-}
-
-type BscChainListenConfig struct {
-	ChainName           string
-	ChainId             uint64
-	ListenSlot          uint64
-	BackwardBlockNumber uint64
-	RestURL             []string
-	ExtendNodeURL       string
-	ExtendNodeApiKey    string
-	WrapperContract     string
-	CCMContract         string
-	ProxyContract       string
-}
-
-type PolyChainListenConfig struct {
-	ChainName           string
-	ChainId             uint64
-	ListenSlot          uint64
-	BackwardBlockNumber uint64
-	RestURL             []string
-	Contract            string
 }
 
 type CoinPriceListenConfig struct {
-	PriceUpdateSlot                int64
-	CoinMarketCapPriceListenConfig *CoinMarketCapPriceListenConfig
-	BinancePriceListenConfig       *BinancePriceListenConfig
-}
-
-type CoinMarketCapPriceListenConfig struct {
+	MarketName string
 	RestURL []string
 	Key     []string
 }
 
-type BinancePriceListenConfig struct {
-	RestURL []string
-}
-
 type FeeListenConfig struct {
-	FeeUpdateSlot           int64
-	EthereumFeeListenConfig *EthereumFeeListenConfig
-	NeoFeeListenConfig      *NeoFeeListenConfig
-	BscFeeListenConfig      *BscFeeListenConfig
-}
-
-type EthereumFeeListenConfig struct {
+	ChainId           uint64
 	RestURL  []string
-	ProxyFee uint64
+	ProxyFee int64
 	GasLimit int64
-}
-
-type NeoFeeListenConfig struct {
-	RestURL  []string
-	ProxyFee uint64
-}
-
-type BscFeeListenConfig struct {
-	RestURL  []string
-	ProxyFee uint64
-	GasLimit int64
-}
-
-type TxStatusListenConfig struct {
-	UpdateSlot        int64
-	RestURL           []string
-	EthereumConfirmed uint64
-	NeoConfirmed      uint64
-	BscConfirmed      uint64
 }
 
 type Config struct {
 	Server                string
-	ChainListenConfig     *ChainListenConfig
-	CoinPriceListenConfig *CoinPriceListenConfig
-	FeeListenConfig       *FeeListenConfig
-	TxStatusListenConfig  *TxStatusListenConfig
+	ChainListenConfig     []*ChainListenConfig
+	CoinPriceUpdateSlot                int64
+	CoinPriceListenConfig []*CoinPriceListenConfig
+	FeeUpdateSlot int64
+	FeeListenConfig       []*FeeListenConfig
 	DBConfig              *DBConfig
 }
 
@@ -202,4 +136,22 @@ func NewConfig(filePath string) *Config {
 		return nil
 	}
 	return config
+}
+
+func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
+	for _, chainListenConfig := range cfg.ChainListenConfig {
+		if chainListenConfig.ChainId == chainId {
+			return chainListenConfig
+		}
+	}
+	return nil
+}
+
+func (cfg *Config) GetCoinPriceListenConfig(market string) *CoinPriceListenConfig {
+	for _, coinPriceListenConfig := range cfg.CoinPriceListenConfig {
+		if coinPriceListenConfig.MarketName == market {
+			return coinPriceListenConfig
+		}
+	}
+	return nil
 }

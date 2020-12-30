@@ -1,88 +1,121 @@
 {
-  "DBConfig": {
-    "URL": "localhost:3306",
-    "User": "root",
-    "Password": "",
-    "Scheme": "polyswap"
+  "DBConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"",
+    "Scheme":"polyswap"
   },
-  "Chains": [{
-    "ChainId": 2,
-    "Name": "Ethereum"
-  },{
-    "ChainId": 4,
-    "Name": "NEO"
-  },{
-    "ChainId": 8,
-    "Name": "BSC"
-  }],
-  "ChainFees": [{
-    "ChainId": 2,
-    "TokenBasic": {
-      "Name": "Ethereum"
+  "Chains":[
+    {
+      "ChainId":0,
+      "Name":"Poly"
+    },
+    {
+      "ChainId":2,
+      "Name":"Ethereum"
+    },
+    {
+      "ChainId":4,
+      "Name":"NEO"
+    },
+    {
+      "ChainId":8,
+      "Name":"BSC"
     }
-  },{
-    "ChainId": 4,
-    "TokenBasic": {
-      "Name": "Neo"
+  ],
+  "ChainFees":[
+    {
+      "ChainId":2,
+      "TokenBasic":{
+        "Name":"Ethereum"
+      }
+    },
+    {
+      "ChainId":4,
+      "TokenBasic":{
+        "Name":"Neo"
+      }
+    },
+    {
+      "ChainId":8,
+      "TokenBasic":{
+        "Name":"Ethereum"
+      }
     }
-  },{
-    "ChainId": 8,
-    "TokenBasic": {
-      "Name": "Ethereum"
-    }
-  }],
-  "TokenBasics": [
-   {
-      "Name": "Ethereum",
-      "CmcName": "Ethereum",
-      "BinName": "ETHUSDT",
-      "Tokens": [
+  ],
+  "TokenBasics":[
+    {
+      "Name":"Ethereum",
+      "Precision":18,
+      "PriceMarkets":[
         {
-          "ChainId":      2,
-          "Hash":         "0000000000000000000000000000000000000000",
-          "Name":         "Ethereum",
-          "Precision":    18
-        }, {
-          "ChainId":      4,
-          "Hash":         "0000000000000000000000000000000000000005",
-          "Name":         "Ethereum",
-          "Precision":    18
+          "MarketName":"coinmarketcap",
+          "Name":"Ethereum"
+        },
+        {
+          "MarketName":"binance",
+          "Name":"ETHUSDT"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"0000000000000000000000000000000000000000",
+          "Name":"Ethereum",
+          "Precision":18
+        },
+        {
+          "ChainId":4,
+          "Hash":"0000000000000000000000000000000000000005",
+          "Name":"Ethereum",
+          "Precision":18
         }
       ]
-    }, {
-      "Name": "Neo",
-      "CmcName": "Neo",
-      "BinName": "NEOUSDT",
-      "Tokens": [
+    },
+    {
+      "Name":"Neo",
+      "Precision":9,
+      "PriceMarkets":[
         {
-          "ChainId":      2,
-          "Hash":         "0000000000000000000000000000000000000001",
-          "Name":         "Neo",
-          "Precision":    9
-        }, {
-          "ChainId":      4,
-          "Hash":         "0000000000000000000000000000000000000006",
-          "Name":         "Neo",
-          "Precision":    9
+          "MarketName":"coinmarketcap",
+          "Name":"Neo"
+        },
+        {
+          "MarketName":"binance",
+          "Name":"NEOUSDT"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"0000000000000000000000000000000000000001",
+          "Name":"Neo",
+          "Precision":9
+        },
+        {
+          "ChainId":4,
+          "Hash":"0000000000000000000000000000000000000006",
+          "Name":"Neo",
+          "Precision":9
         }
       ]
     }
   ],
-  "TokenMaps": [
+  "TokenMaps":[
     {
-      "SrcToken": {
-        "Hash": "0000000000000000000000000000000000000000"
+      "SrcToken":{
+        "Hash":"0000000000000000000000000000000000000000"
       },
-      "DstToken" : {
-        "Hash": "0000000000000000000000000000000000000005"
+      "DstToken":{
+        "Hash":"0000000000000000000000000000000000000005"
       }
     },
     {
-      "SrcToken": {
-        "Hash": "0000000000000000000000000000000000000001"
+      "SrcToken":{
+        "Hash":"0000000000000000000000000000000000000001"
       },
-      "DstToken" : {
-        "Hash": "0000000000000000000000000000000000000006"
+      "DstToken":{
+        "Hash":"0000000000000000000000000000000000000006"
       }
     }
   ]

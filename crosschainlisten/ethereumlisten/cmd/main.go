@@ -23,8 +23,9 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
-	"poly-swap/coinpricelisten"
 	"poly-swap/conf"
+	"poly-swap/crosschaindao"
+	"poly-swap/crosschainlisten"
 	"runtime"
 	"strings"
 	"syscall"
@@ -48,6 +49,12 @@ var (
 		Usage: "log directory",
 		Value: "./Log/",
 	}
+
+	chainFlag = cli.UintFlag{
+		Name:  "chain",
+		Usage: "Set chain. 2:Ethereum 8:Bsc",
+		Value: 0,
+	}
 )
 
 //getFlagName deal with short flag, and return the flag name whether flag name have short name
@@ -61,7 +68,7 @@ func getFlagName(flag cli.Flag) string {
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
-	app.Usage = "poly-swap Service"
+	app.Usage = "listen Service"
 	app.Action = startServer
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
@@ -69,6 +76,7 @@ func setupApp() *cli.App {
 		logLevelFlag,
 		configPathFlag,
 		logDirFlag,
+		chainFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -89,9 +97,22 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		fmt.Printf("%s\n", string(conf))
 	}
+	chain := ctx.GlobalUint64(getFlagName(chainFlag))
 
-	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
-	coinpricelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
+	db := crosschaindao.NewCrossChainDao(config.Server, config.DBConfig)
+	if db == nil {
+		panic("server is invalid")
+	}
+	chainListenConfig := config.GetChainListenConfig(chain)
+	if chainListenConfig == nil {
+		panic("chain is invalid")
+	}
+	chainHandler := crosschainlisten.NewChainHandle(chainListenConfig)
+	if db == nil {
+		panic("chain handler is invalid")
+	}
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandler, db)
+	chainListen.Start()
 	waitToExit()
 }
 
