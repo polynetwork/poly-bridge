@@ -34,7 +34,7 @@ type PriceMarket interface {
 	GetMarketName() string
 }
 
-func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket{
+func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket {
 	if cfg.MarketName == conf.MARKET_COINMARKETCAP {
 		return coinmarketcap.NewCoinMarketCapSdk(cfg)
 	} else if cfg.MarketName == conf.MARKET_BINANCE {
@@ -46,8 +46,8 @@ func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket{
 
 type CoinPriceListen struct {
 	priceUpdateSlot int64
-	priceMarket           map[string]PriceMarket
-	db     coinpricedao.CoinPriceDao
+	priceMarket     map[string]PriceMarket
+	db              coinpricedao.CoinPriceDao
 }
 
 func StartCoinPriceListen(server string, priceUpdateSlot int64, coinPricecfg []*conf.CoinPriceListenConfig, dbCfg *conf.DBConfig) {
@@ -115,7 +115,7 @@ func (this *CoinPriceListen) listenPrice() {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now % this.priceUpdateSlot != 0 {
+			if now%this.priceUpdateSlot != 0 {
 				continue
 			}
 			counter := 0
@@ -156,7 +156,7 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 			}
 			coins = append(coins, priceMarket.Name)
 			marketCoins[priceMarket.MarketName] = coins
-			marketCoinPrices[priceMarket.MarketName + priceMarket.Name] = priceMarket
+			marketCoinPrices[priceMarket.MarketName+priceMarket.Name] = priceMarket
 			priceMarket.Ind = 0
 		}
 	}
@@ -172,7 +172,7 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 			continue
 		}
 		for name, price := range coinPrices {
-			tokenPrice := marketCoinPrices[market + name]
+			tokenPrice := marketCoinPrices[market+name]
 			if !ok {
 				logs.Error("this is no coins of market: %s and token: %s", market, name)
 				continue
@@ -189,7 +189,7 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 		for _, tokenPrice := range tokenBasic.PriceMarkets {
 			if tokenPrice.Ind == 1 {
 				price += tokenPrice.Price
-				counter ++
+				counter++
 			}
 		}
 		if counter > 0 {

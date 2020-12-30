@@ -42,8 +42,8 @@ var (
 
 var (
 	MARKET_COINMARKETCAP = "coinmarketcap"
-	MARKET_BINANCE = "binance"
-	MARKET_HUOBI = "huobi"
+	MARKET_BINANCE       = "binance"
+	MARKET_HUOBI         = "huobi"
 )
 
 const (
@@ -59,7 +59,7 @@ const (
 	SERVER_POLY_SWAP = "polyswap"
 	SERVER_EXPLORER  = "explorer"
 	SERVER_ADDRESS   = "address"
-	SERVER_STAKE = "stake"
+	SERVER_STAKE     = "stake"
 )
 
 type DBConfig struct {
@@ -84,12 +84,12 @@ type ChainListenConfig struct {
 
 type CoinPriceListenConfig struct {
 	MarketName string
-	RestURL []string
-	Key     []string
+	RestURL    []string
+	Key        []string
 }
 
 type FeeListenConfig struct {
-	ChainId           uint64
+	ChainId  uint64
 	RestURL  []string
 	ProxyFee int64
 	GasLimit int64
@@ -98,9 +98,9 @@ type FeeListenConfig struct {
 type Config struct {
 	Server                string
 	ChainListenConfig     []*ChainListenConfig
-	CoinPriceUpdateSlot                int64
+	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig
-	FeeUpdateSlot int64
+	FeeUpdateSlot         int64
 	FeeListenConfig       []*FeeListenConfig
 	DBConfig              *DBConfig
 }

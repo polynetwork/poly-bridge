@@ -18,22 +18,22 @@
 package models
 
 type TokenBasic struct {
-	Name      string   `gorm:"primaryKey;size:64;not null"`
-	Precision uint64   `gorm:"type:bigint(20);not null"`
-	Price  int64    `gorm:"size:64;not null"`
-	Ind    uint64   `gorm:"type:bigint(20);not null"`
-	Time      int64   `gorm:"type:bigint(20);not null"`
+	Name         string         `gorm:"primaryKey;size:64;not null"`
+	Precision    uint64         `gorm:"type:bigint(20);not null"`
+	Price        int64          `gorm:"size:64;not null"`
+	Ind          uint64         `gorm:"type:bigint(20);not null"`
+	Time         int64          `gorm:"type:bigint(20);not null"`
 	PriceMarkets []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
-	Tokens    []*Token `gorm:"foreignKey:TokenBasicName;references:Name"`
+	Tokens       []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
 type PriceMarket struct {
-	TokenBasicName      string   `gorm:"primaryKey;size:64;not null"`
-	MarketName      string   `gorm:"primaryKey;size:64;not null"`
-	Name   string   `gorm:"size:64;not null"`
-	Price  int64    `gorm:"type:bigint(20);not null"`
-	Ind    uint64   `gorm:"type:bigint(20);not null"`
-	Time      int64   `gorm:"type:bigint(20);not null"`
+	TokenBasicName string      `gorm:"primaryKey;size:64;not null"`
+	MarketName     string      `gorm:"primaryKey;size:64;not null"`
+	Name           string      `gorm:"size:64;not null"`
+	Price          int64       `gorm:"type:bigint(20);not null"`
+	Ind            uint64      `gorm:"type:bigint(20);not null"`
+	Time           int64       `gorm:"type:bigint(20);not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
@@ -44,7 +44,7 @@ type ChainFee struct {
 	MaxFee         *BigInt     `gorm:"type:varchar(64);not null"`
 	MinFee         *BigInt     `gorm:"type:varchar(64);not null"`
 	ProxyFee       *BigInt     `gorm:"type:varchar(64);not null"`
-	Ind    uint64   `gorm:"type:bigint(20);not null"`
+	Ind            uint64      `gorm:"type:bigint(20);not null"`
 }
 
 type Token struct {

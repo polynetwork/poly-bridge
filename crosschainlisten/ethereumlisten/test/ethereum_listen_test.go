@@ -48,4 +48,3 @@ func TestEthereumListen(t *testing.T) {
 	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
 	chainListen.ListenChain()
 }
-

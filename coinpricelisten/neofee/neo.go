@@ -7,7 +7,7 @@ import (
 )
 
 type NeoFee struct {
-	neoCfg        *conf.FeeListenConfig
+	neoCfg *conf.FeeListenConfig
 	neoSdk *chainsdk.NeoSdk
 }
 

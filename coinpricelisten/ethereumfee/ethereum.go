@@ -7,7 +7,7 @@ import (
 )
 
 type EthereumFee struct {
-	ethCfg        *conf.FeeListenConfig
+	ethCfg *conf.FeeListenConfig
 	ethSdk *chainsdk.EthereumSdk
 }
 

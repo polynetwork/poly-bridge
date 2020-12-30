@@ -48,8 +48,8 @@ func NewChainFee(cfg *conf.FeeListenConfig) ChainFee {
 
 type FeeListen struct {
 	feeUpdateSlot int64
-	fees           map[uint64]ChainFee
-	db     coinpricedao.CoinPriceDao
+	fees          map[uint64]ChainFee
+	db            coinpricedao.CoinPriceDao
 }
 
 func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.FeeListenConfig, dbCfg *conf.DBConfig) {

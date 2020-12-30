@@ -60,4 +60,3 @@ func (bigInt *BigInt) UnmarshalJSON(p []byte) error {
 	bigInt.Int = *data
 	return nil
 }
-

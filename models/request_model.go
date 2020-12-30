@@ -27,20 +27,20 @@ type TokenBasicReq struct {
 }
 
 type TokenBasicRsp struct {
-	Name      string
-	Precision uint64
-	Price  int64
-	Ind    uint64
-	Time      int64
+	Name         string
+	Precision    uint64
+	Price        int64
+	Ind          uint64
+	Time         int64
 	PriceMarkets []*PriceMarketRsp
-	Tokens    []*TokenRsp
+	Tokens       []*TokenRsp
 }
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 	tokenBasicRsp := &TokenBasicRsp{
-		Name:     tokenBasic.Name,
-		Time:     tokenBasic.Time,
-		Tokens:   nil,
+		Name:   tokenBasic.Name,
+		Time:   tokenBasic.Time,
+		Tokens: nil,
 	}
 	if tokenBasic.Tokens != nil {
 		for _, token := range tokenBasic.Tokens {
@@ -87,23 +87,23 @@ func MakeTokenRsp(token *Token) *TokenRsp {
 }
 
 type PriceMarketRsp struct {
-	TokenBasicName      string
-	MarketName      string
-	Name   string
-	Price  int64
-	Ind    uint64
-	Time      int64
+	TokenBasicName string
+	MarketName     string
+	Name           string
+	Price          int64
+	Ind            uint64
+	Time           int64
 	TokenBasic     *TokenBasicRsp
 }
 
 func MakePriceMarketRsp(priceMarket *PriceMarket) *PriceMarketRsp {
 	priceMarketRsp := &PriceMarketRsp{
-		TokenBasicName:           priceMarket.TokenBasicName,
-		MarketName:        priceMarket.MarketName,
+		TokenBasicName: priceMarket.TokenBasicName,
+		MarketName:     priceMarket.MarketName,
 		Name:           priceMarket.Name,
-		Price: priceMarket.Price,
-		Ind: priceMarket.Ind,
-		Time: priceMarket.Time,
+		Price:          priceMarket.Price,
+		Ind:            priceMarket.Ind,
+		Time:           priceMarket.Time,
 	}
 	if priceMarket.TokenBasic != nil {
 		priceMarketRsp.TokenBasic = MakeTokenBasicRsp(priceMarket.TokenBasic)
@@ -275,7 +275,7 @@ func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCou
 }
 
 type TransactionsOfStateReq struct {
-	State     string
+	State    string
 	PageSize int
 	PageNo   int
 }

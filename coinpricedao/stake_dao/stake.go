@@ -25,7 +25,7 @@ import (
 
 type StakeDao struct {
 	tokenBasics []*models.TokenBasic
-	fees []*models.ChainFee
+	fees        []*models.ChainFee
 }
 
 func NewStakeDao() *StakeDao {
