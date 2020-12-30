@@ -95,6 +95,10 @@ type FeeListenConfig struct {
 	GasLimit int64
 }
 
+type CrossChainMonitor struct {
+	HowOld  int64
+}
+
 type Config struct {
 	Server                string
 	ChainListenConfig     []*ChainListenConfig
@@ -102,6 +106,7 @@ type Config struct {
 	CoinPriceListenConfig []*CoinPriceListenConfig
 	FeeUpdateSlot         int64
 	FeeListenConfig       []*FeeListenConfig
+	CrossChainMonitor     *CrossChainMonitor
 	DBConfig              *DBConfig
 }
 
