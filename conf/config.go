@@ -97,6 +97,7 @@ type FeeListenConfig struct {
 
 type CrossChainMonitor struct {
 	HowOld  int64
+	Server  string
 }
 
 type Config struct {

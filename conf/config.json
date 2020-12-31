@@ -65,7 +65,8 @@
     }
   ],
   "CrossChainMonitor": {
-    "HowOld": 3600
+    "HowOld": 3600,
+    "Server": "polyswap"
   },
   "CoinPriceUpdateSlot":720,
   "CoinPriceListenConfig":[

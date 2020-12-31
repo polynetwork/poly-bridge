@@ -33,13 +33,13 @@
     {
       "ChainId":4,
       "TokenBasic":{
-        "Name":"Neo"
+        "Name":"GAS"
       }
     },
     {
       "ChainId":8,
       "TokenBasic":{
-        "Name":"Ethereum"
+        "Name":"BNB"
       }
     }
   ],
@@ -60,14 +60,20 @@
       "Tokens":[
         {
           "ChainId":2,
-          "Hash":"0000000000000000000000000000000000000000",
+          "Hash":"0000000000000000000200000000000000000000",
           "Name":"Ethereum",
           "Precision":18
         },
         {
           "ChainId":4,
-          "Hash":"0000000000000000000000000000000000000005",
-          "Name":"Ethereum",
+          "Hash":"0000000000000000000040000000000000000000",
+          "Name":"NETH",
+          "Precision":18
+        },
+        {
+          "ChainId":8,
+          "Hash":"0000000000000000000080000000000000000000",
+          "Name":"NETH",
           "Precision":18
         }
       ]
@@ -88,14 +94,102 @@
       "Tokens":[
         {
           "ChainId":2,
-          "Hash":"0000000000000000000000000000000000000001",
-          "Name":"Neo",
+          "Hash":"0000000000000000000200000000000000000001",
+          "Name":"ENeo",
           "Precision":9
         },
         {
           "ChainId":4,
-          "Hash":"0000000000000000000000000000000000000006",
-          "Name":"Neo",
+          "Hash":"0000000000000000000400000000000000000001",
+          "Name":"nNeo",
+          "Precision":9
+        },
+        {
+          "ChainId":8,
+          "Hash":"0000000000000000000800000000000000000001",
+          "Name":"nNeo",
+          "Precision":9
+        }
+      ]
+    },
+    {
+      "Name":"USDT",
+      "Precision":9,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Tether"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"0000000000000000000200000000000000000002",
+          "Name":"USDT",
+          "Precision":9
+        },
+        {
+          "ChainId":4,
+          "Hash":"0000000000000000000400000000000000000002",
+          "Name":"USDT",
+          "Precision":9
+        },
+        {
+          "ChainId":8,
+          "Hash":"0000000000000000000800000000000000000002",
+          "Name":"USDT",
+          "Precision":9
+        }
+      ]
+    },
+    {
+      "Name":"GAS",
+      "Precision":9,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Gas"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":4,
+          "Hash":"0000000000000000000400000000000000000003",
+          "Name":"GAS",
+          "Precision":9
+        }
+      ]
+    },
+    {
+      "Name":"BNB",
+      "Precision":9,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Binance Coin"
+        },
+        {
+          "MarketName":"binance",
+          "Name":"BNBUSDT"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"0000000000000000000200000000000000000004",
+          "Name":"BNB",
+          "Precision":9
+        },
+        {
+          "ChainId":4,
+          "Hash":"0000000000000000000400000000000000000004",
+          "Name":"BNB",
+          "Precision":9
+        },
+        {
+          "ChainId":8,
+          "Hash":"0000000000000000000800000000000000000004",
+          "Name":"BNB",
           "Precision":9
         }
       ]
