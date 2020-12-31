@@ -53,7 +53,7 @@ var (
 	chainFlag = cli.UintFlag{
 		Name:  "chain",
 		Usage: "Set chain. 2:Ethereum 8:Bsc",
-		Value: 0,
+		Value: 100000,
 	}
 )
 
