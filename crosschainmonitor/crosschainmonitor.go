@@ -76,7 +76,7 @@ func (dao *CrossChainMonitor) check() {
 func (dao *CrossChainMonitor) checkHash() error {
 	if dao.monitorCfg.Server == conf.SERVER_POLY_SWAP {
 		polySrcRelations := make([]*models.PolySrcRelation, 0)
-		dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+		dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 		updatePolyTransactions := make([]*models.PolyTransaction, 0)
 		for _, polySrcRelation := range polySrcRelations {
 			if polySrcRelation.SrcTransaction != nil {
@@ -89,7 +89,7 @@ func (dao *CrossChainMonitor) checkHash() error {
 		}
 	} else if dao.monitorCfg.Server == conf.SERVER_EXPLORER {
 		polySrcRelations := make([]*explorer_dao.PolySrcRelation, 0)
-		dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ? and chain_id != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+		dao.db.Debug().Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and mchain_tx.fchain != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("inner join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 		updatePolyTransactions := make([]*explorer_dao.PolyTransaction, 0)
 		for _, polySrcRelation := range polySrcRelations {
 			if polySrcRelation.SrcTransaction != nil {
