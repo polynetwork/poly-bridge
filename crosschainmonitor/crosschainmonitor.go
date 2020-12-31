@@ -11,6 +11,14 @@ import (
 	"time"
 )
 
+func StartCrossChainMonitor(monitorCfg *conf.CrossChainMonitor, dbCfg *conf.DBConfig) {
+	monitor := NewCrossChainMonitor(monitorCfg, dbCfg)
+	if monitor == nil {
+		panic("monitor is invalid")
+	}
+	monitor.Start()
+}
+
 type CrossChainMonitor struct {
 	monitorCfg *conf.CrossChainMonitor
 	dbCfg *conf.DBConfig
