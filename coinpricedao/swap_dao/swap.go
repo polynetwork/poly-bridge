@@ -55,7 +55,7 @@ func (dao *SwapDao) SavePrices(tokens []*models.TokenBasic) error {
 
 func (dao *SwapDao) GetTokens() ([]*models.TokenBasic, error) {
 	tokens := make([]*models.TokenBasic, 0)
-	res := dao.db.Preload("TokenPrices").Find(&tokens)
+	res := dao.db.Preload("PriceMarkets").Find(&tokens)
 	if res.Error != nil {
 		return nil, res.Error
 	}
