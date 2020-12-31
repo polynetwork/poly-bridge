@@ -31,19 +31,22 @@ func NewStakeDao() *StakeDao {
 	stakeDao := &StakeDao{}
 	chains := make(map[uint64]*models.Chain)
 	chains[2] = &models.Chain{
-		ChainId: 2,
+		ChainId: new(uint64),
 		Name:    "Ethereum",
 		Height:  9329384,
 	}
 	chains[0] = &models.Chain{
-		ChainId: 0,
+		ChainId: new(uint64),
 		Name:    "Poly",
 		Height:  1641496,
 	}
 	chains[8] = &models.Chain{
-		ChainId: 0,
+		ChainId: new(uint64),
 		Name:    "BSC",
 		Height:  4810050,
+	}
+	for k, v := range chains {
+		*v.ChainId = k
 	}
 	stakeDao.chains = chains
 	return stakeDao
@@ -78,6 +81,6 @@ func (dao *StakeDao) GetChain(chainId uint64) (*models.Chain, error) {
 }
 
 func (dao *StakeDao) UpdateChain(chain *models.Chain) error {
-	dao.chains[chain.ChainId] = chain
+	dao.chains[*chain.ChainId] = chain
 	return nil
 }

@@ -36,7 +36,7 @@ func dumpStatus(dbCfg *conf.DBConfig) {
 		db.Find(&chains)
 		fmt.Printf("chain info:\nchainid\t\t\t\tname\t\t\t\theight\t\t\t\t\n")
 		for _, chain := range chains {
-			fmt.Printf("%d\t\t\t\t%s\t\t\t\t%d\t\t\t\t\n", chain.ChainId, chain.Name, chain.Height)
+			fmt.Printf("%d\t\t\t\t%s\t\t\t\t%d\t\t\t\t\n", *chain.ChainId, chain.Name, chain.Height)
 		}
 	}
 	{
