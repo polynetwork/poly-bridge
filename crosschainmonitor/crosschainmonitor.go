@@ -6,6 +6,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"poly-swap/conf"
+	"poly-swap/crosschaindao/explorer_dao"
 	"poly-swap/models"
 	"runtime/debug"
 	"time"
@@ -73,26 +74,40 @@ func (dao *CrossChainMonitor) check() {
 }
 
 func (dao *CrossChainMonitor) checkHash() error {
-	polySrcRelations := make([]*models.PolySrcRelation, 0)
 	if dao.monitorCfg.Server == conf.SERVER_POLY_SWAP {
+		polySrcRelations := make([]*models.PolySrcRelation, 0)
 		dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
-	} else {
-		dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ? and chain_id != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
-	}
-	updatePolyTransactions := make([]*models.PolyTransaction, 0)
-	for _, polySrcRelation := range polySrcRelations {
-		if polySrcRelation.SrcTransaction != nil {
-			polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
-			updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
+		updatePolyTransactions := make([]*models.PolyTransaction, 0)
+		for _, polySrcRelation := range polySrcRelations {
+			if polySrcRelation.SrcTransaction != nil {
+				polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
+				updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
+			}
 		}
-	}
-	if len(updatePolyTransactions) > 0 {
-		dao.db.Save(updatePolyTransactions)
+		if len(updatePolyTransactions) > 0 {
+			dao.db.Save(updatePolyTransactions)
+		}
+	} else if dao.monitorCfg.Server == conf.SERVER_EXPLORER {
+		polySrcRelations := make([]*explorer_dao.PolySrcRelation, 0)
+		dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ? and chain_id != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+		updatePolyTransactions := make([]*explorer_dao.PolyTransaction, 0)
+		for _, polySrcRelation := range polySrcRelations {
+			if polySrcRelation.SrcTransaction != nil {
+				polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
+				updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
+			}
+		}
+		if len(updatePolyTransactions) > 0 {
+			dao.db.Save(updatePolyTransactions)
+		}
 	}
 	return nil
 }
 
 func (dao *CrossChainMonitor) checkStatus() error {
+	if dao.monitorCfg.Server != conf.SERVER_POLY_SWAP {
+		return nil
+	}
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	now := time.Now().Unix() - dao.monitorCfg.HowOld
 	dao.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ?", conf.FINISHED, now).Find(&wrapperTransactions)
