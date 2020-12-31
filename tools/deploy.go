@@ -37,7 +37,7 @@ func startDeploy(cfg *conf.DeployConfig) {
 		panic(err)
 	}
 	//
-	db.Save(cfg.Chains)
+	db.Debug().Save(cfg.Chains)
 	db.Save(cfg.TokenBasics)
 	db.Save(cfg.ChainFees)
 	tokenMaps := getTokenMapsFromToken(cfg.TokenBasics)

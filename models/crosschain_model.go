@@ -18,7 +18,7 @@
 package models
 
 type Chain struct {
-	ChainId uint64 `gorm:"primaryKey;type:int;not null"`
+	ChainId uint64 `gorm:"unique;type:int;not null"`
 	Name    string `gorm:"size:64"`
 	Height  uint64 `gorm:"type:bigint(20);not null"`
 }
