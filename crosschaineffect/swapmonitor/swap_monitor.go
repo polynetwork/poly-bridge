@@ -28,14 +28,14 @@ import (
 )
 
 type SwapMonitor struct {
-	dbCfg *conf.DBConfig
+	dbCfg  *conf.DBConfig
 	monCfg *conf.CrossChainMonitorConfig
-	db    *gorm.DB
+	db     *gorm.DB
 }
 
 func NewSwapMonitor(monCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConfig) *SwapMonitor {
 	swapMonitor := &SwapMonitor{
-		dbCfg: dbCfg,
+		dbCfg:  dbCfg,
 		monCfg: monCfg,
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
@@ -105,7 +105,7 @@ func (monitor *SwapMonitor) updateStatus() error {
 		if wrapperPolyDstRelation.PolyHash == "null" {
 			chain, ok := id2Chains[wrapperPolyDstRelation.WrapperTransaction.SrcChainId]
 			if ok {
-				if wrapperPolyDstRelation.WrapperTransaction.BlockHeight - chain.Height > 12 {
+				if wrapperPolyDstRelation.WrapperTransaction.BlockHeight-chain.Height > 12 {
 					wrapperTransaction.Status = conf.STATE_SOURCE_CONFIRMED
 				} else {
 					wrapperTransaction.Status = conf.STATE_SOURCE_DONE

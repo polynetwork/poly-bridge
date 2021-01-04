@@ -88,4 +88,3 @@ func (mon *CrossChainMonitor) check() {
 		}
 	}
 }
-

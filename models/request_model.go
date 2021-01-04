@@ -61,8 +61,8 @@ type TokenBasicsReq struct {
 }
 
 type TokenBasicsRsp struct {
-	TotalCount uint64
-	TokenBasics     []*TokenBasicRsp
+	TotalCount  uint64
+	TokenBasics []*TokenBasicRsp
 }
 
 func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
@@ -200,14 +200,14 @@ type CheckFeeReq struct {
 }
 
 type CheckFeeRsp struct {
-	Hash string
+	Hash   string
 	HasPay bool
 	Amount float64
 }
 
 func MakeCheckFeeRsp(hash string, hashPay bool, amount float64) *CheckFeeRsp {
 	checkFeeRsp := &CheckFeeRsp{
-		Hash:hash,
+		Hash:   hash,
 		HasPay: hashPay,
 		Amount: amount,
 	}

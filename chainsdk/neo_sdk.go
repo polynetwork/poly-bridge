@@ -26,13 +26,13 @@ import (
 
 type NeoSdk struct {
 	client *rpc.RpcClient
-	url   string
+	url    string
 }
 
 func NewNeoSdk(url string) *NeoSdk {
 	return &NeoSdk{
 		client: rpc.NewClient(url),
-		url:   url,
+		url:    url,
 	}
 }
 

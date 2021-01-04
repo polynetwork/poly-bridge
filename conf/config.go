@@ -101,8 +101,8 @@ type DBConfig struct {
 }
 
 type Restful struct {
-	Url        string
-	Key        string
+	Url string
+	Key string
 }
 
 type ChainListenConfig struct {
@@ -111,7 +111,7 @@ type ChainListenConfig struct {
 	ListenSlot          uint64
 	BackwardBlockNumber uint64
 	Nodes               []*Restful
-	ExtendNodes       	[]*Restful
+	ExtendNodes         []*Restful
 	WrapperContract     string
 	CCMContract         string
 	ProxyContract       string
@@ -194,8 +194,8 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 }
 
 type CrossChainMonitorConfig struct {
-	HowOld  int64
-	Server  string
+	HowOld int64
+	Server string
 }
 
 type Config struct {

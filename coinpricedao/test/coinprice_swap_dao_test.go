@@ -76,4 +76,3 @@ func TestQueryTokens_SwapDao(t *testing.T) {
 	json, _ := json.Marshal(tokenBasics)
 	fmt.Printf("src Transaction: %s\n", json)
 }
-

@@ -31,7 +31,7 @@ import (
 )
 
 type EthereumInfo struct {
-	sdk *EthereumSdk
+	sdk          *EthereumSdk
 	latestHeight uint64
 }
 
@@ -48,10 +48,9 @@ func NewEthereumInfo(url string) *EthereumInfo {
 }
 
 type EthereumSdkPro struct {
-	infos map[string]*EthereumInfo
+	infos         map[string]*EthereumInfo
 	selectionSlot uint64
-	mutex sync.Mutex
-
+	mutex         sync.Mutex
 }
 
 func NewEthereumSdkPro(urls []string) *EthereumSdkPro {
@@ -59,7 +58,7 @@ func NewEthereumSdkPro(urls []string) *EthereumSdkPro {
 	for _, url := range urls {
 		infos[url] = NewEthereumInfo(url)
 	}
-	pro := &EthereumSdkPro{infos:infos}
+	pro := &EthereumSdkPro{infos: infos}
 	go pro.NodeSelection()
 	return pro
 }
@@ -145,7 +144,7 @@ func (pro *EthereumSdkPro) GetHeaderByNumber(number uint64) (*types.Header, erro
 		return nil, fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		header, err := info.sdk.GetHeaderByNumber(number)
 		if err != nil {
 			info.latestHeight = 0
@@ -163,7 +162,7 @@ func (pro *EthereumSdkPro) GetTransactionByHash(hash common.Hash) (*types.Transa
 		return nil, fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		tx, err := info.sdk.GetTransactionByHash(hash)
 		if err != nil {
 			info.latestHeight = 0
@@ -181,7 +180,7 @@ func (pro *EthereumSdkPro) GetTransactionReceipt(hash common.Hash) (*types.Recei
 		return nil, fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		receipt, err := info.sdk.GetTransactionReceipt(hash)
 		if err != nil {
 			info.latestHeight = 0
@@ -199,7 +198,7 @@ func (pro *EthereumSdkPro) NonceAt(addr common.Address) (uint64, error) {
 		return 0, fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		nonce, err := info.sdk.NonceAt(addr)
 		if err != nil {
 			info.latestHeight = 0
@@ -217,7 +216,7 @@ func (pro *EthereumSdkPro) SendRawTransaction(tx *types.Transaction) error {
 		return fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		err := info.sdk.SendRawTransaction(tx)
 		if err != nil {
 			info.latestHeight = 0
@@ -235,7 +234,7 @@ func (pro *EthereumSdkPro) TransactionByHash(hash common.Hash) (*types.Transacti
 		return nil, false, fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		tx, isPending, err := info.sdk.TransactionByHash(hash)
 		if err != nil {
 			info.latestHeight = 0
@@ -253,7 +252,7 @@ func (pro *EthereumSdkPro) SuggestGasPrice() (*big.Int, error) {
 		return nil, fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		gas, err := info.sdk.SuggestGasPrice()
 		if err != nil {
 			info.latestHeight = 0
@@ -271,7 +270,7 @@ func (pro *EthereumSdkPro) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
 		return 0, fmt.Errorf("all node is not working")
 	}
 
-	for info != nil{
+	for info != nil {
 		gas, err := info.sdk.EstimateGas(msg)
 		if err != nil {
 			info.latestHeight = 0

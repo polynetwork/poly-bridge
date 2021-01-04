@@ -37,7 +37,7 @@ func DefaultCoinMarketCapSdk() *CoinMarketCapSdk {
 	client := &http.Client{}
 	sdk := &CoinMarketCapSdk{
 		client: client,
-		nodes: []*conf.Restful {
+		nodes: []*conf.Restful{
 			{
 				Url: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/",
 				Key: "8efe5156-8b37-4c77-8e1d-a140c97bf466",
@@ -51,7 +51,7 @@ func NewCoinMarketCapSdk(cfg *conf.CoinPriceListenConfig) *CoinMarketCapSdk {
 	client := &http.Client{}
 	sdk := &CoinMarketCapSdk{
 		client: client,
-		nodes: cfg.Nodes,
+		nodes:  cfg.Nodes,
 	}
 	return sdk
 }

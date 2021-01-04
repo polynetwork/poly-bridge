@@ -35,7 +35,7 @@ func DefaultBinanceSdk() *BinanceSdk {
 	client := &http.Client{}
 	sdk := &BinanceSdk{
 		client: client,
-		nodes: []*conf.Restful {
+		nodes: []*conf.Restful{
 			{
 				Url: "https://api1.binance.com/",
 			},
@@ -48,7 +48,7 @@ func NewBinanceSdk(cfg *conf.CoinPriceListenConfig) *BinanceSdk {
 	client := &http.Client{}
 	sdk := &BinanceSdk{
 		client: client,
-		nodes:    cfg.Nodes,
+		nodes:  cfg.Nodes,
 	}
 	return sdk
 }

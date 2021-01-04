@@ -28,7 +28,7 @@ import (
 )
 
 type PolyInfo struct {
-	sdk *PolySDK
+	sdk          *PolySDK
 	latestHeight uint64
 }
 
@@ -41,9 +41,9 @@ func NewPolyInfo(url string) *PolyInfo {
 }
 
 type PolySDKPro struct {
-	infos map[string]*PolyInfo
+	infos         map[string]*PolyInfo
 	selectionSlot uint64
-	mutex sync.Mutex
+	mutex         sync.Mutex
 }
 
 func NewPolySDKPro(urls []string) *PolySDKPro {
@@ -51,7 +51,7 @@ func NewPolySDKPro(urls []string) *PolySDKPro {
 	for _, url := range urls {
 		infos[url] = NewPolyInfo(url)
 	}
-	pro := &PolySDKPro{infos:infos}
+	pro := &PolySDKPro{infos: infos}
 	go pro.NodeSelection()
 	return pro
 }
@@ -128,7 +128,7 @@ func (pro *PolySDKPro) GetBlockByHeight(height uint64) (*types.Block, error) {
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
-	for info != nil{
+	for info != nil {
 		block, err := info.sdk.GetBlockByHeight(height)
 		if err != nil {
 			info.latestHeight = 0
@@ -145,7 +145,7 @@ func (pro *PolySDKPro) GetSmartContractEventByBlock(height uint64) ([]*common.Sm
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
-	for info != nil{
+	for info != nil {
 		event, err := info.sdk.GetSmartContractEventByBlock(height)
 		if err != nil {
 			info.latestHeight = 0

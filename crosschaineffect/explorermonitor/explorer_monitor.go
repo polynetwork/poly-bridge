@@ -26,14 +26,14 @@ import (
 )
 
 type ExplorerMonitor struct {
-	dbCfg *conf.DBConfig
+	dbCfg  *conf.DBConfig
 	monCfg *conf.CrossChainMonitorConfig
-	db    *gorm.DB
+	db     *gorm.DB
 }
 
 func NewExplorerMonitor(monCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConfig) *ExplorerMonitor {
 	explorerMonitor := &ExplorerMonitor{
-		dbCfg: dbCfg,
+		dbCfg:  dbCfg,
 		monCfg: monCfg,
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+

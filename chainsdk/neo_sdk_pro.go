@@ -26,12 +26,10 @@ import (
 	"time"
 )
 
-
 type NeoInfo struct {
-	sdk *NeoSdk
+	sdk          *NeoSdk
 	latestHeight uint64
 }
-
 
 func NewNeoInfo(url string) *NeoInfo {
 	sdk := NewNeoSdk(url)
@@ -42,9 +40,9 @@ func NewNeoInfo(url string) *NeoInfo {
 }
 
 type NeoSdkPro struct {
-	infos map[string]*NeoInfo
+	infos         map[string]*NeoInfo
 	selectionSlot uint64
-	mutex sync.Mutex
+	mutex         sync.Mutex
 }
 
 func NewNeoSdkPro(urls []string) *NeoSdkPro {
@@ -52,7 +50,7 @@ func NewNeoSdkPro(urls []string) *NeoSdkPro {
 	for _, url := range urls {
 		infos[url] = NewNeoInfo(url)
 	}
-	pro := &NeoSdkPro{infos:infos}
+	pro := &NeoSdkPro{infos: infos}
 	go pro.NodeSelection()
 	return pro
 }
@@ -129,7 +127,7 @@ func (pro *NeoSdkPro) GetBlockByIndex(index uint64) (*models.RpcBlock, error) {
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
-	for info != nil{
+	for info != nil {
 		block, err := info.sdk.GetBlockByIndex(index)
 		if err != nil {
 			info.latestHeight = 0
@@ -146,7 +144,7 @@ func (pro *NeoSdkPro) GetApplicationLog(txId string) (*models.RpcApplicationLog,
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
-	for info != nil{
+	for info != nil {
 		log, err := info.sdk.GetApplicationLog(txId)
 		if err != nil {
 			info.latestHeight = 0

@@ -24,15 +24,15 @@ import (
 )
 
 type PolySDK struct {
-	sdk  *poly_go_sdk.PolySdk
-	url  string
+	sdk *poly_go_sdk.PolySdk
+	url string
 }
 
 func NewPolySDK(url string) *PolySDK {
 	rawsdk := poly_go_sdk.NewPolySdk()
 	rawsdk.NewRpcClient().SetAddress(url)
 	return &PolySDK{
-		sdk:  rawsdk,
+		sdk: rawsdk,
 		url: url,
 	}
 }
