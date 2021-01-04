@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"os"
-	"poly-swap/conf"
+	conf2 "poly-swap/tools/conf"
 	"runtime"
 	"strings"
 )
@@ -85,7 +85,7 @@ func startServer(ctx *cli.Context) {
 	cmd := ctx.GlobalInt(getFlagName(cmdFlag))
 	if cmd == 1 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewDeployConfig(configFile)
+		config := conf2.NewDeployConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
@@ -94,7 +94,7 @@ func startServer(ctx *cli.Context) {
 		dumpStatus(config.DBConfig)
 	} else if cmd == 2 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewDumpConfig(configFile)
+		config := conf2.NewDumpConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
