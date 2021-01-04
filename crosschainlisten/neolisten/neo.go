@@ -43,13 +43,14 @@ const (
 
 type NeoChainListen struct {
 	neoCfg *conf.ChainListenConfig
-	neoSdk *chainsdk.NeoSdk
+	neoSdk *chainsdk.NeoSdkPro
 }
 
 func NewNeoChainListen(cfg *conf.ChainListenConfig) *NeoChainListen {
 	ethListen := &NeoChainListen{}
 	ethListen.neoCfg = cfg
-	sdk := chainsdk.NewNeoSdk(cfg.RestURL)
+	urls := cfg.GetNodesUrl()
+	sdk := chainsdk.NewNeoSdkPro(urls)
 	ethListen.neoSdk = sdk
 	return ethListen
 }
@@ -231,7 +232,17 @@ type ExtendHeight struct {
 }
 
 func (this *NeoChainListen) GetExtendLatestHeight() (uint64, error) {
-	req, err := http.NewRequest("GET", this.neoCfg.ExtendNodeURL, nil)
+	for i, _ := range this.neoCfg.ExtendNodes {
+		height, err := this.getExtendLatestHeight(i)
+		if err != nil {
+			return height, nil
+		}
+	}
+	return 0, fmt.Errorf("all extend node is not working")
+}
+
+func (this *NeoChainListen) getExtendLatestHeight(node int) (uint64, error) {
+	req, err := http.NewRequest("GET", this.neoCfg.ExtendNodes[node].Url, nil)
 	if err != nil {
 		return 0, err
 	}

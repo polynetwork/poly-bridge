@@ -32,7 +32,6 @@ import (
 	"poly-swap/crosschainlisten/ethereumlisten/wrapper_abi"
 	"strings"
 	"testing"
-	"time"
 )
 
 func NewPrivateKey(key string) *ecdsa.PrivateKey {
@@ -43,34 +42,14 @@ func NewPrivateKey(key string) *ecdsa.PrivateKey {
 	return priKey
 }
 
-func waitTransactionConfirm(ethSdk *chainsdk.EthereumSdk, hash common.Hash) {
-	errNum := 0
-	for errNum < 100 {
-		time.Sleep(time.Second * 1)
-		_, ispending, err := ethSdk.TransactionByHash(hash)
-		fmt.Printf("transaction %s is pending: %v\n", hash.String(), ispending)
-		if err != nil {
-			errNum++
-			continue
-		}
-		if ispending == true {
-			continue
-		} else {
-			break
-		}
-	}
-}
-
 func TestEthereumCross(t *testing.T) {
 	config := conf.NewConfig("./../../../conf/config_testnet.json")
 	if config == nil {
 		panic("read config failed!")
 	}
 	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
-	ethSdk, err := chainsdk.NewEthereumSdk(ethChainListenConfig.RestURL)
-	if err != nil {
-		panic(err)
-	}
+	urls := ethChainListenConfig.GetNodesUrl()
+	ethSdk := chainsdk.NewEthereumSdkPro(urls)
 	contractabi, err := abi.JSON(strings.NewReader(polywrapper.IPolyWrapperABI))
 	if err != nil {
 		panic(err)
@@ -114,5 +93,5 @@ func TestEthereumCross(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	waitTransactionConfirm(ethSdk, signedTx.Hash())
+	ethSdk.WaitTransactionConfirm(signedTx.Hash())
 }

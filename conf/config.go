@@ -69,30 +69,97 @@ type DBConfig struct {
 	Scheme   string
 }
 
+type Restful struct {
+	Url        string
+	Key        string
+}
+
 type ChainListenConfig struct {
 	ChainName           string
 	ChainId             uint64
 	ListenSlot          uint64
 	BackwardBlockNumber uint64
-	RestURL             []string
-	ExtendNodeURL       string
-	ExtendNodeApiKey    string
+	Nodes               []*Restful
+	ExtendNodes       	[]*Restful
 	WrapperContract     string
 	CCMContract         string
 	ProxyContract       string
 }
 
+func (cfg *ChainListenConfig) GetNodesUrl() []string {
+	urls := make([]string, 0)
+	for _, node := range cfg.Nodes {
+		urls = append(urls, node.Url)
+	}
+	return urls
+}
+
+func (cfg *ChainListenConfig) GetNodesKey() []string {
+	keys := make([]string, 0)
+	for _, node := range cfg.Nodes {
+		keys = append(keys, node.Key)
+	}
+	return keys
+}
+
+func (cfg *ChainListenConfig) GetExtendNodesUrl() []string {
+	urls := make([]string, 0)
+	for _, node := range cfg.ExtendNodes {
+		urls = append(urls, node.Url)
+	}
+	return urls
+}
+
+func (cfg *ChainListenConfig) GetExtendNodesKey() []string {
+	keys := make([]string, 0)
+	for _, node := range cfg.ExtendNodes {
+		keys = append(keys, node.Key)
+	}
+	return keys
+}
+
 type CoinPriceListenConfig struct {
 	MarketName string
-	RestURL    []string
-	Key        []string
+	Nodes      []*Restful
+}
+
+func (cfg *CoinPriceListenConfig) GetNodesUrl() []string {
+	urls := make([]string, 0)
+	for _, node := range cfg.Nodes {
+		urls = append(urls, node.Url)
+	}
+	return urls
+}
+
+func (cfg *CoinPriceListenConfig) GetNodesKey() []string {
+	keys := make([]string, 0)
+	for _, node := range cfg.Nodes {
+		keys = append(keys, node.Key)
+	}
+	return keys
 }
 
 type FeeListenConfig struct {
 	ChainId  uint64
-	RestURL  []string
+	Nodes    []*Restful
 	ProxyFee int64
 	GasLimit int64
+}
+
+func (cfg *FeeListenConfig) GetNodesUrl() []string {
+	urls := make([]string, 0)
+	for _, node := range cfg.Nodes {
+		urls = append(urls, node.Url)
+	}
+	return urls
+}
+
+func (cfg *FeeListenConfig) GetNodesKey() []string {
+	keys := make([]string, 0)
+	for _, node := range cfg.Nodes {
+		keys = append(keys, node.Key)
+	}
+	return keys
 }
 
 type CrossChainMonitor struct {
@@ -109,6 +176,33 @@ type Config struct {
 	FeeListenConfig       []*FeeListenConfig
 	CrossChainMonitor     *CrossChainMonitor
 	DBConfig              *DBConfig
+}
+
+func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
+	for _, chainListenConfig := range cfg.ChainListenConfig {
+		if chainListenConfig.ChainId == chainId {
+			return chainListenConfig
+		}
+	}
+	return nil
+}
+
+func (cfg *Config) GetCoinPriceListenConfig(market string) *CoinPriceListenConfig {
+	for _, coinPriceListenConfig := range cfg.CoinPriceListenConfig {
+		if coinPriceListenConfig.MarketName == market {
+			return coinPriceListenConfig
+		}
+	}
+	return nil
+}
+
+func (cfg *Config) GetFeeListenConfig(chainId uint64) *FeeListenConfig {
+	for _, feeListenConfig := range cfg.FeeListenConfig {
+		if feeListenConfig.ChainId == chainId {
+			return feeListenConfig
+		}
+	}
+	return nil
 }
 
 func ReadFile(fileName string) ([]byte, error) {
@@ -142,22 +236,4 @@ func NewConfig(filePath string) *Config {
 		return nil
 	}
 	return config
-}
-
-func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
-	for _, chainListenConfig := range cfg.ChainListenConfig {
-		if chainListenConfig.ChainId == chainId {
-			return chainListenConfig
-		}
-	}
-	return nil
-}
-
-func (cfg *Config) GetCoinPriceListenConfig(market string) *CoinPriceListenConfig {
-	for _, coinPriceListenConfig := range cfg.CoinPriceListenConfig {
-		if coinPriceListenConfig.MarketName == market {
-			return coinPriceListenConfig
-		}
-	}
-	return nil
 }

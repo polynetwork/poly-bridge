@@ -49,17 +49,15 @@ const (
 
 type EthereumChainListen struct {
 	ethCfg *conf.ChainListenConfig
-	ethSdk *chainsdk.EthereumSdk
+	ethSdk *chainsdk.EthereumSdkPro
 }
 
 func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 	ethListen := &EthereumChainListen{}
 	ethListen.ethCfg = cfg
 	//
-	sdk, err := chainsdk.NewEthereumSdk(cfg.RestURL)
-	if err != nil {
-		panic(err)
-	}
+	urls := cfg.GetNodesUrl()
+	sdk := chainsdk.NewEthereumSdkPro(urls)
 	ethListen.ethSdk = sdk
 	return ethListen
 }
@@ -352,7 +350,17 @@ type ExtendHeightRsp struct {
 }
 
 func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
-	req, err := http.NewRequest("GET", this.ethCfg.ExtendNodeURL, nil)
+	for i, _ := range this.ethCfg.ExtendNodes {
+		height, err := this.getExtendLatestHeight(i)
+		if err != nil {
+			return height, nil
+		}
+	}
+	return 0, fmt.Errorf("all extend node is not working")
+}
+
+func (this *EthereumChainListen) getExtendLatestHeight(node int) (uint64, error) {
+	req, err := http.NewRequest("GET", this.ethCfg.ExtendNodes[node].Url, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -360,7 +368,7 @@ func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
 	q := url.Values{}
 	q.Add("module", "proxy")
 	q.Add("action", "eth_blockNumber")
-	q.Add("apikey", this.ethCfg.ExtendNodeApiKey)
+	q.Add("apikey", this.ethCfg.ExtendNodes[node].Key)
 	req.URL.RawQuery = q.Encode()
 	client := &http.Client{}
 	resp, err := client.Do(req)

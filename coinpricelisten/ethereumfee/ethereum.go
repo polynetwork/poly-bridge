@@ -8,17 +8,15 @@ import (
 
 type EthereumFee struct {
 	ethCfg *conf.FeeListenConfig
-	ethSdk *chainsdk.EthereumSdk
+	ethSdk *chainsdk.EthereumSdkPro
 }
 
 func NewEthereumFee(ethCfg *conf.FeeListenConfig) *EthereumFee {
 	ethereumFee := &EthereumFee{}
 	ethereumFee.ethCfg = ethCfg
 	//
-	sdk, err := chainsdk.NewEthereumSdk(ethCfg.RestURL)
-	if err != nil {
-		panic(err)
-	}
+	urls := ethCfg.GetNodesUrl()
+	sdk := chainsdk.NewEthereumSdkPro(urls)
 	ethereumFee.ethSdk = sdk
 	return ethereumFee
 }

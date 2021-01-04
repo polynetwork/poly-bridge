@@ -8,14 +8,15 @@ import (
 
 type NeoFee struct {
 	neoCfg *conf.FeeListenConfig
-	neoSdk *chainsdk.NeoSdk
+	neoSdk *chainsdk.NeoSdkPro
 }
 
 func NewNeoFee(neoCfg *conf.FeeListenConfig) *NeoFee {
 	neoFee := &NeoFee{}
 	neoFee.neoCfg = neoCfg
 	//
-	sdk := chainsdk.NewNeoSdk(neoCfg.RestURL)
+	urls := neoCfg.GetNodesUrl()
+	sdk := chainsdk.NewNeoSdkPro(urls)
 	neoFee.neoSdk = sdk
 	return neoFee
 }

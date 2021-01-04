@@ -26,49 +26,28 @@ import (
 
 type NeoSdk struct {
 	client *rpc.RpcClient
-	urls   []string
-	node   int
+	url   string
 }
 
-func NewNeoSdk(urls []string) *NeoSdk {
+func NewNeoSdk(url string) *NeoSdk {
 	return &NeoSdk{
-		client: rpc.NewClient(urls[0]),
-		urls:   urls,
-		node:   0,
+		client: rpc.NewClient(url),
+		url:   url,
 	}
 }
 
-func (sdk *NeoSdk) NextClient() int {
-	sdk.node++
-	sdk.node = sdk.node % len(sdk.urls)
-	sdk.client = rpc.NewClient(sdk.urls[sdk.node])
-	return sdk.node
-}
-
 func (sdk *NeoSdk) GetBlockCount() (uint64, error) {
-	cur := sdk.node
 	res := sdk.client.GetBlockCount()
-	for res.ErrorResponse.Error.Message != "" {
-		logs.Error("NeoClient.GetBlockCount err:%s, url: %s", res.ErrorResponse.Error.Message, sdk.urls[sdk.node])
-		next := sdk.NextClient()
-		if next == cur {
-			return 0, fmt.Errorf("all node is not working!")
-		}
-		res = sdk.client.GetBlockCount()
+	if res.ErrorResponse.Error.Message != "" {
+		return 0, fmt.Errorf("%s", res.ErrorResponse.Error.Message)
 	}
 	return uint64(res.Result), nil
 }
 
 func (sdk *NeoSdk) GetBlockByIndex(index uint64) (*models.RpcBlock, error) {
-	cur := sdk.node
 	res := sdk.client.GetBlockByIndex(uint32(index))
-	for res.ErrorResponse.Error.Message != "" {
-		logs.Error("NeoClient.GetBlockByIndex err:%s, url: %s", res.ErrorResponse.Error.Message, sdk.urls[sdk.node])
-		next := sdk.NextClient()
-		if next == cur {
-			return nil, fmt.Errorf("all node is not working!")
-		}
-		res = sdk.client.GetBlockByIndex(uint32(index))
+	if res.ErrorResponse.Error.Message != "" {
+		return nil, fmt.Errorf("%s", res.ErrorResponse.Error.Message)
 	}
 	return &res.Result, nil
 }

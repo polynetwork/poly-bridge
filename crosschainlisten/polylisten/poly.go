@@ -29,19 +29,20 @@ import (
 
 type PolyChainListen struct {
 	polyCfg *conf.ChainListenConfig
-	polySdk *chainsdk.PolySDK
+	polySdk *chainsdk.PolySDKPro
 }
 
 func NewPolyChainListen(cfg *conf.ChainListenConfig) *PolyChainListen {
 	polyListen := &PolyChainListen{}
 	polyListen.polyCfg = cfg
-	sdk := chainsdk.NewPolySDK(cfg.RestURL)
+	urls := cfg.GetNodesUrl()
+	sdk := chainsdk.NewPolySDKPro(urls)
 	polyListen.polySdk = sdk
 	return polyListen
 }
 
 func (this *PolyChainListen) GetLatestHeight() (uint64, error) {
-	return this.polySdk.GetLatestHeight()
+	return this.polySdk.GetCurrentBlockHeight()
 }
 
 func (this *PolyChainListen) GetBackwardBlockNumber() uint64 {
@@ -110,5 +111,8 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 }
 
 func (this *PolyChainListen) GetExtendLatestHeight() (uint64, error) {
+	if len(this.polyCfg.ExtendNodes) == 0 {
+		return this.GetLatestHeight()
+	}
 	return this.GetLatestHeight()
 }

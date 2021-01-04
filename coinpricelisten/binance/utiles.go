@@ -28,14 +28,18 @@ import (
 
 type BinanceSdk struct {
 	client *http.Client
-	url    []string
+	nodes  []*conf.Restful
 }
 
 func DefaultBinanceSdk() *BinanceSdk {
 	client := &http.Client{}
 	sdk := &BinanceSdk{
 		client: client,
-		url:    []string{"https://api1.binance.com/"},
+		nodes: []*conf.Restful {
+			{
+				Url: "https://api1.binance.com/",
+			},
+		},
 	}
 	return sdk
 }
@@ -44,13 +48,13 @@ func NewBinanceSdk(cfg *conf.CoinPriceListenConfig) *BinanceSdk {
 	client := &http.Client{}
 	sdk := &BinanceSdk{
 		client: client,
-		url:    cfg.RestURL,
+		nodes:    cfg.Nodes,
 	}
 	return sdk
 }
 
 func (sdk *BinanceSdk) QuotesLatest() ([]*Ticker, error) {
-	for i := 0; i < len(sdk.url); i++ {
+	for i := 0; i < len(sdk.nodes); i++ {
 		quotes, err := sdk.quotesLatest(i)
 		if err != nil {
 			logs.Error("CoinMarketCap QuotesLatest err: %s", err.Error())
@@ -63,7 +67,7 @@ func (sdk *BinanceSdk) QuotesLatest() ([]*Ticker, error) {
 }
 
 func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
-	req, err := http.NewRequest("GET", sdk.url[node]+"api/v3/ticker/price", nil)
+	req, err := http.NewRequest("GET", sdk.nodes[node].Url+"api/v3/ticker/price", nil)
 	if err != nil {
 		return nil, err
 	}
