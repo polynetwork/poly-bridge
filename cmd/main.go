@@ -26,7 +26,7 @@ import (
 	"poly-swap/coinpricelisten"
 	"poly-swap/conf"
 	"poly-swap/crosschainlisten"
-	"poly-swap/crosschainmonitor"
+	"poly-swap/crosschaineffect"
 	"runtime"
 	"strings"
 	"syscall"
@@ -94,7 +94,7 @@ func startServer(ctx *cli.Context) {
 	crosschainlisten.StartCrossChainListen(config.Server, config.ChainListenConfig, config.DBConfig)
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	coinpricelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
-	crosschainmonitor.StartCrossChainMonitor(config.CrossChainMonitor, config.DBConfig)
+	crosschaineffect.StartCrossChainMonitor(config.CrossChainMonitor, config.DBConfig)
 	waitToExit()
 }
 

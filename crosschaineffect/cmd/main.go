@@ -24,7 +24,7 @@ import (
 	"os"
 	"os/signal"
 	"poly-swap/conf"
-	"poly-swap/crosschainmonitor"
+	"poly-swap/crosschaineffect"
 	"runtime"
 	"strings"
 	"syscall"
@@ -90,7 +90,7 @@ func startServer(ctx *cli.Context) {
 		fmt.Printf("%s\n", string(conf))
 	}
 
-	monitor := crosschainmonitor.NewCrossChainMonitor(config.CrossChainMonitor, config.DBConfig)
+	monitor := crosschaineffect.NewCrossChainMonitor(config.CrossChainMonitor, config.DBConfig)
 	monitor.Start()
 	waitToExit()
 }

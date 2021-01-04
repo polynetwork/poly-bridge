@@ -15,13 +15,13 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package crosschainmonitor
+package crosschaineffect
 
 import (
 	"github.com/astaxie/beego/logs"
 	"poly-swap/conf"
-	"poly-swap/crosschainmonitor/explorermonitor"
-	"poly-swap/crosschainmonitor/swapmonitor"
+	"poly-swap/crosschaineffect/explorermonitor"
+	"poly-swap/crosschaineffect/swapmonitor"
 	"runtime/debug"
 	"time"
 )
