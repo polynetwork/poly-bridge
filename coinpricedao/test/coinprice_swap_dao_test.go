@@ -55,32 +55,6 @@ func TestSavePrice_SwapDao(t *testing.T) {
 	}
 }
 
-func TestSaveFee_SwapDao(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("current directory: %s\n", dir)
-	config := conf.NewConfig("./../../conf/config_testnet.json")
-	if config == nil {
-		panic("read config failed!")
-	}
-	db := coinpricedao.NewCoinPriceDao(conf.SERVER_POLY_SWAP, config.DBConfig)
-	if db == nil {
-		panic("dao is invalid")
-	}
-	chainFees := make([]*models.ChainFee, 0)
-	chainFeesJson := []byte(`[{"ChainId":2,"TokenBasicName":"Ethereum","TokenBasic":null,"MaxFee":1814309666000000000000,"MinFee":1814309666000000000000,"ProxyFee":2177171599200000000000,"Ind":1},{"ChainId":4,"TokenBasicName":"Neo","TokenBasic":null,"MaxFee":1000000000,"MinFee":1000000000,"ProxyFee":1000000000,"Ind":1},{"ChainId":8,"TokenBasicName":"Ethereum","TokenBasic":null,"MaxFee":0,"MinFee":0,"ProxyFee":0,"Ind":0}]`)
-	err = json.Unmarshal(chainFeesJson, &chainFees)
-	if err != nil {
-		panic(err)
-	}
-	err = db.SaveFees(chainFees)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func TestQueryTokens_SwapDao(t *testing.T) {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -103,24 +77,3 @@ func TestQueryTokens_SwapDao(t *testing.T) {
 	fmt.Printf("src Transaction: %s\n", json)
 }
 
-func TestQueryFees_SwapDao(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("current directory: %s\n", dir)
-	config := conf.NewConfig("./../../conf/config_testnet.json")
-	if config == nil {
-		panic("read config failed!")
-	}
-	dbCfg := config.DBConfig
-	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	fees := make([]*models.ChainFee, 0)
-	db.Debug().Model(&models.ChainFee{}).Find(&fees)
-	json, _ := json.Marshal(fees)
-	fmt.Printf("fees: %s\n", json)
-}

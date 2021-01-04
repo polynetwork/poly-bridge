@@ -18,8 +18,8 @@
 package coinpricedao
 
 import (
-	"poly-swap/coinpricedao/stake_dao"
-	"poly-swap/coinpricedao/swap_dao"
+	"poly-swap/coinpricedao/stakedao"
+	"poly-swap/coinpricedao/swapdao"
 	"poly-swap/conf"
 	"poly-swap/models"
 )
@@ -27,15 +27,13 @@ import (
 type CoinPriceDao interface {
 	GetTokens() ([]*models.TokenBasic, error)
 	SavePrices(tokens []*models.TokenBasic) error
-	GetFees() ([]*models.ChainFee, error)
-	SaveFees(fees []*models.ChainFee) error
 }
 
 func NewCoinPriceDao(server string, dbCfg *conf.DBConfig) CoinPriceDao {
 	if server == conf.SERVER_STAKE {
-		return stake_dao.NewStakeDao()
+		return stakedao.NewStakeDao()
 	} else if server == conf.SERVER_POLY_SWAP {
-		return swap_dao.NewSwapDao(dbCfg)
+		return swapdao.NewSwapDao(dbCfg)
 	} else {
 		return nil
 	}

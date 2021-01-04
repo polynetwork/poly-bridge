@@ -29,6 +29,20 @@ import (
 	"time"
 )
 
+func StartCoinPriceListen(server string, priceUpdateSlot int64, coinPricecfg []*conf.CoinPriceListenConfig, dbCfg *conf.DBConfig) {
+	dao := coinpricedao.NewCoinPriceDao(server, dbCfg)
+	if dao == nil {
+		panic("server is not valid")
+	}
+	priceMarkets := make([]PriceMarket, 0)
+	for _, cfg := range coinPricecfg {
+		priceMarket := NewPriceMarket(cfg)
+		priceMarkets = append(priceMarkets, priceMarket)
+	}
+	cpListen := NewCoinPriceListen(priceUpdateSlot, priceMarkets, dao)
+	cpListen.Start()
+}
+
 type PriceMarket interface {
 	GetCoinPrice(coins []string) (map[string]float64, error)
 	GetMarketName() string
@@ -48,20 +62,6 @@ type CoinPriceListen struct {
 	priceUpdateSlot int64
 	priceMarket     map[string]PriceMarket
 	db              coinpricedao.CoinPriceDao
-}
-
-func StartCoinPriceListen(server string, priceUpdateSlot int64, coinPricecfg []*conf.CoinPriceListenConfig, dbCfg *conf.DBConfig) {
-	dao := coinpricedao.NewCoinPriceDao(server, dbCfg)
-	if dao == nil {
-		panic("server is not valid")
-	}
-	priceMarkets := make([]PriceMarket, 0)
-	for _, cfg := range coinPricecfg {
-		priceMarket := NewPriceMarket(cfg)
-		priceMarkets = append(priceMarkets, priceMarket)
-	}
-	cpListen := NewCoinPriceListen(priceUpdateSlot, priceMarkets, dao)
-	cpListen.Start()
 }
 
 func NewCoinPriceListen(priceUpdateSlot int64, priceMarkets []PriceMarket, db coinpricedao.CoinPriceDao) *CoinPriceListen {

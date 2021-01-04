@@ -20,6 +20,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
+	"poly-swap/conf"
 	"poly-swap/models"
 )
 
@@ -67,10 +68,10 @@ func (c *TransactionController) TransactoinsOfState() {
 	}
 	db := newDB()
 	transactions := make([]*models.WrapperTransaction, 0)
-	db.Where("status = ?", transactionsOfStateReq.State).Limit(transactionsOfStateReq.PageSize).Offset(transactionsOfStateReq.PageSize * transactionsOfStateReq.PageNo).Order("time asc").Find(&transactions)
+	db.Where("status = ?", conf.StateName2Code(transactionsOfStateReq.State)).Limit(transactionsOfStateReq.PageSize).Offset(transactionsOfStateReq.PageSize * transactionsOfStateReq.PageNo).Order("time asc").Find(&transactions)
 	var transactionNum int64
 	db.Model(&models.WrapperTransaction{}).Where("status = ?", transactionsOfStateReq.State).Count(&transactionNum)
-	c.Data["json"] = models.MakeTransactionsOfUserRsp(transactionsOfStateReq.PageSize, transactionsOfStateReq.PageNo,
+	c.Data["json"] = models.MakeTransactionsOfStateRsp(transactionsOfStateReq.PageSize, transactionsOfStateReq.PageNo,
 		(int(transactionNum)+transactionsOfStateReq.PageSize-1)/transactionsOfStateReq.PageSize, int(transactionNum), transactions)
 	c.ServeJSON()
 }

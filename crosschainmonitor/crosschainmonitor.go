@@ -1,56 +1,76 @@
+/*
+ * Copyright (C) 2020 The poly network Authors
+ * This file is part of The poly network library.
+ *
+ * The  poly network  is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The  poly network  is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package crosschainmonitor
 
 import (
-	"encoding/json"
 	"github.com/astaxie/beego/logs"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"poly-swap/conf"
-	"poly-swap/crosschaindao/explorer_dao"
-	"poly-swap/models"
+	"poly-swap/crosschainmonitor/explorermonitor"
+	"poly-swap/crosschainmonitor/swapmonitor"
 	"runtime/debug"
 	"time"
 )
 
-func StartCrossChainMonitor(monitorCfg *conf.CrossChainMonitor, dbCfg *conf.DBConfig) {
-	monitor := NewCrossChainMonitor(monitorCfg, dbCfg)
+type Monitor interface {
+	Monitor() error
+}
+
+func StartCrossChainMonitor(monitorCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConfig) {
+	monitor := NewMonitor(monitorCfg, dbCfg)
 	if monitor == nil {
-		panic("monitor is invalid")
+		panic("monitor is not valid")
 	}
-	monitor.Start()
+	crossChainMonitor := NewCrossChainMonitor(monitor)
+	crossChainMonitor.Start()
+}
+
+func NewMonitor(monCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConfig) Monitor {
+	if monCfg.Server == conf.SERVER_POLY_SWAP {
+		return swapmonitor.NewSwapMonitor(monCfg, dbCfg)
+	} else if monCfg.Server == conf.SERVER_EXPLORER {
+		return explorermonitor.NewExplorerMonitor(monCfg, dbCfg)
+	} else {
+		return nil
+	}
 }
 
 type CrossChainMonitor struct {
-	monitorCfg *conf.CrossChainMonitor
-	dbCfg *conf.DBConfig
-	db    *gorm.DB
+	monitor Monitor
 }
 
-func NewCrossChainMonitor(monitorCfg *conf.CrossChainMonitor, dbCfg *conf.DBConfig) *CrossChainMonitor {
+func NewCrossChainMonitor(monitor Monitor) *CrossChainMonitor {
 	crossChainMonitor := &CrossChainMonitor{
-		dbCfg: dbCfg,
-		monitorCfg: monitorCfg,
+		monitor: monitor,
 	}
-	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	crossChainMonitor.db = db
 	return crossChainMonitor
 }
 
-func (dao *CrossChainMonitor) Start() {
-	go dao.Check()
+func (mon *CrossChainMonitor) Start() {
+	go mon.Check()
 }
 
-func (dao *CrossChainMonitor) Check() {
+func (mon *CrossChainMonitor) Check() {
 	for {
-		dao.check()
+		mon.check()
 	}
 }
 
-func (dao *CrossChainMonitor) check() {
+func (mon *CrossChainMonitor) check() {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("service start, recover info: %s", string(debug.Stack()))
@@ -61,59 +81,11 @@ func (dao *CrossChainMonitor) check() {
 	for {
 		select {
 		case <-ticker.C:
-			err := dao.checkHash()
+			err := mon.monitor.Monitor()
 			if err != nil {
-				logs.Error("check hash- err: %s", err)
-			}
-			err = dao.checkStatus()
-			if err != nil {
-				logs.Error("check status- err: %s", err)
+				logs.Error("cross chain monitor err: %v", err)
 			}
 		}
 	}
 }
 
-func (dao *CrossChainMonitor) checkHash() error {
-	if dao.monitorCfg.Server == conf.SERVER_POLY_SWAP {
-		polySrcRelations := make([]*models.PolySrcRelation, 0)
-		dao.db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
-		updatePolyTransactions := make([]*models.PolyTransaction, 0)
-		for _, polySrcRelation := range polySrcRelations {
-			if polySrcRelation.SrcTransaction != nil {
-				polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
-				updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
-			}
-		}
-		if len(updatePolyTransactions) > 0 {
-			dao.db.Save(updatePolyTransactions)
-		}
-	} else if dao.monitorCfg.Server == conf.SERVER_EXPLORER {
-		polySrcRelations := make([]*explorer_dao.PolySrcRelation, 0)
-		dao.db.Debug().Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and mchain_tx.fchain != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("inner join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
-		updatePolyTransactions := make([]*explorer_dao.PolyTransaction, 0)
-		for _, polySrcRelation := range polySrcRelations {
-			if polySrcRelation.SrcTransaction != nil {
-				polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
-				updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
-			}
-		}
-		if len(updatePolyTransactions) > 0 {
-			dao.db.Save(updatePolyTransactions)
-		}
-	}
-	return nil
-}
-
-func (dao *CrossChainMonitor) checkStatus() error {
-	if dao.monitorCfg.Server != conf.SERVER_POLY_SWAP {
-		return nil
-	}
-	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	now := time.Now().Unix() - dao.monitorCfg.HowOld
-	dao.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ?", conf.FINISHED, now).Find(&wrapperTransactions)
-	if len(wrapperTransactions) > 0 {
-		wrapperTransactionsJson, _ := json.Marshal(wrapperTransactions)
-		logs.Error("There is unfinished transactions %s", string(wrapperTransactionsJson))
-	}
-	return nil
-}

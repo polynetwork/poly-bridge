@@ -17,6 +17,8 @@
 
 package models
 
+import "poly-swap/conf"
+
 type PolySwapResp struct {
 	Version string
 	URL     string
@@ -53,6 +55,24 @@ func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 		}
 	}
 	return tokenBasicRsp
+}
+
+type TokenBasicsReq struct {
+}
+
+type TokenBasicsRsp struct {
+	TotalCount uint64
+	TokenBasics     []*TokenBasicRsp
+}
+
+func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
+	tokenBasicsRsp := &TokenBasicsRsp{
+		TotalCount: uint64(len(tokenBasics)),
+	}
+	for _, tokenBasic := range tokenBasics {
+		tokenBasicsRsp.TokenBasics = append(tokenBasicsRsp.TokenBasics, MakeTokenBasicRsp(tokenBasic))
+	}
+	return tokenBasicsRsp
 }
 
 type TokenReq struct {
@@ -205,6 +225,7 @@ type TransactionRsp struct {
 	DstChainId   uint64
 	FeeTokenHash string
 	FeeAmount    uint64
+	State        string
 }
 
 func MakeTransactionRsp(transaction *WrapperTransaction) *TransactionRsp {
@@ -217,6 +238,7 @@ func MakeTransactionRsp(transaction *WrapperTransaction) *TransactionRsp {
 		DstChainId:   transaction.DstChainId,
 		FeeTokenHash: transaction.FeeTokenHash,
 		FeeAmount:    transaction.FeeAmount.Uint64(),
+		State:        conf.StateCode2Name(int(transaction.Status)),
 	}
 	return transactionRsp
 }

@@ -52,3 +52,16 @@ func (c *TokenController) Token() {
 	c.Data["json"] = models.MakeTokenRsp(token)
 	c.ServeJSON()
 }
+
+func (c *TokenController) TokenBasics() {
+	var tokenBasicReq models.TokenBasicReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenBasicReq); err != nil {
+		panic(err)
+	}
+	db := newDB()
+	tokenBasics := make([]*models.TokenBasic, 0)
+	db.Model(&models.TokenBasic{}).Preload("Tokens").Find(&tokenBasics)
+	c.Data["json"] = models.MakeTokenBasicsRsp(tokenBasics)
+	c.ServeJSON()
+}

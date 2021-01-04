@@ -15,7 +15,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package swap_dao
+package swapdao
 
 import (
 	"fmt"
@@ -63,25 +63,4 @@ func (dao *SwapDao) GetTokens() ([]*models.TokenBasic, error) {
 		return nil, fmt.Errorf("no record!")
 	}
 	return tokens, nil
-}
-
-func (dao *SwapDao) GetFees() ([]*models.ChainFee, error) {
-	fees := make([]*models.ChainFee, 0)
-	res := dao.db.Find(&fees)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RowsAffected == 0 {
-		return nil, fmt.Errorf("no record!")
-	}
-	return fees, nil
-}
-func (dao *SwapDao) SaveFees(fees []*models.ChainFee) error {
-	if fees != nil && len(fees) > 0 {
-		res := dao.db.Debug().Save(fees)
-		if res.Error != nil {
-			return res.Error
-		}
-	}
-	return nil
 }

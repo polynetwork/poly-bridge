@@ -15,30 +15,33 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package crosschaindao
+package neofee
 
 import (
+	"math/big"
+	"poly-swap/chainsdk"
 	"poly-swap/conf"
-	"poly-swap/crosschaindao/explorerdao"
-	"poly-swap/crosschaindao/stakedao"
-	"poly-swap/crosschaindao/swapdao"
-	"poly-swap/models"
 )
 
-type CrossChainDao interface {
-	UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error
-	GetChain(chainId uint64) (*models.Chain, error)
-	UpdateChain(chain *models.Chain) error
+type NeoFee struct {
+	neoCfg *conf.FeeListenConfig
+	neoSdk *chainsdk.NeoSdkPro
 }
 
-func NewCrossChainDao(server string, dbCfg *conf.DBConfig) CrossChainDao {
-	if server == conf.SERVER_POLY_SWAP {
-		return swapdao.NewSwapDao(dbCfg)
-	} else if server == conf.SERVER_EXPLORER {
-		return explorerdao.NewExplorerDao(dbCfg)
-	} else if server == conf.SERVER_STAKE {
-		return stakedao.NewStakeDao()
-	} else {
-		return nil
-	}
+func NewNeoFee(neoCfg *conf.FeeListenConfig) *NeoFee {
+	neoFee := &NeoFee{}
+	neoFee.neoCfg = neoCfg
+	//
+	urls := neoCfg.GetNodesUrl()
+	sdk := chainsdk.NewNeoSdkPro(urls)
+	neoFee.neoSdk = sdk
+	return neoFee
+}
+
+func (this *NeoFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
+	return big.NewInt(1000000000), big.NewInt(1000000000), big.NewInt(1000000000), nil
+}
+
+func (this *NeoFee) GetChainId() uint64 {
+	return this.neoCfg.ChainId
 }

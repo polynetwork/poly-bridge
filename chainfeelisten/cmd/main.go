@@ -23,7 +23,7 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
-	"poly-swap/coinpricelisten"
+	"poly-swap/chainfeelisten"
 	"poly-swap/conf"
 	"runtime"
 	"strings"
@@ -89,7 +89,7 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		fmt.Printf("%s\n", string(conf))
 	}
-	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
+	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	waitToExit()
 }
 

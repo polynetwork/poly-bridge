@@ -24,7 +24,7 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"poly-swap/conf"
-	"poly-swap/crosschaindao/explorer_dao"
+	"poly-swap/crosschaindao/explorerdao"
 	"poly-swap/models"
 	"testing"
 )
@@ -39,7 +39,7 @@ func TestCrossChain_ExplorerDao(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := explorer_dao.NewExplorerDao(config.DBConfig)
+	dao := explorerdao.NewExplorerDao(config.DBConfig)
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	wrapperTransactionsData := []byte(`[{"Hash":"336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729","User":"ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f","SrcChainId":2,"BlockHeight":9329385,"Time":1608885420,"DstChainId":4,"FeeTokenHash":"0000000000000000000000000000000000000000","FeeToken":null,"FeeAmount":1000000000000000000000000000000,"Status":0}]`)
 	err = json.Unmarshal(wrapperTransactionsData, &wrapperTransactions)
@@ -130,7 +130,7 @@ func TestQueryPolySrcRelation_ExplorerDao(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	polySrcRelations := make([]*explorer_dao.PolySrcRelation, 0)
+	polySrcRelations := make([]*explorerdao.PolySrcRelation, 0)
 	db.Debug().Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and fchain = ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("left join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	json, _ := json.Marshal(polySrcRelations)
 	fmt.Printf("src Transaction: %s\n", json)

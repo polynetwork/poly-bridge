@@ -47,12 +47,11 @@ var (
 )
 
 const (
-	FINISHED = iota
-	PENDDING
-	SOURCE_DONE
-	SOURCE_CONFIRMED
-	POLY_CONFIRMED
-	TAGET_CONFIRMED
+	STATE_FINISHED = iota
+	STATE_PENDDING
+	STATE_SOURCE_DONE
+	STATE_SOURCE_CONFIRMED
+	STATE_POLY_CONFIRMED
 )
 
 const (
@@ -61,6 +60,38 @@ const (
 	SERVER_ADDRESS   = "address"
 	SERVER_STAKE     = "stake"
 )
+
+func StateCode2Name(code int) string {
+	if code == STATE_FINISHED {
+		return "Finished"
+	} else if code == STATE_PENDDING {
+		return "pendding"
+	} else if code == STATE_SOURCE_DONE {
+		return "source done"
+	} else if code == STATE_SOURCE_CONFIRMED {
+		return "source confirmed"
+	} else if code == STATE_POLY_CONFIRMED {
+		return "poly confirmed"
+	} else {
+		return "unknown"
+	}
+}
+
+func StateName2Code(state string) int {
+	if state == "Finished" {
+		return STATE_FINISHED
+	} else if state == "pendding" {
+		return STATE_PENDDING
+	} else if state == "source done" {
+		return STATE_SOURCE_DONE
+	} else if state == "source confirmed" {
+		return STATE_SOURCE_CONFIRMED
+	} else if state == "poly confirmed" {
+		return STATE_POLY_CONFIRMED
+	} else {
+		return -1
+	}
+}
 
 type DBConfig struct {
 	URL      string
@@ -162,7 +193,7 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 	return keys
 }
 
-type CrossChainMonitor struct {
+type CrossChainMonitorConfig struct {
 	HowOld  int64
 	Server  string
 }
@@ -174,7 +205,7 @@ type Config struct {
 	CoinPriceListenConfig []*CoinPriceListenConfig
 	FeeUpdateSlot         int64
 	FeeListenConfig       []*FeeListenConfig
-	CrossChainMonitor     *CrossChainMonitor
+	CrossChainMonitor     *CrossChainMonitorConfig
 	DBConfig              *DBConfig
 }
 

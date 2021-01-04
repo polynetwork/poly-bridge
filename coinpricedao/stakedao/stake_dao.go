@@ -15,7 +15,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package stake_dao
+package stakedao
 
 import (
 	"encoding/json"
@@ -25,7 +25,6 @@ import (
 
 type StakeDao struct {
 	tokenBasics []*models.TokenBasic
-	fees        []*models.ChainFee
 }
 
 func NewStakeDao() *StakeDao {
@@ -37,13 +36,6 @@ func NewStakeDao() *StakeDao {
 		panic(err)
 	}
 	stakeDao.tokenBasics = tokenBasics
-	fees := make([]*models.ChainFee, 0)
-	feesJson := []byte(`[{"ChainId":2,"TokenBasicName":"Ethereum","TokenBasic":null,"MaxFee":0,"MinFee":0,"ProxyFee":0,"Ind":0},{"ChainId":4,"TokenBasicName":"Neo","TokenBasic":null,"MaxFee":0,"MinFee":0,"ProxyFee":0,"Ind":0},{"ChainId":8,"TokenBasicName":"Ethereum","TokenBasic":null,"MaxFee":0,"MinFee":0,"ProxyFee":0,"Ind":0}]`)
-	err = json.Unmarshal(feesJson, &fees)
-	if err != nil {
-		panic(err)
-	}
-	stakeDao.fees = fees
 	return stakeDao
 }
 
@@ -57,15 +49,4 @@ func (dao *StakeDao) SavePrices(tokens []*models.TokenBasic) error {
 
 func (dao *StakeDao) GetTokens() ([]*models.TokenBasic, error) {
 	return dao.tokenBasics, nil
-}
-
-func (dao *StakeDao) GetFees() ([]*models.ChainFee, error) {
-	return dao.fees, nil
-}
-func (dao *StakeDao) SaveFees(fees []*models.ChainFee) error {
-	{
-		json, _ := json.Marshal(fees)
-		fmt.Printf("fees: %s\n", json)
-	}
-	return nil
 }

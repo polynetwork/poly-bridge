@@ -15,19 +15,33 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package coinpricelisten
+package chainfeelisten
 
 import (
 	"github.com/astaxie/beego/logs"
 	"math/big"
-	"poly-swap/coinpricedao"
-	"poly-swap/coinpricelisten/ethereumfee"
-	"poly-swap/coinpricelisten/neofee"
+	"poly-swap/chainfeedao"
+	"poly-swap/chainfeelisten/ethereumfee"
+	"poly-swap/chainfeelisten/neofee"
 	"poly-swap/conf"
 	"poly-swap/models"
 	"runtime/debug"
 	"time"
 )
+
+func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.FeeListenConfig, dbCfg *conf.DBConfig) {
+	dao := chainfeedao.NewChainFeeDao(server, dbCfg)
+	if dao == nil {
+		panic("server is not valid")
+	}
+	chainFees := make([]ChainFee, 0)
+	for _, cfg := range feeListenCfgs {
+		chainFee := NewChainFee(cfg)
+		chainFees = append(chainFees, chainFee)
+	}
+	feeListen := NewFeeListen(feeUpdateSlot, chainFees, dao)
+	feeListen.Start()
+}
 
 type ChainFee interface {
 	GetFee() (*big.Int, *big.Int, *big.Int, error)
@@ -49,24 +63,10 @@ func NewChainFee(cfg *conf.FeeListenConfig) ChainFee {
 type FeeListen struct {
 	feeUpdateSlot int64
 	fees          map[uint64]ChainFee
-	db            coinpricedao.CoinPriceDao
+	db            chainfeedao.ChainFeeDao
 }
 
-func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.FeeListenConfig, dbCfg *conf.DBConfig) {
-	dao := coinpricedao.NewCoinPriceDao(server, dbCfg)
-	if dao == nil {
-		panic("server is not valid")
-	}
-	chainFees := make([]ChainFee, 0)
-	for _, cfg := range feeListenCfgs {
-		chainFee := NewChainFee(cfg)
-		chainFees = append(chainFees, chainFee)
-	}
-	feeListen := NewFeeListen(feeUpdateSlot, chainFees, dao)
-	feeListen.Start()
-}
-
-func NewFeeListen(feeUpdateSlot int64, fees []ChainFee, db coinpricedao.CoinPriceDao) *FeeListen {
+func NewFeeListen(feeUpdateSlot int64, fees []ChainFee, db chainfeedao.ChainFeeDao) *FeeListen {
 	feeListen := &FeeListen{}
 	feeListen.feeUpdateSlot = feeUpdateSlot
 	feeListen.db = db

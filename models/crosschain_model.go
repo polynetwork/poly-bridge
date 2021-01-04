@@ -105,3 +105,10 @@ type WrapperTransaction struct {
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
 }
+
+type WrapperPolyDstRelation struct {
+	SrcHash string
+	WrapperTransaction *WrapperTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
+	PolyHash string
+	DstHash string
+}

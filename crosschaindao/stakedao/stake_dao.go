@@ -15,7 +15,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package stake_dao
+package stakedao
 
 import (
 	"encoding/json"

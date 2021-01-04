@@ -15,29 +15,25 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package crosschaindao
+package chainfeedao
 
 import (
+	"poly-swap/chainfeedao/stakedao"
+	"poly-swap/chainfeedao/swapdao"
 	"poly-swap/conf"
-	"poly-swap/crosschaindao/explorerdao"
-	"poly-swap/crosschaindao/stakedao"
-	"poly-swap/crosschaindao/swapdao"
 	"poly-swap/models"
 )
 
-type CrossChainDao interface {
-	UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error
-	GetChain(chainId uint64) (*models.Chain, error)
-	UpdateChain(chain *models.Chain) error
+type ChainFeeDao interface {
+	GetFees() ([]*models.ChainFee, error)
+	SaveFees(fees []*models.ChainFee) error
 }
 
-func NewCrossChainDao(server string, dbCfg *conf.DBConfig) CrossChainDao {
-	if server == conf.SERVER_POLY_SWAP {
-		return swapdao.NewSwapDao(dbCfg)
-	} else if server == conf.SERVER_EXPLORER {
-		return explorerdao.NewExplorerDao(dbCfg)
-	} else if server == conf.SERVER_STAKE {
+func NewChainFeeDao(server string, dbCfg *conf.DBConfig) ChainFeeDao {
+	if server == conf.SERVER_STAKE {
 		return stakedao.NewStakeDao()
+	} else if server == conf.SERVER_POLY_SWAP {
+		return swapdao.NewSwapDao(dbCfg)
 	} else {
 		return nil
 	}
