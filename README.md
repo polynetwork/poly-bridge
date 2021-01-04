@@ -15,6 +15,9 @@ PolyBridge的API。
 * [POST transactoinsofuser](#post-transactoinsofuser)
 * [POST transactoinsofstate](#post-transactoinsofstate)
 
+## Test Node
+[40.115.153.174:30330](http://40.115.153.174:30330/v1/)
+
 ## API Info
 
 ### GET /
