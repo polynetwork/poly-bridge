@@ -59,7 +59,12 @@ func (c *FeeController) CheckFee() {
 	}
 	db := newDB()
 	wrapperTransactionWithToken := new(models.WrapperTransactionWithToken)
-	db.Model(&models.WrapperTransaction{}).Where("hash = ?", checkFeeReq.Hash).Preload("FeeToken").Preload("FeeToken.TokenBasic").First(wrapperTransactionWithToken)
+	res := db.Model(&models.WrapperTransaction{}).Where("hash = ?", checkFeeReq.Hash).Preload("FeeToken").Preload("FeeToken.TokenBasic").First(wrapperTransactionWithToken)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeCheckFeeRsp(checkFeeReq.Hash, false, 0)
+		c.ServeJSON()
+		return
+	}
 	chainFee := new(models.ChainFee)
 	db.Where("chain_id = ?", wrapperTransactionWithToken.DstChainId).Preload("TokenBasic").First(chainFee)
 	hasPay := false
@@ -74,6 +79,6 @@ func (c *FeeController) CheckFee() {
 		hasPay = true
 	}
 	z, _ := feePay.Float64()
-	c.Data["json"] = models.MakeCheckFeeRsp(hasPay, z)
+	c.Data["json"] = models.MakeCheckFeeRsp(checkFeeReq.Hash, hasPay, z)
 	c.ServeJSON()
 }

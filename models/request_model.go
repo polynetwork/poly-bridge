@@ -200,12 +200,14 @@ type CheckFeeReq struct {
 }
 
 type CheckFeeRsp struct {
+	Hash string
 	HasPay bool
 	Amount float64
 }
 
-func MakeCheckFeeRsp(hashPay bool, amount float64) *CheckFeeRsp {
+func MakeCheckFeeRsp(hash string, hashPay bool, amount float64) *CheckFeeRsp {
 	checkFeeRsp := &CheckFeeRsp{
+		Hash:hash,
 		HasPay: hashPay,
 		Amount: amount,
 	}
