@@ -30,6 +30,7 @@ import (
 	"poly-swap/models"
 	"poly-swap/utils"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -50,7 +51,7 @@ func NewNeoChainListen(cfg *conf.ChainListenConfig) *NeoChainListen {
 	ethListen := &NeoChainListen{}
 	ethListen.neoCfg = cfg
 	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewNeoSdkPro(urls)
+	sdk := chainsdk.NewNeoSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
 	ethListen.neoSdk = sdk
 	return ethListen
 }
@@ -226,15 +227,22 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 	}
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
-
+type Error struct {
+	Code int64 `json:"code"`
+	Message string `json:"message"`
+}
 type ExtendHeight struct {
-	last_block_height uint64 `json:"last_block_height,string"`
+	LastHeight uint64 `json:"result"`
+	Error *Error `json:"error"`
 }
 
 func (this *NeoChainListen) GetExtendLatestHeight() (uint64, error) {
+	if len(this.neoCfg.ExtendNodes) == 0 {
+		return this.GetLatestHeight()
+	}
 	for i, _ := range this.neoCfg.ExtendNodes {
 		height, err := this.getExtendLatestHeight(i)
-		if err != nil {
+		if err == nil {
 			return height, nil
 		}
 	}
@@ -242,11 +250,14 @@ func (this *NeoChainListen) GetExtendLatestHeight() (uint64, error) {
 }
 
 func (this *NeoChainListen) getExtendLatestHeight(node int) (uint64, error) {
-	req, err := http.NewRequest("GET", this.neoCfg.ExtendNodes[node].Url, nil)
+	requestJson := `{"jsonrpc": "2.0", "method": "getblockcount", "params": [], "id": 1}`
+	req, err := http.NewRequest("POST", this.neoCfg.ExtendNodes[node].Url, strings.NewReader(requestJson))
 	if err != nil {
 		return 0, err
 	}
 	req.Header.Set("Accepts", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -257,11 +268,13 @@ func (this *NeoChainListen) getExtendLatestHeight(node int) (uint64, error) {
 		return 0, fmt.Errorf("response status code: %d", resp.StatusCode)
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Printf("resp body: %s\n", string(respBody))
 	extendHeight := new(ExtendHeight)
 	err = json.Unmarshal(respBody, extendHeight)
 	if err != nil {
 		return 0, err
 	}
-	return extendHeight.last_block_height, nil
+	if extendHeight.Error != nil {
+		return 0, fmt.Errorf("%s", extendHeight.Error.Message)
+	}
+	return extendHeight.LastHeight, nil
 }

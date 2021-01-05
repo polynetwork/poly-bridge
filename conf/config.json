@@ -57,8 +57,7 @@
       ],
       "ExtendNodes": [
         {
-          "Url": "https://api-ropsten.etherscan.io/api",
-          "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
+          "Url": "https://explorer.o3node.org/"
         }
       ],
       "WrapperContract":"8bc7E7304120b88D111431F6A4853589D10e8132",

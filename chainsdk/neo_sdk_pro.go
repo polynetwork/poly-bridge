@@ -42,15 +42,17 @@ func NewNeoInfo(url string) *NeoInfo {
 type NeoSdkPro struct {
 	infos         map[string]*NeoInfo
 	selectionSlot uint64
+	id            uint64
 	mutex         sync.Mutex
 }
 
-func NewNeoSdkPro(urls []string) *NeoSdkPro {
+func NewNeoSdkPro(urls []string, slot uint64, id uint64) *NeoSdkPro {
 	infos := make(map[string]*NeoInfo, len(urls))
 	for _, url := range urls {
 		infos[url] = NewNeoInfo(url)
 	}
-	pro := &NeoSdkPro{infos: infos}
+	pro := &NeoSdkPro{infos: infos,selectionSlot:slot,id:id}
+	pro.selection()
 	go pro.NodeSelection()
 	return pro
 }
@@ -67,7 +69,7 @@ func (pro *NeoSdkPro) nodeSelection() {
 			logs.Error("node selection, recover info: %s", string(debug.Stack()))
 		}
 	}()
-	logs.Debug("neo node selection......")
+	logs.Debug("node selection of chain : %d......", pro.id)
 	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot))
 	for {
 		select {

@@ -36,7 +36,7 @@ func NewPolyChainListen(cfg *conf.ChainListenConfig) *PolyChainListen {
 	polyListen := &PolyChainListen{}
 	polyListen.polyCfg = cfg
 	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewPolySDKPro(urls)
+	sdk := chainsdk.NewPolySDKPro(urls, cfg.ListenSlot, cfg.ChainId)
 	polyListen.polySdk = sdk
 	return polyListen
 }

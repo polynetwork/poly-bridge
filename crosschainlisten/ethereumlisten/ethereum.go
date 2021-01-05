@@ -57,7 +57,7 @@ func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 	ethListen.ethCfg = cfg
 	//
 	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewEthereumSdkPro(urls)
+	sdk := chainsdk.NewEthereumSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
 	ethListen.ethSdk = sdk
 	return ethListen
 }
@@ -350,9 +350,12 @@ type ExtendHeightRsp struct {
 }
 
 func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
+	if len(this.ethCfg.ExtendNodes) == 0 {
+		return this.GetLatestHeight()
+	}
 	for i, _ := range this.ethCfg.ExtendNodes {
 		height, err := this.getExtendLatestHeight(i)
-		if err != nil {
+		if err == nil {
 			return height, nil
 		}
 	}

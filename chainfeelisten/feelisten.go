@@ -36,7 +36,7 @@ func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.Fe
 	}
 	chainFees := make([]ChainFee, 0)
 	for _, cfg := range feeListenCfgs {
-		chainFee := NewChainFee(cfg)
+		chainFee := NewChainFee(cfg, feeUpdateSlot)
 		chainFees = append(chainFees, chainFee)
 	}
 	feeListen := NewFeeListen(feeUpdateSlot, chainFees, dao)
@@ -48,13 +48,13 @@ type ChainFee interface {
 	GetChainId() uint64
 }
 
-func NewChainFee(cfg *conf.FeeListenConfig) ChainFee {
+func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 	if cfg.ChainId == conf.ETHEREUM_CROSSCHAIN_ID {
-		return ethereumfee.NewEthereumFee(cfg)
+		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	} else if cfg.ChainId == conf.NEO_CROSSCHAIN_ID {
-		return neofee.NewNeoFee(cfg)
+		return neofee.NewNeoFee(cfg, feeUpdateSlot)
 	} else if cfg.ChainId == conf.BSC_CROSSCHAIN_ID {
-		return ethereumfee.NewEthereumFee(cfg)
+		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	} else {
 		return nil
 	}
@@ -157,9 +157,10 @@ func (this *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 		}
 		minFee, maxFee, proxyFee, err := query.GetFee()
 		if err != nil {
-			logs.Error("get fee of chain: %s err: %v", chainId, err)
+			logs.Error("get fee of chain: %d err: %v", chainId, err)
 			continue
 		}
+		logs.Info("get fee of chain: %d successful", chainId)
 		fee.MinFee = models.NewBigInt(minFee)
 		fee.MaxFee = models.NewBigInt(maxFee)
 		fee.ProxyFee = models.NewBigInt(proxyFee)

@@ -50,15 +50,17 @@ func NewEthereumInfo(url string) *EthereumInfo {
 type EthereumSdkPro struct {
 	infos         map[string]*EthereumInfo
 	selectionSlot uint64
+	id            uint64
 	mutex         sync.Mutex
 }
 
-func NewEthereumSdkPro(urls []string) *EthereumSdkPro {
+func NewEthereumSdkPro(urls []string, slot uint64, id uint64) *EthereumSdkPro {
 	infos := make(map[string]*EthereumInfo, len(urls))
 	for _, url := range urls {
 		infos[url] = NewEthereumInfo(url)
 	}
-	pro := &EthereumSdkPro{infos: infos}
+	pro := &EthereumSdkPro{infos: infos,selectionSlot:slot,id:id}
+	pro.selection()
 	go pro.NodeSelection()
 	return pro
 }
@@ -75,7 +77,7 @@ func (pro *EthereumSdkPro) nodeSelection() {
 			logs.Error("node selection, recover info: %s", string(debug.Stack()))
 		}
 	}()
-	logs.Debug("ethereum node selection......")
+	logs.Debug("node selection of chain : %d......", pro.id)
 	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot))
 	for {
 		select {

@@ -50,16 +50,15 @@
       "BackwardBlockNumber":10,
       "Nodes": [
         {
-          "Url": "http://seed10.ngd.network:11332"
+          "Url": "http://seed8.ngd.network:20332"
         },
         {
-          "Url": "http://seed9.ngd.network:11332"
+          "Url": "http://seed9.ngd.network:20332"
         }
       ],
       "ExtendNodes": [
         {
-          "Url": "https://api-ropsten.etherscan.io/api",
-          "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
+          "Url": "https://testnet-explorer.o3node.org/"
         }
       ],
       "WrapperContract":"8bc7E7304120b88D111431F6A4853589D10e8132",
@@ -122,9 +121,6 @@
     {
       "ChainId":4,
       "Nodes": [
-        {
-          "Url": "http://192.168.1.244:22001"
-        }
       ],
       "GasLimit":10000,
       "ProxyFee":120
@@ -133,7 +129,7 @@
       "ChainId":8,
       "Nodes": [
         {
-          "Url": "http://192.168.1.244:22001"
+          "Url": "https://data-seed-prebsc-1-s1.binance.org:8545"
         }
       ],
       "GasLimit":10000,

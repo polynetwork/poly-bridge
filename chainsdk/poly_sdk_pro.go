@@ -43,15 +43,17 @@ func NewPolyInfo(url string) *PolyInfo {
 type PolySDKPro struct {
 	infos         map[string]*PolyInfo
 	selectionSlot uint64
+	id            uint64
 	mutex         sync.Mutex
 }
 
-func NewPolySDKPro(urls []string) *PolySDKPro {
+func NewPolySDKPro(urls []string, slot uint64, id uint64) *PolySDKPro {
 	infos := make(map[string]*PolyInfo, len(urls))
 	for _, url := range urls {
 		infos[url] = NewPolyInfo(url)
 	}
-	pro := &PolySDKPro{infos: infos}
+	pro := &PolySDKPro{infos: infos,selectionSlot:slot,id:id}
+	pro.selection()
 	go pro.NodeSelection()
 	return pro
 }
@@ -68,7 +70,7 @@ func (pro *PolySDKPro) nodeSelection() {
 			logs.Error("node selection, recover info: %s", string(debug.Stack()))
 		}
 	}()
-	logs.Debug("neo node selection......")
+	logs.Debug("node selection of chain : %d......", pro.id)
 	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot))
 	for {
 		select {

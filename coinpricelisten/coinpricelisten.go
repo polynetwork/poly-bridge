@@ -171,6 +171,7 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 			logs.Error("get coin price of market: %s err: %v", market, err)
 			continue
 		}
+		logs.Info("get coin price of market: %s successful", market)
 		for name, price := range coinPrices {
 			tokenPrice := marketCoinPrices[market+name]
 			if !ok {

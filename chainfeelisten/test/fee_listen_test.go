@@ -19,14 +19,14 @@ func TestListenFee(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := chainfeedao.NewChainFeeDao(config.Server, config.DBConfig)
+	dao := chainfeedao.NewChainFeeDao(conf.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
 	feeListenCfgs := config.FeeListenConfig
 	chainFees := make([]chainfeelisten.ChainFee, 0)
 	for _, cfg := range feeListenCfgs {
-		chainFee := chainfeelisten.NewChainFee(cfg)
+		chainFee := chainfeelisten.NewChainFee(cfg, config.FeeUpdateSlot)
 		chainFees = append(chainFees, chainFee)
 	}
 	feeListen := chainfeelisten.NewFeeListen(config.FeeUpdateSlot, chainFees, dao)

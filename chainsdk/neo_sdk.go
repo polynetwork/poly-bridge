@@ -19,7 +19,6 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"github.com/joeqian10/neo-gogogo/rpc"
 	"github.com/joeqian10/neo-gogogo/rpc/models"
 )
@@ -53,15 +52,9 @@ func (sdk *NeoSdk) GetBlockByIndex(index uint64) (*models.RpcBlock, error) {
 }
 
 func (sdk *NeoSdk) GetApplicationLog(txId string) (*models.RpcApplicationLog, error) {
-	cur := sdk.node
 	res := sdk.client.GetApplicationLog(txId)
-	for res.ErrorResponse.Error.Message != "" {
-		logs.Error("NeoClient.GetApplicationLog err:%s, url: %s", res.ErrorResponse.Error.Message, sdk.urls[sdk.node])
-		next := sdk.NextClient()
-		if next == cur {
-			return nil, fmt.Errorf("all node is not working!")
-		}
-		res = sdk.client.GetApplicationLog(txId)
+	if res.ErrorResponse.Error.Message != "" {
+		return nil, fmt.Errorf("%s", res.ErrorResponse.Error.Message)
 	}
 	return &res.Result, nil
 }

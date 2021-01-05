@@ -28,12 +28,12 @@ type EthereumFee struct {
 	ethSdk *chainsdk.EthereumSdkPro
 }
 
-func NewEthereumFee(ethCfg *conf.FeeListenConfig) *EthereumFee {
+func NewEthereumFee(ethCfg *conf.FeeListenConfig, feeUpdateSlot int64) *EthereumFee {
 	ethereumFee := &EthereumFee{}
 	ethereumFee.ethCfg = ethCfg
 	//
 	urls := ethCfg.GetNodesUrl()
-	sdk := chainsdk.NewEthereumSdkPro(urls)
+	sdk := chainsdk.NewEthereumSdkPro(urls, uint64(feeUpdateSlot), ethCfg.ChainId)
 	ethereumFee.ethSdk = sdk
 	return ethereumFee
 }
