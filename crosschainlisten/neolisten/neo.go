@@ -227,13 +227,14 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 	}
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
+
 type Error struct {
-	Code int64 `json:"code"`
+	Code    int64  `json:"code"`
 	Message string `json:"message"`
 }
 type ExtendHeight struct {
 	LastHeight uint64 `json:"result"`
-	Error *Error `json:"error"`
+	Error      *Error `json:"error"`
 }
 
 func (this *NeoChainListen) GetExtendLatestHeight() (uint64, error) {

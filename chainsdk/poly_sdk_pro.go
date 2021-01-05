@@ -52,7 +52,7 @@ func NewPolySDKPro(urls []string, slot uint64, id uint64) *PolySDKPro {
 	for _, url := range urls {
 		infos[url] = NewPolyInfo(url)
 	}
-	pro := &PolySDKPro{infos: infos,selectionSlot:slot,id:id}
+	pro := &PolySDKPro{infos: infos, selectionSlot: slot, id: id}
 	pro.selection()
 	go pro.NodeSelection()
 	return pro

@@ -59,7 +59,7 @@ func NewEthereumSdkPro(urls []string, slot uint64, id uint64) *EthereumSdkPro {
 	for _, url := range urls {
 		infos[url] = NewEthereumInfo(url)
 	}
-	pro := &EthereumSdkPro{infos: infos,selectionSlot:slot,id:id}
+	pro := &EthereumSdkPro{infos: infos, selectionSlot: slot, id: id}
 	pro.selection()
 	go pro.NodeSelection()
 	return pro

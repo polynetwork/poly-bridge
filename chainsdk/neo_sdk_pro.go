@@ -51,7 +51,7 @@ func NewNeoSdkPro(urls []string, slot uint64, id uint64) *NeoSdkPro {
 	for _, url := range urls {
 		infos[url] = NewNeoInfo(url)
 	}
-	pro := &NeoSdkPro{infos: infos,selectionSlot:slot,id:id}
+	pro := &NeoSdkPro{infos: infos, selectionSlot: slot, id: id}
 	pro.selection()
 	go pro.NodeSelection()
 	return pro
