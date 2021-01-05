@@ -85,6 +85,7 @@ func (this *CrossChainListen) Start() {
 func (this *CrossChainListen) ListenChain() {
 	for {
 		this.listenChain()
+		time.Sleep(time.Second * 5)
 	}
 }
 

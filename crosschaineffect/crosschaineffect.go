@@ -68,6 +68,7 @@ func (eff *CrossChainEffect) Start() {
 func (eff *CrossChainEffect) Check() {
 	for {
 		eff.check()
+		time.Sleep(time.Second * 5)
 	}
 }
 

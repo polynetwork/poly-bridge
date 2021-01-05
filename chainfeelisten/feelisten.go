@@ -99,6 +99,7 @@ func (this *FeeListen) Start() {
 func (this *FeeListen) ListenFee() {
 	for {
 		this.listenFee()
+		time.Sleep(time.Second * 5)
 	}
 }
 

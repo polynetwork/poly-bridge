@@ -100,6 +100,7 @@ func (this *CoinPriceListen) Start() {
 func (this *CoinPriceListen) ListenPrice() {
 	for {
 		this.listenPrice()
+		time.Sleep(time.Second * 5)
 	}
 }
 
