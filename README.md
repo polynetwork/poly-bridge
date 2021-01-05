@@ -9,6 +9,7 @@ PolyBridge的API。
 * [POST token](#post-token)
 * [POST tokenbasics](#post-tokenbasics)
 * [POST tokenmap](#post-tokenmap)
+* [POST tokenmapreverse](#post-tokenmapreverse)
 * [POST getfee](#post-getfee)
 * [POST checkfee](#post-checkfee)
 * [POST transactoins](#post-transactoins)
@@ -245,72 +246,72 @@ Example Response
 
 ### POST token
    
-   Request 
-   ```
-   http://localhost:8080/v1/token/
-   ```
-   
-   BODY raw
-   ```
-   {
-       "Hash": "0000000000000000000200000000000000000002"
-   }
-   ```
-   
-   Example Request
-   ```
-   curl --location --request POST 'http://localhost:8080/v1/token/' \
-   --data-raw '{
-       "Hash": "0000000000000000000200000000000000000002"
-   }'
-   ```
-   
-   Example Response
-   ```
-   {
-       "Hash": "0000000000000000000200000000000000000002",
-       "ChainId": 2,
-       "Name": "USDT",
-       "TokenBasicName": "USDT",
-       "TokenBasic": {
-           "Name": "USDT",
-           "Precision": 0,
-           "Price": 0,
-           "Ind": 0,
-           "Time": 1609675216,
-           "PriceMarkets": null,
-           "Tokens": null
-       },
-       "TokenMaps": [
-           {
-               "SrcTokenHash": "0000000000000000000200000000000000000002",
-               "SrcToken": null,
-               "DstTokenHash": "0000000000000000000400000000000000000002",
-               "DstToken": {
-                   "Hash": "0000000000000000000400000000000000000002",
-                   "ChainId": 4,
-                   "Name": "USDT",
-                   "TokenBasicName": "USDT",
-                   "TokenBasic": null,
-                   "TokenMaps": null
-               }
-           },
-           {
-               "SrcTokenHash": "0000000000000000000200000000000000000002",
-               "SrcToken": null,
-               "DstTokenHash": "0000000000000000000800000000000000000002",
-               "DstToken": {
-                   "Hash": "0000000000000000000800000000000000000002",
-                   "ChainId": 8,
-                   "Name": "USDT",
-                   "TokenBasicName": "USDT",
-                   "TokenBasic": null,
-                   "TokenMaps": null
-               }
-           }
-       ]
-   }
-   ```
+Request 
+```
+http://localhost:8080/v1/token/
+```
+
+BODY raw
+```
+{
+   "Hash": "0000000000000000000200000000000000000002"
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/token/' \
+--data-raw '{
+   "Hash": "0000000000000000000200000000000000000002"
+}'
+```
+
+Example Response
+```
+{
+    "Hash": "0000000000000000000200000000000000000002",
+    "ChainId": 2,
+    "Name": "USDT",
+    "TokenBasicName": "USDT",
+    "TokenBasic": {
+        "Name": "USDT",
+        "Precision": 0,
+        "Price": 0,
+        "Ind": 0,
+        "Time": 1609844520,
+        "PriceMarkets": null,
+        "Tokens": null
+    },
+    "TokenMaps": [
+        {
+            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcToken": null,
+            "DstTokenHash": "0000000000000000000400000000000000000002",
+            "DstToken": {
+                "Hash": "0000000000000000000400000000000000000002",
+                "ChainId": 4,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            }
+        },
+        {
+            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcToken": null,
+            "DstTokenHash": "0000000000000000000800000000000000000002",
+            "DstToken": {
+                "Hash": "0000000000000000000800000000000000000002",
+                "ChainId": 8,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            }
+        }
+    ]
+}
+```
 
 ### POST tokenmap
 
@@ -322,6 +323,7 @@ http://localhost:8080/v1/tokenmap/
 BODY raw
 ```
 {
+    "ChainId": 2,
     "Hash": "0000000000000000000200000000000000000002"
 }
 ```
@@ -330,6 +332,7 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/tokenmap/' \
 --data-raw '{
+    "ChainId": 2,
     "Hash": "0000000000000000000200000000000000000002"
 }'
 ```
@@ -337,24 +340,122 @@ curl --location --request POST 'http://localhost:8080/v1/tokenmap/' \
 Example Response
 ```
 {
-    "SrcTokenHash": "0000000000000000000200000000000000000002",
-    "SrcToken": {
-        "Hash": "0000000000000000000200000000000000000002",
-        "ChainId": 2,
-        "Name": "USDT",
-        "TokenBasicName": "USDT",
-        "TokenBasic": null,
-        "TokenMaps": null
-    },
-    "DstTokenHash": "0000000000000000000400000000000000000002",
-    "DstToken": {
-        "Hash": "0000000000000000000400000000000000000002",
-        "ChainId": 4,
-        "Name": "USDT",
-        "TokenBasicName": "USDT",
-        "TokenBasic": null,
-        "TokenMaps": null
-    }
+    "TotalCount": 2,
+    "TokenMaps": [
+        {
+            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcToken": {
+                "Hash": "0000000000000000000200000000000000000002",
+                "ChainId": 2,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            },
+            "DstTokenHash": "0000000000000000000400000000000000000002",
+            "DstToken": {
+                "Hash": "0000000000000000000400000000000000000002",
+                "ChainId": 4,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            }
+        },
+        {
+            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcToken": {
+                "Hash": "0000000000000000000200000000000000000002",
+                "ChainId": 2,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            },
+            "DstTokenHash": "0000000000000000000800000000000000000002",
+            "DstToken": {
+                "Hash": "0000000000000000000800000000000000000002",
+                "ChainId": 8,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            }
+        }
+    ]
+}
+```
+
+### POST tokenmapreverse
+
+Request 
+```
+http://localhost:8080/v1/tokenmapreverse/
+```
+
+BODY raw
+```
+{
+    "ChainId": 2,
+    "Hash": "0000000000000000000200000000000000000002"
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/tokenmapreverse/' \
+--data-raw '{
+    "ChainId": 2,
+    "Hash": "0000000000000000000200000000000000000002"
+}'
+```
+
+Example Response
+```
+{
+    "TotalCount": 2,
+    "TokenMaps": [
+        {
+            "SrcTokenHash": "0000000000000000000400000000000000000002",
+            "SrcToken": {
+                "Hash": "0000000000000000000400000000000000000002",
+                "ChainId": 4,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            },
+            "DstTokenHash": "0000000000000000000200000000000000000002",
+            "DstToken": {
+                "Hash": "0000000000000000000200000000000000000002",
+                "ChainId": 2,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            }
+        },
+        {
+            "SrcTokenHash": "0000000000000000000800000000000000000002",
+            "SrcToken": {
+                "Hash": "0000000000000000000800000000000000000002",
+                "ChainId": 8,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            },
+            "DstTokenHash": "0000000000000000000200000000000000000002",
+            "DstToken": {
+                "Hash": "0000000000000000000200000000000000000002",
+                "ChainId": 2,
+                "Name": "USDT",
+                "TokenBasicName": "USDT",
+                "TokenBasic": null,
+                "TokenMaps": null
+            }
+        }
+    ]
 }
 ```
 
@@ -388,7 +489,7 @@ Example Response
             "Precision": 0,
             "Price": 0,
             "Ind": 0,
-            "Time": 1609718410,
+            "Time": 1609844520,
             "PriceMarkets": null,
             "Tokens": [
                 {
@@ -422,7 +523,7 @@ Example Response
             "Precision": 0,
             "Price": 0,
             "Ind": 0,
-            "Time": 1609718410,
+            "Time": 1609844520,
             "PriceMarkets": null,
             "Tokens": [
                 {
@@ -456,7 +557,7 @@ Example Response
             "Precision": 0,
             "Price": 0,
             "Ind": 0,
-            "Time": 1609675216,
+            "Time": 1609844520,
             "PriceMarkets": null,
             "Tokens": [
                 {
@@ -474,7 +575,7 @@ Example Response
             "Precision": 0,
             "Price": 0,
             "Ind": 0,
-            "Time": 1609718410,
+            "Time": 1609844520,
             "PriceMarkets": null,
             "Tokens": [
                 {
@@ -508,7 +609,7 @@ Example Response
             "Precision": 0,
             "Price": 0,
             "Ind": 0,
-            "Time": 1609675216,
+            "Time": 1609844520,
             "PriceMarkets": null,
             "Tokens": [
                 {
@@ -650,8 +751,8 @@ http://localhost:8080/v1/transactoinsofuser/
 BODY raw
 ```
 {
-    "User":"xxxx",
-    "PageNo":1,
+    "Addresses":["8bc7e7304120b88d111431f6a4853589d10e8132", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"],
+    "PageNo":0,
     "PageSize":10
 }
 ```
@@ -660,8 +761,8 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/transactoinsofuser/' \
 --data-raw '{
-    "User":"xxxx",
-    "PageNo":1,
+    "Addresses":["8bc7e7304120b88d111431f6a4853589d10e8132", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"],
+    "PageNo":0,
     "PageSize":10
 }'
 ```
@@ -670,10 +771,65 @@ Example Response
 ```
 {
     "PageSize": 10,
-    "PageNo": 1,
-    "TotalPage": 0,
-    "TotalCount": 0,
-    "Transactions": null
+    "PageNo": 0,
+    "TotalPage": 1,
+    "TotalCount": 2,
+    "Transactions": [
+        {
+            "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729",
+            "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
+            "SrcChainId": 2,
+            "BlockHeight": 9329385,
+            "Time": 1608885420,
+            "DstChainId": 4,
+            "FeeTokenHash": "0000000000000000000000000000000000000000",
+            "FeeAmount": "1000000000000000000000000000000",
+            "Amount": "9000000000000000000000000000000",
+            "DstUser": "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8",
+            "State": "Finished",
+            "TransactionState": [
+                {
+                    "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729",
+                    "ChainId": 2,
+                    "Blocks": 0,
+                    "Time": 1608885420
+                },
+                {
+                    "Hash": "d2e8e325265ed314d9f538c2cb3f8e0a71ca2adad8b31db98278a4af6aecc1df",
+                    "ChainId": 0,
+                    "Blocks": 10,
+                    "Time": 1609143919
+                },
+                {
+                    "Hash": "1eecbe19ea85bd3ea57c3e7496b89f5263aa43d57449e21726f98435904ca7c4",
+                    "ChainId": 4,
+                    "Blocks": 0,
+                    "Time": 1608896077
+                }
+            ]
+        },
+        {
+            "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c739",
+            "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
+            "SrcChainId": 2,
+            "BlockHeight": 9329385,
+            "Time": 1608885420,
+            "DstChainId": 4,
+            "FeeTokenHash": "0000000000000000000000000000000000000000",
+            "FeeAmount": "1000000000000000000000000000000",
+            "Amount": "9000000000000000000000000000000",
+            "DstUser": "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8",
+            "State": "source done",
+            "TransactionState": [
+                {
+                    "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c739",
+                    "ChainId": 2,
+                    "Blocks": 0,
+                    "Time": 1608885420
+                }
+            ]
+        }
+    ]
 }
 ```
 

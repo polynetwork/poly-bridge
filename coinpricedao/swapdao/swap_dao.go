@@ -45,7 +45,7 @@ func NewSwapDao(dbCfg *conf.DBConfig) *SwapDao {
 
 func (dao *SwapDao) SavePrices(tokens []*models.TokenBasic) error {
 	if tokens != nil && len(tokens) > 0 {
-		res := dao.db.Debug().Session(&gorm.Session{FullSaveAssociations: true}).Save(tokens)
+		res := dao.db.Session(&gorm.Session{FullSaveAssociations: true}).Save(tokens)
 		if res.Error != nil {
 			return res.Error
 		}

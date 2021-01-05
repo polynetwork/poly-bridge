@@ -42,6 +42,9 @@ func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 	tokenBasicRsp := &TokenBasicRsp{
 		Name:   tokenBasic.Name,
 		Time:   tokenBasic.Time,
+		Precision: tokenBasic.Precision,
+		Price: tokenBasic.Price,
+		Ind: tokenBasic.Ind,
 		Tokens: nil,
 	}
 	if tokenBasic.Tokens != nil {

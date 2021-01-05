@@ -214,7 +214,7 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		}
 		newChain.In = uint64(len(srcTransactions))
 		newChain.Out = uint64(len(dstTransactions))
-		res := dao.db.Debug().Model(newChain).Updates(map[string]interface{}{
+		res := dao.db.Model(newChain).Updates(map[string]interface{}{
 			"txin":   gorm.Expr("txin + ?", newChain.In),
 			"txout":  gorm.Expr("txout + ?", newChain.Out),
 			"height": gorm.Expr("?", newChain.Height)})

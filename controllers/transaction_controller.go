@@ -52,7 +52,7 @@ func (c *TransactionController) TransactoinsOfUser() {
 	}
 	db := newDB()
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("hash").Where("`from` in ? or dst_user in ?", transactionsOfUserReq.Addresses, transactionsOfUserReq.Addresses)).
+	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("hash").Where("`from` in ? or dst_user in ?", transactionsOfUserReq.Addresses, transactionsOfUserReq.Addresses)).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
 		Joins("left join src_transactions on u.hash = src_transactions.hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
@@ -67,7 +67,7 @@ func (c *TransactionController) TransactoinsOfUser() {
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	var transactionNum int64
-	db.Model(&models.SrcTransfer{}).Where("from in ? or dst_user in ?", transactionsOfUserReq.Addresses, transactionsOfUserReq.Addresses).Count(&transactionNum)
+	db.Model(&models.SrcTransfer{}).Where("`from` in ? or dst_user in ?", transactionsOfUserReq.Addresses, transactionsOfUserReq.Addresses).Count(&transactionNum)
 	chains := make([]*models.Chain, 0)
 	db.Model(&models.Chain{}).Find(&chains)
 	c.Data["json"] = models.MakeTransactionsOfUserRsp(transactionsOfUserReq.PageSize, transactionsOfUserReq.PageNo,

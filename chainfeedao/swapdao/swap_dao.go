@@ -56,7 +56,7 @@ func (dao *SwapDao) GetFees() ([]*models.ChainFee, error) {
 }
 func (dao *SwapDao) SaveFees(fees []*models.ChainFee) error {
 	if fees != nil && len(fees) > 0 {
-		res := dao.db.Debug().Save(fees)
+		res := dao.db.Save(fees)
 		if res.Error != nil {
 			return res.Error
 		}
