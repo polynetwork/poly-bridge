@@ -58,10 +58,10 @@ type Token struct {
 }
 
 type TokenMap struct {
-	SrcChainId      uint64      `gorm:"primaryKey;type:bigint(20);not null"`
+	SrcChainId   uint64 `gorm:"primaryKey;type:bigint(20);not null"`
 	SrcTokenHash string `gorm:"primaryKey;size:66;not null"`
 	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
-	DstChainId      uint64      `gorm:"primaryKey;type:bigint(20);not null"`
+	DstChainId   uint64 `gorm:"primaryKey;type:bigint(20);not null"`
 	DstTokenHash string `gorm:"primaryKey;size:66;not null"`
 	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
 }

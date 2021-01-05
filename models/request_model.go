@@ -40,12 +40,12 @@ type TokenBasicRsp struct {
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 	tokenBasicRsp := &TokenBasicRsp{
-		Name:   tokenBasic.Name,
-		Time:   tokenBasic.Time,
+		Name:      tokenBasic.Name,
+		Time:      tokenBasic.Time,
 		Precision: tokenBasic.Precision,
-		Price: tokenBasic.Price,
-		Ind: tokenBasic.Ind,
-		Tokens: nil,
+		Price:     tokenBasic.Price,
+		Ind:       tokenBasic.Ind,
+		Tokens:    nil,
 	}
 	if tokenBasic.Tokens != nil {
 		for _, token := range tokenBasic.Tokens {
@@ -186,7 +186,7 @@ type TokenMapsReq struct {
 
 type TokenMapsRsp struct {
 	TotalCount uint64
-	TokenMaps     []*TokenMapRsp
+	TokenMaps  []*TokenMapRsp
 }
 
 func MakeTokenMapsRsp(tokenMaps []*TokenMap) *TokenMapsRsp {
@@ -296,24 +296,24 @@ func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int
 }
 
 type TransactionStateRsp struct {
-	Hash         string
-	ChainId   uint64
-	Blocks       uint64
-	Time uint64
+	Hash    string
+	ChainId uint64
+	Blocks  uint64
+	Time    uint64
 }
 
 type TransactionRsp struct {
-	Hash         string
-	User         string
-	SrcChainId   uint64
-	BlockHeight  uint64
-	Time         uint64
-	DstChainId   uint64
-	FeeTokenHash string
-	FeeAmount    string
-	Amount string
-	DstUser string
-	State        string
+	Hash             string
+	User             string
+	SrcChainId       uint64
+	BlockHeight      uint64
+	Time             uint64
+	DstChainId       uint64
+	FeeTokenHash     string
+	FeeAmount        string
+	Amount           string
+	DstUser          string
+	State            string
 	TransactionState []*TransactionStateRsp
 }
 
@@ -327,48 +327,48 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation) *TransactionRsp {
 		DstChainId:   transaction.SrcTransaction.DstChainId,
 		FeeTokenHash: transaction.WrapperTransaction.FeeTokenHash,
 		FeeAmount:    transaction.WrapperTransaction.FeeAmount.String(),
-		Amount: transaction.SrcTransaction.SrcTransfer.Amount.String(),
-		DstUser: transaction.SrcTransaction.SrcTransfer.DstUser,
+		Amount:       transaction.SrcTransaction.SrcTransfer.Amount.String(),
+		DstUser:      transaction.SrcTransaction.SrcTransfer.DstUser,
 		State:        conf.StateCode2Name(int(transaction.WrapperTransaction.Status)),
 	}
 	if transaction.SrcTransaction != nil {
 		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
-			Hash: transaction.SrcTransaction.Hash,
+			Hash:    transaction.SrcTransaction.Hash,
 			ChainId: transaction.SrcTransaction.ChainId,
-			Blocks: transaction.SrcTransaction.Height,
-			Time: transaction.SrcTransaction.Time,
+			Blocks:  transaction.SrcTransaction.Height,
+			Time:    transaction.SrcTransaction.Time,
 		})
 	}
 	if transaction.PolyTransaction != nil {
 		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
-			Hash: transaction.PolyTransaction.Hash,
+			Hash:    transaction.PolyTransaction.Hash,
 			ChainId: transaction.PolyTransaction.ChainId,
-			Blocks: transaction.PolyTransaction.Height,
-			Time: transaction.PolyTransaction.Time,
+			Blocks:  transaction.PolyTransaction.Height,
+			Time:    transaction.PolyTransaction.Time,
 		})
 	}
 	if transaction.DstTransaction != nil {
 		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
-			Hash: transaction.DstTransaction.Hash,
+			Hash:    transaction.DstTransaction.Hash,
 			ChainId: transaction.DstTransaction.ChainId,
-			Blocks: transaction.DstTransaction.Height,
-			Time: transaction.DstTransaction.Time,
+			Blocks:  transaction.DstTransaction.Height,
+			Time:    transaction.DstTransaction.Time,
 		})
 	}
 	return transactionRsp
 }
 
 type TransactionsOfAddressReq struct {
-	Addresses     []string
-	PageSize int
-	PageNo   int
+	Addresses []string
+	PageSize  int
+	PageNo    int
 }
 
 type TransactionsOfAddressRsp struct {
-	PageSize           int
-	PageNo             int
-	TotalPage          int
-	TotalCount         int
+	PageSize     int
+	PageNo       int
+	TotalPage    int
+	TotalCount   int
 	Transactions []*TransactionRsp
 }
 

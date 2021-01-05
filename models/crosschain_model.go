@@ -18,9 +18,9 @@
 package models
 
 type Chain struct {
-	ChainId *uint64 `gorm:"primaryKey;type:bigint(20);not null"`
-	Height  uint64  `gorm:"type:bigint(20);not null"`
-	BackwardBlockNumber  uint64  `gorm:"type:bigint(20);not null"`
+	ChainId             *uint64 `gorm:"primaryKey;type:bigint(20);not null"`
+	Height              uint64  `gorm:"type:bigint(20);not null"`
+	BackwardBlockNumber uint64  `gorm:"type:bigint(20);not null"`
 }
 
 type SrcTransaction struct {
@@ -109,9 +109,9 @@ type WrapperTransaction struct {
 type SrcPolyDstRelation struct {
 	SrcHash            string
 	WrapperTransaction *WrapperTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
-	SrcTransaction *SrcTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
+	SrcTransaction     *SrcTransaction     `gorm:"foreignKey:Hash;references:SrcHash"`
 	PolyHash           string
-	PolyTransaction *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
+	PolyTransaction    *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
 	DstHash            string
-	DstTransaction *DstTransaction `gorm:"foreignKey:Hash;references:DstHash"`
+	DstTransaction     *DstTransaction `gorm:"foreignKey:Hash;references:DstHash"`
 }

@@ -122,7 +122,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							DstChainId:   xx,
 							FeeTokenHash: notify.State.Value[4].Value,
 							FeeAmount:    &models.BigInt{*big.NewInt(int64(xx))},
-							Status: conf.STATE_SOURCE_DONE,
+							Status:       conf.STATE_SOURCE_DONE,
 						})
 					}
 				} else if notify.Contract[2:] == this.neoCfg.ProxyContract {
