@@ -23,6 +23,7 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
+	"poly-swap/chainfeelisten"
 	"poly-swap/coinpricelisten"
 	"poly-swap/conf"
 	"poly-swap/crosschaineffect"
@@ -93,7 +94,7 @@ func startServer(ctx *cli.Context) {
 	}
 	crosschainlisten.StartCrossChainListen(config.Server, config.ChainListenConfig, config.DBConfig)
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
-	coinpricelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
+	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	crosschaineffect.StartCrossChainEffect(config.EventEffectConfig, config.DBConfig)
 	waitToExit()
 }
