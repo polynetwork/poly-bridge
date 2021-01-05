@@ -7,16 +7,16 @@
   },
   "Chains":[
     {
-      "ChainId":0,
+      "ChainId":0
     },
     {
-      "ChainId":2,
+      "ChainId":2
     },
     {
-      "ChainId":4,
+      "ChainId":4
     },
     {
-      "ChainId":8,
+      "ChainId":8
     }
   ],
   "ChainFees":[
