@@ -27,6 +27,7 @@ import (
 type CoinPriceDao interface {
 	GetTokens() ([]*models.TokenBasic, error)
 	SavePrices(tokens []*models.TokenBasic) error
+	Name() string
 }
 
 func NewCoinPriceDao(server string, dbCfg *conf.DBConfig) CoinPriceDao {

@@ -45,3 +45,7 @@ func (this *NeoFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
 func (this *NeoFee) GetChainId() uint64 {
 	return this.neoCfg.ChainId
 }
+
+func (this *NeoFee) Name() string {
+	return conf.ChainId2Name(this.neoCfg.ChainId)
+}

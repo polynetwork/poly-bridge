@@ -20,68 +20,69 @@ package crosschaineffect
 import (
 	"github.com/astaxie/beego/logs"
 	"poly-swap/conf"
-	"poly-swap/crosschaineffect/explorermonitor"
-	"poly-swap/crosschaineffect/swapmonitor"
+	"poly-swap/crosschaineffect/explorereffect"
+	"poly-swap/crosschaineffect/swapeffect"
 	"runtime/debug"
 	"time"
 )
 
-type Monitor interface {
-	Monitor() error
+type Effect interface {
+	Effect() error
+	Name() string
 }
 
-func StartCrossChainMonitor(monitorCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConfig) {
-	monitor := NewMonitor(monitorCfg, dbCfg)
-	if monitor == nil {
-		panic("monitor is not valid")
+func StartCrossChainEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) {
+	effect := NewEffect(effCfg, dbCfg)
+	if effect == nil {
+		panic("effect is not valid")
 	}
-	crossChainMonitor := NewCrossChainMonitor(monitor)
-	crossChainMonitor.Start()
+	crossChainEffect := NewCrossChainEffect(effect)
+	crossChainEffect.Start()
 }
 
-func NewMonitor(monCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConfig) Monitor {
-	if monCfg.Server == conf.SERVER_POLY_SWAP {
-		return swapmonitor.NewSwapMonitor(monCfg, dbCfg)
-	} else if monCfg.Server == conf.SERVER_EXPLORER {
-		return explorermonitor.NewExplorerMonitor(monCfg, dbCfg)
+func NewEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {
+	if effCfg.Server == conf.SERVER_POLY_SWAP {
+		return swapeffect.NewSwapEffect(effCfg, dbCfg)
+	} else if effCfg.Server == conf.SERVER_EXPLORER {
+		return explorereffect.NewExplorerEffect(effCfg, dbCfg)
 	} else {
 		return nil
 	}
 }
 
-type CrossChainMonitor struct {
-	monitor Monitor
+type CrossChainEffect struct {
+	monitor Effect
 }
 
-func NewCrossChainMonitor(monitor Monitor) *CrossChainMonitor {
-	crossChainMonitor := &CrossChainMonitor{
+func NewCrossChainEffect(monitor Effect) *CrossChainEffect {
+	crossChainMonitor := &CrossChainEffect{
 		monitor: monitor,
 	}
 	return crossChainMonitor
 }
 
-func (mon *CrossChainMonitor) Start() {
-	go mon.Check()
+func (eff *CrossChainEffect) Start() {
+	go eff.Check()
 }
 
-func (mon *CrossChainMonitor) Check() {
+func (eff *CrossChainEffect) Check() {
 	for {
-		mon.check()
+		eff.check()
 	}
 }
 
-func (mon *CrossChainMonitor) check() {
+func (eff *CrossChainEffect) check() {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("service start, recover info: %s", string(debug.Stack()))
 		}
 	}()
-	logs.Debug("check events %s......")
+	logs.Debug("cross chain effect, server: %s......", eff.monitor.Name())
 	ticker := time.NewTicker(time.Second)
 	for {
 		select {
 		case <-ticker.C:
-			err := mon.monitor.Monitor()
+			err := eff.monitor.Effect()
 			if err != nil {
 				logs.Error("cross chain monitor err: %v", err)
 			}

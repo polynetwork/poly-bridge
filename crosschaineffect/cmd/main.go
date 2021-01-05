@@ -90,8 +90,7 @@ func startServer(ctx *cli.Context) {
 		fmt.Printf("%s\n", string(conf))
 	}
 
-	monitor := crosschaineffect.NewCrossChainMonitor(config.CrossChainMonitor, config.DBConfig)
-	monitor.Start()
+	crosschaineffect.StartCrossChainEffect(config.EventEffectConfig, config.DBConfig)
 	waitToExit()
 }
 

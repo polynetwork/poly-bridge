@@ -53,3 +53,7 @@ func (this *EthereumFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
 func (this *EthereumFee) GetChainId() uint64 {
 	return this.ethCfg.ChainId
 }
+
+func (this *EthereumFee) Name() string {
+	return conf.ChainId2Name(this.ethCfg.ChainId)
+}

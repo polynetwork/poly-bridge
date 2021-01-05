@@ -94,7 +94,7 @@ func startServer(ctx *cli.Context) {
 	crosschainlisten.StartCrossChainListen(config.Server, config.ChainListenConfig, config.DBConfig)
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	coinpricelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
-	crosschaineffect.StartCrossChainMonitor(config.CrossChainMonitor, config.DBConfig)
+	crosschaineffect.StartCrossChainEffect(config.EventEffectConfig, config.DBConfig)
 	waitToExit()
 }
 

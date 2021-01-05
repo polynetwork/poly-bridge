@@ -61,6 +61,20 @@ const (
 	SERVER_STAKE     = "stake"
 )
 
+func ChainId2Name(code uint64) string {
+	if code == POLY_CROSSCHAIN_ID {
+		return POLY_CHAIN_NAME
+	} else if code == ETHEREUM_CROSSCHAIN_ID {
+		return ETHEREUM_CHAIN_NAME
+	} else if code == NEO_CROSSCHAIN_ID {
+		return NEO_CHAIN_NAME
+	} else if code == BSC_CROSSCHAIN_ID {
+		return BSC_CHAIN_NAME
+	} else {
+		return "unknown"
+	}
+}
+
 func StateCode2Name(code int) string {
 	if code == STATE_FINISHED {
 		return "Finished"
@@ -193,7 +207,7 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 	return keys
 }
 
-type CrossChainMonitorConfig struct {
+type EventEffectConfig struct {
 	HowOld int64
 	Server string
 }
@@ -205,7 +219,7 @@ type Config struct {
 	CoinPriceListenConfig []*CoinPriceListenConfig
 	FeeUpdateSlot         int64
 	FeeListenConfig       []*FeeListenConfig
-	CrossChainMonitor     *CrossChainMonitorConfig
+	EventEffectConfig     *EventEffectConfig
 	DBConfig              *DBConfig
 }
 

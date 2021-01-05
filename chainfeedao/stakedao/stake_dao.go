@@ -20,6 +20,7 @@ package stakedao
 import (
 	"encoding/json"
 	"fmt"
+	"poly-swap/conf"
 	"poly-swap/models"
 )
 
@@ -48,4 +49,8 @@ func (dao *StakeDao) SaveFees(fees []*models.ChainFee) error {
 		fmt.Printf("fees: %s\n", json)
 	}
 	return nil
+}
+
+func (dao *StakeDao) Name() string {
+	return conf.SERVER_STAKE
 }

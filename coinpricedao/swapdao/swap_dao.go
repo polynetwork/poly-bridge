@@ -64,3 +64,7 @@ func (dao *SwapDao) GetTokens() ([]*models.TokenBasic, error) {
 	}
 	return tokens, nil
 }
+
+func (dao *SwapDao) Name() string {
+	return conf.SERVER_POLY_SWAP
+}

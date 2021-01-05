@@ -117,3 +117,7 @@ func (dao *SwapDao) UpdateChain(chain *models.Chain) error {
 	}
 	return nil
 }
+
+func (dao *SwapDao) Name() string {
+	return conf.SERVER_POLY_SWAP
+}

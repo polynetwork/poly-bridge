@@ -20,6 +20,7 @@ package stakedao
 import (
 	"encoding/json"
 	"fmt"
+	"poly-swap/conf"
 	"poly-swap/models"
 )
 
@@ -88,4 +89,8 @@ func (dao *StakeDao) GetChain(chainId uint64) (*models.Chain, error) {
 func (dao *StakeDao) UpdateChain(chain *models.Chain) error {
 	dao.chains[*chain.ChainId] = chain
 	return nil
+}
+
+func (dao *StakeDao) Name() string {
+	return conf.SERVER_STAKE
 }

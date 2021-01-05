@@ -26,6 +26,7 @@ import (
 	"poly-swap/conf"
 	"poly-swap/models"
 	"runtime/debug"
+	"strings"
 	"time"
 )
 
@@ -109,7 +110,7 @@ func (this *CoinPriceListen) listenPrice() {
 		}
 	}()
 
-	logs.Debug("listen price......")
+	logs.Debug("coin price listen, chain: %s, dao: %s......", this.GetPriceMarket(), this.db.Name())
 	ticker := time.NewTicker(time.Minute)
 	for {
 		select {
@@ -206,4 +207,12 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 		}
 	}
 	return nil
+}
+
+func (this *CoinPriceListen) GetPriceMarket() string {
+	priceMarkets := make([]string, 0)
+	for _, priceMarket := range this.priceMarket {
+		priceMarkets = append(priceMarkets, priceMarket.GetMarketName())
+	}
+	return strings.Join(priceMarkets, ",")
 }

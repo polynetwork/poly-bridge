@@ -106,7 +106,7 @@ func (this *CrossChainListen) listenChain() {
 		chain.Height = height
 	}
 	this.db.UpdateChain(chain)
-	logs.Debug("listen chain %s......", this.handle.GetChainName())
+	logs.Debug("cross chain listen, chain: %s, dao: %s......", this.handle.GetChainName(), this.db.Name())
 	ticker := time.NewTicker(time.Second * time.Duration(this.handle.GetChainListenSlot()))
 	for {
 		select {

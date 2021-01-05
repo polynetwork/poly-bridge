@@ -26,6 +26,7 @@ import (
 	"poly-swap/conf"
 	"poly-swap/models"
 	"runtime/debug"
+	"strings"
 	"time"
 )
 
@@ -46,6 +47,7 @@ func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.Fe
 type ChainFee interface {
 	GetFee() (*big.Int, *big.Int, *big.Int, error)
 	GetChainId() uint64
+	Name() string
 }
 
 func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
@@ -107,7 +109,7 @@ func (this *FeeListen) listenFee() {
 		}
 	}()
 
-	logs.Debug("listen fee......")
+	logs.Debug("fee listen, chain: %s, dao: %s......", this.GetChainFees(), this.db.Name())
 	ticker := time.NewTicker(time.Minute)
 	for {
 		select {
@@ -172,4 +174,12 @@ func (this *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 		}
 	}
 	return nil
+}
+
+func (this *FeeListen) GetChainFees() string {
+	fees := make([]string, 0)
+	for _, fee := range this.fees {
+		fees = append(fees, fee.Name())
+	}
+	return strings.Join(fees, ",")
 }

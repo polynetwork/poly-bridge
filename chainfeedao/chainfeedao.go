@@ -27,6 +27,7 @@ import (
 type ChainFeeDao interface {
 	GetFees() ([]*models.ChainFee, error)
 	SaveFees(fees []*models.ChainFee) error
+	Name() string
 }
 
 func NewChainFeeDao(server string, dbCfg *conf.DBConfig) ChainFeeDao {

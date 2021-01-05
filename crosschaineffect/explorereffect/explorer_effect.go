@@ -15,7 +15,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package explorermonitor
+package explorereffect
 
 import (
 	"github.com/astaxie/beego/logs"
@@ -25,16 +25,16 @@ import (
 	"poly-swap/crosschaindao/explorerdao"
 )
 
-type ExplorerMonitor struct {
+type ExplorerEffect struct {
 	dbCfg  *conf.DBConfig
-	monCfg *conf.CrossChainMonitorConfig
+	effCfg *conf.EventEffectConfig
 	db     *gorm.DB
 }
 
-func NewExplorerMonitor(monCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConfig) *ExplorerMonitor {
-	explorerMonitor := &ExplorerMonitor{
+func NewExplorerEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *ExplorerEffect {
+	explorerMonitor := &ExplorerEffect{
 		dbCfg:  dbCfg,
-		monCfg: monCfg,
+		effCfg: effCfg,
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
@@ -45,17 +45,21 @@ func NewExplorerMonitor(monCfg *conf.CrossChainMonitorConfig, dbCfg *conf.DBConf
 	return explorerMonitor
 }
 
-func (monitor *ExplorerMonitor) Monitor() error {
-	err := monitor.updateHash()
+func (eff *ExplorerEffect) Effect() error {
+	err := eff.updateHash()
 	if err != nil {
 		logs.Error("update hash- err: %s", err)
 	}
 	return nil
 }
 
-func (monitor *ExplorerMonitor) updateHash() error {
+func (eff *ExplorerEffect) Name() string {
+	return conf.SERVER_EXPLORER
+}
+
+func (eff *ExplorerEffect) updateHash() error {
 	polySrcRelations := make([]*explorerdao.PolySrcRelation, 0)
-	monitor.db.Debug().Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and mchain_tx.fchain != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("inner join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+	eff.db.Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and mchain_tx.fchain != ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("inner join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	updatePolyTransactions := make([]*explorerdao.PolyTransaction, 0)
 	for _, polySrcRelation := range polySrcRelations {
 		if polySrcRelation.SrcTransaction != nil {
@@ -64,7 +68,7 @@ func (monitor *ExplorerMonitor) updateHash() error {
 		}
 	}
 	if len(updatePolyTransactions) > 0 {
-		monitor.db.Save(updatePolyTransactions)
+		eff.db.Save(updatePolyTransactions)
 	}
 	return nil
 }

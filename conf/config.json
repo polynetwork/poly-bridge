@@ -81,7 +81,7 @@
       "ProxyContract":"8A0283BB46CBC957CEDa71c77f85F0a71a89157A"
     }
   ],
-  "CrossChainMonitorConfig": {
+  "EventEffectConfig": {
     "HowOld": 3600,
     "Server": "polyswap"
   },

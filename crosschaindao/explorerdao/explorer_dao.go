@@ -269,3 +269,8 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 	}
 	return nil
 }
+
+func (dao *ExplorerDao) Name() string {
+	return conf.SERVER_EXPLORER
+}
+

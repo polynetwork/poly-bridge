@@ -20,6 +20,7 @@ package stakedao
 import (
 	"encoding/json"
 	"fmt"
+	"poly-swap/conf"
 	"poly-swap/models"
 )
 
@@ -49,4 +50,8 @@ func (dao *StakeDao) SavePrices(tokens []*models.TokenBasic) error {
 
 func (dao *StakeDao) GetTokens() ([]*models.TokenBasic, error) {
 	return dao.tokenBasics, nil
+}
+
+func (dao *StakeDao) Name() string {
+	return conf.SERVER_STAKE
 }
