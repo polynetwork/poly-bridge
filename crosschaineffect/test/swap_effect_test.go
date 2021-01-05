@@ -128,4 +128,3 @@ func TestSwapEffect_AddDstTransaction(t *testing.T) {
 		panic(err)
 	}
 }
-

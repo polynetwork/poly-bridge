@@ -273,4 +273,3 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 func (dao *ExplorerDao) Name() string {
 	return conf.SERVER_EXPLORER
 }
-

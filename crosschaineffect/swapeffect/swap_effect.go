@@ -66,7 +66,6 @@ func (eff *SwapEffect) Name() string {
 	return conf.SERVER_POLY_SWAP
 }
 
-
 func (eff *SwapEffect) updateHash() error {
 	polySrcRelations := make([]*models.PolySrcRelation, 0)
 	eff.db.Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
