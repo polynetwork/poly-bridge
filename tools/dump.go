@@ -61,9 +61,9 @@ func dumpStatus(dbCfg *conf.DBConfig) {
 	{
 		TokenMaps := make([]*models.TokenMap, 0)
 		db.Find(&TokenMaps)
-		fmt.Printf("token map info:\nSrcTokenHash\t\t\t\tDstTokenHash\t\t\t\t\n")
+		fmt.Printf("token map info:\nSrcChain\t\t\t\tSrcTokenHash\t\t\t\tDstChain\t\t\t\tDstTokenHash\t\t\t\t\n")
 		for _, TokenMap := range TokenMaps {
-			fmt.Printf("%s\t\t\t\t%s\t\t\t\t\n", TokenMap.SrcTokenHash, TokenMap.DstTokenHash)
+			fmt.Printf("%d\t\t\t\t%s\t\t\t\t%d\t\t\t\t%s\t\t\t\t\n", TokenMap.SrcChainId, TokenMap.SrcTokenHash, TokenMap.DstChainId, TokenMap.DstTokenHash)
 		}
 	}
 	{

@@ -100,7 +100,7 @@ func (eff *SwapEffect) updateStatus() error {
 	for _, chain := range chains {
 		id2Chains[*chain.ChainId] = chain
 	}
-	wrapperPolyDstRelations := make([]*models.WrapperPolyDstRelation, 0)
+	wrapperPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	eff.db.Table("wrapper_transactions").Where("status != ?", conf.STATE_FINISHED).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Find(&wrapperPolyDstRelations)
 	for _, wrapperPolyDstRelation := range wrapperPolyDstRelations {

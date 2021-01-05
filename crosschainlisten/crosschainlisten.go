@@ -105,6 +105,9 @@ func (this *CrossChainListen) listenChain() {
 	if chain.Height == 0 {
 		chain.Height = height
 	}
+	if chain.BackwardBlockNumber == 0 {
+		chain.BackwardBlockNumber = this.handle.GetBackwardBlockNumber()
+	}
 	this.db.UpdateChain(chain)
 	logs.Debug("cross chain listen, chain: %s, dao: %s......", this.handle.GetChainName(), this.db.Name())
 	ticker := time.NewTicker(time.Second * time.Duration(this.handle.GetChainListenSlot()))

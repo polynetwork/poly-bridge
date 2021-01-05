@@ -33,22 +33,18 @@ func NewStakeDao() *StakeDao {
 	chains := make(map[uint64]*models.Chain)
 	chains[2] = &models.Chain{
 		ChainId: new(uint64),
-		Name:    "Ethereum",
 		Height:  9329384,
 	}
 	chains[0] = &models.Chain{
 		ChainId: new(uint64),
-		Name:    "Poly",
 		Height:  1641496,
 	}
 	chains[8] = &models.Chain{
 		ChainId: new(uint64),
-		Name:    "BSC",
 		Height:  4810050,
 	}
 	chains[4] = &models.Chain{
 		ChainId: new(uint64),
-		Name:    "NEO",
 		Height:  0,
 	}
 	for k, v := range chains {

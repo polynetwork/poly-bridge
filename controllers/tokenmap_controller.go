@@ -34,8 +34,21 @@ func (c *TokenMapController) TokenMap() {
 		panic(err)
 	}
 	db := newDB()
-	tokenMap := new(models.TokenMap)
-	db.Where("src_token_hash = ?", tokenMapReq.Hash).Preload("SrcToken").Preload("DstToken").First(tokenMap)
-	c.Data["json"] = models.MakeTokenMapRsp(tokenMap)
+	tokenMaps := make([]*models.TokenMap, 0)
+	db.Where("src_chain_id = ? and src_token_hash = ?", tokenMapReq.ChainId, tokenMapReq.Hash).Preload("SrcToken").Preload("DstToken").Find(&tokenMaps)
+	c.Data["json"] = models.MakeTokenMapsRsp(tokenMaps)
+	c.ServeJSON()
+}
+
+func (c *TokenMapController) TokenMapReverse() {
+	var tokenMapReq models.TokenMapReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenMapReq); err != nil {
+		panic(err)
+	}
+	db := newDB()
+	tokenMaps := make([]*models.TokenMap, 0)
+	db.Where("dst_chain_id = ? and dst_token_hash = ?", tokenMapReq.ChainId, tokenMapReq.Hash).Preload("SrcToken").Preload("DstToken").Find(&tokenMaps)
+	c.Data["json"] = models.MakeTokenMapsRsp(tokenMaps)
 	c.ServeJSON()
 }

@@ -31,13 +31,13 @@ func startDeploy(cfg *conf2.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.TokenBasic{}, &models.ChainFee{}, &models.Token{}, &models.PriceMarket{},
+	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{},  &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
 		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
 	if err != nil {
 		panic(err)
 	}
 	//
-	db.Debug().Save(cfg.Chains)
+	db.Save(cfg.Chains)
 	db.Save(cfg.TokenBasics)
 	db.Save(cfg.ChainFees)
 	tokenMaps := getTokenMapsFromToken(cfg.TokenBasics)
@@ -52,7 +52,9 @@ func getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*models.TokenMap 
 			for _, tokenDst := range tokenBasic.Tokens {
 				if tokenDst.ChainId != tokenSrc.ChainId {
 					tokenMaps = append(tokenMaps, &models.TokenMap{
+						SrcChainId: tokenSrc.ChainId,
 						SrcTokenHash: tokenSrc.Hash,
+						DstChainId: tokenDst.ChainId,
 						DstTokenHash: tokenDst.Hash,
 					})
 				}

@@ -99,6 +99,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		item.Time = tt
 		item.BlockHeight = height
 		item.SrcChainId = this.GetChainId()
+		item.Status = conf.STATE_SOURCE_DONE
 	}
 	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, height)
 	if err != nil {

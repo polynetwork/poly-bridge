@@ -49,19 +49,21 @@ type ChainFee struct {
 
 type Token struct {
 	Hash           string      `gorm:"primaryKey;size:66;not null"`
-	ChainId        uint64      `gorm:"type:bigint(20);not null"`
+	ChainId        uint64      `gorm:"primaryKey;type:bigint(20);not null"`
 	Name           string      `gorm:"size:64;not null"`
 	Precision      uint64      `gorm:"type:bigint(20);not null"`
 	TokenBasicName string      `gorm:"size:64;not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
-	TokenMaps      []*TokenMap `gorm:"foreignKey:SrcTokenHash;references:Hash"`
+	TokenMaps      []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
 }
 
 type TokenMap struct {
+	SrcChainId      uint64      `gorm:"primaryKey;type:bigint(20);not null"`
 	SrcTokenHash string `gorm:"primaryKey;size:66;not null"`
-	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash;references:Hash"`
+	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
+	DstChainId      uint64      `gorm:"primaryKey;type:bigint(20);not null"`
 	DstTokenHash string `gorm:"primaryKey;size:66;not null"`
-	DstToken     *Token `gorm:"foreignKey:DstTokenHash;references:Hash"`
+	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
 }
 
 type WrapperTransactionWithToken struct {
@@ -72,7 +74,7 @@ type WrapperTransactionWithToken struct {
 	Time         uint64  `gorm:"type:bigint(20);not null"`
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
 	FeeTokenHash string  `gorm:"size:66;not null"`
-	FeeToken     *Token  `gorm:"foreignKey:FeeTokenHash;references:Hash"`
+	FeeToken     *Token  `gorm:"foreignKey:Hash,ChainId;references:FeeTokenHash,SrcChainId"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
 }

@@ -151,7 +151,8 @@ func MakeTokensRsp(tokens []*Token) *TokensRsp {
 }
 
 type TokenMapReq struct {
-	Hash string
+	ChainId uint64
+	Hash    string
 }
 
 type TokenMapRsp struct {
@@ -173,6 +174,26 @@ func MakeTokenMapRsp(tokenMap *TokenMap) *TokenMapRsp {
 		tokenMapRsp.DstToken = MakeTokenRsp(tokenMap.DstToken)
 	}
 	return tokenMapRsp
+}
+
+type TokenMapsReq struct {
+	ChainId uint64
+	Hash    string
+}
+
+type TokenMapsRsp struct {
+	TotalCount uint64
+	TokenMaps     []*TokenMapRsp
+}
+
+func MakeTokenMapsRsp(tokenMaps []*TokenMap) *TokenMapsRsp {
+	tokenMapsRsp := &TokenMapsRsp{
+		TotalCount: uint64(len(tokenMaps)),
+	}
+	for _, tokenMap := range tokenMaps {
+		tokenMapsRsp.TokenMaps = append(tokenMapsRsp.TokenMaps, MakeTokenMapRsp(tokenMap))
+	}
+	return tokenMapsRsp
 }
 
 type GetFeeReq struct {
@@ -214,11 +235,11 @@ func MakeCheckFeeRsp(hash string, hashPay bool, amount float64) *CheckFeeRsp {
 	return checkFeeRsp
 }
 
-type TransactionReq struct {
+type WrapperTransactionReq struct {
 	Hash string
 }
 
-type TransactionRsp struct {
+type WrapperTransactionRsp struct {
 	Hash         string
 	User         string
 	SrcChainId   uint64
@@ -230,8 +251,8 @@ type TransactionRsp struct {
 	State        string
 }
 
-func MakeTransactionRsp(transaction *WrapperTransaction) *TransactionRsp {
-	transactionRsp := &TransactionRsp{
+func MakeWrapperTransactionRsp(transaction *WrapperTransaction) *WrapperTransactionRsp {
+	transactionRsp := &WrapperTransactionRsp{
 		Hash:         transaction.Hash,
 		User:         transaction.User,
 		SrcChainId:   transaction.SrcChainId,
@@ -245,55 +266,132 @@ func MakeTransactionRsp(transaction *WrapperTransaction) *TransactionRsp {
 	return transactionRsp
 }
 
-type TransactionsReq struct {
+type WrapperTransactionsReq struct {
 	PageSize int
 	PageNo   int
 }
 
-type TransactionsRsp struct {
+type WrapperTransactionsRsp struct {
 	PageSize     int
 	PageNo       int
 	TotalPage    int
 	TotalCount   int
-	Transactions []*TransactionRsp
+	Transactions []*WrapperTransactionRsp
 }
 
-func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
-	transactionsRsp := &TransactionsRsp{
+func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *WrapperTransactionsRsp {
+	transactionsRsp := &WrapperTransactionsRsp{
 		PageSize:   pageSize,
 		PageNo:     pageNo,
 		TotalPage:  totalPage,
 		TotalCount: totalCount,
 	}
 	for _, transaction := range transactions {
-		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeTransactionRsp(transaction))
+		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeWrapperTransactionRsp(transaction))
 	}
 	return transactionsRsp
 }
 
-type TransactionsOfUserReq struct {
-	User     string
+type TransactionStateRsp struct {
+	Hash         string
+	ChainId   uint64
+	Blocks       uint64
+	Time uint64
+}
+
+type TransactionRsp struct {
+	Hash         string
+	User         string
+	SrcChainId   uint64
+	BlockHeight  uint64
+	Time         uint64
+	DstChainId   uint64
+	FeeTokenHash string
+	FeeAmount    string
+	Amount string
+	DstUser string
+	State        string
+	TransactionState []*TransactionStateRsp
+}
+
+func MakeTransactionRsp(transaction *SrcPolyDstRelation) *TransactionRsp {
+	transactionRsp := &TransactionRsp{
+		Hash:         transaction.SrcHash,
+		User:         transaction.SrcTransaction.User,
+		SrcChainId:   transaction.SrcTransaction.ChainId,
+		BlockHeight:  transaction.SrcTransaction.Height,
+		Time:         transaction.SrcTransaction.Time,
+		DstChainId:   transaction.SrcTransaction.DstChainId,
+		FeeTokenHash: transaction.WrapperTransaction.FeeTokenHash,
+		FeeAmount:    transaction.WrapperTransaction.FeeAmount.String(),
+		Amount: transaction.SrcTransaction.SrcTransfer.Amount.String(),
+		DstUser: transaction.SrcTransaction.SrcTransfer.DstUser,
+		State:        conf.StateCode2Name(int(transaction.WrapperTransaction.Status)),
+	}
+	if transaction.SrcTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash: transaction.SrcTransaction.Hash,
+			ChainId: transaction.SrcTransaction.ChainId,
+			Blocks: transaction.SrcTransaction.Height,
+			Time: transaction.SrcTransaction.Time,
+		})
+	}
+	if transaction.PolyTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash: transaction.PolyTransaction.Hash,
+			ChainId: transaction.PolyTransaction.ChainId,
+			Blocks: transaction.PolyTransaction.Height,
+			Time: transaction.PolyTransaction.Time,
+		})
+	}
+	if transaction.DstTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash: transaction.DstTransaction.Hash,
+			ChainId: transaction.DstTransaction.ChainId,
+			Blocks: transaction.DstTransaction.Height,
+			Time: transaction.DstTransaction.Time,
+		})
+	}
+	return transactionRsp
+}
+
+type TransactionsOfAddressReq struct {
+	Addresses     []string
 	PageSize int
 	PageNo   int
 }
 
-type TransactionsOfUserRsp struct {
-	PageSize     int
-	PageNo       int
-	TotalPage    int
-	TotalCount   int
+type TransactionsOfAddressRsp struct {
+	PageSize           int
+	PageNo             int
+	TotalPage          int
+	TotalCount         int
 	Transactions []*TransactionRsp
 }
 
-func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
-	transactionsRsp := &TransactionsRsp{
+func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*SrcPolyDstRelation, chains []*Chain) *TransactionsOfAddressRsp {
+	transactionsRsp := &TransactionsOfAddressRsp{
 		PageSize:   pageSize,
 		PageNo:     pageNo,
 		TotalPage:  totalPage,
 		TotalCount: totalCount,
 	}
+	chainsMap := make(map[uint64]*Chain)
+	for _, chain := range chains {
+		chainsMap[*chain.ChainId] = chain
+	}
 	for _, transaction := range transactions {
-		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeTransactionRsp(transaction))
+		rsp := MakeTransactionRsp(transaction)
+		for _, state := range rsp.TransactionState {
+			chain, ok := chainsMap[state.ChainId]
+			if ok {
+				state.Blocks = chain.Height - state.Blocks
+				if state.Blocks > chain.BackwardBlockNumber {
+					state.Blocks = chain.BackwardBlockNumber
+				}
+			}
+		}
+		transactionsRsp.Transactions = append(transactionsRsp.Transactions, rsp)
 	}
 	return transactionsRsp
 }
@@ -309,18 +407,18 @@ type TransactionsOfStateRsp struct {
 	PageNo       int
 	TotalPage    int
 	TotalCount   int
-	Transactions []*TransactionRsp
+	Transactions []*WrapperTransactionRsp
 }
 
-func MakeTransactionsOfStateRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *TransactionsRsp {
-	transactionsRsp := &TransactionsRsp{
+func MakeTransactionsOfStateRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *WrapperTransactionsRsp {
+	transactionsRsp := &WrapperTransactionsRsp{
 		PageSize:   pageSize,
 		PageNo:     pageNo,
 		TotalPage:  totalPage,
 		TotalCount: totalCount,
 	}
 	for _, transaction := range transactions {
-		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeTransactionRsp(transaction))
+		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakeWrapperTransactionRsp(transaction))
 	}
 	return transactionsRsp
 }
