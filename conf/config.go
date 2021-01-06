@@ -26,13 +26,9 @@ import (
 
 var (
 	POLY_CROSSCHAIN_ID     = uint64(0)
-	POLY_CHAIN_NAME        = "Poly"
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
-	ETHEREUM_CHAIN_NAME    = "Ethereum"
 	NEO_CROSSCHAIN_ID      = uint64(4)
-	NEO_CHAIN_NAME         = "NEO"
 	BSC_CROSSCHAIN_ID      = uint64(8)
-	BSC_CHAIN_NAME         = "BSC"
 )
 
 var (
@@ -61,23 +57,9 @@ const (
 	SERVER_STAKE     = "stake"
 )
 
-func ChainId2Name(code uint64) string {
-	if code == POLY_CROSSCHAIN_ID {
-		return POLY_CHAIN_NAME
-	} else if code == ETHEREUM_CROSSCHAIN_ID {
-		return ETHEREUM_CHAIN_NAME
-	} else if code == NEO_CROSSCHAIN_ID {
-		return NEO_CHAIN_NAME
-	} else if code == BSC_CROSSCHAIN_ID {
-		return BSC_CHAIN_NAME
-	} else {
-		return "unknown"
-	}
-}
-
 func StateCode2Name(code int) string {
 	if code == STATE_FINISHED {
-		return "Finished"
+		return "finished"
 	} else if code == STATE_PENDDING {
 		return "pendding"
 	} else if code == STATE_SOURCE_DONE {
@@ -92,7 +74,7 @@ func StateCode2Name(code int) string {
 }
 
 func StateName2Code(state string) int {
-	if state == "Finished" {
+	if state == "finished" {
 		return STATE_FINISHED
 	} else if state == "pendding" {
 		return STATE_PENDDING
@@ -185,10 +167,11 @@ func (cfg *CoinPriceListenConfig) GetNodesKey() []string {
 }
 
 type FeeListenConfig struct {
-	ChainId  uint64
-	Nodes    []*Restful
-	ProxyFee int64
-	GasLimit int64
+	ChainId   uint64
+	ChainName string
+	Nodes     []*Restful
+	ProxyFee  int64
+	GasLimit  int64
 }
 
 func (cfg *FeeListenConfig) GetNodesUrl() []string {

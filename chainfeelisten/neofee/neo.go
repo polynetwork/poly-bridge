@@ -47,5 +47,5 @@ func (this *NeoFee) GetChainId() uint64 {
 }
 
 func (this *NeoFee) Name() string {
-	return conf.ChainId2Name(this.neoCfg.ChainId)
+	return this.neoCfg.ChainName
 }

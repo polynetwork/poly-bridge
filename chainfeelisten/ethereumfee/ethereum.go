@@ -55,5 +55,5 @@ func (this *EthereumFee) GetChainId() uint64 {
 }
 
 func (this *EthereumFee) Name() string {
-	return conf.ChainId2Name(this.ethCfg.ChainId)
+	return this.ethCfg.ChainName
 }

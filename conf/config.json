@@ -43,7 +43,7 @@
       "ProxyContract":"a4a0919ba5a2a89cb2eb1cb4018a16841b2e943f"
     },
     {
-      "ChainName":"Neo",
+      "ChainName":"NEO",
       "ChainId":4,
       "ListenSlot":1,
       "BackwardBlockNumber":10,
@@ -110,6 +110,7 @@
   "FeeListenConfig":[
     {
       "ChainId":2,
+      "ChainName":"Ethereum",
       "Nodes": [
         {
           "Url": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144"
@@ -120,6 +121,7 @@
     },
     {
       "ChainId":4,
+      "ChainName":"NEO",
       "Nodes": [
         {
           "Url": "http://192.168.1.244:22001"
@@ -130,6 +132,7 @@
     },
     {
       "ChainId":8,
+      "ChainName":"BSC",
       "Nodes": [
         {
           "Url": "http://192.168.1.244:22001"
