@@ -26,7 +26,7 @@ import (
 
 func TestBridageSdk(t *testing.T) {
 	sdk := bridgesdk.NewBridgeSdkPro([]string{"http://40.115.153.174:30330/v1/"}, 1)
-	rsp, err := sdk.CheckFee([]string{"0000000000000000000000000000000000000000"})
+	rsp, err := sdk.CheckFee([]string{"336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729"})
 	if err != nil {
 		panic(err)
 	}
