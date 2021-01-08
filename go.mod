@@ -1,4 +1,4 @@
-module poly-bridge
+module github.com/polynetwork/poly-bridge
 
 go 1.14
 
