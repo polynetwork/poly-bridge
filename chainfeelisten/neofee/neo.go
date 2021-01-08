@@ -19,8 +19,8 @@ package neofee
 
 import (
 	"math/big"
-	"poly-bridge/chainsdk"
-	"poly-bridge/conf"
+	"github.com/polynetwork/poly-bridge/chainsdk"
+	"github.com/polynetwork/poly-bridge/conf"
 )
 
 type NeoFee struct {

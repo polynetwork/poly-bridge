@@ -20,7 +20,7 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"poly-bridge/bridgesdk"
+	"github.com/polynetwork/poly-bridge/bridgesdk"
 	"testing"
 )
 

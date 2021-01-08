@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"poly-bridge/conf"
-	"poly-bridge/models"
+	"github.com/polynetwork/poly-bridge/conf"
+	"github.com/polynetwork/poly-bridge/models"
 )
 
 type Chain struct {

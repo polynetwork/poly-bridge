@@ -19,7 +19,7 @@ package routers
 
 import (
 	"github.com/astaxie/beego"
-	"poly-bridge/controllers"
+	"github.com/polynetwork/poly-bridge/controllers"
 )
 
 func init() {

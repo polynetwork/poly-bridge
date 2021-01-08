@@ -3,9 +3,9 @@ package test
 import (
 	"fmt"
 	"os"
-	"poly-bridge/coinpricedao"
-	"poly-bridge/coinpricelisten"
-	"poly-bridge/conf"
+	"github.com/polynetwork/poly-bridge/coinpricedao"
+	"github.com/polynetwork/poly-bridge/coinpricelisten"
+	"github.com/polynetwork/poly-bridge/conf"
 	"testing"
 )
 

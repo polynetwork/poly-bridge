@@ -21,8 +21,8 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"poly-bridge/conf"
-	"poly-bridge/crosschaindao/explorerdao"
+	"github.com/polynetwork/poly-bridge/conf"
+	"github.com/polynetwork/poly-bridge/crosschaindao/explorerdao"
 )
 
 type ExplorerEffect struct {

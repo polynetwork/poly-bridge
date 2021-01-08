@@ -19,7 +19,7 @@ package main
 
 import (
 	"github.com/astaxie/beego"
-	_ "poly-bridge/routers"
+	_ "github.com/polynetwork/poly-bridge/routers"
 )
 
 func main() {

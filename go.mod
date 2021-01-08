@@ -1,9 +1,10 @@
-module github.com/polynetwork/poly-bridge
+module github.com/polynetwork/github.com/polynetwork/poly-bridge
 
 go 1.14
 
 require (
 	github.com/astaxie/beego v1.12.1
+	github.com/cmars/basen v0.0.0-20150613233007-fe3947df716e // indirect
 	github.com/ethereum/go-ethereum v1.9.15
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
 	github.com/polynetwork/poly v0.0.0-20200818035458-8083385c9933
@@ -16,6 +17,6 @@ require (
 )
 
 replace (
-    github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20200824102609-fddf06a45f66
-    github.com/ethereum/go-ethereum v1.9.15 => github.com/ethereum/go-ethereum v1.9.13
+	github.com/ethereum/go-ethereum v1.9.15 => github.com/ethereum/go-ethereum v1.9.13
+	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20200824102609-fddf06a45f66
 )

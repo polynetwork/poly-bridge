@@ -21,9 +21,9 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"math/big"
-	"poly-bridge/conf"
-	"poly-bridge/models"
-	"poly-bridge/utils"
+	"github.com/polynetwork/poly-bridge/conf"
+	"github.com/polynetwork/poly-bridge/models"
+	"github.com/polynetwork/poly-bridge/utils"
 )
 
 type FeeController struct {

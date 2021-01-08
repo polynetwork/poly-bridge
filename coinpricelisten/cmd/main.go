@@ -23,8 +23,8 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
-	"poly-bridge/coinpricelisten"
-	"poly-bridge/conf"
+	"github.com/polynetwork/poly-bridge/coinpricelisten"
+	"github.com/polynetwork/poly-bridge/conf"
 	"runtime"
 	"strings"
 	"syscall"
@@ -61,7 +61,7 @@ func getFlagName(flag cli.Flag) string {
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
-	app.Usage = "poly-bridge Service"
+	app.Usage = "github.com/polynetwork/poly-bridge Service"
 	app.Action = startServer
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"

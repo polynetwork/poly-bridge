@@ -17,7 +17,7 @@
 
 package models
 
-import "poly-bridge/conf"
+import "github.com/polynetwork/poly-bridge/conf"
 
 type PolySwapResp struct {
 	Version string
