@@ -20,7 +20,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
-	"poly-swap/models"
+	"poly-bridge/models"
 )
 
 type TokenController struct {

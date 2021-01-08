@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"poly-swap/conf"
-	"poly-swap/models"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 )
 
 func dumpStatus(dbCfg *conf.DBConfig) {

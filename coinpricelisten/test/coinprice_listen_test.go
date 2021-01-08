@@ -3,9 +3,9 @@ package test
 import (
 	"fmt"
 	"os"
-	"poly-swap/coinpricedao"
-	"poly-swap/coinpricelisten"
-	"poly-swap/conf"
+	"poly-bridge/coinpricedao"
+	"poly-bridge/coinpricelisten"
+	"poly-bridge/conf"
 	"testing"
 )
 

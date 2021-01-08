@@ -20,9 +20,9 @@ package test
 import (
 	"fmt"
 	"os"
-	"poly-swap/conf"
-	"poly-swap/crosschaindao"
-	"poly-swap/crosschainlisten"
+	"poly-bridge/conf"
+	"poly-bridge/crosschaindao"
+	"poly-bridge/crosschainlisten"
 	"testing"
 )
 

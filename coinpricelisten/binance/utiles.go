@@ -23,7 +23,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net/http"
-	"poly-swap/conf"
+	"poly-bridge/conf"
 )
 
 type BinanceSdk struct {

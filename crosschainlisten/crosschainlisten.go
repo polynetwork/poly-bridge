@@ -19,12 +19,12 @@ package crosschainlisten
 
 import (
 	"github.com/astaxie/beego/logs"
-	"poly-swap/conf"
-	"poly-swap/crosschaindao"
-	"poly-swap/crosschainlisten/ethereumlisten"
-	"poly-swap/crosschainlisten/neolisten"
-	"poly-swap/crosschainlisten/polylisten"
-	"poly-swap/models"
+	"poly-bridge/conf"
+	"poly-bridge/crosschaindao"
+	"poly-bridge/crosschainlisten/ethereumlisten"
+	"poly-bridge/crosschainlisten/neolisten"
+	"poly-bridge/crosschainlisten/polylisten"
+	"poly-bridge/models"
 	"runtime/debug"
 	"time"
 )

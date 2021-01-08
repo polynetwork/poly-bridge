@@ -19,9 +19,9 @@ package crosschaineffect
 
 import (
 	"github.com/astaxie/beego/logs"
-	"poly-swap/conf"
-	"poly-swap/crosschaineffect/explorereffect"
-	"poly-swap/crosschaineffect/swapeffect"
+	"poly-bridge/conf"
+	"poly-bridge/crosschaineffect/explorereffect"
+	"poly-bridge/crosschaineffect/swapeffect"
 	"runtime/debug"
 	"time"
 )

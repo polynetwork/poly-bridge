@@ -18,10 +18,10 @@
 package coinpricedao
 
 import (
-	"poly-swap/coinpricedao/stakedao"
-	"poly-swap/coinpricedao/swapdao"
-	"poly-swap/conf"
-	"poly-swap/models"
+	"poly-bridge/coinpricedao/stakedao"
+	"poly-bridge/coinpricedao/swapdao"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 )
 
 type CoinPriceDao interface {

@@ -20,8 +20,8 @@ package main
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"poly-swap/models"
-	conf2 "poly-swap/tools/conf"
+	"poly-bridge/models"
+	conf2 "poly-bridge/tools/conf"
 )
 
 func startDeploy(cfg *conf2.DeployConfig) {

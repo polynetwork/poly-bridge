@@ -21,7 +21,7 @@ import (
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
-	"poly-swap/conf"
+	"poly-bridge/conf"
 	"strconv"
 	"strings"
 )

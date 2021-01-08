@@ -3,9 +3,9 @@ package test
 import (
 	"fmt"
 	"os"
-	"poly-swap/chainfeedao"
-	"poly-swap/chainfeelisten"
-	"poly-swap/conf"
+	"poly-bridge/chainfeedao"
+	"poly-bridge/chainfeelisten"
+	"poly-bridge/conf"
 	"testing"
 )
 

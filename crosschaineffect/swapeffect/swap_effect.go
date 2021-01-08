@@ -22,8 +22,8 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"poly-swap/conf"
-	"poly-swap/models"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 	"time"
 )
 

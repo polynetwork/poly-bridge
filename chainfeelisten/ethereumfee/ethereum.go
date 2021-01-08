@@ -19,8 +19,8 @@ package ethereumfee
 
 import (
 	"math/big"
-	"poly-swap/chainsdk"
-	"poly-swap/conf"
+	"poly-bridge/chainsdk"
+	"poly-bridge/conf"
 )
 
 type EthereumFee struct {

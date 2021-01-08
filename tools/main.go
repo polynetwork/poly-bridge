@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"os"
-	conf2 "poly-swap/tools/conf"
+	conf2 "poly-bridge/tools/conf"
 	"runtime"
 	"strings"
 )
@@ -63,7 +63,7 @@ func getFlagName(flag cli.Flag) string {
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
-	app.Usage = "poly-swap deploy Service"
+	app.Usage = "poly-bridge deploy Service"
 	app.Action = startServer
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"

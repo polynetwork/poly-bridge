@@ -23,9 +23,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
-	"poly-swap/coinpricedao"
-	"poly-swap/conf"
-	"poly-swap/models"
+	"poly-bridge/coinpricedao"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 	"testing"
 )
 

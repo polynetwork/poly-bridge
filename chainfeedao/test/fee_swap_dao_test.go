@@ -23,9 +23,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
-	"poly-swap/chainfeedao"
-	"poly-swap/conf"
-	"poly-swap/models"
+	"poly-bridge/chainfeedao"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 	"testing"
 )
 
