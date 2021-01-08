@@ -173,3 +173,25 @@ func TestQuerySrcPolyDstRelation_SwapDao(t *testing.T) {
 	json, _ := json.Marshal(srcPolyDstRelations)
 	fmt.Printf("src Transaction: %s\n", json)
 }
+
+func TestQueryWrapperTransactionWithToken_SwapDao(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("current directory: %s\n", dir)
+	config := conf.NewConfig("./../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	dbCfg := config.DBConfig
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	wrapperTransactionWithToken := new(models.WrapperTransactionWithToken)
+	db.Table("wrapper_transactions").Debug().Preload("FeeToken").Preload("FeeToken.TokenBasic").First(wrapperTransactionWithToken)
+	json, _ := json.Marshal(wrapperTransactionWithToken)
+	fmt.Printf("src Transaction: %s\n", json)
+}

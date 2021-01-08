@@ -59,7 +59,7 @@ func (c *FeeController) CheckFee() {
 	}
 	db := newDB()
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	res := db.Model(&models.WrapperTransaction{}).Where("hash in ?", checkFeesReq.Hashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	res := db.Table("wrapper_transactions").Where("hash in ?", checkFeesReq.Hashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeCheckFeesRsp(nil)
 		c.ServeJSON()
