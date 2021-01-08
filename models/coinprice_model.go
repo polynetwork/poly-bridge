@@ -78,3 +78,9 @@ type WrapperTransactionWithToken struct {
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
 }
+
+type CheckFee struct {
+	Hash   string
+	HasPay bool
+	Amount string
+}

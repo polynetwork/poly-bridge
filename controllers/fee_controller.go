@@ -52,33 +52,45 @@ func (c *FeeController) GetFee() {
 }
 
 func (c *FeeController) CheckFee() {
-	var checkFeeReq models.CheckFeeReq
+	var checkFeesReq models.CheckFeesReq
 	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &checkFeeReq); err != nil {
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &checkFeesReq); err != nil {
 		panic(err)
 	}
 	db := newDB()
-	wrapperTransactionWithToken := new(models.WrapperTransactionWithToken)
-	res := db.Model(&models.WrapperTransaction{}).Where("hash = ?", checkFeeReq.Hash).Preload("FeeToken").Preload("FeeToken.TokenBasic").First(wrapperTransactionWithToken)
+	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
+	res := db.Model(&models.WrapperTransaction{}).Where("hash in ?", checkFeesReq.Hashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	if res.RowsAffected == 0 {
-		c.Data["json"] = models.MakeCheckFeeRsp(checkFeeReq.Hash, false, 0)
+		c.Data["json"] = models.MakeCheckFeesRsp(nil)
 		c.ServeJSON()
 		return
 	}
-	chainFee := new(models.ChainFee)
-	db.Where("chain_id = ?", wrapperTransactionWithToken.DstChainId).Preload("TokenBasic").First(chainFee)
-	hasPay := false
-	x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
-	feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
-	feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(conf.PRICE_PRECISION))
-	x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
-	feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(conf.PRICE_PRECISION))
-	feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(conf.FEE_PRECISION))
-	feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(utils.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
-	if feePay.Cmp(feeMin) >= 0 {
-		hasPay = true
+	chainFees := make([]*models.ChainFee, 0)
+	db.Preload("TokenBasic").Find(&chainFees)
+	chainFeesMap := make(map[uint64]*models.ChainFee, 0)
+	for _, chainFee := range chainFees {
+		chainFeesMap[chainFee.ChainId] = chainFee
 	}
-	z, _ := feePay.Float64()
-	c.Data["json"] = models.MakeCheckFeeRsp(checkFeeReq.Hash, hasPay, z)
+	checkFees := make([]*models.CheckFee, 0)
+	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
+		hasPay := false
+		x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
+		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
+		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+		chainFee := chainFees[wrapperTransactionWithToken.DstChainId]
+		x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
+		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(conf.PRICE_PRECISION))
+		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(conf.FEE_PRECISION))
+		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(utils.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+		if feePay.Cmp(feeMin) >= 0 {
+			hasPay = true
+		}
+		checkFees = append(checkFees, &models.CheckFee{
+			Hash:  wrapperTransactionWithToken.Hash,
+			HasPay: hasPay,
+			Amount: feePay.String(),
+		})
+	}
+	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
 	c.ServeJSON()
 }

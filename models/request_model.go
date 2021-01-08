@@ -226,16 +226,36 @@ type CheckFeeReq struct {
 type CheckFeeRsp struct {
 	Hash   string
 	HasPay bool
-	Amount float64
+	Amount string
 }
 
-func MakeCheckFeeRsp(hash string, hashPay bool, amount float64) *CheckFeeRsp {
+func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
 	checkFeeRsp := &CheckFeeRsp{
-		Hash:   hash,
-		HasPay: hashPay,
-		Amount: amount,
+		Hash:   checkFee.Hash,
+		HasPay: checkFee.HasPay,
+		Amount: checkFee.Amount,
 	}
 	return checkFeeRsp
+}
+
+
+type CheckFeesReq struct {
+	Hashs []string
+}
+
+type CheckFeesRsp struct {
+	TotalCount uint64
+	CheckFees  []*CheckFeeRsp
+}
+
+func MakeCheckFeesRsp(checkFees []*CheckFee) *CheckFeesRsp {
+	checkFeesRsp := &CheckFeesRsp{
+		TotalCount:   uint64(len(checkFees)),
+	}
+	for _, checkFee := range checkFees {
+		checkFeesRsp.CheckFees = append(checkFeesRsp.CheckFees, MakeCheckFeeRsp(checkFee))
+	}
+	return checkFeesRsp
 }
 
 type WrapperTransactionReq struct {
