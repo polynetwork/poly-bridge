@@ -3,9 +3,9 @@ package test
 import (
 	"fmt"
 	"os"
-	"github.com/polynetwork/poly-bridge/chainfeedao"
-	"github.com/polynetwork/poly-bridge/chainfeelisten"
-	"github.com/polynetwork/poly-bridge/conf"
+	"poly-bridge/chainfeedao"
+	"poly-bridge/chainfeelisten"
+	"poly-bridge/conf"
 	"testing"
 )
 

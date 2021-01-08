@@ -513,11 +513,11 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/polynetwork/github.com/polynetwork/poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
+github.com/polynetwork/poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
 github.com/polynetwork/poly v0.0.0-20200715030435-4f1d1a0adb44/go.mod h1:UzlGEWk0eCGsuMJOZfBoZjRbmu4Yw/SudKAIFe1gPnY=
 github.com/polynetwork/poly v0.0.0-20200818035458-8083385c9933 h1:tHfIoxSecPTHxTbj+amoNAPSPiltFmvzqvbB3l/u4KQ=
 github.com/polynetwork/poly v0.0.0-20200818035458-8083385c9933/go.mod h1:GLCHH85w+7Ca5P65hAd2qHgt5Azg0yuODLqAOfV1UTU=
-github.com/polynetwork/poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
+poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
 github.com/polynetwork/poly-go-sdk v0.0.0-20200817120957-365691ad3493 h1:wob4aH5NxiDFIOWlpKbmoIb88QOccDNa1+rl93czjr8=
 github.com/polynetwork/poly-go-sdk v0.0.0-20200817120957-365691ad3493/go.mod h1:a1wMo/VFoUAKX2yVjipvFug6Yu5BPhf/2tP5xywqfIc=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=

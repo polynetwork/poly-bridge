@@ -18,11 +18,11 @@
 package crosschaindao
 
 import (
-	"github.com/polynetwork/poly-bridge/conf"
-	"github.com/polynetwork/poly-bridge/crosschaindao/explorerdao"
-	"github.com/polynetwork/poly-bridge/crosschaindao/stakedao"
-	"github.com/polynetwork/poly-bridge/crosschaindao/swapdao"
-	"github.com/polynetwork/poly-bridge/models"
+	"poly-bridge/conf"
+	"poly-bridge/crosschaindao/explorerdao"
+	"poly-bridge/crosschaindao/stakedao"
+	"poly-bridge/crosschaindao/swapdao"
+	"poly-bridge/models"
 )
 
 type CrossChainDao interface {

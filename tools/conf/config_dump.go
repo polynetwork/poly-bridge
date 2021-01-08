@@ -20,7 +20,7 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/polynetwork/poly-bridge/conf"
+	"poly-bridge/conf"
 )
 
 type DumpConfig struct {

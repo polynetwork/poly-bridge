@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"math/big"
-	"github.com/polynetwork/poly-bridge/chainsdk"
-	"github.com/polynetwork/poly-bridge/conf"
-	"github.com/polynetwork/poly-bridge/models"
-	"github.com/polynetwork/poly-bridge/utils"
+	"poly-bridge/chainsdk"
+	"poly-bridge/conf"
+	"poly-bridge/models"
+	"poly-bridge/utils"
 )
 
 type PolyChainListen struct {

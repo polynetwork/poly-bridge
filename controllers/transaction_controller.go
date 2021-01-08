@@ -20,8 +20,8 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
-	"github.com/polynetwork/poly-bridge/conf"
-	"github.com/polynetwork/poly-bridge/models"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 )
 
 type TransactionController struct {

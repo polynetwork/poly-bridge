@@ -27,9 +27,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
-	"github.com/polynetwork/poly-bridge/chainsdk"
-	"github.com/polynetwork/poly-bridge/conf"
-	"github.com/polynetwork/poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
+	"poly-bridge/chainsdk"
+	"poly-bridge/conf"
+	"poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
 	"strings"
 	"testing"
 )
