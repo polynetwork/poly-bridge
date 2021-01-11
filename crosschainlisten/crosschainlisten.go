@@ -123,7 +123,7 @@ func (this *CrossChainListen) listenChain() {
 			extendHeight, err := this.handle.GetExtendLatestHeight()
 			if err != nil || extendHeight == 0 {
 				logs.Error("ListenChain - cannot get chain %s extend height, err: %s", this.handle.GetChainName(), err)
-			} else if extendHeight-height >= this.handle.GetBackwardBlockNumber() {
+			} else if extendHeight >= height + this.handle.GetBackwardBlockNumber() {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", this.handle.GetChainName(), height, extendHeight)
 			}
 			if chain.Height >= height {

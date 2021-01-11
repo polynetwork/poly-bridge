@@ -17,11 +17,25 @@
 
 package models
 
-import "poly-bridge/conf"
+import (
+	"math/big"
+	"poly-bridge/conf"
+)
 
-type PolySwapResp struct {
+type PolyBridgeResp struct {
 	Version string
 	URL     string
+}
+
+type ErrorRsp struct {
+	Message string
+}
+
+func MakeErrorRsp(messgae string) *ErrorRsp {
+	errorRsp := &ErrorRsp {
+		Message: messgae,
+	}
+	return errorRsp
 }
 
 type TokenBasicReq struct {
@@ -31,7 +45,7 @@ type TokenBasicReq struct {
 type TokenBasicRsp struct {
 	Name         string
 	Precision    uint64
-	Price        int64
+	Price        string
 	Ind          uint64
 	Time         int64
 	PriceMarkets []*PriceMarketRsp
@@ -39,11 +53,12 @@ type TokenBasicRsp struct {
 }
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
+	price := new(big.Float).Quo(new(big.Float).SetInt64(tokenBasic.Price), new(big.Float).SetInt64(conf.PRICE_PRECISION))
 	tokenBasicRsp := &TokenBasicRsp{
 		Name:      tokenBasic.Name,
 		Time:      tokenBasic.Time,
 		Precision: tokenBasic.Precision,
-		Price:     tokenBasic.Price,
+		Price:     price.String(),
 		Ind:       tokenBasic.Ind,
 		Tokens:    nil,
 	}
@@ -113,18 +128,19 @@ type PriceMarketRsp struct {
 	TokenBasicName string
 	MarketName     string
 	Name           string
-	Price          int64
+	Price          string
 	Ind            uint64
 	Time           int64
 	TokenBasic     *TokenBasicRsp
 }
 
 func MakePriceMarketRsp(priceMarket *PriceMarket) *PriceMarketRsp {
+	price := new(big.Float).Quo(new(big.Float).SetInt64(priceMarket.Price), new(big.Float).SetInt64(conf.PRICE_PRECISION))
 	priceMarketRsp := &PriceMarketRsp{
 		TokenBasicName: priceMarket.TokenBasicName,
 		MarketName:     priceMarket.MarketName,
 		Name:           priceMarket.Name,
-		Price:          priceMarket.Price,
+		Price:          price.String(),
 		Ind:            priceMarket.Ind,
 		Time:           priceMarket.Time,
 	}
@@ -200,21 +216,28 @@ func MakeTokenMapsRsp(tokenMaps []*TokenMap) *TokenMapsRsp {
 }
 
 type GetFeeReq struct {
-	ChainId uint64
+	SrcChainId uint64
 	Hash    string
+	DstChainId uint64
 }
 
 type GetFeeRsp struct {
-	ChainId uint64
+	SrcChainId uint64
 	Hash    string
-	Amount  float64
+	DstChainId uint64
+	UsdtAmount  string
+	TokenAmount string
+	TokenAmountWithPrecision string
 }
 
-func MakeGetFeeRsp(chainId uint64, hash string, amount float64) *GetFeeRsp {
+func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float) *GetFeeRsp {
 	getFeeRsp := &GetFeeRsp{
-		ChainId: chainId,
+		SrcChainId: srcChainId,
 		Hash:    hash,
-		Amount:  amount,
+		DstChainId: dstChainId,
+		UsdtAmount:  usdtAmount.String(),
+		TokenAmount: tokenAmount.String(),
+		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
 	}
 	return getFeeRsp
 }

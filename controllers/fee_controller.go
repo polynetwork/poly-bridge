@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"math/big"
 	"poly-bridge/conf"
@@ -38,16 +39,27 @@ func (c *FeeController) GetFee() {
 	}
 	db := newDB()
 	token := new(models.Token)
-	db.Where("hash = ?", getFeeReq.Hash).Preload("TokenBasic").First(token)
+	res := db.Where("hash = ? and chain_id = ?", getFeeReq.Hash, getFeeReq.SrcChainId).Preload("TokenBasic").First(token)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have token: %s", getFeeReq.SrcChainId, getFeeReq.Hash))
+		c.ServeJSON()
+		return
+	}
 	chainFee := new(models.ChainFee)
-	db.Where("chain_id = ?", getFeeReq.ChainId).Preload("TokenBasic").First(chainFee)
-	x := new(big.Int).Mul(&chainFee.ProxyFee.Int, big.NewInt(chainFee.TokenBasic.Price))
-	y := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
-	y = new(big.Float).Quo(y, new(big.Float).SetInt64(conf.FEE_PRECISION))
-	y = new(big.Float).Quo(y, new(big.Float).SetInt64(token.TokenBasic.Price))
-	y = new(big.Float).Mul(y, new(big.Float).SetInt64(utils.Int64FromFigure(int(token.Precision))))
-	z, _ := y.Float64()
-	c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.ChainId, getFeeReq.Hash, z)
+	res = db.Where("chain_id = ?", getFeeReq.DstChainId).Preload("TokenBasic").First(chainFee)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
+		c.ServeJSON()
+		return
+	}
+	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(conf.FEE_PRECISION))
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(utils.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+	proxyFee = new(big.Float).Mul(proxyFee, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
+	usdtFee := new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+	tokenFee := new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(token.TokenBasic.Price))
+	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(utils.Int64FromFigure(int(token.Precision))))
+	c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision)
 	c.ServeJSON()
 }
 
@@ -77,7 +89,10 @@ func (c *FeeController) CheckFee() {
 		x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
 		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
 		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(conf.PRICE_PRECISION))
-		chainFee := chainFeesMap[wrapperTransactionWithToken.DstChainId]
+		chainFee, ok := chainFeesMap[wrapperTransactionWithToken.DstChainId]
+		if !ok {
+			continue
+		}
 		x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
 		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(conf.PRICE_PRECISION))
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(conf.FEE_PRECISION))

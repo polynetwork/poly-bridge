@@ -26,11 +26,14 @@
     {
       "ChainName":"Ethereum",
       "ChainId":2,
-      "ListenSlot":1,
+      "ListenSlot":5,
       "BackwardBlockNumber":10,
       "Nodes": [
         {
           "Url": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144"
+        },
+        {
+          "Url": "http://18.140.187.37:10331"
         }
       ],
       "ExtendNodes": [
@@ -54,6 +57,9 @@
         },
         {
           "Url": "http://seed9.ngd.network:20332"
+        },
+        {
+          "Url": "http://seed1.ngd.network:20332"
         }
       ],
       "ExtendNodes": [
@@ -67,7 +73,7 @@
     },
     {
       "ChainName":"BSC",
-      "ChainId":8,
+      "ChainId":97,
       "ListenSlot":1,
       "BackwardBlockNumber":10,
       "Nodes": [
@@ -77,9 +83,9 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"",
-      "CCMContract":"5f00Ea21bdeE20969B4E11E856e2Ca8e53fd51e7",
-      "ProxyContract":"8A0283BB46CBC957CEDa71c77f85F0a71a89157A"
+      "WrapperContract":"A3c8655A9A34e5e2278A788EC24902F2f57dB5d6",
+      "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
+      "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c"
     }
   ],
   "EventEffectConfig": {
@@ -107,33 +113,41 @@
     }
   ],
   "FeeUpdateSlot":5,
-  "FeeListenConfig":[
+  "FeeListenConfig": [
     {
       "ChainId":2,
+      "ChainName":"Ethereum",
       "Nodes": [
         {
           "Url": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144"
+        },{
+          "Url": "http://18.140.187.37:10331"
         }
       ],
-      "GasLimit":10000,
-      "ProxyFee":120
+      "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
     },
     {
       "ChainId":4,
+      "ChainName":"Neo",
       "Nodes": [
       ],
-      "GasLimit":10000,
-      "ProxyFee":120
+      "GasLimit":5000000,
+      "ProxyFee":120,
+      "MinFee": 20
     },
     {
-      "ChainId":8,
+      "ChainId":97,
+      "ChainName":"BSC",
       "Nodes": [
         {
           "Url": "https://data-seed-prebsc-1-s1.binance.org:8545"
         }
       ],
-      "GasLimit":10000,
-      "ProxyFee":120
+      "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
     }
   ]
 }

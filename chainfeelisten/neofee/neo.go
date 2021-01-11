@@ -39,7 +39,14 @@ func NewNeoFee(neoCfg *conf.FeeListenConfig, feeUpdateSlot int64) *NeoFee {
 }
 
 func (this *NeoFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
-	return big.NewInt(1000000000), big.NewInt(1000000000), big.NewInt(1000000000), nil
+	gasPrice := new(big.Int).SetUint64(1)
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(conf.FEE_PRECISION))
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(this.neoCfg.GasLimit))
+	proxyFee := new(big.Int).Mul(gasPrice, new(big.Int).SetInt64(this.neoCfg.ProxyFee))
+	proxyFee = new(big.Int).Div(proxyFee, new(big.Int).SetInt64(100))
+	minFee := new(big.Int).Mul(gasPrice, new(big.Int).SetInt64(this.neoCfg.MinFee))
+	minFee = new(big.Int).Div(minFee, new(big.Int).SetInt64(100))
+	return minFee, gasPrice, proxyFee, nil
 }
 
 func (this *NeoFee) GetChainId() uint64 {

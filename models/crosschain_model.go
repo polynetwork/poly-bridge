@@ -35,11 +35,11 @@ type SrcTransaction struct {
 	Contract    string       `gorm:"type:varchar(66);not null"`
 	Key         string       `gorm:"type:varchar(8192);not null"`
 	Param       string       `gorm:"type:varchar(8192);not null"`
-	SrcTransfer *SrcTransfer `gorm:"foreignKey:Hash;references:Hash"`
+	SrcTransfer *SrcTransfer `gorm:"foreignKey:TxHash;references:Hash"`
 }
 
 type SrcTransfer struct {
-	Hash       string  `gorm:"primaryKey;size:66;not null"`
+	TxHash       string  `gorm:"primaryKey;size:66;not null"`
 	ChainId    uint64  `gorm:"type:bigint(20);not null"`
 	Time       uint64  `gorm:"type:bigint(20);not null"`
 	Asset      string  `gorm:"type:varchar(66);not null"`
@@ -66,9 +66,9 @@ type PolyTransaction struct {
 
 type PolySrcRelation struct {
 	SrcHash         string
-	SrcTransaction  *SrcTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
+	SrcTransaction  *SrcTransaction `gorm:"foreignKey:SrcHash;references:Hash"`
 	PolyHash        string
-	PolyTransaction *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
+	PolyTransaction *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
 }
 
 type DstTransaction struct {
@@ -81,11 +81,11 @@ type DstTransaction struct {
 	SrcChainId  uint64       `gorm:"type:bigint(20);not null"`
 	Contract    string       `gorm:"type:varchar(66);not null"`
 	PolyHash    string       `gorm:"size:66;not null"`
-	DstTransfer *DstTransfer `gorm:"foreignKey:Hash;references:Hash"`
+	DstTransfer *DstTransfer `gorm:"foreignKey:TxHash;references:Hash"`
 }
 
 type DstTransfer struct {
-	Hash    string  `gorm:"primaryKey;size:66;not null"`
+	TxHash    string  `gorm:"primaryKey;size:66;not null"`
 	ChainId uint64  `gorm:"type:bigint(20);not null"`
 	Time    uint64  `gorm:"type:bigint(20);not null"`
 	Asset   string  `gorm:"type:varchar(66);not null"`
@@ -108,10 +108,10 @@ type WrapperTransaction struct {
 
 type SrcPolyDstRelation struct {
 	SrcHash            string
-	WrapperTransaction *WrapperTransaction `gorm:"foreignKey:Hash;references:SrcHash"`
-	SrcTransaction     *SrcTransaction     `gorm:"foreignKey:Hash;references:SrcHash"`
+	WrapperTransaction *WrapperTransaction `gorm:"foreignKey:SrcHash;references:Hash"`
+	SrcTransaction     *SrcTransaction     `gorm:"foreignKey:SrcHash;references:Hash"`
 	PolyHash           string
-	PolyTransaction    *PolyTransaction `gorm:"foreignKey:Hash;references:PolyHash"`
+	PolyTransaction    *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
 	DstHash            string
-	DstTransaction     *DstTransaction `gorm:"foreignKey:Hash;references:DstHash"`
+	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
 }

@@ -16,7 +16,7 @@
       "ChainId":4
     },
     {
-      "ChainId":8
+      "ChainId":97
     }
   ],
   "ChainFees":[
@@ -29,11 +29,11 @@
     {
       "ChainId":4,
       "TokenBasic":{
-        "Name":"GAS"
+        "Name":"NEO"
       }
     },
     {
-      "ChainId":8,
+      "ChainId":97,
       "TokenBasic":{
         "Name":"BNB"
       }
@@ -56,27 +56,21 @@
       "Tokens":[
         {
           "ChainId":2,
-          "Hash":"0000000000000000000200000000000000000000",
+          "Hash":"0000000000000000000000000000000000000000",
           "Name":"Ethereum",
           "Precision":18
         },
         {
           "ChainId":4,
-          "Hash":"0000000000000000000400000000000000000000",
-          "Name":"NETH",
-          "Precision":18
-        },
-        {
-          "ChainId":8,
-          "Hash":"0000000000000000000800000000000000000000",
-          "Name":"NETH",
+          "Hash":"23535b6fd46b8f867ed010bab4c2bd8ef0d0c64f",
+          "Name":"pnWETH",
           "Precision":18
         }
       ]
     },
     {
       "Name":"Neo",
-      "Precision":9,
+      "Precision":8,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
@@ -90,27 +84,21 @@
       "Tokens":[
         {
           "ChainId":2,
-          "Hash":"0000000000000000000200000000000000000001",
-          "Name":"ENeo",
-          "Precision":9
+          "Hash":"7E269f2f33A97C64192e9889FAeEC72A6fcdB397",
+          "Name":"eNEO",
+          "Precision":8
         },
         {
           "ChainId":4,
-          "Hash":"0000000000000000000400000000000000000001",
+          "Hash":"17da3881ab2d050fea414c80b3fa8324d756f60e",
           "Name":"nNeo",
-          "Precision":9
-        },
-        {
-          "ChainId":8,
-          "Hash":"0000000000000000000800000000000000000001",
-          "Name":"nNeo",
-          "Precision":9
+          "Precision":8
         }
       ]
     },
     {
       "Name":"USDT",
-      "Precision":9,
+      "Precision":6,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
@@ -120,45 +108,27 @@
       "Tokens":[
         {
           "ChainId":2,
-          "Hash":"0000000000000000000200000000000000000002",
+          "Hash":"ad3f96ae966ad60347f31845b7e4b333104c52fb",
           "Name":"USDT",
-          "Precision":9
+          "Precision":6
         },
         {
           "ChainId":4,
-          "Hash":"0000000000000000000400000000000000000002",
-          "Name":"USDT",
-          "Precision":9
+          "Hash":"b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
+          "Name":"pnUSDT",
+          "Precision":8
         },
         {
-          "ChainId":8,
-          "Hash":"0000000000000000000800000000000000000002",
+          "ChainId":97,
+          "Hash":"23F5075740c2C99C569FfD0768c383A92d1a4aD7",
           "Name":"USDT",
-          "Precision":9
-        }
-      ]
-    },
-    {
-      "Name":"GAS",
-      "Precision":9,
-      "PriceMarkets":[
-        {
-          "MarketName":"coinmarketcap",
-          "Name":"Gas"
-        }
-      ],
-      "Tokens":[
-        {
-          "ChainId":4,
-          "Hash":"0000000000000000000400000000000000000003",
-          "Name":"GAS",
-          "Precision":9
+          "Precision":6
         }
       ]
     },
     {
       "Name":"BNB",
-      "Precision":9,
+      "Precision":18,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
@@ -172,20 +142,66 @@
       "Tokens":[
         {
           "ChainId":2,
-          "Hash":"0000000000000000000200000000000000000004",
+          "Hash":"09c6a1B0B32a8B2c327532518C68F9B0C54255b8",
           "Name":"BNB",
+          "Precision":18
+        },
+        {
+          "ChainId":97,
+          "Hash":"0000000000000000000000000000000000000000",
+          "Name":"BNB",
+          "Precision":18
+        }
+      ]
+    },
+    {
+      "Name":"WBTC",
+      "Precision":8,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Wrapped Bitcoin"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"557563dc4ed3fd256eBA55B9622f53331ab97c2f",
+          "Name":"WBTC",
+          "Precision":8
+        },
+        {
+          "ChainId":97,
+          "Hash":"A3cE15f11D4427b6bad5630036f368a98e923E95",
+          "Name":"WBTC",
+          "Precision":8
+        }
+      ]
+    },
+    {
+      "Name":"WING",
+      "Precision":9,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Wing"
+        },
+        {
+          "MarketName":"binance",
+          "Name":"WINGUSDT"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"B60e03E6973B1d0b90a763f5B64C48ca7cB8c2d1",
+          "Name":"WING",
           "Precision":9
         },
         {
-          "ChainId":4,
-          "Hash":"0000000000000000000400000000000000000004",
-          "Name":"BNB",
-          "Precision":9
-        },
-        {
-          "ChainId":8,
-          "Hash":"0000000000000000000800000000000000000004",
-          "Name":"BNB",
+          "ChainId":97,
+          "Hash":"0a7BF54D2684885d731Dc63917A3178A2a1a8d4A",
+          "Name":"WING",
           "Precision":9
         }
       ]
@@ -195,21 +211,21 @@
     {
       "SrcToken":{
         "ChainId":2,
-        "Hash":"0000000000000000000200000000000000000000"
+        "Hash":"B60e03E6973B1d0b90a763f5B64C48ca7cB8c2d1"
       },
       "DstToken":{
-        "ChainId":4,
-        "Hash":"0000000000000000000400000000000000000000"
+        "ChainId":97,
+        "Hash":"0a7BF54D2684885d731Dc63917A3178A2a1a8d4A"
       }
     },
     {
       "SrcToken":{
         "ChainId":2,
-        "Hash":"0000000000000000000200000000000000000001"
+        "Hash":"557563dc4ed3fd256eBA55B9622f53331ab97c2f"
       },
       "DstToken":{
-        "ChainId":4,
-        "Hash":"0000000000000000000400000000000000000001"
+        "ChainId":97,
+        "Hash":"A3cE15f11D4427b6bad5630036f368a98e923E95"
       }
     }
   ]

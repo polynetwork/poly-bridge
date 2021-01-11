@@ -28,7 +28,7 @@ var (
 	POLY_CROSSCHAIN_ID     = uint64(0)
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
 	NEO_CROSSCHAIN_ID      = uint64(4)
-	BSC_CROSSCHAIN_ID      = uint64(8)
+	BSC_CROSSCHAIN_ID      = uint64(97)
 )
 
 var (
@@ -171,6 +171,7 @@ type FeeListenConfig struct {
 	ChainName string
 	Nodes     []*Restful
 	ProxyFee  int64
+	MinFee int64
 	GasLimit  int64
 }
 

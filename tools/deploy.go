@@ -22,6 +22,7 @@ import (
 	"gorm.io/gorm"
 	"poly-bridge/models"
 	conf2 "poly-bridge/tools/conf"
+	"strings"
 )
 
 func startDeploy(cfg *conf2.DeployConfig) {
@@ -31,12 +32,22 @@ func startDeploy(cfg *conf2.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
+	err = db.Debug().AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
 		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
 	if err != nil {
 		panic(err)
 	}
 	//
+	for _, tokenBasic := range cfg.TokenBasics {
+		for _, token := range tokenBasic.Tokens {
+			token.Hash = strings.ToLower(token.Hash)
+		}
+	}
+	for _, tokenMap := range cfg.TokenMaps {
+		tokenMap.SrcToken.Hash = strings.ToLower(tokenMap.SrcToken.Hash)
+		tokenMap.DstToken.Hash = strings.ToLower(tokenMap.DstToken.Hash)
+	}
+
 	db.Save(cfg.Chains)
 	db.Save(cfg.TokenBasics)
 	db.Save(cfg.ChainFees)

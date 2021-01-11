@@ -133,7 +133,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer := &models.SrcTransfer{}
 					srcTransfer.Time = tt
 					srcTransfer.ChainId = this.GetChainId()
-					srcTransfer.Hash = lockEvent.TxHash
+					srcTransfer.TxHash = lockEvent.TxHash
 					srcTransfer.From = utils.Hash2Address(this.GetChainId(), v.FromAddress)
 					srcTransfer.To = utils.Hash2Address(this.GetChainId(), lockEvent.Contract)
 					srcTransfer.Asset = strings.ToLower(v.FromAssetHash)
@@ -165,7 +165,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			for _, v := range proxyUnlockEvents {
 				if v.TxHash == unLockEvent.TxHash {
 					dstTransfer := &models.DstTransfer{}
-					dstTransfer.Hash = unLockEvent.TxHash
+					dstTransfer.TxHash = unLockEvent.TxHash
 					dstTransfer.Time = tt
 					dstTransfer.ChainId = this.GetChainId()
 					dstTransfer.From = utils.Hash2Address(this.GetChainId(), unLockEvent.Contract)

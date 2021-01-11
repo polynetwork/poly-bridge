@@ -27,7 +27,7 @@ type InfoController struct {
 }
 
 func (c *InfoController) Get() {
-	explorer := &models.PolySwapResp{
+	explorer := &models.PolyBridgeResp{
 		Version: "v1",
 		URL:     "http://localhost:8080/v1",
 	}

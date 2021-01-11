@@ -143,7 +143,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								if len(notifynew.State.Value) < 7 {
 									continue
 								}
-								fctransfer.Hash = tx.Txid[2:]
+								fctransfer.TxHash = tx.Txid[2:]
 								fctransfer.From = utils.Hash2Address(this.GetChainId(), notifynew.State.Value[2].Value)
 								fctransfer.To = utils.Hash2Address(this.GetChainId(), notify.State.Value[2].Value)
 								fctransfer.Asset = utils.HexStringReverse(notifynew.State.Value[1].Value)
@@ -191,7 +191,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								if len(notifynew.State.Value) < 4 {
 									continue
 								}
-								tctransfer.Hash = tx.Txid[2:]
+								tctransfer.TxHash = tx.Txid[2:]
 								tctransfer.From = utils.Hash2Address(this.GetChainId(), notify.State.Value[2].Value)
 								tctransfer.To = utils.Hash2Address(this.GetChainId(), notifynew.State.Value[2].Value)
 								tctransfer.Asset = utils.HexStringReverse(notifynew.State.Value[1].Value)
