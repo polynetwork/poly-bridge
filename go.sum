@@ -513,11 +513,12 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/polynetwork/poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
 github.com/polynetwork/poly v0.0.0-20200715030435-4f1d1a0adb44/go.mod h1:UzlGEWk0eCGsuMJOZfBoZjRbmu4Yw/SudKAIFe1gPnY=
 github.com/polynetwork/poly v0.0.0-20200818035458-8083385c9933 h1:tHfIoxSecPTHxTbj+amoNAPSPiltFmvzqvbB3l/u4KQ=
 github.com/polynetwork/poly v0.0.0-20200818035458-8083385c9933/go.mod h1:GLCHH85w+7Ca5P65hAd2qHgt5Azg0yuODLqAOfV1UTU=
-poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
+github.com/polynetwork/poly v0.0.0-20210108071928-86193b89e4e0 h1:GBiA/1v3dg1wGkiXr8IA6/sGUFuHTPTLyS3GtF4tV7k=
+github.com/polynetwork/poly v0.0.0-20210108071928-86193b89e4e0/go.mod h1:SrFSYe/3uWkouGvoSGkjDPm5sNT95dSFZkQtXRun148=
+github.com/polynetwork/poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
 github.com/polynetwork/poly-go-sdk v0.0.0-20200817120957-365691ad3493 h1:wob4aH5NxiDFIOWlpKbmoIb88QOccDNa1+rl93czjr8=
 github.com/polynetwork/poly-go-sdk v0.0.0-20200817120957-365691ad3493/go.mod h1:a1wMo/VFoUAKX2yVjipvFug6Yu5BPhf/2tP5xywqfIc=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
@@ -909,5 +910,6 @@ honnef.co/go/tools v0.0.0-20180728063816-88497007e858/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
+poly-bridge v0.0.0-20201217074705-38a715c55c9f h1:MfZMqLqHtaf3O7VO2losCo9TyKlGoukxXfj5YbO85xw=
 sigs.k8s.io/yaml v1.1.0/go.mod h1:UJmg0vDUVViEyp3mgSv9WPwZCDxu4rQW1olrI1uml+o=
 sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0/go.mod h1:hI742Nqp5OhwiqlzhgfbWU4mW4yO10fP+LoT9WOswdU=

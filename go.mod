@@ -7,7 +7,7 @@ require (
 	github.com/cmars/basen v0.0.0-20150613233007-fe3947df716e // indirect
 	github.com/ethereum/go-ethereum v1.9.15
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
-	github.com/polynetwork/poly v0.0.0-20200818035458-8083385c9933
+	github.com/polynetwork/poly v0.0.0-20210108071928-86193b89e4e0
 	github.com/polynetwork/poly-go-sdk v0.0.0-20200817120957-365691ad3493
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
@@ -16,7 +16,4 @@ require (
 	gorm.io/gorm v1.20.8
 )
 
-replace (
-	github.com/ethereum/go-ethereum v1.9.15 => github.com/ethereum/go-ethereum v1.9.13
-	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20200824102609-fddf06a45f66
-)
+replace github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20200824102609-fddf06a45f66
