@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/signal"
 	"poly-bridge/chainfeelisten"
+	"poly-bridge/coinpricelisten"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
@@ -92,7 +93,7 @@ func startServer(ctx *cli.Context) {
 		fmt.Printf("%s\n", string(conf))
 	}
 	crosschainlisten.StartCrossChainListen(config.Server, config.ChainListenConfig, config.DBConfig)
-	//coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
+	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	crosschaineffect.StartCrossChainEffect(config.EventEffectConfig, config.DBConfig)
 	waitToExit()
