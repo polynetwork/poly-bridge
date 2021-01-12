@@ -38,6 +38,7 @@ type CheckFeeRsp struct {
 	Hash string `json:"Hash"`
 	HasPay bool `json:"HasPay"`
 	Amount string `json:"Amount"`
+	MinProxyFee string `json:"MinProxyFee"`
 	Error string `json:"Error"`
 }
 

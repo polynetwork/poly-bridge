@@ -56,7 +56,7 @@ func TestEthereumCross(t *testing.T) {
 	}
 	assetHash := common.HexToAddress("0000000000000000000000000000000000000000")
 	toAddress := common.Hex2Bytes("6e43f9988f2771f1a2b140cb3faad424767d39fc")
-	txData, err := contractabi.Pack("lock", assetHash, uint64(4), toAddress, big.NewInt(int64(100000000000000000)), big.NewInt(10000000000000000))
+	txData, err := contractabi.Pack("lock", assetHash, uint64(79), toAddress, big.NewInt(int64(100000000000000000)), big.NewInt(10000000000000000))
 	if err != nil {
 		panic(err)
 	}
