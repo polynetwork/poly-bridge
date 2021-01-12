@@ -248,7 +248,7 @@ type CheckFeeReq struct {
 
 type CheckFeeRsp struct {
 	Hash   string
-	HasPay bool
+	PayState int
 	Amount string
 	MinProxyFee string
 }
@@ -256,7 +256,7 @@ type CheckFeeRsp struct {
 func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
 	checkFeeRsp := &CheckFeeRsp{
 		Hash:   checkFee.Hash,
-		HasPay: checkFee.HasPay,
+		PayState: checkFee.PayState,
 		Amount: checkFee.Amount,
 		MinProxyFee: checkFee.MinProxyFee,
 	}
