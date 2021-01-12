@@ -73,7 +73,7 @@
     },
     {
       "ChainName":"BSC",
-      "ChainId":97,
+      "ChainId":79,
       "ListenSlot":1,
       "BackwardBlockNumber":10,
       "Nodes": [
@@ -83,7 +83,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"A3c8655A9A34e5e2278A788EC24902F2f57dB5d6",
+      "WrapperContract":"0CDd73B4C8d68BfdD72a7b43Cf09a8d235392a44",
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c"
     }
@@ -138,7 +138,7 @@
       "MinFee": 20
     },
     {
-      "ChainId":97,
+      "ChainId":79,
       "ChainName":"BSC",
       "Nodes": [
         {

@@ -83,4 +83,5 @@ type CheckFee struct {
 	Hash   string
 	HasPay bool
 	Amount string
+	MinProxyFee string
 }

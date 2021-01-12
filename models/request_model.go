@@ -250,6 +250,7 @@ type CheckFeeRsp struct {
 	Hash   string
 	HasPay bool
 	Amount string
+	MinProxyFee string
 }
 
 func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
@@ -257,6 +258,7 @@ func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
 		Hash:   checkFee.Hash,
 		HasPay: checkFee.HasPay,
 		Amount: checkFee.Amount,
+		MinProxyFee: checkFee.MinProxyFee,
 	}
 	return checkFeeRsp
 }

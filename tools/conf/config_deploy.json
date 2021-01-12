@@ -16,7 +16,7 @@
       "ChainId":4
     },
     {
-      "ChainId":97
+      "ChainId":79
     }
   ],
   "ChainFees":[
@@ -33,7 +33,7 @@
       }
     },
     {
-      "ChainId":97,
+      "ChainId":79,
       "TokenBasic":{
         "Name":"BNB"
       }
@@ -119,7 +119,7 @@
           "Precision":8
         },
         {
-          "ChainId":97,
+          "ChainId":79,
           "Hash":"23F5075740c2C99C569FfD0768c383A92d1a4aD7",
           "Name":"USDT",
           "Precision":6
@@ -147,7 +147,7 @@
           "Precision":18
         },
         {
-          "ChainId":97,
+          "ChainId":79,
           "Hash":"0000000000000000000000000000000000000000",
           "Name":"BNB",
           "Precision":18
@@ -171,7 +171,7 @@
           "Precision":8
         },
         {
-          "ChainId":97,
+          "ChainId":79,
           "Hash":"A3cE15f11D4427b6bad5630036f368a98e923E95",
           "Name":"WBTC",
           "Precision":8
@@ -199,7 +199,7 @@
           "Precision":9
         },
         {
-          "ChainId":97,
+          "ChainId":79,
           "Hash":"0a7BF54D2684885d731Dc63917A3178A2a1a8d4A",
           "Name":"WING",
           "Precision":9
@@ -214,7 +214,7 @@
         "Hash":"B60e03E6973B1d0b90a763f5B64C48ca7cB8c2d1"
       },
       "DstToken":{
-        "ChainId":97,
+        "ChainId":79,
         "Hash":"0a7BF54D2684885d731Dc63917A3178A2a1a8d4A"
       }
     },
@@ -224,7 +224,7 @@
         "Hash":"557563dc4ed3fd256eBA55B9622f53331ab97c2f"
       },
       "DstToken":{
-        "ChainId":97,
+        "ChainId":79,
         "Hash":"A3cE15f11D4427b6bad5630036f368a98e923E95"
       }
     }

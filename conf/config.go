@@ -28,7 +28,7 @@ var (
 	POLY_CROSSCHAIN_ID     = uint64(0)
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
 	NEO_CROSSCHAIN_ID      = uint64(4)
-	BSC_CROSSCHAIN_ID      = uint64(97)
+	BSC_CROSSCHAIN_ID      = uint64(79)
 )
 
 var (

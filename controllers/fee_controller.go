@@ -70,8 +70,23 @@ func (c *FeeController) CheckFee() {
 		panic(err)
 	}
 	db := newDB()
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	db.Model(&models.SrcTransaction{}).Where("key in ?", checkFeesReq.Hashs).Find(&srcTransactions)
+	keyTxhashMap := make(map[string]string, 0)
+	for _, srcTransaction := range srcTransactions {
+		keyTxhashMap[srcTransaction.Key] = srcTransaction.Hash
+	}
+	checkHashs := make([]string, 0)
+	for _, hash := range checkFeesReq.Hashs {
+		newHash, ok := keyTxhashMap[hash]
+		if ok {
+			checkHashs = append(checkHashs, newHash)
+		} else {
+			checkHashs = append(checkHashs, hash)
+		}
+	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	res := db.Table("wrapper_transactions").Where("hash in ?", checkFeesReq.Hashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	res := db.Table("wrapper_transactions").Where("hash in ?", checkHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeCheckFeesRsp(nil)
 		c.ServeJSON()
@@ -104,6 +119,7 @@ func (c *FeeController) CheckFee() {
 			Hash:  wrapperTransactionWithToken.Hash,
 			HasPay: hasPay,
 			Amount: feePay.String(),
+			MinProxyFee: feeMin.String(),
 		})
 	}
 	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
