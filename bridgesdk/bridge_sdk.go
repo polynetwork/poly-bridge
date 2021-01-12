@@ -36,7 +36,7 @@ type CheckFeesReq struct {
 
 type CheckFeeRsp struct {
 	Hash string `json:"Hash"`
-	HasPay bool `json:"HasPay"`
+	PayState int `json:"PayState"`
 	Amount string `json:"Amount"`
 	MinProxyFee string `json:"MinProxyFee"`
 	Error string `json:"Error"`

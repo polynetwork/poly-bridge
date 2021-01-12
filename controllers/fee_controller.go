@@ -37,7 +37,6 @@ func (c *FeeController) GetFee() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	token := new(models.Token)
 	res := db.Where("hash = ? and chain_id = ?", getFeeReq.Hash, getFeeReq.SrcChainId).Preload("TokenBasic").First(token)
 	if res.RowsAffected == 0 {
@@ -69,43 +68,60 @@ func (c *FeeController) CheckFee() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &checkFeesReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	db.Model(&models.SrcTransaction{}).Where("key in ?", checkFeesReq.Hashs).Find(&srcTransactions)
-	keyTxhashMap := make(map[string]string, 0)
+	db.Model(&models.SrcTransaction{}).Where("`key` in ? or hash in ?", checkFeesReq.Hashs, checkFeesReq.Hashs).Find(&srcTransactions)
+	key2Txhash := make(map[string]string, 0)
 	for _, srcTransaction := range srcTransactions {
-		keyTxhashMap[srcTransaction.Key] = srcTransaction.Hash
-	}
-	checkHashs := make([]string, 0)
-	for _, hash := range checkFeesReq.Hashs {
-		newHash, ok := keyTxhashMap[hash]
-		if ok {
-			checkHashs = append(checkHashs, newHash)
+		prefix := srcTransaction.Key[0:4]
+		if prefix == "0000" {
+			key2Txhash[srcTransaction.Key] = srcTransaction.Hash
 		} else {
-			checkHashs = append(checkHashs, hash)
+			key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
+		}
+
+	}
+	checkHashes := make([]string, 0)
+	for _, hash := range checkFeesReq.Hashs {
+		newHash, ok := key2Txhash[hash]
+		if ok {
+			checkHashes = append(checkHashes, newHash)
 		}
 	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	res := db.Table("wrapper_transactions").Where("hash in ?", checkHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
-	if res.RowsAffected == 0 {
-		c.Data["json"] = models.MakeCheckFeesRsp(nil)
-		c.ServeJSON()
-		return
+	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	txhash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
+	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
+		txhash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
 	}
 	chainFees := make([]*models.ChainFee, 0)
 	db.Preload("TokenBasic").Find(&chainFees)
-	chainFeesMap := make(map[uint64]*models.ChainFee, 0)
+	chain2Fees := make(map[uint64]*models.ChainFee, 0)
 	for _, chainFee := range chainFees {
-		chainFeesMap[chainFee.ChainId] = chainFee
+		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	checkFees := make([]*models.CheckFee, 0)
-	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
-		hasPay := false
+	for _, hash := range checkFeesReq.Hashs {
+		checkFee := &models.CheckFee {}
+		checkFee.Hash = hash
+		newHash, ok := key2Txhash[hash]
+		if !ok {
+			checkFee.PayState = 0
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		wrapperTransactionWithToken, ok := txhash2WrapperTransaction[newHash]
+		if !ok {
+			checkFee.PayState = -1
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
 		x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
 		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
 		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(conf.PRICE_PRECISION))
-		chainFee, ok := chainFeesMap[wrapperTransactionWithToken.DstChainId]
+		chainFee, ok := chain2Fees[wrapperTransactionWithToken.DstChainId]
 		if !ok {
+			checkFee.PayState = 0
+			checkFees = append(checkFees, checkFee)
 			continue
 		}
 		x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
@@ -113,14 +129,13 @@ func (c *FeeController) CheckFee() {
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(conf.FEE_PRECISION))
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(utils.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 		if feePay.Cmp(feeMin) >= 0 {
-			hasPay = true
+			checkFee.PayState = 1
+		} else {
+			checkFee.PayState = -1
 		}
-		checkFees = append(checkFees, &models.CheckFee{
-			Hash:  wrapperTransactionWithToken.Hash,
-			HasPay: hasPay,
-			Amount: feePay.String(),
-			MinProxyFee: feeMin.String(),
-		})
+		checkFee.Amount = feePay.String()
+		checkFee.MinProxyFee = feeMin.String()
+		checkFees = append(checkFees, checkFee)
 	}
 	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
 	c.ServeJSON()

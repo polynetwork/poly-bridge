@@ -82,6 +82,7 @@ func (pro *BridgeSdkPro) selection() {
 	defer func() {
 		pro.mutex.Unlock()
 	}()
+	logs.Debug("select node of bridge sdk......")
 	for url, info := range pro.infos {
 		if info == nil {
 			info = NewBridgeInfo(url)

@@ -34,7 +34,6 @@ func (c *TransactionController) Transactions() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	transactions := make([]*models.WrapperTransaction, 0)
 	db.Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
 	var transactionNum int64
@@ -50,7 +49,6 @@ func (c *TransactionController) TransactoinsOfUser() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfUserReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("hash").Where("`from` in ? or dst_user in ?", transactionsOfUserReq.Addresses, transactionsOfUserReq.Addresses)).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
@@ -81,7 +79,6 @@ func (c *TransactionController) TransactoinsOfState() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfStateReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	transactions := make([]*models.WrapperTransaction, 0)
 	db.Where("status = ?", conf.StateName2Code(transactionsOfStateReq.State)).Limit(transactionsOfStateReq.PageSize).Offset(transactionsOfStateReq.PageSize * transactionsOfStateReq.PageNo).Order("time asc").Find(&transactions)
 	var transactionNum int64

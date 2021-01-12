@@ -23,6 +23,10 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	db = newDB()
+)
+
 func newDB() *gorm.DB {
 	user := beego.AppConfig.String("mysqluser")
 	password := beego.AppConfig.String("mysqlpass")

@@ -33,7 +33,6 @@ func (c *TokenController) Tokens() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokensReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	tokens := make([]*models.Token, 0)
 	db.Where("chain_id = ?", tokensReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").Find(&tokens)
 	c.Data["json"] = models.MakeTokensRsp(tokens)
@@ -46,7 +45,6 @@ func (c *TokenController) Token() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	token := new(models.Token)
 	db.Where("hash = ?", tokenReq.Hash).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").First(token)
 	c.Data["json"] = models.MakeTokenRsp(token)
@@ -59,7 +57,6 @@ func (c *TokenController) TokenBasics() {
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenBasicReq); err != nil {
 		panic(err)
 	}
-	db := newDB()
 	tokenBasics := make([]*models.TokenBasic, 0)
 	db.Model(&models.TokenBasic{}).Preload("Tokens").Find(&tokenBasics)
 	c.Data["json"] = models.MakeTokenBasicsRsp(tokenBasics)

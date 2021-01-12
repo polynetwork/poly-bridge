@@ -81,7 +81,7 @@ type WrapperTransactionWithToken struct {
 
 type CheckFee struct {
 	Hash   string
-	HasPay bool
+	PayState int
 	Amount string
 	MinProxyFee string
 }
