@@ -80,8 +80,8 @@ type WrapperTransactionWithToken struct {
 }
 
 type CheckFee struct {
-	Hash   string
-	PayState int
-	Amount string
+	Hash        string
+	PayState    int
+	Amount      string
 	MinProxyFee string
 }

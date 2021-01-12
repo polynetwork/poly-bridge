@@ -101,7 +101,7 @@ func (c *FeeController) CheckFee() {
 	}
 	checkFees := make([]*models.CheckFee, 0)
 	for _, hash := range checkFeesReq.Hashs {
-		checkFee := &models.CheckFee {}
+		checkFee := &models.CheckFee{}
 		checkFee.Hash = hash
 		newHash, ok := key2Txhash[hash]
 		if !ok {

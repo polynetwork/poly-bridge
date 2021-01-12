@@ -26,9 +26,9 @@ import (
 )
 
 var (
-	STATE_NOTPAY = -1
+	STATE_NOTPAY   = -1
 	STATE_NOTCHECK = 0
-	STATE_HASPAY = 1
+	STATE_HASPAY   = 1
 )
 
 type PolySwapResp struct {
@@ -41,11 +41,11 @@ type CheckFeesReq struct {
 }
 
 type CheckFeeRsp struct {
-	Hash string `json:"Hash"`
-	PayState int `json:"PayState"`
-	Amount string `json:"Amount"`
+	Hash        string `json:"Hash"`
+	PayState    int    `json:"PayState"`
+	Amount      string `json:"Amount"`
 	MinProxyFee string `json:"MinProxyFee"`
-	Error string `json:"Error"`
+	Error       string `json:"Error"`
 }
 
 type CheckFeesRsp struct {
@@ -53,22 +53,22 @@ type CheckFeesRsp struct {
 }
 
 type BridgeSdk struct {
-	url       string
+	url string
 }
 
 func NewBridgeSdk(url string) *BridgeSdk {
 	return &BridgeSdk{
-		url:       url,
+		url: url,
 	}
 }
 
 func (sdk *BridgeSdk) CheckFee(hashs []string) ([]*CheckFeeRsp, error) {
-	checkFeesReq := &CheckFeesReq{Hashs:hashs}
+	checkFeesReq := &CheckFeesReq{Hashs: hashs}
 	requestJson, err := json.Marshal(checkFeesReq)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", sdk.url + "checkfee", strings.NewReader(string(requestJson)))
+	req, err := http.NewRequest("POST", sdk.url+"checkfee", strings.NewReader(string(requestJson)))
 	if err != nil {
 		return nil, err
 	}

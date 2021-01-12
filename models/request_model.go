@@ -32,7 +32,7 @@ type ErrorRsp struct {
 }
 
 func MakeErrorRsp(messgae string) *ErrorRsp {
-	errorRsp := &ErrorRsp {
+	errorRsp := &ErrorRsp{
 		Message: messgae,
 	}
 	return errorRsp
@@ -217,26 +217,26 @@ func MakeTokenMapsRsp(tokenMaps []*TokenMap) *TokenMapsRsp {
 
 type GetFeeReq struct {
 	SrcChainId uint64
-	Hash    string
+	Hash       string
 	DstChainId uint64
 }
 
 type GetFeeRsp struct {
-	SrcChainId uint64
-	Hash    string
-	DstChainId uint64
-	UsdtAmount  string
-	TokenAmount string
+	SrcChainId               uint64
+	Hash                     string
+	DstChainId               uint64
+	UsdtAmount               string
+	TokenAmount              string
 	TokenAmountWithPrecision string
 }
 
 func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float) *GetFeeRsp {
 	getFeeRsp := &GetFeeRsp{
-		SrcChainId: srcChainId,
-		Hash:    hash,
-		DstChainId: dstChainId,
-		UsdtAmount:  usdtAmount.String(),
-		TokenAmount: tokenAmount.String(),
+		SrcChainId:               srcChainId,
+		Hash:                     hash,
+		DstChainId:               dstChainId,
+		UsdtAmount:               usdtAmount.String(),
+		TokenAmount:              tokenAmount.String(),
 		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
 	}
 	return getFeeRsp
@@ -247,22 +247,21 @@ type CheckFeeReq struct {
 }
 
 type CheckFeeRsp struct {
-	Hash   string
-	PayState int
-	Amount string
+	Hash        string
+	PayState    int
+	Amount      string
 	MinProxyFee string
 }
 
 func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
 	checkFeeRsp := &CheckFeeRsp{
-		Hash:   checkFee.Hash,
-		PayState: checkFee.PayState,
-		Amount: checkFee.Amount,
+		Hash:        checkFee.Hash,
+		PayState:    checkFee.PayState,
+		Amount:      checkFee.Amount,
 		MinProxyFee: checkFee.MinProxyFee,
 	}
 	return checkFeeRsp
 }
-
 
 type CheckFeesReq struct {
 	Hashs []string
@@ -275,7 +274,7 @@ type CheckFeesRsp struct {
 
 func MakeCheckFeesRsp(checkFees []*CheckFee) *CheckFeesRsp {
 	checkFeesRsp := &CheckFeesRsp{
-		TotalCount:   uint64(len(checkFees)),
+		TotalCount: uint64(len(checkFees)),
 	}
 	for _, checkFee := range checkFees {
 		checkFeesRsp.CheckFees = append(checkFeesRsp.CheckFees, MakeCheckFeeRsp(checkFee))

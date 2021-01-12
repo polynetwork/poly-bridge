@@ -39,7 +39,7 @@ type SrcTransaction struct {
 }
 
 type SrcTransfer struct {
-	TxHash       string  `gorm:"primaryKey;size:66;not null"`
+	TxHash     string  `gorm:"primaryKey;size:66;not null"`
 	ChainId    uint64  `gorm:"type:bigint(20);not null"`
 	Time       uint64  `gorm:"type:bigint(20);not null"`
 	Asset      string  `gorm:"type:varchar(66);not null"`
@@ -85,7 +85,7 @@ type DstTransaction struct {
 }
 
 type DstTransfer struct {
-	TxHash    string  `gorm:"primaryKey;size:66;not null"`
+	TxHash  string  `gorm:"primaryKey;size:66;not null"`
 	ChainId uint64  `gorm:"type:bigint(20);not null"`
 	Time    uint64  `gorm:"type:bigint(20);not null"`
 	Asset   string  `gorm:"type:varchar(66);not null"`

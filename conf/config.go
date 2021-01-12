@@ -171,7 +171,7 @@ type FeeListenConfig struct {
 	ChainName string
 	Nodes     []*Restful
 	ProxyFee  int64
-	MinFee int64
+	MinFee    int64
 	GasLimit  int64
 }
 

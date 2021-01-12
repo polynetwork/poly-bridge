@@ -26,14 +26,14 @@ import (
 )
 
 type BridgeInfo struct {
-	sdk          *BridgeSdk
-	online        bool
+	sdk    *BridgeSdk
+	online bool
 }
 
 func NewBridgeInfo(url string) *BridgeInfo {
 	sdk := NewBridgeSdk(url)
 	return &BridgeInfo{
-		sdk:          sdk,
+		sdk:    sdk,
 		online: true,
 	}
 }
