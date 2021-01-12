@@ -25,6 +25,12 @@ import (
 	"strings"
 )
 
+var (
+	STATE_NOTPAY = -1
+	STATE_NOTCHECK = 0
+	STATE_HASPAY = 1
+)
+
 type PolySwapResp struct {
 	Version string
 	URL     string
