@@ -18,10 +18,28 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
+	"github.com/astaxie/beego/logs"
 	_ "poly-bridge/routers"
 )
 
 func main() {
+	mode := beego.AppConfig.String("runmode")
+	if mode == "dev" {
+		var FilterLog = func(ctx *context.Context) {
+			url, _ := json.Marshal(ctx.Input.Data()["RouterPattern"])
+			params := string(ctx.Input.RequestBody)
+			outputBytes, _ := json.Marshal(ctx.Input.Data()["json"])
+			divider := " - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+			topDivider := "┌" + divider
+			middleDivider := "├" + divider
+			bottomDivider := "└" + divider
+			outputStr := "\n" + topDivider + "\n│ url:" + string(url) + "\n" + middleDivider + "\n│ request:" + string(params) + "\n│ response:" + string(outputBytes) + "\n" + bottomDivider
+			logs.Info(outputStr)
+		}
+		beego.InsertFilter("/*", beego.FinishRouter, FilterLog, false)
+	}
 	beego.Run()
 }
