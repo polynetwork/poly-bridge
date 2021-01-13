@@ -103,6 +103,24 @@ func (pro *EthereumSdkPro) selection() {
 		height, err := info.sdk.GetCurrentBlockHeight()
 		if err != nil {
 			logs.Error("get current block height err: %v, url: %s", err, url)
+			info.latestHeight = height
+			continue
+		}
+		block, err := info.sdk.GetBlockByNumber(height)
+		if err != nil || block == nil {
+			logs.Error("get current block err: %v, url: %s", err, url)
+			info.latestHeight = height - 1
+			continue
+		}
+		transactions := block.Transactions()
+		if len(transactions) > 0 {
+			transaction := transactions[0]
+			receipt, err := info.sdk.GetTransactionReceipt(transaction.Hash())
+			if err != nil || receipt == nil {
+				logs.Error("get transaction receipt err: %v, url: %s", err, url)
+				info.latestHeight = height - 1
+				continue
+			}
 		}
 		info.latestHeight = height
 	}

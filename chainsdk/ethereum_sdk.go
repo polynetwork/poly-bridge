@@ -85,6 +85,10 @@ func (ec *EthereumSdk) GetHeaderByNumber(number uint64) (*types.Header, error) {
 	return header, err
 }
 
+func (ec *EthereumSdk) GetBlockByNumber(number uint64) (*types.Block, error) {
+	return ec.rawClient.BlockByNumber(context.Background(), new(big.Int).SetUint64(number))
+}
+
 func (ec *EthereumSdk) GetTransactionByHash(hash common.Hash) (*types.Transaction, error) {
 	tx, _, err := ec.rawClient.TransactionByHash(context.Background(), hash)
 	for err != nil {
