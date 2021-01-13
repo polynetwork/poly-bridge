@@ -73,6 +73,33 @@ func TestCrossChain_SwapDao(t *testing.T) {
 	}
 }
 
+func TestCrossChainSrc_SwapDao(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("current directory: %s\n", dir)
+	config := conf.NewConfig("./../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	dao := crosschaindao.NewCrossChainDao(conf.SERVER_POLY_SWAP, config.DBConfig)
+	if dao == nil {
+		panic("server is not valid")
+	}
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	srcTransactionsData := []byte(`[{"Hash":"278628f397ce9ad92a26b1385cb8347f15971e54c0bd653e83cfe0bc67d61d1c","ChainId":2,"State":1,"Time":1610497597,"Fee":121754000000000,"Height":9455141,"User":"bb04292cbe99e2a1a7c37dffd96fe24dd5ddb1db","DstChainId":79,"Contract":"d8ae73e06552e270340b63a8bcabf9277a1aac99","Key":"0000000000000000000000000000000000000000000000000000000000001548","Param":"20000000000000000000000000000000000000000000000000000000000000154820139fe21b302d653008032c7b4eb3cc8a5f089314bcc28637af8efc3155ac256514d8ae73e06552e270340b63a8bcabf9277a1aac994f0000000000000014097ae585bfef78ddc8e266abcb840daf7265130c06756e6c6f636b4a140000000000000000000000000000000000000000145cd3143f91a13fe971043e1e4605c1c23b46bf444e1a010000000000000000000000000000000000000000000000000000000000","SrcTransfer":{"TxHash":"278628f397ce9ad92a26b1385cb8347f15971e54c0bd653e83cfe0bc67d61d1c","ChainId":2,"Time":1610497597,"Asset":"09c6a1b0b32a8b2c327532518c68f9b0c54255b8","From":"bb04292cbe99e2a1a7c37dffd96fe24dd5ddb1db","To":"d8ae73e06552e270340b63a8bcabf9277a1aac99","Amount":72270,"DstChainId":79,"DstAsset":"0000000000000000000000000000000000000000","DstUser":"5cd3143f91a13fe971043e1e4605c1c23b46bf44"}}]
+`)
+	err = json.Unmarshal(srcTransactionsData, &srcTransactions)
+	if err != nil {
+		panic(err)
+	}
+	err = dao.UpdateEvents(nil, nil, srcTransactions, nil, nil)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestQuerySrcTransaction_SwapDao(t *testing.T) {
 	dir, err := os.Getwd()
 	if err != nil {
