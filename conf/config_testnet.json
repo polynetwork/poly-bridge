@@ -30,9 +30,6 @@
       "BackwardBlockNumber":10,
       "Nodes": [
         {
-          "Url": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144"
-        },
-        {
           "Url": "http://18.140.187.37:10331"
         }
       ],

@@ -167,6 +167,7 @@ func (this *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 		fee.MinFee = models.NewBigInt(minFee)
 		fee.MaxFee = models.NewBigInt(maxFee)
 		fee.ProxyFee = models.NewBigInt(proxyFee)
+		fee.Time = time.Now().Unix()
 		fee.Ind = 1
 	}
 	for _, fee := range chainFees {

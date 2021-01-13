@@ -45,6 +45,7 @@ type ChainFee struct {
 	MinFee         *BigInt     `gorm:"type:varchar(64);not null"`
 	ProxyFee       *BigInt     `gorm:"type:varchar(64);not null"`
 	Ind            uint64      `gorm:"type:bigint(20);not null"`
+	Time           int64       `gorm:"type:bigint(20);not null"`
 }
 
 type Token struct {
