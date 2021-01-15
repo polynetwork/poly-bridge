@@ -66,44 +66,31 @@ curl --location --request POST 'http://localhost:8080/v1/tokens' \
 Example Response
 ```
 {
-    "TotalCount": 4,
+    "TotalCount": 6,
     "Tokens": [
         {
-            "Hash": "0000000000000000000200000000000000000000",
+            "Hash": "0000000000000000000000000000000000000000",
             "ChainId": 2,
             "Name": "Ethereum",
             "TokenBasicName": "Ethereum",
             "TokenBasic": {
                 "Name": "Ethereum",
-                "Precision": 0,
-                "Price": 0,
-                "Ind": 0,
-                "Time": 1609718410,
+                "Precision": 18,
+                "Price": "1227.921489",
+                "Ind": 1,
+                "Time": 1610668843,
                 "PriceMarkets": null,
                 "Tokens": null
             },
             "TokenMaps": [
                 {
-                    "SrcTokenHash": "0000000000000000000200000000000000000000",
+                    "SrcTokenHash": "0000000000000000000000000000000000000000",
                     "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000400000000000000000000",
+                    "DstTokenHash": "23535b6fd46b8f867ed010bab4c2bd8ef0d0c64f",
                     "DstToken": {
-                        "Hash": "0000000000000000000400000000000000000000",
+                        "Hash": "23535b6fd46b8f867ed010bab4c2bd8ef0d0c64f",
                         "ChainId": 4,
-                        "Name": "NETH",
-                        "TokenBasicName": "Ethereum",
-                        "TokenBasic": null,
-                        "TokenMaps": null
-                    }
-                },
-                {
-                    "SrcTokenHash": "0000000000000000000200000000000000000000",
-                    "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000800000000000000000000",
-                    "DstToken": {
-                        "Hash": "0000000000000000000800000000000000000000",
-                        "ChainId": 8,
-                        "Name": "NETH",
+                        "Name": "pnWETH",
                         "TokenBasicName": "Ethereum",
                         "TokenBasic": null,
                         "TokenMaps": null
@@ -112,128 +99,162 @@ Example Response
             ]
         },
         {
-            "Hash": "0000000000000000000200000000000000000001",
-            "ChainId": 2,
-            "Name": "ENeo",
-            "TokenBasicName": "Neo",
-            "TokenBasic": {
-                "Name": "Neo",
-                "Precision": 0,
-                "Price": 0,
-                "Ind": 0,
-                "Time": 1609718410,
-                "PriceMarkets": null,
-                "Tokens": null
-            },
-            "TokenMaps": [
-                {
-                    "SrcTokenHash": "0000000000000000000200000000000000000001",
-                    "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000400000000000000000001",
-                    "DstToken": {
-                        "Hash": "0000000000000000000400000000000000000001",
-                        "ChainId": 4,
-                        "Name": "nNeo",
-                        "TokenBasicName": "Neo",
-                        "TokenBasic": null,
-                        "TokenMaps": null
-                    }
-                },
-                {
-                    "SrcTokenHash": "0000000000000000000200000000000000000001",
-                    "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000800000000000000000001",
-                    "DstToken": {
-                        "Hash": "0000000000000000000800000000000000000001",
-                        "ChainId": 8,
-                        "Name": "nNeo",
-                        "TokenBasicName": "Neo",
-                        "TokenBasic": null,
-                        "TokenMaps": null
-                    }
-                }
-            ]
-        },
-        {
-            "Hash": "0000000000000000000200000000000000000002",
-            "ChainId": 2,
-            "Name": "USDT",
-            "TokenBasicName": "USDT",
-            "TokenBasic": {
-                "Name": "USDT",
-                "Precision": 0,
-                "Price": 0,
-                "Ind": 0,
-                "Time": 1609675216,
-                "PriceMarkets": null,
-                "Tokens": null
-            },
-            "TokenMaps": [
-                {
-                    "SrcTokenHash": "0000000000000000000200000000000000000002",
-                    "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000400000000000000000002",
-                    "DstToken": {
-                        "Hash": "0000000000000000000400000000000000000002",
-                        "ChainId": 4,
-                        "Name": "USDT",
-                        "TokenBasicName": "USDT",
-                        "TokenBasic": null,
-                        "TokenMaps": null
-                    }
-                },
-                {
-                    "SrcTokenHash": "0000000000000000000200000000000000000002",
-                    "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000800000000000000000002",
-                    "DstToken": {
-                        "Hash": "0000000000000000000800000000000000000002",
-                        "ChainId": 8,
-                        "Name": "USDT",
-                        "TokenBasicName": "USDT",
-                        "TokenBasic": null,
-                        "TokenMaps": null
-                    }
-                }
-            ]
-        },
-        {
-            "Hash": "0000000000000000000200000000000000000004",
+            "Hash": "09c6a1b0b32a8b2c327532518c68f9b0c54255b8",
             "ChainId": 2,
             "Name": "BNB",
             "TokenBasicName": "BNB",
             "TokenBasic": {
                 "Name": "BNB",
-                "Precision": 0,
-                "Price": 0,
-                "Ind": 0,
-                "Time": 1609718410,
+                "Precision": 18,
+                "Price": "41.84074196",
+                "Ind": 1,
+                "Time": 1610668843,
                 "PriceMarkets": null,
                 "Tokens": null
             },
             "TokenMaps": [
                 {
-                    "SrcTokenHash": "0000000000000000000200000000000000000004",
+                    "SrcTokenHash": "09c6a1b0b32a8b2c327532518c68f9b0c54255b8",
                     "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000400000000000000000004",
+                    "DstTokenHash": "0000000000000000000000000000000000000000",
                     "DstToken": {
-                        "Hash": "0000000000000000000400000000000000000004",
-                        "ChainId": 4,
+                        "Hash": "0000000000000000000000000000000000000000",
+                        "ChainId": 79,
                         "Name": "BNB",
                         "TokenBasicName": "BNB",
                         "TokenBasic": null,
                         "TokenMaps": null
                     }
+                }
+            ]
+        },
+        {
+            "Hash": "557563dc4ed3fd256eba55b9622f53331ab97c2f",
+            "ChainId": 2,
+            "Name": "WBTC",
+            "TokenBasicName": "WBTC",
+            "TokenBasic": {
+                "Name": "WBTC",
+                "Precision": 8,
+                "Price": "39108.08931",
+                "Ind": 1,
+                "Time": 1610668843,
+                "PriceMarkets": null,
+                "Tokens": null
+            },
+            "TokenMaps": [
+                {
+                    "SrcTokenHash": "557563dc4ed3fd256eba55b9622f53331ab97c2f",
+                    "SrcToken": null,
+                    "DstTokenHash": "a3ce15f11d4427b6bad5630036f368a98e923e95",
+                    "DstToken": {
+                        "Hash": "a3ce15f11d4427b6bad5630036f368a98e923e95",
+                        "ChainId": 79,
+                        "Name": "WBTC",
+                        "TokenBasicName": "WBTC",
+                        "TokenBasic": null,
+                        "TokenMaps": null
+                    }
+                }
+            ]
+        },
+        {
+            "Hash": "7e269f2f33a97c64192e9889faeec72a6fcdb397",
+            "ChainId": 2,
+            "Name": "eNEO",
+            "TokenBasicName": "Neo",
+            "TokenBasic": {
+                "Name": "Neo",
+                "Precision": 8,
+                "Price": "23.0547776",
+                "Ind": 1,
+                "Time": 1610668843,
+                "PriceMarkets": null,
+                "Tokens": null
+            },
+            "TokenMaps": [
+                {
+                    "SrcTokenHash": "7e269f2f33a97c64192e9889faeec72a6fcdb397",
+                    "SrcToken": null,
+                    "DstTokenHash": "17da3881ab2d050fea414c80b3fa8324d756f60e",
+                    "DstToken": {
+                        "Hash": "17da3881ab2d050fea414c80b3fa8324d756f60e",
+                        "ChainId": 4,
+                        "Name": "nNeo",
+                        "TokenBasicName": "Neo",
+                        "TokenBasic": null,
+                        "TokenMaps": null
+                    }
+                }
+            ]
+        },
+        {
+            "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
+            "ChainId": 2,
+            "Name": "USDT",
+            "TokenBasicName": "USDT",
+            "TokenBasic": {
+                "Name": "USDT",
+                "Precision": 6,
+                "Price": "0.99896425",
+                "Ind": 1,
+                "Time": 1610668843,
+                "PriceMarkets": null,
+                "Tokens": null
+            },
+            "TokenMaps": [
+                {
+                    "SrcTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
+                    "SrcToken": null,
+                    "DstTokenHash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
+                    "DstToken": {
+                        "Hash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
+                        "ChainId": 4,
+                        "Name": "pnUSDT",
+                        "TokenBasicName": "USDT",
+                        "TokenBasic": null,
+                        "TokenMaps": null
+                    }
                 },
                 {
-                    "SrcTokenHash": "0000000000000000000200000000000000000004",
+                    "SrcTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
                     "SrcToken": null,
-                    "DstTokenHash": "0000000000000000000800000000000000000004",
+                    "DstTokenHash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
                     "DstToken": {
-                        "Hash": "0000000000000000000800000000000000000004",
-                        "ChainId": 8,
-                        "Name": "BNB",
-                        "TokenBasicName": "BNB",
+                        "Hash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
+                        "ChainId": 79,
+                        "Name": "USDT",
+                        "TokenBasicName": "USDT",
+                        "TokenBasic": null,
+                        "TokenMaps": null
+                    }
+                }
+            ]
+        },
+        {
+            "Hash": "b60e03e6973b1d0b90a763f5b64c48ca7cb8c2d1",
+            "ChainId": 2,
+            "Name": "WING",
+            "TokenBasicName": "WING",
+            "TokenBasic": {
+                "Name": "WING",
+                "Precision": 9,
+                "Price": "12.91266349",
+                "Ind": 1,
+                "Time": 1610668843,
+                "PriceMarkets": null,
+                "Tokens": null
+            },
+            "TokenMaps": [
+                {
+                    "SrcTokenHash": "b60e03e6973b1d0b90a763f5b64c48ca7cb8c2d1",
+                    "SrcToken": null,
+                    "DstTokenHash": "0a7bf54d2684885d731dc63917a3178a2a1a8d4a",
+                    "DstToken": {
+                        "Hash": "0a7bf54d2684885d731dc63917a3178a2a1a8d4a",
+                        "ChainId": 79,
+                        "Name": "WING",
+                        "TokenBasicName": "WING",
                         "TokenBasic": null,
                         "TokenMaps": null
                     }
@@ -254,7 +275,7 @@ http://localhost:8080/v1/token/
 BODY raw
 ```
 {
-   "Hash": "0000000000000000000200000000000000000002"
+   "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }
 ```
 
@@ -262,47 +283,47 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/token/' \
 --data-raw '{
-   "Hash": "0000000000000000000200000000000000000002"
+   "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }'
 ```
 
 Example Response
 ```
 {
-    "Hash": "0000000000000000000200000000000000000002",
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
     "ChainId": 2,
     "Name": "USDT",
     "TokenBasicName": "USDT",
     "TokenBasic": {
         "Name": "USDT",
-        "Precision": 0,
-        "Price": 0,
-        "Ind": 0,
-        "Time": 1609844520,
+        "Precision": 6,
+        "Price": "0.99896425",
+        "Ind": 1,
+        "Time": 1610668843,
         "PriceMarkets": null,
         "Tokens": null
     },
     "TokenMaps": [
         {
-            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
             "SrcToken": null,
-            "DstTokenHash": "0000000000000000000400000000000000000002",
+            "DstTokenHash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
             "DstToken": {
-                "Hash": "0000000000000000000400000000000000000002",
+                "Hash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
                 "ChainId": 4,
-                "Name": "USDT",
+                "Name": "pnUSDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
                 "TokenMaps": null
             }
         },
         {
-            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
             "SrcToken": null,
-            "DstTokenHash": "0000000000000000000800000000000000000002",
+            "DstTokenHash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
             "DstToken": {
-                "Hash": "0000000000000000000800000000000000000002",
-                "ChainId": 8,
+                "Hash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
+                "ChainId": 79,
                 "Name": "USDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
@@ -324,7 +345,7 @@ BODY raw
 ```
 {
     "ChainId": 2,
-    "Hash": "0000000000000000000200000000000000000002"
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }
 ```
 
@@ -333,7 +354,7 @@ Example Request
 curl --location --request POST 'http://localhost:8080/v1/tokenmap/' \
 --data-raw '{
     "ChainId": 2,
-    "Hash": "0000000000000000000200000000000000000002"
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }'
 ```
 
@@ -343,39 +364,39 @@ Example Response
     "TotalCount": 2,
     "TokenMaps": [
         {
-            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
             "SrcToken": {
-                "Hash": "0000000000000000000200000000000000000002",
+                "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
                 "ChainId": 2,
                 "Name": "USDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
                 "TokenMaps": null
             },
-            "DstTokenHash": "0000000000000000000400000000000000000002",
+            "DstTokenHash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
             "DstToken": {
-                "Hash": "0000000000000000000400000000000000000002",
+                "Hash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
                 "ChainId": 4,
-                "Name": "USDT",
+                "Name": "pnUSDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
                 "TokenMaps": null
             }
         },
         {
-            "SrcTokenHash": "0000000000000000000200000000000000000002",
+            "SrcTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
             "SrcToken": {
-                "Hash": "0000000000000000000200000000000000000002",
+                "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
                 "ChainId": 2,
                 "Name": "USDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
                 "TokenMaps": null
             },
-            "DstTokenHash": "0000000000000000000800000000000000000002",
+            "DstTokenHash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
             "DstToken": {
-                "Hash": "0000000000000000000800000000000000000002",
-                "ChainId": 8,
+                "Hash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
+                "ChainId": 79,
                 "Name": "USDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
@@ -397,7 +418,7 @@ BODY raw
 ```
 {
     "ChainId": 2,
-    "Hash": "0000000000000000000200000000000000000002"
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }
 ```
 
@@ -406,7 +427,7 @@ Example Request
 curl --location --request POST 'http://localhost:8080/v1/tokenmapreverse/' \
 --data-raw '{
     "ChainId": 2,
-    "Hash": "0000000000000000000200000000000000000002"
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }'
 ```
 
@@ -416,18 +437,18 @@ Example Response
     "TotalCount": 2,
     "TokenMaps": [
         {
-            "SrcTokenHash": "0000000000000000000400000000000000000002",
+            "SrcTokenHash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
             "SrcToken": {
-                "Hash": "0000000000000000000400000000000000000002",
+                "Hash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
                 "ChainId": 4,
-                "Name": "USDT",
+                "Name": "pnUSDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
                 "TokenMaps": null
             },
-            "DstTokenHash": "0000000000000000000200000000000000000002",
+            "DstTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
             "DstToken": {
-                "Hash": "0000000000000000000200000000000000000002",
+                "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
                 "ChainId": 2,
                 "Name": "USDT",
                 "TokenBasicName": "USDT",
@@ -436,18 +457,18 @@ Example Response
             }
         },
         {
-            "SrcTokenHash": "0000000000000000000800000000000000000002",
+            "SrcTokenHash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
             "SrcToken": {
-                "Hash": "0000000000000000000800000000000000000002",
-                "ChainId": 8,
+                "Hash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
+                "ChainId": 79,
                 "Name": "USDT",
                 "TokenBasicName": "USDT",
                 "TokenBasic": null,
                 "TokenMaps": null
             },
-            "DstTokenHash": "0000000000000000000200000000000000000002",
+            "DstTokenHash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
             "DstToken": {
-                "Hash": "0000000000000000000200000000000000000002",
+                "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
                 "ChainId": 2,
                 "Name": "USDT",
                 "TokenBasicName": "USDT",
@@ -482,35 +503,27 @@ curl --location --request POST 'http://localhost:8080/v1/tokenbasics/' \
 Example Response
 ```
 {
-    "TotalCount": 5,
+    "TotalCount": 6,
     "TokenBasics": [
         {
             "Name": "BNB",
-            "Precision": 0,
-            "Price": 0,
-            "Ind": 0,
-            "Time": 1609844520,
+            "Precision": 18,
+            "Price": "41.84074196",
+            "Ind": 1,
+            "Time": 1610668843,
             "PriceMarkets": null,
             "Tokens": [
                 {
-                    "Hash": "0000000000000000000200000000000000000004",
+                    "Hash": "0000000000000000000000000000000000000000",
+                    "ChainId": 79,
+                    "Name": "BNB",
+                    "TokenBasicName": "BNB",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "09c6a1b0b32a8b2c327532518c68f9b0c54255b8",
                     "ChainId": 2,
-                    "Name": "BNB",
-                    "TokenBasicName": "BNB",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "0000000000000000000400000000000000000004",
-                    "ChainId": 4,
-                    "Name": "BNB",
-                    "TokenBasicName": "BNB",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "0000000000000000000800000000000000000004",
-                    "ChainId": 8,
                     "Name": "BNB",
                     "TokenBasicName": "BNB",
                     "TokenBasic": null,
@@ -520,14 +533,14 @@ Example Response
         },
         {
             "Name": "Ethereum",
-            "Precision": 0,
-            "Price": 0,
-            "Ind": 0,
-            "Time": 1609844520,
+            "Precision": 18,
+            "Price": "1227.921489",
+            "Ind": 1,
+            "Time": 1610668843,
             "PriceMarkets": null,
             "Tokens": [
                 {
-                    "Hash": "0000000000000000000200000000000000000000",
+                    "Hash": "0000000000000000000000000000000000000000",
                     "ChainId": 2,
                     "Name": "Ethereum",
                     "TokenBasicName": "Ethereum",
@@ -535,36 +548,10 @@ Example Response
                     "TokenMaps": null
                 },
                 {
-                    "Hash": "0000000000000000000400000000000000000000",
+                    "Hash": "23535b6fd46b8f867ed010bab4c2bd8ef0d0c64f",
                     "ChainId": 4,
-                    "Name": "NETH",
+                    "Name": "pnWETH",
                     "TokenBasicName": "Ethereum",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "0000000000000000000800000000000000000000",
-                    "ChainId": 8,
-                    "Name": "NETH",
-                    "TokenBasicName": "Ethereum",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                }
-            ]
-        },
-        {
-            "Name": "GAS",
-            "Precision": 0,
-            "Price": 0,
-            "Ind": 0,
-            "Time": 1609844520,
-            "PriceMarkets": null,
-            "Tokens": [
-                {
-                    "Hash": "0000000000000000000400000000000000000003",
-                    "ChainId": 4,
-                    "Name": "GAS",
-                    "TokenBasicName": "GAS",
                     "TokenBasic": null,
                     "TokenMaps": null
                 }
@@ -572,22 +559,14 @@ Example Response
         },
         {
             "Name": "Neo",
-            "Precision": 0,
-            "Price": 0,
-            "Ind": 0,
-            "Time": 1609844520,
+            "Precision": 8,
+            "Price": "23.0547776",
+            "Ind": 1,
+            "Time": 1610668843,
             "PriceMarkets": null,
             "Tokens": [
                 {
-                    "Hash": "0000000000000000000200000000000000000001",
-                    "ChainId": 2,
-                    "Name": "ENeo",
-                    "TokenBasicName": "Neo",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "0000000000000000000400000000000000000001",
+                    "Hash": "17da3881ab2d050fea414c80b3fa8324d756f60e",
                     "ChainId": 4,
                     "Name": "nNeo",
                     "TokenBasicName": "Neo",
@@ -595,9 +574,9 @@ Example Response
                     "TokenMaps": null
                 },
                 {
-                    "Hash": "0000000000000000000800000000000000000001",
-                    "ChainId": 8,
-                    "Name": "nNeo",
+                    "Hash": "7e269f2f33a97c64192e9889faeec72a6fcdb397",
+                    "ChainId": 2,
+                    "Name": "eNEO",
                     "TokenBasicName": "Neo",
                     "TokenBasic": null,
                     "TokenMaps": null
@@ -606,14 +585,22 @@ Example Response
         },
         {
             "Name": "USDT",
-            "Precision": 0,
-            "Price": 0,
-            "Ind": 0,
-            "Time": 1609844520,
+            "Precision": 6,
+            "Price": "0.99896425",
+            "Ind": 1,
+            "Time": 1610668843,
             "PriceMarkets": null,
             "Tokens": [
                 {
-                    "Hash": "0000000000000000000200000000000000000002",
+                    "Hash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
+                    "ChainId": 79,
+                    "Name": "USDT",
+                    "TokenBasicName": "USDT",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
                     "ChainId": 2,
                     "Name": "USDT",
                     "TokenBasicName": "USDT",
@@ -621,18 +608,62 @@ Example Response
                     "TokenMaps": null
                 },
                 {
-                    "Hash": "0000000000000000000400000000000000000002",
+                    "Hash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
                     "ChainId": 4,
-                    "Name": "USDT",
+                    "Name": "pnUSDT",
                     "TokenBasicName": "USDT",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ]
+        },
+        {
+            "Name": "WBTC",
+            "Precision": 8,
+            "Price": "39108.08931",
+            "Ind": 1,
+            "Time": 1610668843,
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "557563dc4ed3fd256eba55b9622f53331ab97c2f",
+                    "ChainId": 2,
+                    "Name": "WBTC",
+                    "TokenBasicName": "WBTC",
                     "TokenBasic": null,
                     "TokenMaps": null
                 },
                 {
-                    "Hash": "0000000000000000000800000000000000000002",
-                    "ChainId": 8,
-                    "Name": "USDT",
-                    "TokenBasicName": "USDT",
+                    "Hash": "a3ce15f11d4427b6bad5630036f368a98e923e95",
+                    "ChainId": 79,
+                    "Name": "WBTC",
+                    "TokenBasicName": "WBTC",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ]
+        },
+        {
+            "Name": "WING",
+            "Precision": 9,
+            "Price": "12.91266349",
+            "Ind": 1,
+            "Time": 1610668843,
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "0a7bf54d2684885d731dc63917a3178a2a1a8d4a",
+                    "ChainId": 79,
+                    "Name": "WING",
+                    "TokenBasicName": "WING",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "b60e03e6973b1d0b90a763f5b64c48ca7cb8c2d1",
+                    "ChainId": 2,
+                    "Name": "WING",
+                    "TokenBasicName": "WING",
                     "TokenBasic": null,
                     "TokenMaps": null
                 }
@@ -652,8 +683,9 @@ http://localhost:8080/v1/getfee/
 BODY raw
 ```
 {
-    "ChainId": 2,
-    "Hash": "0000000000000000000200000000000000000002"
+    "SrcChainId": 2,
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
+    "DstChainId":79
 }
 ```
 
@@ -661,17 +693,21 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/getfee/' \
 --data-raw '{
-    "ChainId": 2,
-    "Hash": "0000000000000000000200000000000000000002"
+    "SrcChainId": 2,
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
+    "DstChainId":79
 }'
 ```
 
 Example Response
 ```
 {
-    "ChainId": 2,
-    "Hash": "0000000000000000000200000000000000000002",
-    "Amount": 23538314.17111664
+    "SrcChainId": 2,
+    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
+    "DstChainId": 79,
+    "UsdtAmount": "0.1205013368",
+    "TokenAmount": "0.1206262755",
+    "TokenAmountWithPrecision": "120626.2755"
 }
 ```
 
@@ -685,7 +721,7 @@ http://localhost:8080/v1/checkfee/
 BODY raw
 ```
 {
-    "Hash": "0000000000000000000000000000000000000000"
+    "Hashs": ["000000000000000000000000000000000000000000000000000000000000175c"]
 }
 ```
 
@@ -693,16 +729,22 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/checkfee/' \
 --data-raw '{
-    "Hash": "0000000000000000000000000000000000000000"
+    "Hashs": ["000000000000000000000000000000000000000000000000000000000000175c"]
 }'
 ```
 
 Example Response
 ```
 {
-    "Hash": "0000000000000000000000000000000000000000",
-    "hasPay": true,
-    "Amount": 23538314.17111664
+    "TotalCount": 1,
+    "CheckFees": [
+        {
+            "Hash": "000000000000000000000000000000000000000000000000000000000000175c",
+            "PayState": 1,
+            "Amount": "12.27921489",
+            "MinProxyFee": "0"
+        }
+    ]
 }
 ```
 
@@ -725,7 +767,7 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/transactoins/' \
 --data-raw '{
-    "PageNo":1,
+    "PageNo":0,
     "PageSize":10
 }'
 ```
@@ -734,10 +776,22 @@ Example Response
 ```
 {
     "PageSize": 10,
-    "PageNo": 1,
-    "TotalPage": 0,
-    "TotalCount": 0,
-    "Transactions": null
+    "PageNo": 0,
+    "TotalPage": 1,
+    "TotalCount": 1,
+    "Transactions": [
+        {
+            "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
+            "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
+            "SrcChainId": 2,
+            "BlockHeight": 9469807,
+            "Time": 1610695305,
+            "DstChainId": 79,
+            "FeeTokenHash": "0000000000000000000000000000000000000000",
+            "FeeAmount": 10000000000000000,
+            "State": "finished"
+        }
+    ]
 }
 ```
 
@@ -843,8 +897,8 @@ http://localhost:8080/v1/transactoinsofstate/
 BODY raw
 ```
 {
-    "State":"Finished",
-    "PageNo":1,
+    "State":"finished",
+    "PageNo":0,
     "PageSize":10
 }
 ```
@@ -853,8 +907,8 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/transactoinsofstate/' \
 --data-raw '{
-    "State":"Finished",
-    "PageNo":1,
+    "State":"finished",
+    "PageNo":0,
     "PageSize":10
 }'
 ```
@@ -863,9 +917,21 @@ Example Response
 ```
 {
     "PageSize": 10,
-    "PageNo": 1,
-    "TotalPage": 0,
-    "TotalCount": 0,
-    "Transactions": null
+    "PageNo": 0,
+    "TotalPage": 1,
+    "TotalCount": 1,
+    "Transactions": [
+        {
+            "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
+            "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
+            "SrcChainId": 2,
+            "BlockHeight": 9469807,
+            "Time": 1610695305,
+            "DstChainId": 79,
+            "FeeTokenHash": "0000000000000000000000000000000000000000",
+            "FeeAmount": 10000000000000000,
+            "State": "finished"
+        }
+    ]
 }
 ```

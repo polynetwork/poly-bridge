@@ -88,7 +88,7 @@ func TestCrossChainSrc_SwapDao(t *testing.T) {
 		panic("server is not valid")
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	srcTransactionsData := []byte(`[{"Hash":"8c42774469b97b08246e78866b4f6a0b20b65825f9bdba569f8eac92c45a69aa","ChainId":2,"State":1,"Time":1610508416,"Fee":121742000000000,"Height":9455676,"User":"bb04292cbe99e2a1a7c37dffd96fe24dd5ddb1db","DstChainId":79,"Contract":"d8ae73e06552e270340b63a8bcabf9277a1aac99","Key":"0000000000000000000000000000000000000000000000000000000000001642","Param":"2000000000000000000000000000000000000000000000000000000000000016422000054a9b089a6f92628acdc77671aa13a7a113245e5ea88e71f68284db47e08114d8ae73e06552e270340b63a8bcabf9277a1aac994f0000000000000014097ae585bfef78ddc8e266abcb840daf7265130c06756e6c6f636b4a140000000000000000000000000000000000000000145cd3143f91a13fe971043e1e4605c1c23b46bf44a4e8000000000000000000000000000000000000000000000000000000000000","SrcTransfer":{"TxHash":"8c42774469b97b08246e78866b4f6a0b20b65825f9bdba569f8eac92c45a69aa","ChainId":2,"Time":1610508416,"Asset":"09c6a1b0b32a8b2c327532518c68f9b0c54255b8","From":"bb04292cbe99e2a1a7c37dffd96fe24dd5ddb1db","To":"d8ae73e06552e270340b63a8bcabf9277a1aac99","Amount":59556,"DstChainId":79,"DstAsset":"0000000000000000000000000000000000000000","DstUser":"5cd3143f91a13fe971043e1e4605c1c23b46bf44"}}]`)
+	srcTransactionsData := []byte(`[{"Hash":"f755157816bbee73011848f7fdee79ffb30ca4e1cad94c4815775f01e94e7fe3","ChainId":2,"State":1,"Time":1610509716,"Fee":121742000000000,"Height":9455755,"User":"bb04292cbe99e2a1a7c37dffd96fe24dd5ddb1db","DstChainId":79,"Contract":"d8ae73e06552e270340b63a8bcabf9277a1aac99","Key":"0000000000000000000000000000000000000000000000000000000000001675","Param":"20000000000000000000000000000000000000000000000000000000000000167520e516cde8a8e8d8677ec5e498255b2736adc28f2e388dfe78d193ec12b857925014d8ae73e06552e270340b63a8bcabf9277a1aac994f0000000000000014097ae585bfef78ddc8e266abcb840daf7265130c06756e6c6f636b4a140000000000000000000000000000000000000000145cd3143f91a13fe971043e1e4605c1c23b46bf44a4e8000000000000000000000000000000000000000000000000000000000000","SrcTransfer":{"TxHash":"f755157816bbee73011848f7fdee79ffb30ca4e1cad94c4815775f01e94e7fe3","ChainId":2,"Time":1610509716,"Asset":"09c6a1b0b32a8b2c327532518c68f9b0c54255b8","From":"bb04292cbe99e2a1a7c37dffd96fe24dd5ddb1db","To":"d8ae73e06552e270340b63a8bcabf9277a1aac99","Amount":59556,"DstChainId":79,"DstAsset":"0000000000000000000000000000000000000000","DstUser":"5cd3143f91a13fe971043e1e4605c1c23b46bf44"}}]`)
 	err = json.Unmarshal(srcTransactionsData, &srcTransactions)
 	if err != nil {
 		panic(err)
@@ -183,8 +183,8 @@ func TestQuerySrcPolyDstRelation_SwapDao(t *testing.T) {
 	}
 	addresses := []string{"8bc7e7304120b88d111431f6a4853589d10e8132", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("hash").Where("`from` in ? or dst_user in ?", addresses, addresses)).
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
+	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset").Where("`from` in ? or dst_user in ?", addresses, addresses)).
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as asset").
 		Joins("left join src_transactions on u.hash = src_transactions.hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
@@ -194,9 +194,47 @@ func TestQuerySrcPolyDstRelation_SwapDao(t *testing.T) {
 		Preload("PolyTransaction").
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	json, _ := json.Marshal(srcPolyDstRelations)
+	fmt.Printf("src Transaction: %s\n", json)
+}
+
+func TestQuerySrcPolyDstRelation2_SwapDao(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("current directory: %s\n", dir)
+	config := conf.NewConfig("./../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	dbCfg := config.DBConfig
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	hash := "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002"
+	srcPolyDstRelation := new(models.SrcPolyDstRelation)
+	db.Debug().Table("src_transactions").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as asset").
+		Where("src_transactions.hash = ?", hash).
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Preload("WrapperTransaction").
+		Preload("SrcTransaction").
+		Preload("SrcTransaction.SrcTransfer").
+		Preload("PolyTransaction").
+		Preload("DstTransaction").
+		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
+		Order("src_transactions.time desc").
+		Find(srcPolyDstRelation)
+	json, _ := json.Marshal(srcPolyDstRelation)
 	fmt.Printf("src Transaction: %s\n", json)
 }
 

@@ -43,15 +43,15 @@ func (c *TransactionController) Transactions() {
 	c.ServeJSON()
 }
 
-func (c *TransactionController) TransactoinsOfUser() {
-	var transactionsOfUserReq models.TransactionsOfAddressReq
+func (c *TransactionController) TransactionsOfAddress() {
+	var transactionsOfAddressReq models.TransactionsOfAddressReq
 	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfUserReq); err != nil {
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfAddressReq); err != nil {
 		panic(err)
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("hash").Where("`from` in ? or dst_user in ?", transactionsOfUserReq.Addresses, transactionsOfUserReq.Addresses)).
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
+	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset").Where("`from` in ? or dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses)).
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as asset").
 		Joins("left join src_transactions on u.hash = src_transactions.hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
@@ -61,19 +61,56 @@ func (c *TransactionController) TransactoinsOfUser() {
 		Preload("PolyTransaction").
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
-		Limit(transactionsOfUserReq.PageSize).Offset(transactionsOfUserReq.PageSize * transactionsOfUserReq.PageNo).
+		Preload("Token").
+		Limit(transactionsOfAddressReq.PageSize).Offset(transactionsOfAddressReq.PageSize * transactionsOfAddressReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	var transactionNum int64
-	db.Model(&models.SrcTransfer{}).Where("`from` in ? or dst_user in ?", transactionsOfUserReq.Addresses, transactionsOfUserReq.Addresses).Count(&transactionNum)
+	db.Model(&models.SrcTransfer{}).Where("`from` in ? or dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).Count(&transactionNum)
 	chains := make([]*models.Chain, 0)
 	db.Model(&models.Chain{}).Find(&chains)
-	c.Data["json"] = models.MakeTransactionsOfUserRsp(transactionsOfUserReq.PageSize, transactionsOfUserReq.PageNo,
-		(int(transactionNum)+transactionsOfUserReq.PageSize-1)/transactionsOfUserReq.PageSize, int(transactionNum), srcPolyDstRelations, chains)
+	chainsMap := make(map[uint64]*models.Chain)
+	for _, chain := range chains {
+		chainsMap[*chain.ChainId] = chain
+	}
+	c.Data["json"] = models.MakeTransactionsOfUserRsp(transactionsOfAddressReq.PageSize, transactionsOfAddressReq.PageNo,
+		(int(transactionNum)+transactionsOfAddressReq.PageSize-1)/transactionsOfAddressReq.PageSize, int(transactionNum), srcPolyDstRelations, chainsMap)
 	c.ServeJSON()
 }
 
-func (c *TransactionController) TransactoinsOfState() {
+func (c *TransactionController) TransactionOfHash() {
+	var transactionOfHashReq models.TransactionOfHashReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionOfHashReq); err != nil {
+		panic(err)
+	}
+	srcPolyDstRelation := new(models.SrcPolyDstRelation)
+	db.Table("src_transactions").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as asset").
+		Where("src_transactions.hash = ?", transactionOfHashReq.Hash).
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Preload("WrapperTransaction").
+		Preload("SrcTransaction").
+		Preload("SrcTransaction.SrcTransfer").
+		Preload("PolyTransaction").
+		Preload("DstTransaction").
+		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
+		Order("src_transactions.time desc").
+		Find(srcPolyDstRelation)
+	chains := make([]*models.Chain, 0)
+	db.Model(&models.Chain{}).Find(&chains)
+	chainsMap := make(map[uint64]*models.Chain)
+	for _, chain := range chains {
+		chainsMap[*chain.ChainId] = chain
+	}
+	c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
+	c.ServeJSON()
+}
+
+func (c *TransactionController) TransactionsOfState() {
 	var transactionsOfStateReq models.TransactionsOfStateReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfStateReq); err != nil {

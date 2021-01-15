@@ -75,10 +75,8 @@ func (c *FeeController) CheckFee() {
 		prefix := srcTransaction.Key[0:4]
 		if prefix == "0000" {
 			key2Txhash[srcTransaction.Key] = srcTransaction.Hash
-		} else {
-			key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
 		}
-
+		key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
 	}
 	checkHashes := make([]string, 0)
 	for _, hash := range checkFeesReq.Hashs {
@@ -88,7 +86,7 @@ func (c *FeeController) CheckFee() {
 		}
 	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Debug().Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	txhash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
 	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
 		txhash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken

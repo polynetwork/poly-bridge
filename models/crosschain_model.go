@@ -114,4 +114,7 @@ type SrcPolyDstRelation struct {
 	PolyTransaction    *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
 	DstHash            string
 	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
+	ChainId            uint64 `gorm:"type:bigint(20);not null"`
+	TokenHash      string  `gorm:"type:varchar(66);not null"`
+	Token     *Token `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
 }
