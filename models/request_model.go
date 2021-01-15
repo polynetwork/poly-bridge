@@ -358,7 +358,6 @@ type TransactionRsp struct {
 	BlockHeight      uint64
 	Time             uint64
 	DstChainId       uint64
-	FeeTokenHash     string
 	FeeAmount        string
 	TransferAmount           string
 	DstUser          string
@@ -375,7 +374,6 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		BlockHeight:  transaction.SrcTransaction.Height,
 		Time:         transaction.SrcTransaction.Time,
 		DstChainId:   transaction.SrcTransaction.DstChainId,
-		FeeTokenHash: transaction.WrapperTransaction.FeeTokenHash,
 		FeeAmount:    transaction.WrapperTransaction.FeeAmount.String(),
 		TransferAmount:       transaction.SrcTransaction.SrcTransfer.Amount.String(),
 		DstUser:      transaction.SrcTransaction.SrcTransfer.DstUser,
