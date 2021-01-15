@@ -134,7 +134,8 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.Time = tt
 					srcTransfer.ChainId = this.GetChainId()
 					srcTransfer.TxHash = lockEvent.TxHash
-					srcTransfer.From = utils.Hash2Address(this.GetChainId(), v.FromAddress)
+					srcTransfer.From = utils.Hash2Address(this.GetChainId(), lockEvent.User)
+					//srcTransfer.From = utils.Hash2Address(this.GetChainId(), v.FromAddress)
 					srcTransfer.To = utils.Hash2Address(this.GetChainId(), lockEvent.Contract)
 					srcTransfer.Asset = strings.ToLower(v.FromAssetHash)
 					srcTransfer.Amount = models.NewBigInt(v.Amount)

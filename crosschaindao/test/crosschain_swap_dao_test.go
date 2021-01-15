@@ -184,7 +184,7 @@ func TestQuerySrcPolyDstRelation_SwapDao(t *testing.T) {
 	addresses := []string{"8bc7e7304120b88d111431f6a4853589d10e8132", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset").Where("`from` in ? or dst_user in ?", addresses, addresses)).
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as asset").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash").
 		Joins("left join src_transactions on u.hash = src_transactions.hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
@@ -220,7 +220,7 @@ func TestQuerySrcPolyDstRelation2_SwapDao(t *testing.T) {
 	hash := "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002"
 	srcPolyDstRelation := new(models.SrcPolyDstRelation)
 	db.Debug().Table("src_transactions").
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as asset").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
 		Where("src_transactions.hash = ?", hash).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").

@@ -748,24 +748,24 @@ Example Response
 }
 ```
 
-### POST transactoins
+### POST transactions
 
 Request 
 ```
-http://localhost:8080/v1/transactoins/
+http://localhost:8080/v1/transactions/
 ```
 
 BODY raw
 ```
 {
-    "PageNo":1,
+    "PageNo":0,
     "PageSize":10
 }
 ```
 
 Example Request
 ```
-curl --location --request POST 'http://localhost:8080/v1/transactoins/' \
+curl --location --request POST 'http://localhost:8080/v1/transactions/' \
 --data-raw '{
     "PageNo":0,
     "PageSize":10
@@ -789,17 +789,17 @@ Example Response
             "DstChainId": 79,
             "FeeTokenHash": "0000000000000000000000000000000000000000",
             "FeeAmount": 10000000000000000,
-            "State": "finished"
+            "State": 0
         }
     ]
 }
 ```
 
-### POST transactoinsofuser
+### POST transactionsofaddress
 
 Request 
 ```
-http://localhost:8080/v1/transactoinsofuser/
+http://localhost:8080/v1/transactionsofaddress/
 ```
 
 BODY raw
@@ -813,7 +813,7 @@ BODY raw
 
 Example Request
 ```
-curl --location --request POST 'http://localhost:8080/v1/transactoinsofuser/' \
+curl --location --request POST 'http://localhost:8080/v1/transactionsofaddress/' \
 --data-raw '{
     "Addresses":["8bc7e7304120b88d111431f6a4853589d10e8132", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"],
     "PageNo":0,
@@ -827,59 +827,42 @@ Example Response
     "PageSize": 10,
     "PageNo": 0,
     "TotalPage": 1,
-    "TotalCount": 2,
+    "TotalCount": 1,
     "Transactions": [
         {
-            "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729",
+            "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
             "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
             "SrcChainId": 2,
-            "BlockHeight": 9329385,
-            "Time": 1608885420,
-            "DstChainId": 4,
+            "BlockHeight": 9469807,
+            "Time": 1610695305,
+            "DstChainId": 79,
             "FeeTokenHash": "0000000000000000000000000000000000000000",
-            "FeeAmount": "1000000000000000000000000000000",
-            "Amount": "9000000000000000000000000000000",
-            "DstUser": "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8",
-            "State": "Finished",
+            "FeeAmount": "10000000000000000",
+            "Amount": "90000000000000000",
+            "DstUser": "6e43f9988f2771f1a2b140cb3faad424767d39fc",
+            "State": 0,
+            "Token": null,
             "TransactionState": [
                 {
-                    "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729",
+                    "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
                     "ChainId": 2,
-                    "Blocks": 0,
-                    "Time": 1608885420
+                    "Blocks": 10,
+                    "NeedBlocks": 10,
+                    "Time": 1610695305
                 },
                 {
-                    "Hash": "d2e8e325265ed314d9f538c2cb3f8e0a71ca2adad8b31db98278a4af6aecc1df",
+                    "Hash": "a58b5705c2117e390c7add98d55e762342c26508a9b787befa228e5c10a2b14f",
                     "ChainId": 0,
                     "Blocks": 10,
-                    "Time": 1609143919
+                    "NeedBlocks": 10,
+                    "Time": 1610697074
                 },
                 {
-                    "Hash": "1eecbe19ea85bd3ea57c3e7496b89f5263aa43d57449e21726f98435904ca7c4",
-                    "ChainId": 4,
-                    "Blocks": 0,
-                    "Time": 1608896077
-                }
-            ]
-        },
-        {
-            "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c739",
-            "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
-            "SrcChainId": 2,
-            "BlockHeight": 9329385,
-            "Time": 1608885420,
-            "DstChainId": 4,
-            "FeeTokenHash": "0000000000000000000000000000000000000000",
-            "FeeAmount": "1000000000000000000000000000000",
-            "Amount": "9000000000000000000000000000000",
-            "DstUser": "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8",
-            "State": "source done",
-            "TransactionState": [
-                {
-                    "Hash": "336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c739",
-                    "ChainId": 2,
-                    "Blocks": 0,
-                    "Time": 1608885420
+                    "Hash": "5e201266b11f107dafa8e323b4be3b1c7f062bc1f1926ce36cf8832497342e37",
+                    "ChainId": 79,
+                    "Blocks": 10,
+                    "NeedBlocks": 10,
+                    "Time": 1610697089
                 }
             ]
         }
@@ -887,11 +870,74 @@ Example Response
 }
 ```
 
-### POST transactoinsofstate
+### POST transactionofhash
 
 Request 
 ```
-http://localhost:8080/v1/transactoinsofstate/
+http://localhost:8080/v1/transactionofhash/
+```
+
+BODY raw
+```
+{
+    "Hash":"85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002"
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/transactionofhash/' \
+--data-raw '{
+    "Hash":"85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002"
+}'
+```
+
+Example Response
+```
+{
+    "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
+    "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
+    "SrcChainId": 2,
+    "BlockHeight": 9469807,
+    "Time": 1610695305,
+    "DstChainId": 79,
+    "FeeTokenHash": "0000000000000000000000000000000000000000",
+    "FeeAmount": "10000000000000000",
+    "Amount": "90000000000000000",
+    "DstUser": "6e43f9988f2771f1a2b140cb3faad424767d39fc",
+    "State": 0,
+    "Token": null,
+    "TransactionState": [
+        {
+            "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
+            "ChainId": 2,
+            "Blocks": 10,
+            "NeedBlocks": 10,
+            "Time": 1610695305
+        },
+        {
+            "Hash": "a58b5705c2117e390c7add98d55e762342c26508a9b787befa228e5c10a2b14f",
+            "ChainId": 0,
+            "Blocks": 10,
+            "NeedBlocks": 10,
+            "Time": 1610697074
+        },
+        {
+            "Hash": "5e201266b11f107dafa8e323b4be3b1c7f062bc1f1926ce36cf8832497342e37",
+            "ChainId": 79,
+            "Blocks": 10,
+            "NeedBlocks": 10,
+            "Time": 1610697089
+        }
+    ]
+}
+```
+
+### POST transactionsofstate
+
+Request 
+```
+http://localhost:8080/v1/transactionsofstate/
 ```
 
 BODY raw
@@ -905,7 +951,7 @@ BODY raw
 
 Example Request
 ```
-curl --location --request POST 'http://localhost:8080/v1/transactoinsofstate/' \
+curl --location --request POST 'http://localhost:8080/v1/transactionsofstate/' \
 --data-raw '{
     "State":"finished",
     "PageNo":0,

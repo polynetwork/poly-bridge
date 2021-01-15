@@ -450,7 +450,7 @@ func MakeTransactionsOfUserRsp(pageSize int, pageNo int, totalPage int, totalCou
 }
 
 type TransactionsOfStateReq struct {
-	State    string
+	State    uint64
 	PageSize int
 	PageNo   int
 }
