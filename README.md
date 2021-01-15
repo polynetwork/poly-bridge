@@ -12,12 +12,41 @@ PolyBridge的API。
 * [POST tokenmapreverse](#post-tokenmapreverse)
 * [POST getfee](#post-getfee)
 * [POST checkfee](#post-checkfee)
-* [POST transactoins](#post-transactoins)
-* [POST transactoinsofuser](#post-transactoinsofuser)
-* [POST transactoinsofstate](#post-transactoinsofstate)
+* [POST transactions](#post-transactions)
+* [POST transactionsofaddress](#post-transactionsofaddress)
+* [POST transactionofhash](#post-transactionofhash)
+* [POST transactionsofstate](#post-transactionsofstate)
 
 ## Test Node
 [40.115.153.174:30330](http://40.115.153.174:30330/v1/)
+
+## 交易状态码
+
+状态码|描述
+:--:|:--:
+0|finished
+1|pendding
+2|source done
+3|source confirmed
+4|poly confirmed
+
+## 跨链交易手续费
+
+### 手续费计算
+代理收取的手续费 = 目标链交易的手续费 * 120% （120%可配置）
+
+以BSC上的BNB跨链到以太手续费来计算：
+fee = (eth.gas_limit * eth.gas_price) * (eth的USDT价格) / (BNB的USDT价格)
+
+收取的手续费的资产为BNB
+
+### 手续费检查
+
+hasPay = 收取的手续费 > 目标链交易的手续费 * 20% （20%可配置）
+
+以BSC上的BNB跨链到以太的过程来检查手续费：
+
+hasPay = 收取的BNB * (BNB的USDT价格) > (eth.gas_limit * eth.gas_price) * (eth的USDT价格) * 20%
 
 ## API Info
 
@@ -805,7 +834,7 @@ http://localhost:8080/v1/transactionsofaddress/
 BODY raw
 ```
 {
-    "Addresses":["8bc7e7304120b88d111431f6a4853589d10e8132", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"],
+    "Addresses":["ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"],
     "PageNo":0,
     "PageSize":10
 }
@@ -815,7 +844,7 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/transactionsofaddress/' \
 --data-raw '{
-    "Addresses":["8bc7e7304120b88d111431f6a4853589d10e8132", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"],
+    "Addresses":["ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"],
     "PageNo":0,
     "PageSize":10
 }'
@@ -838,10 +867,17 @@ Example Response
             "DstChainId": 79,
             "FeeTokenHash": "0000000000000000000000000000000000000000",
             "FeeAmount": "10000000000000000",
-            "Amount": "90000000000000000",
+            "TransferAmount": "90000000000000000",
             "DstUser": "6e43f9988f2771f1a2b140cb3faad424767d39fc",
             "State": 0,
-            "Token": null,
+            "Token": {
+                "Hash": "0000000000000000000000000000000000000000",
+                "ChainId": 2,
+                "Name": "Ethereum",
+                "TokenBasicName": "Ethereum",
+                "TokenBasic": null,
+                "TokenMaps": null
+            },
             "TransactionState": [
                 {
                     "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
@@ -903,10 +939,17 @@ Example Response
     "DstChainId": 79,
     "FeeTokenHash": "0000000000000000000000000000000000000000",
     "FeeAmount": "10000000000000000",
-    "Amount": "90000000000000000",
+    "TransferAmount": "90000000000000000",
     "DstUser": "6e43f9988f2771f1a2b140cb3faad424767d39fc",
     "State": 0,
-    "Token": null,
+    "Token": {
+        "Hash": "0000000000000000000000000000000000000000",
+        "ChainId": 2,
+        "Name": "Ethereum",
+        "TokenBasicName": "Ethereum",
+        "TokenBasic": null,
+        "TokenMaps": null
+    },
     "TransactionState": [
         {
             "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
@@ -943,7 +986,7 @@ http://localhost:8080/v1/transactionsofstate/
 BODY raw
 ```
 {
-    "State":"finished",
+    "State":0,
     "PageNo":0,
     "PageSize":10
 }
@@ -953,7 +996,7 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/transactionsofstate/' \
 --data-raw '{
-    "State":"finished",
+    "State":0,
     "PageNo":0,
     "PageSize":10
 }'
@@ -976,7 +1019,7 @@ Example Response
             "DstChainId": 79,
             "FeeTokenHash": "0000000000000000000000000000000000000000",
             "FeeAmount": 10000000000000000,
-            "State": "finished"
+            "State": 0
         }
     ]
 }
