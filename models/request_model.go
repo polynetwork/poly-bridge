@@ -295,7 +295,7 @@ type WrapperTransactionRsp struct {
 	DstChainId   uint64
 	FeeTokenHash string
 	FeeAmount    uint64
-	State        string
+	State        uint64
 }
 
 func MakeWrapperTransactionRsp(transaction *WrapperTransaction) *WrapperTransactionRsp {
@@ -308,7 +308,7 @@ func MakeWrapperTransactionRsp(transaction *WrapperTransaction) *WrapperTransact
 		DstChainId:   transaction.DstChainId,
 		FeeTokenHash: transaction.FeeTokenHash,
 		FeeAmount:    transaction.FeeAmount.Uint64(),
-		State:        conf.StateCode2Name(int(transaction.Status)),
+		State:        transaction.Status,
 	}
 	return transactionRsp
 }
