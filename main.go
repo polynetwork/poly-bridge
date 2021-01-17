@@ -22,6 +22,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/plugins/cors"
 	_ "poly-bridge/routers"
 )
 
@@ -41,5 +42,11 @@ func main() {
 		}
 		beego.InsertFilter("/*", beego.FinishRouter, FilterLog, false)
 	}
+	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
+		AllowOrigins: []string{"https://*.foo.com"},
+		AllowMethods: []string{"PUT", "PATCH"},
+		AllowHeaders: []string{"Origin"},
+		ExposeHeaders: []string{"Content-Length"},
+		AllowCredentials: true,    }))
 	beego.Run()
 }
