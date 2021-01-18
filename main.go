@@ -43,7 +43,7 @@ func main() {
 		beego.InsertFilter("/*", beego.FinishRouter, FilterLog, false)
 	}
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
-		AllowOrigins: []string{"https://*.foo.com"},
+		AllowOrigins: []string{"*"},
 		AllowMethods: []string{"PUT", "PATCH"},
 		AllowHeaders: []string{"Origin"},
 		ExposeHeaders: []string{"Content-Length"},
