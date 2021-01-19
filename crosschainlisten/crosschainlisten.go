@@ -60,6 +60,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return neolisten.NewNeoChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == conf.BSC_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
+	} else if  chainListenConfig.ChainId == conf.HECO_CROSSCHAIN_ID {
+		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	} else {
 		return nil
 	}
