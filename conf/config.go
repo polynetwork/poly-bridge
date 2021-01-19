@@ -27,7 +27,7 @@ import (
 var (
 	POLY_CROSSCHAIN_ID     = uint64(0)
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
-	NEO_CROSSCHAIN_ID      = uint64(4)
+	NEO_CROSSCHAIN_ID      = uint64(5)
 	BSC_CROSSCHAIN_ID      = uint64(79)
 	HECO_CROSSCHAIN_ID      = uint64(7)
 )
