@@ -160,7 +160,7 @@ func TestQueryPolySrcRelation_SwapDao(t *testing.T) {
 		panic(err)
 	}
 	polySrcRelations := make([]*models.PolySrcRelation, 0)
-	db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+	db.Debug().Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("left join src_transactions on poly_transactions.src_hash = src_transactions.key and poly_transactions.src_chain_id = src_transactions.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	json, _ := json.Marshal(polySrcRelations)
 	fmt.Printf("src Transaction: %s\n", json)
 }

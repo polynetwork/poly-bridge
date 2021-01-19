@@ -131,7 +131,7 @@ func TestQueryPolySrcRelation_ExplorerDao(t *testing.T) {
 		panic(err)
 	}
 	polySrcRelations := make([]*explorerdao.PolySrcRelation, 0)
-	db.Debug().Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and fchain = ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("left join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+	db.Debug().Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and fchain = ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("left join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey and mchain_tx.fchain = fchain_tx.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	json, _ := json.Marshal(polySrcRelations)
 	fmt.Printf("src Transaction: %s\n", json)
 }
