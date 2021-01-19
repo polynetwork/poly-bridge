@@ -101,6 +101,7 @@ type WrapperTransaction struct {
 	BlockHeight  uint64  `gorm:"type:bigint(20);not null"`
 	Time         uint64  `gorm:"type:bigint(20);not null"`
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
+	ServerId   uint64  `gorm:"type:bigint(20);not null"`
 	FeeTokenHash string  `gorm:"size:66;not null"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`

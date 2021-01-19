@@ -4,7 +4,7 @@
     "URL":"localhost:3306",
     "User":"root",
     "Password":"",
-    "Scheme":"cross_chain_explorer"
+    "Scheme":"polyswap"
   },
   "ChainListenConfig":[
     {
@@ -39,7 +39,7 @@
           "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
         }
       ],
-      "WrapperContract":"8bc7E7304120b88D111431F6A4853589D10e8132",
+      "WrapperContract":"43C2568FE0B468BE3E0954319610e0A230A819a9",
       "CCMContract":"726532586c50ec9f4080b71f906a3d9779bbd64f",
       "ProxyContract":"D8aE73e06552E270340b63A8bcAbf9277a1aac99"
     },
@@ -64,9 +64,9 @@
           "Url": "https://testnet-explorer.o3node.org/"
         }
       ],
-      "WrapperContract":"8bc7E7304120b88D111431F6A4853589D10e8132",
-      "CCMContract":"82a3401fb9a60db42c6fa2ea2b6d62e872d6257f",
-      "ProxyContract":"a4a0919ba5a2a89cb2eb1cb4018a16841b2e943f"
+      "WrapperContract":"11980f8ffc87ce7452d72d8db28bbb19f076eced",
+      "CCMContract":"e1695b1314a1331e3935481620417ed835669407",
+      "ProxyContract":"edd2862dceb90b945210372d229f453f2b705f4f"
     },
     {
       "ChainName":"BSC",
@@ -80,7 +80,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"0CDd73B4C8d68BfdD72a7b43Cf09a8d235392a44",
+      "WrapperContract":"A3c8655A9A34e5e2278A788EC24902F2f57dB5d6",
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c"
     },
@@ -96,7 +96,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"0CDd73B4C8d68BfdD72a7b43Cf09a8d235392a44",
+      "WrapperContract":"3c92F1E31aACA43Eb4fF8aE498C7E85618680F45",
       "CCMContract":"D9A3d265a1127051F620e700B5a461af4991EaAE",
       "ProxyContract":"4a76E52600C6285029c8f7c52183cf86282cA5b8"
     }
@@ -142,7 +142,7 @@
       "MinFee": 20
     },
     {
-      "ChainId":4,
+      "ChainId":5,
       "ChainName":"Neo",
       "Nodes": [
       ],
@@ -156,6 +156,18 @@
       "Nodes": [
         {
           "Url": "https://data-seed-prebsc-1-s1.binance.org:8545"
+        }
+      ],
+      "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":7,
+      "ChainName":"HECO",
+      "Nodes": [
+        {
+          "Url": "https://http-testnet.hecochain.com"
         }
       ],
       "GasLimit":120000,

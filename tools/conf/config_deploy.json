@@ -13,10 +13,13 @@
       "ChainId":2
     },
     {
-      "ChainId":4
+      "ChainId":5
     },
     {
       "ChainId":79
+    },
+    {
+      "ChainId":7
     }
   ],
   "ChainFees":[
@@ -36,6 +39,12 @@
       "ChainId":79,
       "TokenBasic":{
         "Name":"BNB"
+      }
+    },
+    {
+      "ChainId":7,
+      "TokenBasic":{
+        "Name":"HT"
       }
     }
   ],
@@ -61,7 +70,7 @@
           "Precision":18
         },
         {
-          "ChainId":4,
+          "ChainId":5,
           "Hash":"23535b6fd46b8f867ed010bab4c2bd8ef0d0c64f",
           "Name":"pnWETH",
           "Precision":18
@@ -69,7 +78,7 @@
       ]
     },
     {
-      "Name":"Neo",
+      "Name":"NEO",
       "Precision":8,
       "PriceMarkets":[
         {
@@ -89,10 +98,16 @@
           "Precision":8
         },
         {
-          "ChainId":4,
+          "ChainId":5,
           "Hash":"17da3881ab2d050fea414c80b3fa8324d756f60e",
           "Name":"nNeo",
           "Precision":8
+        },
+        {
+          "ChainId":7,
+          "Hash":"6ef070cB10fC9F66D04A4c387928B268f55b9198",
+          "Name":"pNEO ",
+          "Precision":18
         }
       ]
     },
@@ -113,7 +128,7 @@
           "Precision":6
         },
         {
-          "ChainId":4,
+          "ChainId":5,
           "Hash":"b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
           "Name":"pnUSDT",
           "Precision":8
@@ -151,6 +166,12 @@
           "Hash":"0000000000000000000000000000000000000000",
           "Name":"BNB",
           "Precision":18
+        },
+        {
+          "ChainId":7,
+          "Hash":"33B89F811E8986C5b9D32114a21Cc1fd5FEB6C78",
+          "Name":"pBNB",
+          "Precision":18
         }
       ]
     },
@@ -174,6 +195,12 @@
           "ChainId":79,
           "Hash":"A3cE15f11D4427b6bad5630036f368a98e923E95",
           "Name":"WBTC",
+          "Precision":8
+        },
+        {
+          "ChainId":7,
+          "Hash":"B0FcB90b85Eab741ba28a132044E93344136cA36",
+          "Name":"pWBTC",
           "Precision":8
         }
       ]
@@ -203,6 +230,30 @@
           "Hash":"0a7BF54D2684885d731Dc63917A3178A2a1a8d4A",
           "Name":"WING",
           "Precision":9
+        },
+        {
+          "ChainId":7,
+          "Hash":"b8033859be7553cf9c7657f664FC2243BA5f02Ef",
+          "Name":"pWING",
+          "Precision":9
+        }
+      ]
+    },
+    {
+      "Name":"HT",
+      "Precision":18,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Huobi Token"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":7,
+          "Hash":"0000000000000000000000000000000000000000",
+          "Name":"HT",
+          "Precision":18
         }
       ]
     }
