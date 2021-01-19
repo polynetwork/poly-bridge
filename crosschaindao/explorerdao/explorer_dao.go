@@ -50,7 +50,7 @@ type SrcTransaction struct {
 	Contract    string       `gorm:"column:contract"`
 	Key         string       `gorm:"column:xkey"`
 	Param       string       `gorm:"column:xparam"`
-	SrcTransfer *SrcTransfer `gorm:"foreignKey:Hash;references:Hash"`
+	SrcTransfer *SrcTransfer `gorm:"foreignKey:TxHash;references:Hash"`
 }
 
 func (SrcTransaction) TableName() string {
@@ -58,7 +58,7 @@ func (SrcTransaction) TableName() string {
 }
 
 type SrcTransfer struct {
-	Hash       string         `gorm:"column:txhash"`
+	TxHash       string         `gorm:"column:txhash"`
 	ChainId    uint64         `gorm:"column:chain_id"`
 	Time       uint64         `gorm:"column:tt"`
 	Asset      string         `gorm:"column:asset"`
@@ -108,7 +108,7 @@ type DstTransaction struct {
 	SrcChainId  uint64       `gorm:"column:fchain"`
 	Contract    string       `gorm:"column:contract"`
 	PolyHash    string       `gorm:"column:rtxhash"`
-	DstTransfer *DstTransfer `gorm:"foreignKey:Hash;references:Hash"`
+	DstTransfer *DstTransfer `gorm:"foreignKey:TxHash;references:Hash"`
 }
 
 func (DstTransaction) TableName() string {
@@ -116,7 +116,7 @@ func (DstTransaction) TableName() string {
 }
 
 type DstTransfer struct {
-	Hash    string         `gorm:"column:txhash"`
+	TxHash    string         `gorm:"column:txhash"`
 	ChainId uint64         `gorm:"column:chain_id"`
 	Time    uint64         `gorm:"column:tt"`
 	Asset   string         `gorm:"column:asset"`

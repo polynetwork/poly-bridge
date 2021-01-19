@@ -24,6 +24,7 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"poly-bridge/conf"
+	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschaindao/explorerdao"
 	"poly-bridge/models"
 	"testing"
@@ -52,19 +53,39 @@ func TestCrossChain_ExplorerDao(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	polyTransactions := make([]*models.PolyTransaction, 0)
-	polyTransactionsData := []byte(`[{"Hash":"d2e8e325265ed314d9f538c2cb3f8e0a71ca2adad8b31db98278a4af6aecc1df","ChainId":0,"State":1,"Time":1609143919,"Fee":0,"Height":1641497,"SrcChainId":2,"SrcHash":"0000000000000000000000000000000000000000000000000000000000000abe","DstChainId":3,"Key":"","SrcTransaction":null}]`)
-	err = json.Unmarshal(polyTransactionsData, &polyTransactions)
-	if err != nil {
-		panic(err)
-	}
 	chain := new(models.Chain)
 	chainData := []byte(`{"ChainId":2,"Name":"Ethereum","Height":9329385}`)
 	err = json.Unmarshal(chainData, chain)
 	if err != nil {
 		panic(err)
 	}
-	err = dao.UpdateEvents(chain, wrapperTransactions, srcTransactions, polyTransactions, nil)
+	err = dao.UpdateEvents(chain, wrapperTransactions, srcTransactions, nil, nil)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestCrossChainSrc_ExplorerDao(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("current directory: %s\n", dir)
+	config := conf.NewConfig("./../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	dao := crosschaindao.NewCrossChainDao(conf.SERVER_EXPLORER, config.DBConfig)
+	if dao == nil {
+		panic("server is not valid")
+	}
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	srcTransactionsData := []byte(`[{"Hash":"74b469fb26f1229db5cf516b6ac2b9722eb68573e3e1f5687849cab9feb3b10c","ChainId":7,"State":1,"Time":1611028940,"Fee":2729461364730000,"Height":1379405,"User":"6b0f370aa682cd43066c134e4b3e2e0922832408","DstChainId":5,"Contract":"4a76e52600c6285029c8f7c52183cf86282ca5b8","Key":"0000000000000000000000000000000000000000000000000000000000000018","Param":"20000000000000000000000000000000000000000000000000000000000000001820b082c060ef6652d93b5702a5c70eefcd15e5a18b4f27c764322635a8bbbb26b7144a76e52600c6285029c8f7c52183cf86282ca5b80500000000000000144f5f702b3f459f222d371052940bb9ce2d86d2ed06756e6c6f636b4a146cf6e87ab27a492647277686d29bc4a451ac01bb14ec796ad7d3f70013cba8b2499b7e36bdc74abbc1c43d000000000000000000000000000000000000000000000000000000000000","SrcTransfer":{"TxHash":"74b469fb26f1229db5cf516b6ac2b9722eb68573e3e1f5687849cab9feb3b10c","ChainId":7,"Time":1611028940,"Asset":"faddf0cfb08f92779560db57be6b2c7303aad266","From":"6b0f370aa682cd43066c134e4b3e2e0922832408","To":"4a76e52600c6285029c8f7c52183cf86282ca5b8","Amount":15812,"DstChainId":5,"DstAsset":"6cf6e87ab27a492647277686d29bc4a451ac01bb","DstUser":"ec796ad7d3f70013cba8b2499b7e36bdc74abbc1"}}]`)
+	err = json.Unmarshal(srcTransactionsData, &srcTransactions)
+	if err != nil {
+		panic(err)
+	}
+	err = dao.UpdateEvents(nil, nil, srcTransactions, nil, nil)
 	if err != nil {
 		panic(err)
 	}

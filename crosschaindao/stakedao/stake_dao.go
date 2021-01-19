@@ -49,7 +49,7 @@ func NewStakeDao() *StakeDao {
 	}
 	chains[7] = &models.Chain{
 		ChainId: new(uint64),
-		Height:  0,
+		Height:  1379404,
 	}
 	for k, v := range chains {
 		*v.ChainId = k
