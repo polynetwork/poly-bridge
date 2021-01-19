@@ -125,7 +125,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							Status:       conf.STATE_SOURCE_DONE,
 						})
 					}
-				} else if notify.Contract[2:] == this.neoCfg.ProxyContract {
+				} else if notify.Contract[2:] == this.neoCfg.CCMContract {
 					if len(notify.State.Value) <= 0 {
 						continue
 					}
