@@ -22,6 +22,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/joeqian10/neo-gogogo/rpc/models"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 )
@@ -148,7 +149,7 @@ func (pro *NeoSdkPro) GetApplicationLog(txId string) (*models.RpcApplicationLog,
 	}
 	for info != nil {
 		log, err := info.sdk.GetApplicationLog(txId)
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "json: cannot") {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {

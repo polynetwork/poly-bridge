@@ -99,7 +99,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 			continue
 		}
 		appLog, err := this.neoSdk.GetApplicationLog(tx.Txid)
-		if err != nil {
+		if err != nil || appLog == nil {
 			continue
 		}
 		for _, exeitem := range appLog.Executions {
