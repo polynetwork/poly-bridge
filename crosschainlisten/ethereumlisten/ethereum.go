@@ -188,7 +188,7 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 		return nil, nil
 	}
 	wrapperAddress := common.HexToAddress(contractAddr)
-	wrapperContract, err := polywrapper.NewIPolyWrapper(wrapperAddress, this.ethSdk.GetClient())
+	wrapperContract, err := wrapper_abi.NewIPolyWrapper(wrapperAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
@@ -211,6 +211,7 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 			DstChainId:   evt.ToChainId,
 			FeeTokenHash: evt.FromAsset.String()[2:],
 			FeeAmount:    &models.BigInt{*evt.Fee},
+			ServerId: evt.Id.Uint64(),
 		})
 	}
 	speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)

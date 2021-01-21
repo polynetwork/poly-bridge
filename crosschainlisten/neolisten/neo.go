@@ -40,6 +40,7 @@ const (
 	_neo_lock2            = "LockEvent"
 	_neo_unlock           = "UnlockEvent"
 	_neo_unlock2          = "Unlock"
+	_poly_wrapper_lock    = "PolyWrapperLock"
 )
 
 type NeoChainListen struct {
@@ -104,25 +105,37 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 		for _, exeitem := range appLog.Executions {
 			for _, notify := range exeitem.Notifications {
 				if notify.Contract[2:] == this.neoCfg.WrapperContract {
-					if len(notify.State.Value) <= 0 {
+					if len(notify.State.Value) < 0 {
 						continue
 					}
 					contractMethod := this.parseNeoMethod(notify.State.Value[0].Value)
 					switch contractMethod {
-					case _neo_crosschainlock:
+					case _poly_wrapper_lock:
 						logs.Info("from chain: %s, txhash: %s\n", this.GetChainName(), tx.Txid[2:])
-						if len(notify.State.Value) < 6 {
+						if len(notify.State.Value) < 8 {
 							continue
 						}
-						xx, _ := strconv.ParseUint(notify.State.Value[3].Value, 10, 64)
+						value := notify.State.Value
+						tchainId, _ := strconv.ParseUint(value[3].Value, 10, 64)
+						serverId, _ := strconv.ParseUint(value[7].Value, 10, 64)
+						asset := utils.HexStringReverse(value[1].Value)
+						amount := big.NewInt(0)
+						if value[6].Type == "Integer" {
+							amount, _ = new(big.Int).SetString(value[6].Value, 10)
+						} else {
+							amount, _ = new(big.Int).SetString(utils.HexStringReverse(value[6].Value), 16)
+						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 							Hash:         tx.Txid[2:],
-							User:         notify.State.Value[4].Value,
-							SrcChainId:   xx,
-							DstChainId:   xx,
-							FeeTokenHash: notify.State.Value[4].Value,
-							FeeAmount:    &models.BigInt{*big.NewInt(int64(xx))},
+							User:         notify.State.Value[2].Value,
+							DstChainId:   tchainId,
+							FeeTokenHash: asset,
+							FeeAmount:     &models.BigInt{*amount},
+							ServerId: serverId,
 							Status:       conf.STATE_SOURCE_DONE,
+							Time: uint64(tt),
+							BlockHeight: height,
+							SrcChainId: this.GetChainId(),
 						})
 					}
 				} else if notify.Contract[2:] == this.neoCfg.CCMContract {

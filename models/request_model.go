@@ -358,6 +358,7 @@ type TransactionRsp struct {
 	BlockHeight      uint64
 	Time             uint64
 	DstChainId       uint64
+	Amount           string
 	FeeAmount        string
 	TransferAmount           string
 	DstUser          string
@@ -367,6 +368,7 @@ type TransactionRsp struct {
 }
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
+	amont := new(big.Int).Add(new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int), new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int))
 	transactionRsp := &TransactionRsp{
 		Hash:         transaction.SrcHash,
 		User:         transaction.SrcTransaction.User,
@@ -376,6 +378,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		DstChainId:   transaction.SrcTransaction.DstChainId,
 		FeeAmount:    transaction.WrapperTransaction.FeeAmount.String(),
 		TransferAmount:       transaction.SrcTransaction.SrcTransfer.Amount.String(),
+		Amount: amont.String(),
 		DstUser:      transaction.SrcTransaction.SrcTransfer.DstUser,
 		State:        transaction.WrapperTransaction.Status,
 	}

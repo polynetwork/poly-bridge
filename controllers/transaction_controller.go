@@ -61,6 +61,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
+		Preload("Token.TokenBasic").
 		Limit(transactionsOfAddressReq.PageSize).Offset(transactionsOfAddressReq.PageSize * transactionsOfAddressReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
@@ -97,6 +98,7 @@ func (c *TransactionController) TransactionOfHash() {
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
+		Preload("Token.TokenBasic").
 		Order("src_transactions.time desc").
 		Find(srcPolyDstRelation)
 	chains := make([]*models.Chain, 0)

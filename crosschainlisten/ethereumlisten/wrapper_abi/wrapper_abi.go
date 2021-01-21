@@ -1,7 +1,7 @@
 // Code generated - DO NOT EDIT.
 // This file is a generated binding and any manual changes will be lost.
 
-package polywrapper
+package wrapper_abi
 
 import (
 	"math/big"
@@ -27,12 +27,12 @@ var (
 )
 
 // IPolyWrapperABI is the input ABI used to generate the binding from.
-const IPolyWrapperABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"toChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"toAddress\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"net\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"PolyWrapperLock\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"bytes\",\"name\":\"txHash\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"efee\",\"type\":\"uint256\"}],\"name\":\"PolyWrapperSpeedUp\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"feeCollector\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"internalType\":\"uint64\",\"name\":\"toChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"toAddress\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"lock\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockProxy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"txHash\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"speedUp\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]"
+const IPolyWrapperABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"toChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"toAddress\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"net\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"PolyWrapperLock\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"bytes\",\"name\":\"txHash\",\"type\":\"bytes\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"efee\",\"type\":\"uint256\"}],\"name\":\"PolyWrapperSpeedUp\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"feeCollector\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"internalType\":\"uint64\",\"name\":\"toChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"toAddress\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"lock\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockProxy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"fromAsset\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"txHash\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"speedUp\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]"
 
 // IPolyWrapperFuncSigs maps the 4-byte function signature to its string representation.
 var IPolyWrapperFuncSigs = map[string]string{
 	"c415b95c": "feeCollector()",
-	"f30f4889": "lock(address,uint64,bytes,uint256,uint256)",
+	"60de1a9b": "lock(address,uint64,bytes,uint256,uint256,uint256)",
 	"9d4dc021": "lockProxy()",
 	"5c975abb": "paused()",
 	"d3ed7c76": "speedUp(address,bytes,uint256)",
@@ -180,122 +180,107 @@ func (_IPolyWrapper *IPolyWrapperTransactorRaw) Transact(opts *bind.TransactOpts
 	return _IPolyWrapper.Contract.contract.Transact(opts, method, params...)
 }
 
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
+// FeeCollector is a paid mutator transaction binding the contract method 0xc415b95c.
 //
-// Solidity: function feeCollector() view returns(address)
-func (_IPolyWrapper *IPolyWrapperCaller) FeeCollector(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _IPolyWrapper.contract.Call(opts, out, "feeCollector")
-	return *ret0, err
+// Solidity: function feeCollector() returns(address)
+func (_IPolyWrapper *IPolyWrapperTransactor) FeeCollector(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IPolyWrapper.contract.Transact(opts, "feeCollector")
 }
 
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
+// FeeCollector is a paid mutator transaction binding the contract method 0xc415b95c.
 //
-// Solidity: function feeCollector() view returns(address)
-func (_IPolyWrapper *IPolyWrapperSession) FeeCollector() (common.Address, error) {
-	return _IPolyWrapper.Contract.FeeCollector(&_IPolyWrapper.CallOpts)
+// Solidity: function feeCollector() returns(address)
+func (_IPolyWrapper *IPolyWrapperSession) FeeCollector() (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.FeeCollector(&_IPolyWrapper.TransactOpts)
 }
 
-// FeeCollector is a free data retrieval call binding the contract method 0xc415b95c.
+// FeeCollector is a paid mutator transaction binding the contract method 0xc415b95c.
 //
-// Solidity: function feeCollector() view returns(address)
-func (_IPolyWrapper *IPolyWrapperCallerSession) FeeCollector() (common.Address, error) {
-	return _IPolyWrapper.Contract.FeeCollector(&_IPolyWrapper.CallOpts)
+// Solidity: function feeCollector() returns(address)
+func (_IPolyWrapper *IPolyWrapperTransactorSession) FeeCollector() (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.FeeCollector(&_IPolyWrapper.TransactOpts)
 }
 
-// LockProxy is a free data retrieval call binding the contract method 0x9d4dc021.
+// Lock is a paid mutator transaction binding the contract method 0x60de1a9b.
 //
-// Solidity: function lockProxy() view returns(address)
-func (_IPolyWrapper *IPolyWrapperCaller) LockProxy(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _IPolyWrapper.contract.Call(opts, out, "lockProxy")
-	return *ret0, err
+// Solidity: function lock(address fromAsset, uint64 toChainId, bytes toAddress, uint256 amount, uint256 fee, uint256 id) returns()
+func (_IPolyWrapper *IPolyWrapperTransactor) Lock(opts *bind.TransactOpts, fromAsset common.Address, toChainId uint64, toAddress []byte, amount *big.Int, fee *big.Int, id *big.Int) (*types.Transaction, error) {
+	return _IPolyWrapper.contract.Transact(opts, "lock", fromAsset, toChainId, toAddress, amount, fee, id)
 }
 
-// LockProxy is a free data retrieval call binding the contract method 0x9d4dc021.
+// Lock is a paid mutator transaction binding the contract method 0x60de1a9b.
 //
-// Solidity: function lockProxy() view returns(address)
-func (_IPolyWrapper *IPolyWrapperSession) LockProxy() (common.Address, error) {
-	return _IPolyWrapper.Contract.LockProxy(&_IPolyWrapper.CallOpts)
+// Solidity: function lock(address fromAsset, uint64 toChainId, bytes toAddress, uint256 amount, uint256 fee, uint256 id) returns()
+func (_IPolyWrapper *IPolyWrapperSession) Lock(fromAsset common.Address, toChainId uint64, toAddress []byte, amount *big.Int, fee *big.Int, id *big.Int) (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.Lock(&_IPolyWrapper.TransactOpts, fromAsset, toChainId, toAddress, amount, fee, id)
 }
 
-// LockProxy is a free data retrieval call binding the contract method 0x9d4dc021.
+// Lock is a paid mutator transaction binding the contract method 0x60de1a9b.
 //
-// Solidity: function lockProxy() view returns(address)
-func (_IPolyWrapper *IPolyWrapperCallerSession) LockProxy() (common.Address, error) {
-	return _IPolyWrapper.Contract.LockProxy(&_IPolyWrapper.CallOpts)
+// Solidity: function lock(address fromAsset, uint64 toChainId, bytes toAddress, uint256 amount, uint256 fee, uint256 id) returns()
+func (_IPolyWrapper *IPolyWrapperTransactorSession) Lock(fromAsset common.Address, toChainId uint64, toAddress []byte, amount *big.Int, fee *big.Int, id *big.Int) (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.Lock(&_IPolyWrapper.TransactOpts, fromAsset, toChainId, toAddress, amount, fee, id)
 }
 
-// Paused is a free data retrieval call binding the contract method 0x5c975abb.
+// LockProxy is a paid mutator transaction binding the contract method 0x9d4dc021.
 //
-// Solidity: function paused() view returns(bool)
-func (_IPolyWrapper *IPolyWrapperCaller) Paused(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _IPolyWrapper.contract.Call(opts, out, "paused")
-	return *ret0, err
+// Solidity: function lockProxy() returns(address)
+func (_IPolyWrapper *IPolyWrapperTransactor) LockProxy(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IPolyWrapper.contract.Transact(opts, "lockProxy")
 }
 
-// Paused is a free data retrieval call binding the contract method 0x5c975abb.
+// LockProxy is a paid mutator transaction binding the contract method 0x9d4dc021.
 //
-// Solidity: function paused() view returns(bool)
-func (_IPolyWrapper *IPolyWrapperSession) Paused() (bool, error) {
-	return _IPolyWrapper.Contract.Paused(&_IPolyWrapper.CallOpts)
+// Solidity: function lockProxy() returns(address)
+func (_IPolyWrapper *IPolyWrapperSession) LockProxy() (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.LockProxy(&_IPolyWrapper.TransactOpts)
 }
 
-// Paused is a free data retrieval call binding the contract method 0x5c975abb.
+// LockProxy is a paid mutator transaction binding the contract method 0x9d4dc021.
 //
-// Solidity: function paused() view returns(bool)
-func (_IPolyWrapper *IPolyWrapperCallerSession) Paused() (bool, error) {
-	return _IPolyWrapper.Contract.Paused(&_IPolyWrapper.CallOpts)
+// Solidity: function lockProxy() returns(address)
+func (_IPolyWrapper *IPolyWrapperTransactorSession) LockProxy() (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.LockProxy(&_IPolyWrapper.TransactOpts)
 }
 
-// Lock is a paid mutator transaction binding the contract method 0xf30f4889.
+// Paused is a paid mutator transaction binding the contract method 0x5c975abb.
 //
-// Solidity: function lock(address fromAsset, uint64 toChainId, bytes toAddress, uint256 amount, uint256 fee) payable returns()
-func (_IPolyWrapper *IPolyWrapperTransactor) Lock(opts *bind.TransactOpts, fromAsset common.Address, toChainId uint64, toAddress []byte, amount *big.Int, fee *big.Int) (*types.Transaction, error) {
-	return _IPolyWrapper.contract.Transact(opts, "lock", fromAsset, toChainId, toAddress, amount, fee)
+// Solidity: function paused() returns(bool)
+func (_IPolyWrapper *IPolyWrapperTransactor) Paused(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IPolyWrapper.contract.Transact(opts, "paused")
 }
 
-// Lock is a paid mutator transaction binding the contract method 0xf30f4889.
+// Paused is a paid mutator transaction binding the contract method 0x5c975abb.
 //
-// Solidity: function lock(address fromAsset, uint64 toChainId, bytes toAddress, uint256 amount, uint256 fee) payable returns()
-func (_IPolyWrapper *IPolyWrapperSession) Lock(fromAsset common.Address, toChainId uint64, toAddress []byte, amount *big.Int, fee *big.Int) (*types.Transaction, error) {
-	return _IPolyWrapper.Contract.Lock(&_IPolyWrapper.TransactOpts, fromAsset, toChainId, toAddress, amount, fee)
+// Solidity: function paused() returns(bool)
+func (_IPolyWrapper *IPolyWrapperSession) Paused() (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.Paused(&_IPolyWrapper.TransactOpts)
 }
 
-// Lock is a paid mutator transaction binding the contract method 0xf30f4889.
+// Paused is a paid mutator transaction binding the contract method 0x5c975abb.
 //
-// Solidity: function lock(address fromAsset, uint64 toChainId, bytes toAddress, uint256 amount, uint256 fee) payable returns()
-func (_IPolyWrapper *IPolyWrapperTransactorSession) Lock(fromAsset common.Address, toChainId uint64, toAddress []byte, amount *big.Int, fee *big.Int) (*types.Transaction, error) {
-	return _IPolyWrapper.Contract.Lock(&_IPolyWrapper.TransactOpts, fromAsset, toChainId, toAddress, amount, fee)
+// Solidity: function paused() returns(bool)
+func (_IPolyWrapper *IPolyWrapperTransactorSession) Paused() (*types.Transaction, error) {
+	return _IPolyWrapper.Contract.Paused(&_IPolyWrapper.TransactOpts)
 }
 
 // SpeedUp is a paid mutator transaction binding the contract method 0xd3ed7c76.
 //
-// Solidity: function speedUp(address fromAsset, bytes txHash, uint256 fee) payable returns()
+// Solidity: function speedUp(address fromAsset, bytes txHash, uint256 fee) returns()
 func (_IPolyWrapper *IPolyWrapperTransactor) SpeedUp(opts *bind.TransactOpts, fromAsset common.Address, txHash []byte, fee *big.Int) (*types.Transaction, error) {
 	return _IPolyWrapper.contract.Transact(opts, "speedUp", fromAsset, txHash, fee)
 }
 
 // SpeedUp is a paid mutator transaction binding the contract method 0xd3ed7c76.
 //
-// Solidity: function speedUp(address fromAsset, bytes txHash, uint256 fee) payable returns()
+// Solidity: function speedUp(address fromAsset, bytes txHash, uint256 fee) returns()
 func (_IPolyWrapper *IPolyWrapperSession) SpeedUp(fromAsset common.Address, txHash []byte, fee *big.Int) (*types.Transaction, error) {
 	return _IPolyWrapper.Contract.SpeedUp(&_IPolyWrapper.TransactOpts, fromAsset, txHash, fee)
 }
 
 // SpeedUp is a paid mutator transaction binding the contract method 0xd3ed7c76.
 //
-// Solidity: function speedUp(address fromAsset, bytes txHash, uint256 fee) payable returns()
+// Solidity: function speedUp(address fromAsset, bytes txHash, uint256 fee) returns()
 func (_IPolyWrapper *IPolyWrapperTransactorSession) SpeedUp(fromAsset common.Address, txHash []byte, fee *big.Int) (*types.Transaction, error) {
 	return _IPolyWrapper.Contract.SpeedUp(&_IPolyWrapper.TransactOpts, fromAsset, txHash, fee)
 }
@@ -375,12 +360,13 @@ type IPolyWrapperPolyWrapperLock struct {
 	ToAddress []byte
 	Net       *big.Int
 	Fee       *big.Int
+	Id        *big.Int
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterPolyWrapperLock is a free log retrieval operation binding the contract event 0x9235732b5ae17e6682c4a5f60c8df8bcd6e10dbeead06e212c50bae0c3df6dc1.
+// FilterPolyWrapperLock is a free log retrieval operation binding the contract event 0x2b0591052cc6602e870d3994f0a1b173fdac98c215cb3b0baf84eaca5a0aa81e.
 //
-// Solidity: event PolyWrapperLock(address indexed fromAsset, address indexed sender, uint64 toChainId, bytes toAddress, uint256 net, uint256 fee)
+// Solidity: event PolyWrapperLock(address indexed fromAsset, address indexed sender, uint64 toChainId, bytes toAddress, uint256 net, uint256 fee, uint256 id)
 func (_IPolyWrapper *IPolyWrapperFilterer) FilterPolyWrapperLock(opts *bind.FilterOpts, fromAsset []common.Address, sender []common.Address) (*IPolyWrapperPolyWrapperLockIterator, error) {
 
 	var fromAssetRule []interface{}
@@ -399,9 +385,9 @@ func (_IPolyWrapper *IPolyWrapperFilterer) FilterPolyWrapperLock(opts *bind.Filt
 	return &IPolyWrapperPolyWrapperLockIterator{contract: _IPolyWrapper.contract, event: "PolyWrapperLock", logs: logs, sub: sub}, nil
 }
 
-// WatchPolyWrapperLock is a free log subscription operation binding the contract event 0x9235732b5ae17e6682c4a5f60c8df8bcd6e10dbeead06e212c50bae0c3df6dc1.
+// WatchPolyWrapperLock is a free log subscription operation binding the contract event 0x2b0591052cc6602e870d3994f0a1b173fdac98c215cb3b0baf84eaca5a0aa81e.
 //
-// Solidity: event PolyWrapperLock(address indexed fromAsset, address indexed sender, uint64 toChainId, bytes toAddress, uint256 net, uint256 fee)
+// Solidity: event PolyWrapperLock(address indexed fromAsset, address indexed sender, uint64 toChainId, bytes toAddress, uint256 net, uint256 fee, uint256 id)
 func (_IPolyWrapper *IPolyWrapperFilterer) WatchPolyWrapperLock(opts *bind.WatchOpts, sink chan<- *IPolyWrapperPolyWrapperLock, fromAsset []common.Address, sender []common.Address) (event.Subscription, error) {
 
 	var fromAssetRule []interface{}
@@ -445,9 +431,9 @@ func (_IPolyWrapper *IPolyWrapperFilterer) WatchPolyWrapperLock(opts *bind.Watch
 	}), nil
 }
 
-// ParsePolyWrapperLock is a log parse operation binding the contract event 0x9235732b5ae17e6682c4a5f60c8df8bcd6e10dbeead06e212c50bae0c3df6dc1.
+// ParsePolyWrapperLock is a log parse operation binding the contract event 0x2b0591052cc6602e870d3994f0a1b173fdac98c215cb3b0baf84eaca5a0aa81e.
 //
-// Solidity: event PolyWrapperLock(address indexed fromAsset, address indexed sender, uint64 toChainId, bytes toAddress, uint256 net, uint256 fee)
+// Solidity: event PolyWrapperLock(address indexed fromAsset, address indexed sender, uint64 toChainId, bytes toAddress, uint256 net, uint256 fee, uint256 id)
 func (_IPolyWrapper *IPolyWrapperFilterer) ParsePolyWrapperLock(log types.Log) (*IPolyWrapperPolyWrapperLock, error) {
 	event := new(IPolyWrapperPolyWrapperLock)
 	if err := _IPolyWrapper.contract.UnpackLog(event, "PolyWrapperLock", log); err != nil {

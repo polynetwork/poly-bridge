@@ -42,12 +42,12 @@
           "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
         }
       ],
-      "WrapperContract":"43C2568FE0B468BE3E0954319610e0A230A819a9",
+      "WrapperContract":"e498fb7D00468a67A79dE5D4Ca264d3350165280",
       "CCMContract":"726532586c50ec9f4080b71f906a3d9779bbd64f",
       "ProxyContract":"D8aE73e06552E270340b63A8bcAbf9277a1aac99"
     },
     {
-      "ChainName":"Neo",
+      "ChainName":"NEO",
       "ChainId":5,
       "ListenSlot":1,
       "BackwardBlockNumber":10,
@@ -67,7 +67,7 @@
           "Url": "https://testnet-explorer.o3node.org/"
         }
       ],
-      "WrapperContract":"11980f8ffc87ce7452d72d8db28bbb19f076eced",
+      "WrapperContract":"104057f879009326250ee1f5d60e2efd925024e6",
       "CCMContract":"e1695b1314a1331e3935481620417ed835669407",
       "ProxyContract":"edd2862dceb90b945210372d229f453f2b705f4f"
     },
@@ -83,7 +83,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"A3c8655A9A34e5e2278A788EC24902F2f57dB5d6",
+      "WrapperContract":"Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5",
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c"
     },

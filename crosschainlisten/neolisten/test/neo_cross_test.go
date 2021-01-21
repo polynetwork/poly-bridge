@@ -29,7 +29,6 @@ import (
 	"math/big"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
-	"poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
 	"strings"
 	"testing"
 )
@@ -50,7 +49,7 @@ func TestNeoCross(t *testing.T) {
 	neoChainListenConfig := config.GetChainListenConfig(conf.NEO_CROSSCHAIN_ID)
 	urls := neoChainListenConfig.GetNodesUrl()
 	ethSdk := chainsdk.NewEthereumSdkPro(urls, neoChainListenConfig.ListenSlot, conf.NEO_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader(polywrapper.IPolyWrapperABI))
+	contractabi, err := abi.JSON(strings.NewReader("polywrapper.IPolyWrapperABI"))
 	if err != nil {
 		panic(err)
 	}
