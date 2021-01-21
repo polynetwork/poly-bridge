@@ -388,6 +388,13 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 			Blocks:  transaction.SrcTransaction.Height,
 			Time:    transaction.SrcTransaction.Time,
 		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: transaction.WrapperTransaction.SrcChainId,
+			Blocks:  0,
+			Time:    0,
+		})
 	}
 	if transaction.PolyTransaction != nil {
 		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
@@ -395,6 +402,13 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 			ChainId: transaction.PolyTransaction.ChainId,
 			Blocks:  transaction.PolyTransaction.Height,
 			Time:    transaction.PolyTransaction.Time,
+		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: 0,
+			Blocks:  0,
+			Time:    0,
 		})
 	}
 	if transaction.DstTransaction != nil {
@@ -404,11 +418,21 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 			Blocks:  transaction.DstTransaction.Height,
 			Time:    transaction.DstTransaction.Time,
 		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: transaction.WrapperTransaction.DstChainId,
+			Blocks:  0,
+			Time:    0,
+		})
 	}
 	for _, state := range transactionRsp.TransactionState {
 		chain, ok := chainsMap[state.ChainId]
 		if ok {
 			state.NeedBlocks = chain.BackwardBlockNumber
+			if state.Blocks == 0 {
+				continue
+			}
 			state.Blocks = chain.Height - state.Blocks
 			if state.Blocks > chain.BackwardBlockNumber {
 				state.Blocks = chain.BackwardBlockNumber

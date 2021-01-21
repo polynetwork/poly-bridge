@@ -251,6 +251,6 @@ func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
 		}
 		data, _ := json.Marshal(newTokens)
 		fmt.Printf("%s\n", data)
-		db.Save(newTokens)
+		db.Debug().Save(newTokens)
 	}
 }
