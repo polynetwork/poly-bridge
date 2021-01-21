@@ -196,6 +196,10 @@ func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
 		newTokens := make([]*explorerdao.Token, 0)
 		db.Debug().Table("fchain_transfer").Distinct("chain_id as id", "asset as hash").Find(&tokens)
 		for _, token := range tokens {
+			fmt.Printf("chain: %d, token hash: %s\n", token.Id, token.Hash)
+			if token.Hash[0:4] == "0000" || token.Hash[28:32] == "0000" {
+				continue
+			}
 			if token.Id == conf.ETHEREUM_CROSSCHAIN_ID {
 				hash, name, decimal, symbol, err := ethSdk.Erc20Info(token.Hash)
 				if err != nil {
@@ -217,7 +221,7 @@ func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
 				token.Type = "ERC20"
 				token.Desc = symbol
 				token.Precision = fmt.Sprintf("%d", utils.Int64FromFigure(int(decimal)))
-				fmt.Printf("erc20: %s, name: %s, decimal: %d, symbol: %s\n",
+				fmt.Printf("bsc: %s, name: %s, decimal: %d, symbol: %s\n",
 					hash, name, decimal, symbol)
 				newTokens = append(newTokens, token)
 			} else if token.Id == conf.HECO_CROSSCHAIN_ID {
@@ -229,7 +233,7 @@ func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
 				token.Type = "ERC20"
 				token.Desc = symbol
 				token.Precision = fmt.Sprintf("%d", utils.Int64FromFigure(int(decimal)))
-				fmt.Printf("erc20: %s, name: %s, decimal: %d, symbol: %s\n",
+				fmt.Printf("heco: %s, name: %s, decimal: %d, symbol: %s\n",
 					hash, name, decimal, symbol)
 				newTokens = append(newTokens, token)
 			} else if token.Id == conf.NEO_CROSSCHAIN_ID {
@@ -247,6 +251,6 @@ func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
 		}
 		data, _ := json.Marshal(newTokens)
 		fmt.Printf("%s\n", data)
-		//db.Save(newTokens)
+		db.Save(newTokens)
 	}
 }

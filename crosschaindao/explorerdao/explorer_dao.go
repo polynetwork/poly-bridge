@@ -132,7 +132,7 @@ func (DstTransfer) TableName() string {
 
 type Token struct {
 	Id    uint64         `gorm:"primaryKey;column:id"`
-	Token string         `gorm:"column:xtoken"`
+	Token string         `gorm:"column:xtoken;default:''"`
 	Hash    string         `gorm:"primaryKey;column:hash"`
 	Name   string         `gorm:"column:xname"`
 	Type    string         `gorm:"column:xtype"`
