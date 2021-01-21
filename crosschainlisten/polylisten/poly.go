@@ -98,7 +98,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 				mctx.Height = height
 				mctx.SrcChainId = uint64(fchainid)
 				mctx.DstChainId = uint64(tchainid)
-				if uint64(fchainid) == conf.ETHEREUM_CROSSCHAIN_ID || uint64(fchainid) == conf.BSC_CROSSCHAIN_ID || uint64(fchainid) == conf.NEO_CROSSCHAIN_ID {
+				if uint64(fchainid) == conf.ETHEREUM_CROSSCHAIN_ID || uint64(fchainid) == conf.BSC_CROSSCHAIN_ID || uint64(fchainid) == conf.HECO_CROSSCHAIN_ID {
 					mctx.SrcHash = states[3].(string)
 				} else {
 					mctx.SrcHash = utils.HexStringReverse(states[3].(string))
