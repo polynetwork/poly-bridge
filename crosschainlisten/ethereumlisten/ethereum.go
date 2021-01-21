@@ -27,7 +27,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io/ioutil"
-	"math/big"
 	"net/http"
 	"net/url"
 	"poly-bridge/chainsdk"
@@ -91,7 +90,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		return nil, nil, nil, nil, fmt.Errorf("there is no ethereum block!")
 	}
 	tt := blockHeader.Time
-	wrapperTransactions, err := this.getWapperEventByBlockNumber(this.ethCfg.WrapperContract, height)
+	wrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, height)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -122,7 +121,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
 			srcTransaction.Time = tt
 			srcTransaction.Height = height
-			srcTransaction.User = utils.Hash2Address(this.GetChainId(), lockEvent.User)
+			srcTransaction.User = lockEvent.User
 			srcTransaction.DstChainId = uint64(lockEvent.Tchain)
 			srcTransaction.Contract = lockEvent.Contract
 			srcTransaction.Key = lockEvent.Txid
@@ -134,14 +133,13 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.Time = tt
 					srcTransfer.ChainId = this.GetChainId()
 					srcTransfer.TxHash = lockEvent.TxHash
-					srcTransfer.From = utils.Hash2Address(this.GetChainId(), lockEvent.User)
-					//srcTransfer.From = utils.Hash2Address(this.GetChainId(), v.FromAddress)
-					srcTransfer.To = utils.Hash2Address(this.GetChainId(), lockEvent.Contract)
-					srcTransfer.Asset = strings.ToLower(v.FromAssetHash)
+					srcTransfer.From = lockEvent.User
+					srcTransfer.To = lockEvent.Contract
+					srcTransfer.Asset = v.FromAssetHash
 					srcTransfer.Amount = models.NewBigInt(v.Amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
 					srcTransfer.DstAsset = toAssetHash
-					srcTransfer.DstUser = utils.Hash2Address(uint64(v.ToChainId), v.ToAddress)
+					srcTransfer.DstUser = v.ToAddress
 					srcTransaction.SrcTransfer = srcTransfer
 					break
 				}
@@ -157,7 +155,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.ChainId = this.GetChainId()
 			dstTransaction.Hash = unLockEvent.TxHash
 			dstTransaction.State = 1
-			dstTransaction.Fee = &models.BigInt{*big.NewInt(int64(unLockEvent.Fee))}
+			dstTransaction.Fee = models.NewBigIntFromInt(int64(unLockEvent.Fee))
 			dstTransaction.Time = tt
 			dstTransaction.Height = height
 			dstTransaction.SrcChainId = uint64(unLockEvent.FChainId)
@@ -169,10 +167,10 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					dstTransfer.TxHash = unLockEvent.TxHash
 					dstTransfer.Time = tt
 					dstTransfer.ChainId = this.GetChainId()
-					dstTransfer.From = utils.Hash2Address(this.GetChainId(), unLockEvent.Contract)
-					dstTransfer.To = utils.Hash2Address(this.GetChainId(), v.ToAddress)
-					dstTransfer.Asset = strings.ToLower(v.ToAssetHash)
-					dstTransfer.Amount = &models.BigInt{*v.Amount}
+					dstTransfer.From = unLockEvent.Contract
+					dstTransfer.To = v.ToAddress
+					dstTransfer.Asset = v.ToAssetHash
+					dstTransfer.Amount = models.NewBigInt(v.Amount)
 					dstTransaction.DstTransfer = dstTransfer
 					break
 				}
@@ -183,7 +181,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
 
-func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string, height uint64) ([]*models.WrapperTransaction, error) {
+func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddr string, height uint64) ([]*models.WrapperTransaction, error) {
 	if len(contractAddr) == 0 {
 		return nil, nil
 	}
@@ -209,8 +207,9 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 			Hash:         evt.Raw.TxHash.String()[2:],
 			User:         strings.ToLower(evt.Sender.String()[2:]),
 			DstChainId:   evt.ToChainId,
-			FeeTokenHash: evt.FromAsset.String()[2:],
-			FeeAmount:    &models.BigInt{*evt.Fee},
+			DstUser: hex.EncodeToString(evt.ToAddress),
+			FeeTokenHash: strings.ToLower(evt.FromAsset.String()[2:]),
+			FeeAmount:   models.NewBigInt(evt.Fee),
 			ServerId: evt.Id.Uint64(),
 		})
 	}
@@ -224,7 +223,7 @@ func (this *EthereumChainListen) getWapperEventByBlockNumber(contractAddr string
 			Hash:         evt.TxHash.String(),
 			User:         evt.Sender.String(),
 			FeeTokenHash: evt.FromAsset.String(),
-			FeeAmount:    &models.BigInt{*evt.Efee},
+			FeeAmount:    models.NewBigInt(evt.Efee),
 		})
 	}
 	return wrapperTransactions, nil
@@ -308,7 +307,7 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 			Method:        _eth_lock,
 			TxHash:        evt.Raw.TxHash.String()[2:],
 			FromAddress:   evt.FromAddress.String()[2:],
-			FromAssetHash: evt.FromAssetHash.String()[2:],
+			FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
 			ToChainId:     uint32(evt.ToChainId),
 			ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
 			ToAddress:     hex.EncodeToString(evt.ToAddress),
@@ -327,8 +326,8 @@ func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string,
 		proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
 			Method:      _eth_unlock,
 			TxHash:      evt.Raw.TxHash.String()[2:],
-			ToAssetHash: evt.ToAssetHash.String()[2:],
-			ToAddress:   evt.ToAddress.String()[2:],
+			ToAssetHash: strings.ToLower(evt.ToAssetHash.String()[2:]),
+			ToAddress:   strings.ToLower(evt.ToAddress.String()[2:]),
 			Amount:      evt.Amount,
 		})
 	}

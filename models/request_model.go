@@ -253,16 +253,6 @@ type CheckFeeRsp struct {
 	MinProxyFee string
 }
 
-func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
-	checkFeeRsp := &CheckFeeRsp{
-		Hash:        checkFee.Hash,
-		PayState:    checkFee.PayState,
-		Amount:      checkFee.Amount,
-		MinProxyFee: checkFee.MinProxyFee,
-	}
-	return checkFeeRsp
-}
-
 type CheckFeesReq struct {
 	Hashs []string
 }
@@ -272,12 +262,12 @@ type CheckFeesRsp struct {
 	CheckFees  []*CheckFeeRsp
 }
 
-func MakeCheckFeesRsp(checkFees []*CheckFee) *CheckFeesRsp {
+func MakeCheckFeesRsp(checkFees []*CheckFeeRsp) *CheckFeesRsp {
 	checkFeesRsp := &CheckFeesRsp{
 		TotalCount: uint64(len(checkFees)),
 	}
 	for _, checkFee := range checkFees {
-		checkFeesRsp.CheckFees = append(checkFeesRsp.CheckFees, MakeCheckFeeRsp(checkFee))
+		checkFeesRsp.CheckFees = append(checkFeesRsp.CheckFees, checkFee)
 	}
 	return checkFeesRsp
 }
@@ -293,6 +283,8 @@ type WrapperTransactionRsp struct {
 	BlockHeight  uint64
 	Time         uint64
 	DstChainId   uint64
+	DstUser      string
+	ServerId     uint64
 	FeeTokenHash string
 	FeeAmount    uint64
 	State        uint64
@@ -306,6 +298,8 @@ func MakeWrapperTransactionRsp(transaction *WrapperTransaction) *WrapperTransact
 		BlockHeight:  transaction.BlockHeight,
 		Time:         transaction.Time,
 		DstChainId:   transaction.DstChainId,
+		DstUser: transaction.DstUser,
+		ServerId: transaction.ServerId,
 		FeeTokenHash: transaction.FeeTokenHash,
 		FeeAmount:    transaction.FeeAmount.Uint64(),
 		State:        transaction.Status,
@@ -362,23 +356,25 @@ type TransactionRsp struct {
 	FeeAmount        string
 	TransferAmount           string
 	DstUser          string
+	ServerId         uint64
 	State            uint64
 	Token            *TokenRsp
 	TransactionState []*TransactionStateRsp
 }
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
-	amont := new(big.Int).Add(new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int), new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int))
+	amount := new(big.Int).Add(new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int), new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int))
 	transactionRsp := &TransactionRsp{
-		Hash:         transaction.SrcHash,
-		User:         transaction.SrcTransaction.User,
-		SrcChainId:   transaction.SrcTransaction.ChainId,
-		BlockHeight:  transaction.SrcTransaction.Height,
-		Time:         transaction.SrcTransaction.Time,
-		DstChainId:   transaction.SrcTransaction.DstChainId,
+		Hash:         transaction.WrapperTransaction.Hash,
+		User:         transaction.WrapperTransaction.User,
+		SrcChainId:   transaction.WrapperTransaction.SrcChainId,
+		BlockHeight:  transaction.WrapperTransaction.BlockHeight,
+		Time:         transaction.WrapperTransaction.Time,
+		DstChainId:   transaction.WrapperTransaction.DstChainId,
+		ServerId: transaction.WrapperTransaction.ServerId,
 		FeeAmount:    transaction.WrapperTransaction.FeeAmount.String(),
 		TransferAmount:       transaction.SrcTransaction.SrcTransfer.Amount.String(),
-		Amount: amont.String(),
+		Amount: amount.String(),
 		DstUser:      transaction.SrcTransaction.SrcTransfer.DstUser,
 		State:        transaction.WrapperTransaction.Status,
 	}

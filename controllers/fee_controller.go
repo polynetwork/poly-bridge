@@ -97,9 +97,9 @@ func (c *FeeController) CheckFee() {
 	for _, chainFee := range chainFees {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
-	checkFees := make([]*models.CheckFee, 0)
+	checkFees := make([]*models.CheckFeeRsp, 0)
 	for _, hash := range checkFeesReq.Hashs {
-		checkFee := &models.CheckFee{}
+		checkFee := &models.CheckFeeRsp{}
 		checkFee.Hash = hash
 		newHash, ok := key2Txhash[hash]
 		if !ok {

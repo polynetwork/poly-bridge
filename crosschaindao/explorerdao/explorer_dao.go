@@ -24,6 +24,7 @@ import (
 	"gorm.io/gorm"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/utils"
 )
 
 type Chain struct {
@@ -158,6 +159,14 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		if err != nil {
 			return err
 		}
+		for _, transaction := range newSrcTransactions {
+			transaction.User = utils.Hash2Address(transaction.ChainId, transaction.User)
+			if transaction.SrcTransfer != nil {
+				transaction.SrcTransfer.From = utils.Hash2Address(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
+				transaction.SrcTransfer.To = utils.Hash2Address(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
+				transaction.SrcTransfer.DstUser = utils.Hash2Address(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
+			}
+		}
 		res := dao.db.Save(newSrcTransactions)
 		if res.Error != nil {
 			return res.Error
@@ -193,6 +202,12 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		err = json.Unmarshal(dstTransactionsJson, &newDstTransactions)
 		if err != nil {
 			return err
+		}
+		for _, transaction := range newDstTransactions {
+			if transaction.DstTransfer != nil {
+				transaction.DstTransfer.From = utils.Hash2Address(transaction.DstTransfer.ChainId, transaction.DstTransfer.From)
+				transaction.DstTransfer.To = utils.Hash2Address(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
+			}
 		}
 		res := dao.db.Save(newDstTransactions)
 		if res.Error != nil {

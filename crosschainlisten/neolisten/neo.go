@@ -129,8 +129,9 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							Hash:         tx.Txid[2:],
 							User:         notify.State.Value[2].Value,
 							DstChainId:   tchainId,
+							DstUser: notify.State.Value[4].Value,
 							FeeTokenHash: asset,
-							FeeAmount:     &models.BigInt{*amount},
+							FeeAmount:     models.NewBigInt(amount),
 							ServerId: serverId,
 							Status:       conf.STATE_SOURCE_DONE,
 							Time: uint64(tt),
@@ -156,9 +157,11 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								if len(notifynew.State.Value) < 7 {
 									continue
 								}
+								fctransfer.ChainId = this.GetChainId()
 								fctransfer.TxHash = tx.Txid[2:]
-								fctransfer.From = utils.Hash2Address(this.GetChainId(), notifynew.State.Value[2].Value)
-								fctransfer.To = utils.Hash2Address(this.GetChainId(), notify.State.Value[2].Value)
+								fctransfer.Time = uint64(tt)
+								fctransfer.From = notifynew.State.Value[2].Value
+								fctransfer.To = notify.State.Value[2].Value
 								fctransfer.Asset = utils.HexStringReverse(notifynew.State.Value[1].Value)
 								amount := big.NewInt(0)
 								if notifynew.State.Value[6].Type == "Integer" {
@@ -166,13 +169,13 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								} else {
 									amount, _ = new(big.Int).SetString(utils.HexStringReverse(notifynew.State.Value[6].Value), 16)
 								}
-								fctransfer.Amount = &models.BigInt{*amount}
-								tchainId, _ := strconv.ParseUint(notifynew.State.Value[3].Value, 10, 32)
-								fctransfer.DstChainId = uint64(tchainId)
+								fctransfer.Amount = models.NewBigInt(amount)
+								tChainId, _ := strconv.ParseUint(notifynew.State.Value[3].Value, 10, 32)
+								fctransfer.DstChainId = tChainId
 								if len(notifynew.State.Value[5].Value) != 40 {
 									continue
 								}
-								fctransfer.DstUser = utils.Hash2Address(uint64(tchainId), notifynew.State.Value[5].Value)
+								fctransfer.DstUser = notifynew.State.Value[5].Value
 								fctransfer.DstAsset = notifynew.State.Value[4].Value
 								break
 							}
@@ -181,12 +184,12 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						fctx.ChainId = this.GetChainId()
 						fctx.Hash = tx.Txid[2:]
 						fctx.State = 1
-						fctx.Fee = &models.BigInt{*big.NewInt(int64(utils.String2Float64(exeitem.GasConsumed)))}
+						fctx.Fee = models.NewBigInt(big.NewInt(int64(utils.String2Float64(exeitem.GasConsumed))))
 						fctx.Time = uint64(tt)
 						fctx.Height = height
 						fctx.User = fctransfer.From
-						toChainId, _ := strconv.ParseInt(notify.State.Value[3].Value, 10, 64)
-						fctx.DstChainId = uint64(toChainId)
+						toChainId, _ := strconv.ParseUint(notify.State.Value[3].Value, 10, 64)
+						fctx.DstChainId = toChainId
 						fctx.Contract = notify.State.Value[2].Value
 						fctx.Key = notify.State.Value[4].Value
 						fctx.Param = notify.State.Value[5].Value
@@ -204,18 +207,19 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								if len(notifynew.State.Value) < 4 {
 									continue
 								}
+								tctransfer.ChainId = this.GetChainId()
 								tctransfer.TxHash = tx.Txid[2:]
-								tctransfer.From = utils.Hash2Address(this.GetChainId(), notify.State.Value[2].Value)
-								tctransfer.To = utils.Hash2Address(this.GetChainId(), notifynew.State.Value[2].Value)
+								tctransfer.Time = uint64(tt)
+								tctransfer.From = notify.State.Value[2].Value
+								tctransfer.To = notifynew.State.Value[2].Value
 								tctransfer.Asset = utils.HexStringReverse(notifynew.State.Value[1].Value)
-								//amount, _ := strconv.ParseUint(common.HexStringReverse(notifynew.State.Value[3].Value), 16, 64)
 								amount := big.NewInt(0)
 								if notifynew.State.Value[3].Type == "Integer" {
 									amount, _ = new(big.Int).SetString(notifynew.State.Value[3].Value, 10)
 								} else {
 									amount, _ = new(big.Int).SetString(utils.HexStringReverse(notifynew.State.Value[3].Value), 16)
 								}
-								tctransfer.Amount = &models.BigInt{*amount}
+								tctransfer.Amount = models.NewBigInt(amount)
 								break
 							}
 						}
@@ -223,11 +227,11 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						tctx.ChainId = this.GetChainId()
 						tctx.Hash = tx.Txid[2:]
 						tctx.State = 1
-						tctx.Fee = &models.BigInt{*big.NewInt(int64(utils.String2Float64(exeitem.GasConsumed)))}
+						tctx.Fee = models.NewBigInt(big.NewInt(int64(utils.String2Float64(exeitem.GasConsumed))))
 						tctx.Time = uint64(tt)
 						tctx.Height = height
-						fchainId, _ := strconv.ParseUint(notify.State.Value[1].Value, 10, 32)
-						tctx.SrcChainId = uint64(fchainId)
+						fChainId, _ := strconv.ParseUint(notify.State.Value[1].Value, 10, 32)
+						tctx.SrcChainId = fChainId
 						tctx.Contract = utils.HexStringReverse(notify.State.Value[2].Value)
 						tctx.PolyHash = utils.HexStringReverse(notify.State.Value[3].Value)
 						tctx.DstTransfer = tctransfer

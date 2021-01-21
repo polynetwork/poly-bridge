@@ -96,11 +96,12 @@ type DstTransfer struct {
 
 type WrapperTransaction struct {
 	Hash         string  `gorm:"primaryKey;size:66;not null"`
-	User         string  `gorm:"size:64"`
+	User         string  `gorm:"type:varchar(66);not null"`
 	SrcChainId   uint64  `gorm:"type:bigint(20);not null"`
 	BlockHeight  uint64  `gorm:"type:bigint(20);not null"`
 	Time         uint64  `gorm:"type:bigint(20);not null"`
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
+	DstUser    string  `gorm:"type:varchar(66);not null"`
 	ServerId   uint64  `gorm:"type:bigint(20);not null"`
 	FeeTokenHash string  `gorm:"size:66;not null"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`

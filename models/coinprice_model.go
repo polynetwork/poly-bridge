@@ -74,15 +74,11 @@ type WrapperTransactionWithToken struct {
 	BlockHeight  uint64  `gorm:"type:bigint(20);not null"`
 	Time         uint64  `gorm:"type:bigint(20);not null"`
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
+	DstUser    string  `gorm:"type:varchar(66);not null"`
+	ServerId   uint64  `gorm:"type:bigint(20);not null"`
 	FeeTokenHash string  `gorm:"size:66;not null"`
 	FeeToken     *Token  `gorm:"foreignKey:FeeTokenHash,SrcChainId;references:Hash,ChainId"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
 }
 
-type CheckFee struct {
-	Hash        string
-	PayState    int
-	Amount      string
-	MinProxyFee string
-}
