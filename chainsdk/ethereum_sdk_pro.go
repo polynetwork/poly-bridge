@@ -302,6 +302,23 @@ func (pro *EthereumSdkPro) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
 	return 0, fmt.Errorf("all node is not working")
 }
 
+func (pro *EthereumSdkPro) Erc20Info(hash string) (string, string, int64, string, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return "", "", 0, "", fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		hash, name, decimal, symbol, err := info.sdk.Erc20Info(hash)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return hash, name, decimal, symbol, nil
+		}
+	}
+	return "", "", 0, "", fmt.Errorf("all node is not working")
+}
+
 func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) {
 	errNum := 0
 	for errNum < 100 {

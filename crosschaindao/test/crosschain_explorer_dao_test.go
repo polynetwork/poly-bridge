@@ -23,10 +23,12 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschaindao/explorerdao"
 	"poly-bridge/models"
+	"poly-bridge/utils"
 	"testing"
 )
 
@@ -155,4 +157,96 @@ func TestQueryPolySrcRelation_ExplorerDao(t *testing.T) {
 	db.Debug().Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) = ? and fchain = ?", "00000000", conf.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("left join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey and mchain_tx.fchain = fchain_tx.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	json, _ := json.Marshal(polySrcRelations)
 	fmt.Printf("src Transaction: %s\n", json)
+}
+
+func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("current directory: %s\n", dir)
+	config := conf.NewConfig("./../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	dbCfg := config.DBConfig
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	var ethSdk *chainsdk.EthereumSdkPro
+	var bscSdk *chainsdk.EthereumSdkPro
+	var hecoSdk *chainsdk.EthereumSdkPro
+	var neoSdk *chainsdk.NeoSdkPro
+	for _, listenConfig := range config.ChainListenConfig {
+		urls := listenConfig.GetNodesUrl()
+		if listenConfig.ChainId == conf.ETHEREUM_CROSSCHAIN_ID {
+			ethSdk = chainsdk.NewEthereumSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+		} else if listenConfig.ChainId == conf.BSC_CROSSCHAIN_ID {
+			bscSdk = chainsdk.NewEthereumSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+		} else if listenConfig.ChainId == conf.HECO_CROSSCHAIN_ID {
+			hecoSdk = chainsdk.NewEthereumSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+		} else if listenConfig.ChainId == conf.NEO_CROSSCHAIN_ID {
+			neoSdk = chainsdk.NewNeoSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+		}
+	}
+	{
+		tokens := make([]*explorerdao.Token, 0)
+		newTokens := make([]*explorerdao.Token, 0)
+		db.Debug().Table("fchain_transfer").Distinct("chain_id as id", "asset as hash").Find(&tokens)
+		for _, token := range tokens {
+			if token.Id == conf.ETHEREUM_CROSSCHAIN_ID {
+				hash, name, decimal, symbol, err := ethSdk.Erc20Info(token.Hash)
+				if err != nil {
+					panic(err)
+				}
+				token.Name = name
+				token.Type = "ERC20"
+				token.Desc = symbol
+				token.Precision = fmt.Sprintf("%d", utils.Int64FromFigure(int(decimal)))
+				newTokens = append(newTokens, token)
+				fmt.Printf("erc20: %s, name: %s, decimal: %d, symbol: %s\n",
+					hash, name, decimal, symbol)
+			} else if token.Id == conf.BSC_CROSSCHAIN_ID {
+				hash, name, decimal, symbol, err := bscSdk.Erc20Info(token.Hash)
+				if err != nil {
+					panic(err)
+				}
+				token.Name = name
+				token.Type = "ERC20"
+				token.Desc = symbol
+				token.Precision = fmt.Sprintf("%d", utils.Int64FromFigure(int(decimal)))
+				fmt.Printf("erc20: %s, name: %s, decimal: %d, symbol: %s\n",
+					hash, name, decimal, symbol)
+				newTokens = append(newTokens, token)
+			} else if token.Id == conf.HECO_CROSSCHAIN_ID {
+				hash, name, decimal, symbol, err := hecoSdk.Erc20Info(token.Hash)
+				if err != nil {
+					panic(err)
+				}
+				token.Name = name
+				token.Type = "ERC20"
+				token.Desc = symbol
+				token.Precision = fmt.Sprintf("%d", utils.Int64FromFigure(int(decimal)))
+				fmt.Printf("erc20: %s, name: %s, decimal: %d, symbol: %s\n",
+					hash, name, decimal, symbol)
+				newTokens = append(newTokens, token)
+			} else if token.Id == conf.NEO_CROSSCHAIN_ID {
+				hash, name, decimal, err := neoSdk.Nep5Info(token.Hash)
+				if err != nil {
+					panic(err)
+				}
+				token.Name = name
+				token.Type = "NEP5"
+				token.Desc = name
+				token.Precision = fmt.Sprintf("%d", utils.Int64FromFigure(int(decimal)))
+				fmt.Printf("nep5: %s, decimal: %d, name: %s\n", hash, decimal, name)
+				newTokens = append(newTokens, token)
+			}
+		}
+		data, _ := json.Marshal(newTokens)
+		fmt.Printf("%s\n", data)
+		//db.Save(newTokens)
+	}
 }

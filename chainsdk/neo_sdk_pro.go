@@ -157,3 +157,21 @@ func (pro *NeoSdkPro) GetApplicationLog(txId string) (*models.RpcApplicationLog,
 	}
 	return nil, fmt.Errorf("all node is not working")
 }
+
+func (pro *NeoSdkPro) Nep5Info(hash string) (string, string, int64, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return "", "", 0, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		hash, name, decimal, err := info.sdk.Nep5Info(hash)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return hash, name, decimal, nil
+		}
+	}
+	return "", "", 0, fmt.Errorf("all node is not working")
+}
+

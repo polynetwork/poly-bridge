@@ -130,6 +130,20 @@ func (DstTransfer) TableName() string {
 	return "tchain_transfer"
 }
 
+type Token struct {
+	Id    uint64         `gorm:"primaryKey;column:id"`
+	Token string         `gorm:"column:xtoken"`
+	Hash    string         `gorm:"primaryKey;column:hash"`
+	Name   string         `gorm:"column:xname"`
+	Type    string         `gorm:"column:xtype"`
+	Precision      string         `gorm:"column:xprecision"`
+	Desc  string `gorm:"column:xdesc"`
+}
+
+func (Token) TableName() string {
+	return "chain_token"
+}
+
 type ExplorerDao struct {
 	dbCfg *conf.DBConfig
 	db    *gorm.DB

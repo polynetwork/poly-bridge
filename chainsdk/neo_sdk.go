@@ -19,6 +19,8 @@ package chainsdk
 
 import (
 	"fmt"
+	"github.com/joeqian10/neo-gogogo/helper"
+	"github.com/joeqian10/neo-gogogo/nep5"
 	"github.com/joeqian10/neo-gogogo/rpc"
 	"github.com/joeqian10/neo-gogogo/rpc/models"
 )
@@ -57,4 +59,21 @@ func (sdk *NeoSdk) GetApplicationLog(txId string) (*models.RpcApplicationLog, er
 		return nil, fmt.Errorf("%s", res.ErrorResponse.Error.Message)
 	}
 	return &res.Result, nil
+}
+
+func (sdk *NeoSdk) Nep5Info(hash string) (string, string, int64, error) {
+	scriptHash, err := helper.UInt160FromString(hash)
+	if err != nil {
+		return "", "", 0, err
+	}
+	nep5 := nep5.NewNep5Helper(scriptHash, sdk.url)
+	decimal, err := nep5.Decimals()
+	if err != nil {
+		return "", "", 0, err
+	}
+	name, err := nep5.Name()
+	if err != nil {
+		return "", "", 0, err
+	}
+	return hash, name, int64(decimal), nil
 }
