@@ -23,6 +23,7 @@ type TokenBasic struct {
 	Price        int64          `gorm:"size:64;not null"`
 	Ind          uint64         `gorm:"type:bigint(20);not null"`
 	Time         int64          `gorm:"type:bigint(20);not null"`
+	Property     int64          `gorm:"type:bigint(20);not null"`
 	PriceMarkets []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
 	Tokens       []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
