@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"poly-bridge/models"
 )
@@ -31,7 +32,9 @@ func (c *TokenController) Tokens() {
 	var tokensReq models.TokensReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokensReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	tokens := make([]*models.Token, 0)
 	db.Where("chain_id = ?", tokensReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").Find(&tokens)
@@ -43,10 +46,18 @@ func (c *TokenController) Token() {
 	var tokenReq models.TokenReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	token := new(models.Token)
-	db.Where("hash = ?", tokenReq.Hash).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").First(token)
+	res := db.Where("hash = ? and chain_id = ?", tokenReq.Hash, tokenReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").First(token)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("token: (%s,%d) does not exist", tokenReq.Hash, tokenReq.ChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
 	c.Data["json"] = models.MakeTokenRsp(token)
 	c.ServeJSON()
 }
@@ -55,7 +66,9 @@ func (c *TokenController) TokenBasics() {
 	var tokenBasicReq models.TokenBasicReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenBasicReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	tokenBasics := make([]*models.TokenBasic, 0)
 	db.Model(&models.TokenBasic{}).Preload("Tokens").Find(&tokenBasics)

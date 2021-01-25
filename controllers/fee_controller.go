@@ -35,12 +35,15 @@ func (c *FeeController) GetFee() {
 	var getFeeReq models.GetFeeReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	token := new(models.Token)
 	res := db.Where("hash = ? and chain_id = ?", getFeeReq.Hash, getFeeReq.SrcChainId).Preload("TokenBasic").First(token)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have token: %s", getFeeReq.SrcChainId, getFeeReq.Hash))
+		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
@@ -48,6 +51,7 @@ func (c *FeeController) GetFee() {
 	res = db.Where("chain_id = ?", getFeeReq.DstChainId).Preload("TokenBasic").First(chainFee)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
@@ -66,7 +70,9 @@ func (c *FeeController) CheckFee() {
 	var checkFeesReq models.CheckFeesReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &checkFeesReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	db.Model(&models.SrcTransaction{}).Where("`key` in ? or hash in ?", checkFeesReq.Hashs, checkFeesReq.Hashs).Find(&srcTransactions)

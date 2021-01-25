@@ -98,6 +98,7 @@ func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
 }
 
 type TokenReq struct {
+	ChainId        uint64
 	Hash string
 }
 

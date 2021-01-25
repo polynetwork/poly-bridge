@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"poly-bridge/models"
 )
@@ -31,7 +32,9 @@ func (c *TransactionController) Transactions() {
 	var transactionsReq models.WrapperTransactionsReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	transactions := make([]*models.WrapperTransaction, 0)
 	db.Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
@@ -46,7 +49,9 @@ func (c *TransactionController) TransactionsOfAddress() {
 	var transactionsOfAddressReq models.TransactionsOfAddressReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfAddressReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset").Where("`from` in ? or dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses)).
@@ -82,10 +87,12 @@ func (c *TransactionController) TransactionOfHash() {
 	var transactionOfHashReq models.TransactionOfHashReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionOfHashReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	srcPolyDstRelation := new(models.SrcPolyDstRelation)
-	db.Table("src_transactions").
+	res := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
 		Where("src_transactions.hash = ?", transactionOfHashReq.Hash).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
@@ -101,6 +108,12 @@ func (c *TransactionController) TransactionOfHash() {
 		Preload("Token.TokenBasic").
 		Order("src_transactions.time desc").
 		Find(srcPolyDstRelation)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transacion: %s does not exist", transactionOfHashReq.Hash))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
 	chains := make([]*models.Chain, 0)
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
@@ -115,7 +128,9 @@ func (c *TransactionController) TransactionsOfState() {
 	var transactionsOfStateReq models.TransactionsOfStateReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfStateReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	transactions := make([]*models.WrapperTransaction, 0)
 	db.Where("status = ?", transactionsOfStateReq.State).Limit(transactionsOfStateReq.PageSize).Offset(transactionsOfStateReq.PageSize * transactionsOfStateReq.PageNo).Order("time asc").Find(&transactions)

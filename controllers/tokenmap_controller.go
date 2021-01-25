@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"poly-bridge/models"
 )
@@ -31,10 +32,18 @@ func (c *TokenMapController) TokenMap() {
 	var tokenMapReq models.TokenMapReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenMapReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	tokenMaps := make([]*models.TokenMap, 0)
-	db.Where("src_chain_id = ? and src_token_hash = ?", tokenMapReq.ChainId, tokenMapReq.Hash).Preload("SrcToken").Preload("DstToken").Find(&tokenMaps)
+	res := db.Where("src_chain_id = ? and src_token_hash = ?", tokenMapReq.ChainId, tokenMapReq.Hash).Preload("SrcToken").Preload("DstToken").Find(&tokenMaps)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("token map: (%s,%d) does not exist", tokenMapReq.Hash, tokenMapReq.ChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
 	c.Data["json"] = models.MakeTokenMapsRsp(tokenMaps)
 	c.ServeJSON()
 }
@@ -43,10 +52,18 @@ func (c *TokenMapController) TokenMapReverse() {
 	var tokenMapReq models.TokenMapReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenMapReq); err != nil {
-		panic(err)
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
 	tokenMaps := make([]*models.TokenMap, 0)
-	db.Where("dst_chain_id = ? and dst_token_hash = ?", tokenMapReq.ChainId, tokenMapReq.Hash).Preload("SrcToken").Preload("DstToken").Find(&tokenMaps)
+	res := db.Where("dst_chain_id = ? and dst_token_hash = ?", tokenMapReq.ChainId, tokenMapReq.Hash).Preload("SrcToken").Preload("DstToken").Find(&tokenMaps)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("token map: (%s,%d) does not exist", tokenMapReq.Hash, tokenMapReq.ChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
 	c.Data["json"] = models.MakeTokenMapsRsp(tokenMaps)
 	c.ServeJSON()
 }
