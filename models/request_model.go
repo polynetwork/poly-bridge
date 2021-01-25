@@ -90,7 +90,9 @@ func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
 		TotalCount: uint64(len(tokenBasics)),
 	}
 	for _, tokenBasic := range tokenBasics {
-		tokenBasicsRsp.TokenBasics = append(tokenBasicsRsp.TokenBasics, MakeTokenBasicRsp(tokenBasic))
+		if tokenBasic.Property == 1 {
+			tokenBasicsRsp.TokenBasics = append(tokenBasicsRsp.TokenBasics, MakeTokenBasicRsp(tokenBasic))
+		}
 	}
 	return tokenBasicsRsp
 }
