@@ -176,3 +176,51 @@ func (pro *NeoSdkPro) Nep5Info(hash string) (string, string, int64, error) {
 	return "", "", 0, fmt.Errorf("all node is not working")
 }
 
+func (pro *NeoSdkPro) GetTransactionHeight(hash string) (uint64, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return 0, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		height, err := info.sdk.GetTransactionHeight(hash)
+		if err != nil || height == 0 {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return height, nil
+		}
+	}
+	return 0, fmt.Errorf("all node is not working")
+}
+
+func (pro *NeoSdkPro) SendRawTransaction(txHex string) (bool, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return false, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		result, err := info.sdk.SendRawTransaction(txHex)
+		if err != nil || result == false {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return result, nil
+		}
+	}
+	return false, fmt.Errorf("all node is not working")
+}
+
+func (pro *NeoSdkPro) WaitTransactionConfirm(hash string) {
+	errNum := 0
+	for errNum < 100 {
+		time.Sleep(time.Second * 1)
+		height, err := pro.GetTransactionHeight(hash)
+		if err != nil || height == 0 {
+			fmt.Printf("transaction %s is pending: %v\n", hash, true)
+			errNum++
+			continue
+		}
+		fmt.Printf("transaction %s is confirmed, block height: %d\n", hash, height)
+	}
+}
+

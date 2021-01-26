@@ -41,13 +41,13 @@ func TestBscCross(t *testing.T) {
 	bscChainListenConfig := config.GetChainListenConfig(conf.BSC_CROSSCHAIN_ID)
 	urls := bscChainListenConfig.GetNodesUrl()
 	ethSdk := chainsdk.NewEthereumSdkPro(urls, bscChainListenConfig.ListenSlot, conf.BSC_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader(polywrapper.IPolyWrapperABI))
+	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
 	if err != nil {
 		panic(err)
 	}
 	assetHash := common.HexToAddress("0000000000000000000000000000000000000000")
 	toAddress := common.Hex2Bytes("6e43f9988f2771f1a2b140cb3faad424767d39fc")
-	txData, err := contractabi.Pack("lock", assetHash, uint64(2), toAddress, big.NewInt(int64(100000000000000000)), big.NewInt(10000000000000000))
+	txData, err := contractabi.Pack("lock", assetHash, uint64(2), toAddress, big.NewInt(int64(100000000000000000)), big.NewInt(10000000000000000), big.NewInt(0))
 	if err != nil {
 		panic(err)
 	}

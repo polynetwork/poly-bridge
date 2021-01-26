@@ -61,6 +61,22 @@ func (sdk *NeoSdk) GetApplicationLog(txId string) (*models.RpcApplicationLog, er
 	return &res.Result, nil
 }
 
+func (sdk *NeoSdk) GetTransactionHeight(hash string) (uint64, error) {
+	res := sdk.client.GetTransactionHeight(hash)
+	if res.ErrorResponse.Error.Message != "" {
+		return 0, fmt.Errorf("%s", res.ErrorResponse.Error.Message)
+	}
+	return uint64(res.Result), nil
+}
+
+func (sdk *NeoSdk) SendRawTransaction(txHex string) (bool, error) {
+	res := sdk.client.SendRawTransaction(txHex)
+	if res.HasError() {
+		return false, fmt.Errorf("%s", res.ErrorResponse.Error.Message)
+	}
+	return res.Result, nil
+}
+
 func (sdk *NeoSdk) Nep5Info(hash string) (string, string, int64, error) {
 	scriptHash, err := helper.UInt160FromString(hash)
 	if err != nil {

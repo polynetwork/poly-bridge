@@ -260,6 +260,7 @@ type CheckFeeRsp struct {
 
 type CheckFeesReq struct {
 	Hashs []string
+	ChainId uint64
 }
 
 type CheckFeesRsp struct {

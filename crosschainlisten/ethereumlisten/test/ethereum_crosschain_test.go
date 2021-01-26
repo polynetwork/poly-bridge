@@ -50,7 +50,7 @@ func TestEthereumCross(t *testing.T) {
 	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
 	urls := ethChainListenConfig.GetNodesUrl()
 	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, conf.ETHEREUM_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader(polywrapper.IPolyWrapperABI))
+	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
 	if err != nil {
 		panic(err)
 	}

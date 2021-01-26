@@ -18,28 +18,15 @@
 package test
 
 import (
-	"crypto/ecdsa"
-	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
-	"math/big"
+	"github.com/joeqian10/neo-gogogo/helper"
+	"github.com/joeqian10/neo-gogogo/sc"
+	"github.com/joeqian10/neo-gogogo/tx"
+	"github.com/joeqian10/neo-gogogo/wallet"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
-	"strings"
 	"testing"
 )
-
-func NewPrivateKey(key string) *ecdsa.PrivateKey {
-	priKey, err := crypto.HexToECDSA(key)
-	if err != nil {
-		panic(err)
-	}
-	return priKey
-}
 
 func TestNeoCross(t *testing.T) {
 	config := conf.NewConfig("./../../../conf/config_testnet.json")
@@ -48,49 +35,48 @@ func TestNeoCross(t *testing.T) {
 	}
 	neoChainListenConfig := config.GetChainListenConfig(conf.NEO_CROSSCHAIN_ID)
 	urls := neoChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, neoChainListenConfig.ListenSlot, conf.NEO_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader("polywrapper.IPolyWrapperABI"))
+	neoSdk := chainsdk.NewNeoSdkPro(urls, neoChainListenConfig.ListenSlot, conf.NEO_CROSSCHAIN_ID)
+
+	w, err := wallet.NewWalletFromFile("")
 	if err != nil {
 		panic(err)
 	}
-	assetHash := common.HexToAddress("0000000000000000000000000000000000000000")
-	toAddress := common.Hex2Bytes("6e43f9988f2771f1a2b140cb3faad424767d39fc")
-	txData, err := contractabi.Pack("lock", assetHash, uint64(4), toAddress, big.NewInt(int64(100000000000000000)), big.NewInt(10000000000000000))
+	err = w.DecryptAll("1")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("TestInvokeContract - txdata:%s\n", hex.EncodeToString(txData))
-	wrapperContractAddress := common.HexToAddress(neoChainListenConfig.WrapperContract)
-	privateKey := NewPrivateKey("56b446a2de5edfccee1581fbba79e8bb5c269e28ab4c0487860afb7e2c2d2b6e")
-	fromAddr := crypto.PubkeyToAddress(privateKey.PublicKey)
-	fmt.Printf("user address: %s\n", fromAddr.String())
-	nonce, err := ethSdk.NonceAt(fromAddr)
+	neoAccount := w.Accounts[0]
+
+	sb := sc.NewScriptBuilder()
+	scriptHash := helper.HexToBytes("104057f879009326250ee1f5d60e2efd925024e6")
+	sb.MakeInvocationScript(scriptHash, "lock", []sc.ContractParameter{})
+	script := sb.ToArray()
+
+	from, err := helper.AddressToScriptHash(neoAccount.Address)
 	if err != nil {
 		panic(err)
 	}
-	gasPrice, err := ethSdk.SuggestGasPrice()
+	sysFee := helper.Fixed8FromFloat64(0)
+	netFee := helper.Fixed8FromFloat64(0.02)
+
+	tb := tx.NewTransactionBuilder("http://seed1.ngd.network:20332")
+	itx, err := tb.MakeInvocationTransaction(script, from, nil, from, sysFee, netFee)
 	if err != nil {
 		panic(err)
-	}
-	fmt.Printf("gas price: %s\n", gasPrice.String())
-	callMsg := ethereum.CallMsg{
-		From: fromAddr, To: &wrapperContractAddress, Gas: 0, GasPrice: gasPrice,
-		Value: big.NewInt(100000000000000000), Data: txData,
 	}
 
-	gasLimit, err := ethSdk.EstimateGas(callMsg)
-	if err != nil || gasLimit == 0 {
-		panic(err)
-	}
-	fmt.Printf("gas limit: %d\n", gasLimit)
-	tx := types.NewTransaction(nonce, wrapperContractAddress, big.NewInt(100000000000000000), gasLimit, gasPrice, txData)
-	signedTx, err := types.SignTx(tx, types.HomesteadSigner{}, privateKey)
+	// sign transaction
+	err = tx.AddSignature(itx, neoAccount.KeyPair)
 	if err != nil {
 		panic(err)
 	}
-	err = ethSdk.SendRawTransaction(signedTx)
+	rawTxString := itx.RawTransactionString()
+	result, err := neoSdk.SendRawTransaction(rawTxString)
 	if err != nil {
 		panic(err)
 	}
-	ethSdk.WaitTransactionConfirm(signedTx.Hash())
+	if result == true {
+		fmt.Printf("send transaction successful")
+	}
+	neoSdk.WaitTransactionConfirm(itx.HashString())
 }

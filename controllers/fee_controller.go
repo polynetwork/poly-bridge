@@ -75,7 +75,7 @@ func (c *FeeController) CheckFee() {
 		c.ServeJSON()
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	db.Model(&models.SrcTransaction{}).Where("`key` in ? or hash in ?", checkFeesReq.Hashs, checkFeesReq.Hashs).Find(&srcTransactions)
+	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or hash in ?) and (chain_id = ?)", checkFeesReq.Hashs, checkFeesReq.Hashs, checkFeesReq.ChainId).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:4]
@@ -92,7 +92,7 @@ func (c *FeeController) CheckFee() {
 		}
 	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Debug().Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	txhash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
 	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
 		txhash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
