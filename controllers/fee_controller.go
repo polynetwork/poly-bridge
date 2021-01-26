@@ -81,7 +81,7 @@ func (c *FeeController) CheckFee() {
 		requestHashs = append(requestHashs, check.Hash)
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs).Find(&srcTransactions)
+	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:8]

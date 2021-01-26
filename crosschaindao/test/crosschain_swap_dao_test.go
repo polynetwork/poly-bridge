@@ -276,8 +276,8 @@ func TestQuerySrcTransaction_SwapDao1(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	srcTransaction := make([]*models.SrcTransaction, 0)
-	db.Model(&models.SrcTransaction{}).Preload("SrcTransfer").First(srcTransaction)
-	json, _ := json.Marshal(srcTransaction)
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	db.Debug().Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", []string{"0000000000000000000000000000000000000000000000000000000000000e3c"}, []string{"0000000000000000000000000000000000000000000000000000000000000e3c"}).Find(&srcTransactions)
+	json, _ := json.Marshal(srcTransactions)
 	fmt.Printf("src Transaction: %s\n", json)
 }
