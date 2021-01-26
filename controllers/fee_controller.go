@@ -82,7 +82,7 @@ func (c *FeeController) CheckFee() {
 		requestHashs = append(requestHashs, utils.HexStringReverse(check.Hash))
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
+	db.Debug().Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:8]
@@ -104,13 +104,13 @@ func (c *FeeController) CheckFee() {
 		}
 	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Debug().Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	txHash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
 	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
 		txHash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
 	}
 	chainFees := make([]*models.ChainFee, 0)
-	db.Preload("TokenBasic").Find(&chainFees)
+	db.Debug().Preload("TokenBasic").Find(&chainFees)
 	chain2Fees := make(map[uint64]*models.ChainFee, 0)
 	for _, chainFee := range chainFees {
 		chain2Fees[chainFee.ChainId] = chainFee

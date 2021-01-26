@@ -11,7 +11,7 @@
       "ChainName":"Poly",
       "ChainId":0,
       "ListenSlot":1,
-      "BackwardBlockNumber":10,
+      "BackwardBlockNumber":1,
       "Nodes": [
         {
           "Url": "http://138.91.6.125:20336"
@@ -30,7 +30,7 @@
       "ChainName":"Ethereum",
       "ChainId":2,
       "ListenSlot":5,
-      "BackwardBlockNumber":10,
+      "BackwardBlockNumber":12,
       "Nodes": [
         {
           "Url": "http://18.140.187.37:10331"
@@ -50,7 +50,7 @@
       "ChainName":"NEO",
       "ChainId":5,
       "ListenSlot":1,
-      "BackwardBlockNumber":10,
+      "BackwardBlockNumber":1,
       "Nodes": [
         {
           "Url": "http://seed8.ngd.network:20332"
@@ -75,7 +75,7 @@
       "ChainName":"BSC",
       "ChainId":79,
       "ListenSlot":1,
-      "BackwardBlockNumber":10,
+      "BackwardBlockNumber":21,
       "Nodes": [
         {
           "Url": "https://data-seed-prebsc-1-s1.binance.org:8545"
@@ -91,7 +91,7 @@
       "ChainName":"HECO",
       "ChainId":7,
       "ListenSlot":1,
-      "BackwardBlockNumber":10,
+      "BackwardBlockNumber":21,
       "Nodes": [
         {
           "Url": "https://http-testnet.hecochain.com"
