@@ -172,7 +172,12 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 									amount, _ = new(big.Int).SetString(utils.HexStringReverse(notifynew.State.Value[6].Value), 16)
 								}
 								fctransfer.Amount = models.NewBigInt(amount)
-								tChainId, _ := new(big.Int).SetString(utils.HexStringReverse(notifynew.State.Value[3].Value), 16)
+								tChainId := big.NewInt(0)
+								if notifynew.State.Value[3].Type == "Integer" {
+									tChainId, _ = new(big.Int).SetString(notifynew.State.Value[3].Value, 10)
+								} else {
+									tChainId, _ = new(big.Int).SetString(utils.HexStringReverse(notifynew.State.Value[3].Value), 16)
+								}
 								fctransfer.DstChainId = tChainId.Uint64()
 								if len(notifynew.State.Value[5].Value) != 40 {
 									continue
