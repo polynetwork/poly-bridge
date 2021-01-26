@@ -67,7 +67,7 @@
           "Url": "https://testnet-explorer.o3node.org/"
         }
       ],
-      "WrapperContract":"104057f879009326250ee1f5d60e2efd925024e6",
+      "WrapperContract":"cd074cd290acc3d73c030784101afbcf40fd86a1",
       "CCMContract":"e1695b1314a1331e3935481620417ed835669407",
       "ProxyContract":"edd2862dceb90b945210372d229f453f2b705f4f"
     },
