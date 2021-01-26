@@ -7763,4 +7763,3 @@ func (_UpgradedStandardToken *UpgradedStandardTokenFilterer) ParseTransfer(log t
 	}
 	return event, nil
 }
-

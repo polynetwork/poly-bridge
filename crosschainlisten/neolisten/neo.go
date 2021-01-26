@@ -129,14 +129,14 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							Hash:         tx.Txid[2:],
 							User:         notify.State.Value[2].Value,
 							DstChainId:   tchainId,
-							DstUser: notify.State.Value[4].Value,
+							DstUser:      notify.State.Value[4].Value,
 							FeeTokenHash: asset,
-							FeeAmount:     models.NewBigInt(amount),
-							ServerId: serverId,
+							FeeAmount:    models.NewBigInt(amount),
+							ServerId:     serverId,
 							Status:       conf.STATE_SOURCE_DONE,
-							Time: uint64(tt),
-							BlockHeight: height,
-							SrcChainId: this.GetChainId(),
+							Time:         uint64(tt),
+							BlockHeight:  height,
+							SrcChainId:   this.GetChainId(),
 						})
 					}
 				} else if notify.Contract[2:] == this.neoCfg.CCMContract {

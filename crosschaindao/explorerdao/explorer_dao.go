@@ -59,7 +59,7 @@ func (SrcTransaction) TableName() string {
 }
 
 type SrcTransfer struct {
-	TxHash       string         `gorm:"column:txhash"`
+	TxHash     string         `gorm:"column:txhash"`
 	ChainId    uint64         `gorm:"column:chain_id"`
 	Time       uint64         `gorm:"column:tt"`
 	Asset      string         `gorm:"column:asset"`
@@ -117,7 +117,7 @@ func (DstTransaction) TableName() string {
 }
 
 type DstTransfer struct {
-	TxHash    string         `gorm:"column:txhash"`
+	TxHash  string         `gorm:"column:txhash"`
 	ChainId uint64         `gorm:"column:chain_id"`
 	Time    uint64         `gorm:"column:tt"`
 	Asset   string         `gorm:"column:asset"`
@@ -131,13 +131,13 @@ func (DstTransfer) TableName() string {
 }
 
 type Token struct {
-	Id    uint64         `gorm:"primaryKey;column:id"`
-	Token string         `gorm:"column:xtoken;default:''"`
-	Hash    string         `gorm:"primaryKey;column:hash"`
-	Name   string         `gorm:"column:xname"`
-	Type    string         `gorm:"column:xtype"`
-	Precision      string         `gorm:"column:xprecision"`
-	Desc  string `gorm:"column:xdesc"`
+	Id        uint64 `gorm:"primaryKey;column:id"`
+	Token     string `gorm:"column:xtoken;default:''"`
+	Hash      string `gorm:"primaryKey;column:hash"`
+	Name      string `gorm:"column:xname"`
+	Type      string `gorm:"column:xtype"`
+	Precision string `gorm:"column:xprecision"`
+	Desc      string `gorm:"column:xdesc"`
 }
 
 func (Token) TableName() string {

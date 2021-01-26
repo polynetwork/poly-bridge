@@ -207,10 +207,10 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddr strin
 			Hash:         evt.Raw.TxHash.String()[2:],
 			User:         strings.ToLower(evt.Sender.String()[2:]),
 			DstChainId:   evt.ToChainId,
-			DstUser: hex.EncodeToString(evt.ToAddress),
+			DstUser:      hex.EncodeToString(evt.ToAddress),
 			FeeTokenHash: strings.ToLower(evt.FromAsset.String()[2:]),
-			FeeAmount:   models.NewBigInt(evt.Fee),
-			ServerId: evt.Id.Uint64(),
+			FeeAmount:    models.NewBigInt(evt.Fee),
+			ServerId:     evt.Id.Uint64(),
 		})
 	}
 	speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)

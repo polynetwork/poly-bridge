@@ -101,8 +101,8 @@ type WrapperTransaction struct {
 	BlockHeight  uint64  `gorm:"type:bigint(20);not null"`
 	Time         uint64  `gorm:"type:bigint(20);not null"`
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
-	DstUser    string  `gorm:"type:varchar(66);not null"`
-	ServerId   uint64  `gorm:"type:bigint(20);not null"`
+	DstUser      string  `gorm:"type:varchar(66);not null"`
+	ServerId     uint64  `gorm:"type:bigint(20);not null"`
 	FeeTokenHash string  `gorm:"size:66;not null"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
@@ -116,7 +116,7 @@ type SrcPolyDstRelation struct {
 	PolyTransaction    *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
 	DstHash            string
 	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
-	ChainId            uint64 `gorm:"type:bigint(20);not null"`
-	TokenHash      string  `gorm:"type:varchar(66);not null"`
-	Token     *Token `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
+	ChainId            uint64          `gorm:"type:bigint(20);not null"`
+	TokenHash          string          `gorm:"type:varchar(66);not null"`
+	Token              *Token          `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
 }

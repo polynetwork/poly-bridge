@@ -61,7 +61,7 @@ func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 		Precision: tokenBasic.Precision,
 		Price:     price.String(),
 		Ind:       tokenBasic.Ind,
-		Property: tokenBasic.Property,
+		Property:  tokenBasic.Property,
 		Tokens:    nil,
 	}
 	if tokenBasic.Tokens != nil {
@@ -98,8 +98,8 @@ func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
 }
 
 type TokenReq struct {
-	ChainId        uint64
-	Hash string
+	ChainId uint64
+	Hash    string
 }
 
 type TokenRsp struct {
@@ -259,7 +259,7 @@ type CheckFeeRsp struct {
 }
 
 type CheckFeesReq struct {
-	Hashs []string
+	Hashs   []string
 	ChainId uint64
 }
 
@@ -304,8 +304,8 @@ func MakeWrapperTransactionRsp(transaction *WrapperTransaction) *WrapperTransact
 		BlockHeight:  transaction.BlockHeight,
 		Time:         transaction.Time,
 		DstChainId:   transaction.DstChainId,
-		DstUser: transaction.DstUser,
-		ServerId: transaction.ServerId,
+		DstUser:      transaction.DstUser,
+		ServerId:     transaction.ServerId,
 		FeeTokenHash: transaction.FeeTokenHash,
 		FeeAmount:    transaction.FeeAmount.Uint64(),
 		State:        transaction.Status,
@@ -344,11 +344,11 @@ type TransactionOfHashReq struct {
 }
 
 type TransactionStateRsp struct {
-	Hash    string
-	ChainId uint64
-	Blocks  uint64
+	Hash       string
+	ChainId    uint64
+	Blocks     uint64
 	NeedBlocks uint64
-	Time    uint64
+	Time       uint64
 }
 
 type TransactionRsp struct {
@@ -360,7 +360,7 @@ type TransactionRsp struct {
 	DstChainId       uint64
 	Amount           string
 	FeeAmount        string
-	TransferAmount           string
+	TransferAmount   string
 	DstUser          string
 	ServerId         uint64
 	State            uint64
@@ -371,18 +371,18 @@ type TransactionRsp struct {
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
 	amount := new(big.Int).Add(new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int), new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int))
 	transactionRsp := &TransactionRsp{
-		Hash:         transaction.WrapperTransaction.Hash,
-		User:         transaction.WrapperTransaction.User,
-		SrcChainId:   transaction.WrapperTransaction.SrcChainId,
-		BlockHeight:  transaction.WrapperTransaction.BlockHeight,
-		Time:         transaction.WrapperTransaction.Time,
-		DstChainId:   transaction.WrapperTransaction.DstChainId,
-		ServerId: transaction.WrapperTransaction.ServerId,
-		FeeAmount:    transaction.WrapperTransaction.FeeAmount.String(),
-		TransferAmount:       transaction.SrcTransaction.SrcTransfer.Amount.String(),
-		Amount: amount.String(),
-		DstUser:      transaction.SrcTransaction.SrcTransfer.DstUser,
-		State:        transaction.WrapperTransaction.Status,
+		Hash:           transaction.WrapperTransaction.Hash,
+		User:           transaction.WrapperTransaction.User,
+		SrcChainId:     transaction.WrapperTransaction.SrcChainId,
+		BlockHeight:    transaction.WrapperTransaction.BlockHeight,
+		Time:           transaction.WrapperTransaction.Time,
+		DstChainId:     transaction.WrapperTransaction.DstChainId,
+		ServerId:       transaction.WrapperTransaction.ServerId,
+		FeeAmount:      transaction.WrapperTransaction.FeeAmount.String(),
+		TransferAmount: transaction.SrcTransaction.SrcTransfer.Amount.String(),
+		Amount:         amount.String(),
+		DstUser:        transaction.SrcTransaction.SrcTransfer.DstUser,
+		State:          transaction.WrapperTransaction.Status,
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)

@@ -162,10 +162,10 @@ func (ec *EthereumSdk) Erc20Info(hash string) (string, string, int64, string, er
 		return "", "", 0, "", err
 	}
 	/*
-	totolSupply, err := erc20Contract.TotalSupply(&bind.CallOpts{})
-	if err != nil {
-		return "", "", 0, "", err
-	}
+		totolSupply, err := erc20Contract.TotalSupply(&bind.CallOpts{})
+		if err != nil {
+			return "", "", 0, "", err
+		}
 	*/
 	decimal, err := erc20Contract.Decimals(&bind.CallOpts{})
 	if err != nil {

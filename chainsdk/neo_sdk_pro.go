@@ -223,4 +223,3 @@ func (pro *NeoSdkPro) WaitTransactionConfirm(hash string) {
 		fmt.Printf("transaction %s is confirmed, block height: %d\n", hash, height)
 	}
 }
-
