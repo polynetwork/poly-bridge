@@ -93,6 +93,7 @@ func (c *FeeController) CheckFee() {
 			}
 		} else {
 			key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
+			key2Txhash[utils.HexStringReverse(srcTransaction.Hash)] = srcTransaction.Hash
 		}
 	}
 	checkHashes := make([]string, 0)
