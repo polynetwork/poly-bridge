@@ -63,8 +63,8 @@ func NewBridgeSdk(url string) *BridgeSdk {
 	}
 }
 
-func (sdk *BridgeSdk) CheckFee(hashs []string) ([]*CheckFeeRsp, error) {
-	checkFeesReq := &CheckFeesReq{Hashs: hashs}
+func (sdk *BridgeSdk) CheckFee(chainId uint64, hashs []string) ([]*CheckFeeRsp, error) {
+	checkFeesReq := &CheckFeesReq{ChainId: chainId, Hashs: hashs}
 	requestJson, err := json.Marshal(checkFeesReq)
 	if err != nil {
 		return nil, err

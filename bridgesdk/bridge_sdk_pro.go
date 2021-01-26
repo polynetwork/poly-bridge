@@ -112,13 +112,13 @@ func (pro *BridgeSdkPro) GetLatest() *BridgeInfo {
 	return nil
 }
 
-func (pro *BridgeSdkPro) CheckFee(hashs []string) ([]*CheckFeeRsp, error) {
+func (pro *BridgeSdkPro) CheckFee(chainId uint64, hashs []string) ([]*CheckFeeRsp, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		rsp, err := info.sdk.CheckFee(hashs)
+		rsp, err := info.sdk.CheckFee(chainId, hashs)
 		if err != nil {
 			info.online = false
 			info = pro.GetLatest()
