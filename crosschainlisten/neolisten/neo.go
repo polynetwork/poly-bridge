@@ -115,8 +115,18 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							continue
 						}
 						value := notify.State.Value
-						tchainId, _ := new(big.Int).SetString(utils.HexStringReverse(value[3].Value), 16)
-						serverId, _ := new(big.Int).SetString(utils.HexStringReverse(value[7].Value), 16)
+						tchainId := big.NewInt(0)
+						if value[3].Type == "Integer" {
+							tchainId, _ = new(big.Int).SetString(value[3].Value, 10)
+						} else {
+							tchainId, _ = new(big.Int).SetString(utils.HexStringReverse(value[3].Value), 16)
+						}
+						serverId := big.NewInt(0)
+						if value[7].Type == "Integer" {
+							serverId, _ = new(big.Int).SetString(value[7].Value, 10)
+						} else {
+							serverId, _ = new(big.Int).SetString(utils.HexStringReverse(value[7].Value), 16)
+						}
 						if serverId == nil {
 							serverId = new(big.Int).SetUint64(0)
 						}
@@ -195,7 +205,12 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						fctx.Time = uint64(tt)
 						fctx.Height = height
 						fctx.User = fctransfer.From
-						toChainId, _ := new(big.Int).SetString(utils.HexStringReverse(notify.State.Value[3].Value), 16)
+						toChainId := big.NewInt(0)
+						if notify.State.Value[3].Type == "Integer" {
+							toChainId, _ = new(big.Int).SetString(notify.State.Value[3].Value, 10)
+						} else {
+							toChainId, _ = new(big.Int).SetString(utils.HexStringReverse(notify.State.Value[3].Value), 16)
+						}
 						fctx.DstChainId = toChainId.Uint64()
 						fctx.Contract = notify.State.Value[2].Value
 						fctx.Key = notify.State.Value[4].Value
@@ -237,7 +252,12 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						tctx.Fee = models.NewBigInt(big.NewInt(int64(utils.String2Float64(exeitem.GasConsumed))))
 						tctx.Time = uint64(tt)
 						tctx.Height = height
-						fChainId, _ := new(big.Int).SetString(utils.HexStringReverse(notify.State.Value[1].Value), 16)
+						fChainId := big.NewInt(0)
+						if notify.State.Value[1].Type == "Integer" {
+							fChainId, _ = new(big.Int).SetString(notify.State.Value[1].Value, 10)
+						} else {
+							fChainId, _ = new(big.Int).SetString(utils.HexStringReverse(notify.State.Value[1].Value), 16)
+						}
 						tctx.SrcChainId = fChainId.Uint64()
 						tctx.Contract = utils.HexStringReverse(notify.State.Value[2].Value)
 						tctx.PolyHash = utils.HexStringReverse(notify.State.Value[3].Value)
