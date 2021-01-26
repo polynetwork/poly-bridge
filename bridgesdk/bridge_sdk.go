@@ -37,12 +37,12 @@ type PolySwapResp struct {
 }
 
 type CheckFeeReq struct {
-	Hash string `json:"Hash"`
+	Hash    string `json:"Hash"`
 	ChainId uint64 `json:"ChainId"`
 }
 
 type CheckFeesReq struct {
-	Checks   []*CheckFeeReq `json:"Checks"`
+	Checks []*CheckFeeReq `json:"Checks"`
 }
 
 type CheckFeeRsp struct {
