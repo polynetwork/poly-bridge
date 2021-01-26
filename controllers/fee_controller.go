@@ -79,6 +79,7 @@ func (c *FeeController) CheckFee() {
 	for _, check := range checkFeesReq.Checks {
 		hash2ChainId[check.Hash] = check.ChainId
 		requestHashs = append(requestHashs, check.Hash)
+		requestHashs = append(requestHashs, utils.HexStringReverse(check.Hash))
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
