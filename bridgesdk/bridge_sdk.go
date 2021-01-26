@@ -36,9 +36,13 @@ type PolySwapResp struct {
 	URL     string
 }
 
+type CheckFeeReq struct {
+	Hash string `json:"Hash"`
+	ChainId uint64 `json:"ChainId"`
+}
+
 type CheckFeesReq struct {
-	Hashs   []string `json:"Hashs"`
-	ChainId uint64   `json:"ChainId"`
+	Checks   []*CheckFeeReq `json:"Checks"`
 }
 
 type CheckFeeRsp struct {
@@ -63,8 +67,8 @@ func NewBridgeSdk(url string) *BridgeSdk {
 	}
 }
 
-func (sdk *BridgeSdk) CheckFee(chainId uint64, hashs []string) ([]*CheckFeeRsp, error) {
-	checkFeesReq := &CheckFeesReq{ChainId: chainId, Hashs: hashs}
+func (sdk *BridgeSdk) CheckFee(checks []*CheckFeeReq) ([]*CheckFeeRsp, error) {
+	checkFeesReq := &CheckFeesReq{Checks: checks}
 	requestJson, err := json.Marshal(checkFeesReq)
 	if err != nil {
 		return nil, err

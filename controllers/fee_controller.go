@@ -74,28 +74,38 @@ func (c *FeeController) CheckFee() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
+	hash2ChainId := make(map[string]uint64, 0)
+	requestHashs := make([]string, 0)
+	for _, check := range checkFeesReq.Checks {
+		hash2ChainId[check.Hash] = check.ChainId
+		requestHashs = append(requestHashs, check.Hash)
+	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or hash in ?) and (chain_id = ?)", checkFeesReq.Hashs, checkFeesReq.Hashs, checkFeesReq.ChainId).Find(&srcTransactions)
+	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
 	for _, srcTransaction := range srcTransactions {
-		prefix := srcTransaction.Key[0:4]
-		if prefix == "0000" {
-			key2Txhash[srcTransaction.Key] = srcTransaction.Hash
+		prefix := srcTransaction.Key[0:8]
+		if prefix == "00000000" {
+			chainId, ok := hash2ChainId[srcTransaction.Key]
+			if ok && chainId == srcTransaction.ChainId {
+				key2Txhash[srcTransaction.Key] = srcTransaction.Hash
+			}
+		} else {
+			key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
 		}
-		key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
 	}
 	checkHashes := make([]string, 0)
-	for _, hash := range checkFeesReq.Hashs {
-		newHash, ok := key2Txhash[hash]
+	for _, check := range checkFeesReq.Checks {
+		newHash, ok := key2Txhash[check.Hash]
 		if ok {
 			checkHashes = append(checkHashes, newHash)
 		}
 	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
 	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
-	txhash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
+	txHash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
 	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
-		txhash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
+		txHash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
 	}
 	chainFees := make([]*models.ChainFee, 0)
 	db.Preload("TokenBasic").Find(&chainFees)
@@ -104,16 +114,16 @@ func (c *FeeController) CheckFee() {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	checkFees := make([]*models.CheckFeeRsp, 0)
-	for _, hash := range checkFeesReq.Hashs {
+	for _, check := range checkFeesReq.Checks {
 		checkFee := &models.CheckFeeRsp{}
-		checkFee.Hash = hash
-		newHash, ok := key2Txhash[hash]
+		checkFee.Hash = check.Hash
+		newHash, ok := key2Txhash[check.Hash]
 		if !ok {
 			checkFee.PayState = 0
 			checkFees = append(checkFees, checkFee)
 			continue
 		}
-		wrapperTransactionWithToken, ok := txhash2WrapperTransaction[newHash]
+		wrapperTransactionWithToken, ok := txHash2WrapperTransaction[newHash]
 		if !ok {
 			checkFee.PayState = -1
 			checkFees = append(checkFees, checkFee)

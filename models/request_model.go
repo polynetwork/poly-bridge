@@ -249,6 +249,7 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 
 type CheckFeeReq struct {
 	Hash string
+	ChainId uint64
 }
 
 type CheckFeeRsp struct {
@@ -259,8 +260,7 @@ type CheckFeeRsp struct {
 }
 
 type CheckFeesReq struct {
-	Hashs   []string
-	ChainId uint64
+	Checks   []*CheckFeeReq
 }
 
 type CheckFeesRsp struct {
