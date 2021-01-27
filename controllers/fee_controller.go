@@ -82,7 +82,7 @@ func (c *FeeController) CheckFee() {
 		requestHashs = append(requestHashs, utils.HexStringReverse(check.Hash))
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	db.Debug().Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
+	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:8]
@@ -104,7 +104,7 @@ func (c *FeeController) CheckFee() {
 		}
 	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Debug().Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	txHash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
 	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
 		txHash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
@@ -119,6 +119,12 @@ func (c *FeeController) CheckFee() {
 	for _, check := range checkFeesReq.Checks {
 		checkFee := &models.CheckFeeRsp{}
 		checkFee.Hash = check.Hash
+		chainFee, ok := chain2Fees[check.ChainId]
+		if !ok {
+			checkFee.PayState = -1
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
 		newHash, ok := key2Txhash[check.Hash]
 		if !ok {
 			checkFee.PayState = 0
@@ -126,12 +132,6 @@ func (c *FeeController) CheckFee() {
 			continue
 		}
 		wrapperTransactionWithToken, ok := txHash2WrapperTransaction[newHash]
-		if !ok {
-			checkFee.PayState = -1
-			checkFees = append(checkFees, checkFee)
-			continue
-		}
-		chainFee, ok := chain2Fees[wrapperTransactionWithToken.DstChainId]
 		if !ok {
 			checkFee.PayState = -1
 			checkFees = append(checkFees, checkFee)
