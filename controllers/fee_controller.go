@@ -82,7 +82,7 @@ func (c *FeeController) CheckFee() {
 		requestHashs = append(requestHashs, utils.HexStringReverse(check.Hash))
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
-	db.Debug().Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
+	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:8]
@@ -104,13 +104,13 @@ func (c *FeeController) CheckFee() {
 		}
 	}
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Debug().Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	txHash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
 	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
 		txHash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
 	}
 	chainFees := make([]*models.ChainFee, 0)
-	db.Debug().Preload("TokenBasic").Find(&chainFees)
+	db.Preload("TokenBasic").Find(&chainFees)
 	chain2Fees := make(map[uint64]*models.ChainFee, 0)
 	for _, chainFee := range chainFees {
 		chain2Fees[chainFee.ChainId] = chainFee
@@ -131,15 +131,15 @@ func (c *FeeController) CheckFee() {
 			checkFees = append(checkFees, checkFee)
 			continue
 		}
-		x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
-		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
-		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(conf.PRICE_PRECISION))
 		chainFee, ok := chain2Fees[wrapperTransactionWithToken.DstChainId]
 		if !ok {
-			checkFee.PayState = 0
+			checkFee.PayState = -1
 			checkFees = append(checkFees, checkFee)
 			continue
 		}
+		x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
+		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
+		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(conf.PRICE_PRECISION))
 		x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
 		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(conf.PRICE_PRECISION))
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(conf.FEE_PRECISION))

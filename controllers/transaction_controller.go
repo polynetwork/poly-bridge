@@ -71,7 +71,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	var transactionNum int64
-	db.Model(&models.SrcTransfer{}).Where("`from` in ? or dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).Count(&transactionNum)
+	db.Model(&models.SrcTransfer{}).Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).Count(&transactionNum)
 	chains := make([]*models.Chain, 0)
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
