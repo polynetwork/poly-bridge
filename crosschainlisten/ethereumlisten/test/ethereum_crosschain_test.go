@@ -95,3 +95,78 @@ func TestEthereumCross(t *testing.T) {
 	}
 	ethSdk.WaitTransactionConfirm(signedTx.Hash())
 }
+
+func TestEthereum_GetFeeCollector(t *testing.T) {
+	config := conf.NewConfig("./../../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
+	address := common.HexToAddress(ethChainListenConfig.WrapperContract)
+	urls := ethChainListenConfig.GetNodesUrl()
+	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, conf.ETHEREUM_CROSSCHAIN_ID)
+	instance, err := wrapper_abi.NewIPolyWrapper(address, ethSdk.GetClient())
+	if err != nil {
+		panic(err)
+	}
+	collector, _ := instance.FeeCollector(nil)
+	fmt.Printf("collector: %s\n", collector.String())
+	lockproxy, _ := instance.LockProxy(nil)
+	fmt.Printf("lock proxy: %s\n", lockproxy.String())
+	owner, _ := instance.Owner(nil)
+	fmt.Printf("owner: %s\n", owner.String())
+}
+
+func TestEthereumExtractFee(t *testing.T) {
+	config := conf.NewConfig("./../../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
+	urls := ethChainListenConfig.GetNodesUrl()
+	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, conf.ETHEREUM_CROSSCHAIN_ID)
+	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
+	if err != nil {
+		panic(err)
+	}
+
+	assetHash := common.HexToAddress("0000000000000000000000000000000000000000")
+	txData, err := contractabi.Pack("extractFee", assetHash)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("TestInvokeContract - txdata:%s\n", hex.EncodeToString(txData))
+	wrapperContractAddress := common.HexToAddress(ethChainListenConfig.WrapperContract)
+	privateKey := NewPrivateKey("56b446a2de5edfccee1581fbba79e8bb5c269e28ab4c0487860afb7e2c2d2b6e")
+	fromAddr := crypto.PubkeyToAddress(privateKey.PublicKey)
+	fmt.Printf("user address: %s\n", fromAddr.String())
+	nonce, err := ethSdk.NonceAt(fromAddr)
+	if err != nil {
+		panic(err)
+	}
+	gasPrice, err := ethSdk.SuggestGasPrice()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("gas price: %s\n", gasPrice.String())
+	callMsg := ethereum.CallMsg{
+		From: fromAddr, To: &wrapperContractAddress, Gas: 0, GasPrice: gasPrice,
+		Value: big.NewInt(0), Data: txData,
+	}
+
+	gasLimit, err := ethSdk.EstimateGas(callMsg)
+	if err != nil || gasLimit == 0 {
+		panic(err)
+	}
+	fmt.Printf("gas limit: %d\n", gasLimit)
+	tx := types.NewTransaction(nonce, wrapperContractAddress, big.NewInt(0), gasLimit, gasPrice, txData)
+	signedTx, err := types.SignTx(tx, types.HomesteadSigner{}, privateKey)
+	if err != nil {
+		panic(err)
+	}
+	err = ethSdk.SendRawTransaction(signedTx)
+	if err != nil {
+		panic(err)
+	}
+	ethSdk.WaitTransactionConfirm(signedTx.Hash())
+}
