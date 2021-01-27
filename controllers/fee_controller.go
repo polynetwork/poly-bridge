@@ -119,7 +119,7 @@ func (c *FeeController) CheckFee() {
 	for _, check := range checkFeesReq.Checks {
 		checkFee := &models.CheckFeeRsp{}
 		checkFee.Hash = check.Hash
-		chainFee, ok := chain2Fees[check.ChainId]
+		_, ok := chain2Fees[check.ChainId]
 		if !ok {
 			checkFee.PayState = -1
 			checkFees = append(checkFees, checkFee)
@@ -132,6 +132,12 @@ func (c *FeeController) CheckFee() {
 			continue
 		}
 		wrapperTransactionWithToken, ok := txHash2WrapperTransaction[newHash]
+		if !ok {
+			checkFee.PayState = -1
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		chainFee, ok := chain2Fees[wrapperTransactionWithToken.DstChainId]
 		if !ok {
 			checkFee.PayState = -1
 			checkFees = append(checkFees, checkFee)
