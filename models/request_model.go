@@ -481,7 +481,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
 			Hash:    transaction.DstTransaction.Hash,
 			ChainId: transaction.DstTransaction.ChainId,
-			Blocks:  transaction.DstTransaction.Height,
+			Blocks:  1,
 			Time:    transaction.DstTransaction.Time,
 		})
 	} else {
@@ -496,7 +496,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		chain, ok := chainsMap[state.ChainId]
 		if ok {
 			state.NeedBlocks = chain.BackwardBlockNumber
-			if state.Blocks == 0 {
+			if state.Blocks <= 1 {
 				continue
 			}
 			state.Blocks = chain.Height - state.Blocks
