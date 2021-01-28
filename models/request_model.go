@@ -246,20 +246,27 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		TokenAmount:              tokenAmount.String(),
 		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
 	}
+	precision := decimal.NewFromInt(conf.PRICE_PRECISION)
 	{
-		aaa, _ := usdtAmount.Float64()
-		bbb := decimal.NewFromFloat(aaa)
-		getFeeRsp.UsdtAmount = bbb.String()
+		aaa := new(big.Float).Mul(usdtAmount, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+		bbb, _ := aaa.Int64()
+		ccc := decimal.NewFromInt(bbb + 1)
+		usdtAmount := ccc.Div(precision)
+		getFeeRsp.UsdtAmount = usdtAmount.String()
 	}
 	{
-		aaa, _ := tokenAmount.Float64()
-		bbb := decimal.NewFromFloat(aaa)
-		getFeeRsp.TokenAmount = bbb.String()
+		aaa := new(big.Float).Mul(tokenAmount, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+		bbb, _ := aaa.Int64()
+		ccc := decimal.NewFromInt(bbb + 1)
+		tokenAmount := ccc.Div(precision)
+		getFeeRsp.TokenAmount = tokenAmount.String()
 	}
 	{
-		aaa, _ := tokenAmountWithPrecision.Float64()
-		bbb := decimal.NewFromFloat(aaa)
-		getFeeRsp.TokenAmountWithPrecision = bbb.String()
+		aaa := new(big.Float).Mul(tokenAmountWithPrecision, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+		bbb, _ := aaa.Int64()
+		ccc := decimal.NewFromInt(bbb + 1)
+		tokenAmountWithPrecision := ccc.Div(precision)
+		getFeeRsp.TokenAmountWithPrecision = tokenAmountWithPrecision.String()
 	}
 	return getFeeRsp
 }
@@ -407,7 +414,6 @@ type TransactionRsp struct {
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
 	amount := new(big.Int).Add(new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int), new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int))
-
 	transactionRsp := &TransactionRsp{
 		Hash:           transaction.WrapperTransaction.Hash,
 		User:           transaction.WrapperTransaction.User,
@@ -424,27 +430,21 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
-		prec := new(big.Float).SetInt64(utils.Int64FromFigure(int(transaction.Token.TokenBasic.Precision)))
+		precision := decimal.NewFromInt(utils.Int64FromFigure(int(transaction.Token.TokenBasic.Precision)))
 		{
-			aaa := new(big.Float).SetInt(&transaction.WrapperTransaction.FeeAmount.Int)
-			bbb := new(big.Float).Quo(aaa, prec)
-			ccc, _ := bbb.Float64()
-			ddd := decimal.NewFromFloat(ccc)
-			transactionRsp.FeeAmount = ddd.String()
+			bbb := decimal.NewFromBigInt(&transaction.WrapperTransaction.FeeAmount.Int, 0)
+			feeAmount := bbb.Div(precision)
+			transactionRsp.FeeAmount = feeAmount.String()
 		}
 		{
-			aaa := new(big.Float).SetInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int)
-			bbb := new(big.Float).Quo(aaa, prec)
-			ccc, _ := bbb.Float64()
-			ddd := decimal.NewFromFloat(ccc)
-			transactionRsp.TransferAmount = ddd.String()
+			bbb := decimal.NewFromBigInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int, 0)
+			transferAmount := bbb.Div(precision)
+			transactionRsp.TransferAmount = transferAmount.String()
 		}
 		{
-			aaa := new(big.Float).SetInt(amount)
-			bbb := new(big.Float).Quo(aaa, prec)
-			ccc, _ := bbb.Float64()
-			ddd := decimal.NewFromFloat(ccc)
-			transactionRsp.Amount = ddd.String()
+			bbb := decimal.NewFromBigInt(amount, 0)
+			allAmount := bbb.Div(precision)
+			transactionRsp.Amount = allAmount.String()
 		}
 	}
 	if transaction.SrcTransaction != nil {
