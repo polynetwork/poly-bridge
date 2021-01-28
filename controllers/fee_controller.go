@@ -116,9 +116,9 @@ func (c *FeeController) CheckFee() {
 	for _, chainFee := range chainFees {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
-	checkFees := make([]*models.CheckFeeRsp, 0)
+	checkFees := make([]*models.CheckFee, 0)
 	for _, check := range checkFeesReq.Checks {
-		checkFee := &models.CheckFeeRsp{}
+		checkFee := &models.CheckFee{}
 		checkFee.Hash = check.Hash
 		_, ok := chain2Fees[check.ChainId]
 		if !ok {
@@ -156,8 +156,8 @@ func (c *FeeController) CheckFee() {
 		} else {
 			checkFee.PayState = -1
 		}
-		checkFee.Amount = feePay.String()
-		checkFee.MinProxyFee = feeMin.String()
+		checkFee.Amount = feePay
+		checkFee.MinProxyFee = feeMin
 		checkFees = append(checkFees, checkFee)
 	}
 	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)

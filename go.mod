@@ -10,6 +10,7 @@ require (
 	github.com/polynetwork/poly-go-sdk v0.0.0-20200817120957-365691ad3493
 	github.com/polynetwork/poly-io-test v0.0.0-20200819093740-8cf514b07750 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
+	github.com/shopspring/decimal v1.2.0
 	github.com/urfave/cli v1.22.4
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.8

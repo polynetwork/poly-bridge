@@ -17,6 +17,8 @@
 
 package models
 
+import "math/big"
+
 type TokenBasic struct {
 	Name         string         `gorm:"primaryKey;size:64;not null"`
 	Precision    uint64         `gorm:"type:bigint(20);not null"`
@@ -81,4 +83,11 @@ type WrapperTransactionWithToken struct {
 	FeeToken     *Token  `gorm:"foreignKey:FeeTokenHash,SrcChainId;references:Hash,ChainId"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
+}
+
+type CheckFee struct {
+	Hash        string
+	PayState    int
+	Amount      *big.Float
+	MinProxyFee *big.Float
 }

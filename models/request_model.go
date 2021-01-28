@@ -20,6 +20,8 @@ package models
 import (
 	"math/big"
 	"poly-bridge/conf"
+	"poly-bridge/utils"
+	"github.com/shopspring/decimal"
 )
 
 type PolyBridgeResp struct {
@@ -244,6 +246,21 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		TokenAmount:              tokenAmount.String(),
 		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
 	}
+	{
+		aaa, _ := usdtAmount.Float64()
+		bbb := decimal.NewFromFloat(aaa)
+		getFeeRsp.UsdtAmount = bbb.String()
+	}
+	{
+		aaa, _ := tokenAmount.Float64()
+		bbb := decimal.NewFromFloat(aaa)
+		getFeeRsp.TokenAmount = bbb.String()
+	}
+	{
+		aaa, _ := tokenAmountWithPrecision.Float64()
+		bbb := decimal.NewFromFloat(aaa)
+		getFeeRsp.TokenAmountWithPrecision = bbb.String()
+	}
 	return getFeeRsp
 }
 
@@ -268,14 +285,34 @@ type CheckFeesRsp struct {
 	CheckFees  []*CheckFeeRsp
 }
 
-func MakeCheckFeesRsp(checkFees []*CheckFeeRsp) *CheckFeesRsp {
+func MakeCheckFeesRsp(checkFees []*CheckFee) *CheckFeesRsp {
 	checkFeesRsp := &CheckFeesRsp{
 		TotalCount: uint64(len(checkFees)),
 	}
 	for _, checkFee := range checkFees {
-		checkFeesRsp.CheckFees = append(checkFeesRsp.CheckFees, checkFee)
+		checkFeesRsp.CheckFees = append(checkFeesRsp.CheckFees, MakeCheckFeeRsp(checkFee))
 	}
 	return checkFeesRsp
+}
+
+func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
+	checkFeeRsp := &CheckFeeRsp{
+		Hash:         checkFee.Hash,
+		PayState:         checkFee.PayState,
+		Amount:   checkFee.Amount.String(),
+		MinProxyFee:  checkFee.MinProxyFee.String(),
+	}
+	{
+		aaa, _ := checkFee.Amount.Float64()
+		bbb := decimal.NewFromFloat(aaa)
+		checkFeeRsp.Amount = bbb.String()
+	}
+	{
+		aaa, _ := checkFee.MinProxyFee.Float64()
+		bbb := decimal.NewFromFloat(aaa)
+		checkFeeRsp.MinProxyFee = bbb.String()
+	}
+	return checkFeeRsp
 }
 
 type WrapperTransactionReq struct {
@@ -292,7 +329,7 @@ type WrapperTransactionRsp struct {
 	DstUser      string
 	ServerId     uint64
 	FeeTokenHash string
-	FeeAmount    uint64
+	FeeAmount    string
 	State        uint64
 }
 
@@ -307,7 +344,7 @@ func MakeWrapperTransactionRsp(transaction *WrapperTransaction) *WrapperTransact
 		DstUser:      transaction.DstUser,
 		ServerId:     transaction.ServerId,
 		FeeTokenHash: transaction.FeeTokenHash,
-		FeeAmount:    transaction.FeeAmount.Uint64(),
+		FeeAmount:    transaction.FeeAmount.String(),
 		State:        transaction.Status,
 	}
 	return transactionRsp
@@ -370,6 +407,7 @@ type TransactionRsp struct {
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
 	amount := new(big.Int).Add(new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int), new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int))
+
 	transactionRsp := &TransactionRsp{
 		Hash:           transaction.WrapperTransaction.Hash,
 		User:           transaction.WrapperTransaction.User,
@@ -386,6 +424,28 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
+		prec := new(big.Float).SetInt64(utils.Int64FromFigure(int(transaction.Token.TokenBasic.Precision)))
+		{
+			aaa := new(big.Float).SetInt(&transaction.WrapperTransaction.FeeAmount.Int)
+			bbb := new(big.Float).Quo(aaa, prec)
+			ccc, _ := bbb.Float64()
+			ddd := decimal.NewFromFloat(ccc)
+			transactionRsp.FeeAmount = ddd.String()
+		}
+		{
+			aaa := new(big.Float).SetInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int)
+			bbb := new(big.Float).Quo(aaa, prec)
+			ccc, _ := bbb.Float64()
+			ddd := decimal.NewFromFloat(ccc)
+			transactionRsp.TransferAmount = ddd.String()
+		}
+		{
+			aaa := new(big.Float).SetInt(amount)
+			bbb := new(big.Float).Quo(aaa, prec)
+			ccc, _ := bbb.Float64()
+			ddd := decimal.NewFromFloat(ccc)
+			transactionRsp.Amount = ddd.String()
+		}
 	}
 	if transaction.SrcTransaction != nil {
 		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
