@@ -111,7 +111,7 @@ func (cpl *CoinPriceListen) Start() {
 
 func (cpl *CoinPriceListen) Stop() {
 	cpl.exit <- true
-	logs.Info("stop cross chain listen.")
+	logs.Info("stop coin price listen.")
 }
 
 func (cpl *CoinPriceListen) ListenPrice() {
