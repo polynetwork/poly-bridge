@@ -193,9 +193,9 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 }
 
 type EventEffectConfig struct {
-	HowOld int64
+	HowOld     int64
 	EffectSlot int64
-	Server string
+	Server     string
 }
 
 type Config struct {

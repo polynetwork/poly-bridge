@@ -262,7 +262,7 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		getFeeRsp.TokenAmount = tokenAmount.String()
 	}
 	{
-		aaa := new(big.Float).Mul(tokenAmountWithPrecision, new(big.Float).SetInt64(conf.PRICE_PRECISION * conf.PRICE_PRECISION))
+		aaa := new(big.Float).Mul(tokenAmountWithPrecision, new(big.Float).SetInt64(conf.PRICE_PRECISION*conf.PRICE_PRECISION))
 		bbb, _ := aaa.Int64()
 		ccc := decimal.NewFromInt(bbb + 1)
 		precision1 := decimal.NewFromInt(conf.PRICE_PRECISION * conf.PRICE_PRECISION)
@@ -305,10 +305,10 @@ func MakeCheckFeesRsp(checkFees []*CheckFee) *CheckFeesRsp {
 
 func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
 	checkFeeRsp := &CheckFeeRsp{
-		Hash:         checkFee.Hash,
-		PayState:         checkFee.PayState,
-		Amount:   checkFee.Amount.String(),
-		MinProxyFee:  checkFee.MinProxyFee.String(),
+		Hash:        checkFee.Hash,
+		PayState:    checkFee.PayState,
+		Amount:      checkFee.Amount.String(),
+		MinProxyFee: checkFee.MinProxyFee.String(),
 	}
 	{
 		aaa, _ := checkFee.Amount.Float64()

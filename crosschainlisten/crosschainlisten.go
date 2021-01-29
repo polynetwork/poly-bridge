@@ -91,7 +91,7 @@ func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao) *Cr
 	crossChainListen := &CrossChainListen{
 		handle: handle,
 		db:     db,
-		exit: make(chan bool, 0),
+		exit:   make(chan bool, 0),
 	}
 	return crossChainListen
 }
@@ -173,7 +173,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					break
 				}
 			}
-		case <- ccl.exit:
+		case <-ccl.exit:
 			logs.Info("cross chain listen exit, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
 			return true
 		}

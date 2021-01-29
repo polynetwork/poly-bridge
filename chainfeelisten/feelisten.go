@@ -77,7 +77,7 @@ type FeeListen struct {
 	feeUpdateSlot int64
 	fees          map[uint64]ChainFee
 	db            chainfeedao.ChainFeeDao
-	exit   chan bool
+	exit          chan bool
 }
 
 func NewFeeListen(feeUpdateSlot int64, fees []ChainFee, db chainfeedao.ChainFeeDao) *FeeListen {
@@ -166,7 +166,7 @@ func (fl *FeeListen) listenFee() (exit bool) {
 				}
 				break
 			}
-		case <- fl.exit:
+		case <-fl.exit:
 			logs.Info("fee listen exit, chain: %s, dao: %s......", fl.GetChainFees(), fl.db.Name())
 			return true
 		}

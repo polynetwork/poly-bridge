@@ -171,7 +171,6 @@ func TestEthereumExtractFee(t *testing.T) {
 	ethSdk.WaitTransactionConfirm(signedTx.Hash())
 }
 
-
 func TestEthereumSpeedup(t *testing.T) {
 	config := conf.NewConfig("./../../../conf/config_testnet.json")
 	if config == nil {
@@ -225,4 +224,3 @@ func TestEthereumSpeedup(t *testing.T) {
 	}
 	ethSdk.WaitTransactionConfirm(signedTx.Hash())
 }
-

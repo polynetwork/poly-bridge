@@ -325,11 +325,11 @@ func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) bool {
 		time.Sleep(time.Second * 2)
 		_, ispending, err := pro.TransactionByHash(hash)
 		if err != nil {
-			num ++
+			num++
 			continue
 		}
 		if ispending {
-			num ++
+			num++
 			continue
 		} else {
 			return true

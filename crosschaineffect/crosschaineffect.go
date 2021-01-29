@@ -65,7 +65,7 @@ type CrossChainEffect struct {
 func NewCrossChainEffect(monitor Effect) *CrossChainEffect {
 	crossChainMonitor := &CrossChainEffect{
 		effect: monitor,
-		exit:make(chan bool, 0),
+		exit:   make(chan bool, 0),
 	}
 	return crossChainMonitor
 }
@@ -107,7 +107,7 @@ func (eff *CrossChainEffect) check() (exit bool) {
 			if err != nil {
 				logs.Error("cross chain effect err: %v", err)
 			}
-		case <- eff.exit:
+		case <-eff.exit:
 			logs.Info("cross chain effect exit, server: %s......", eff.effect.Name())
 			return true
 		}

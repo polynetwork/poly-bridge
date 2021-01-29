@@ -216,7 +216,7 @@ func (pro *NeoSdkPro) WaitTransactionConfirm(hash string) bool {
 		time.Sleep(time.Second * 2)
 		height, err := pro.GetTransactionHeight(hash)
 		if err != nil || height == 0 {
-			num ++
+			num++
 			continue
 		}
 		return true

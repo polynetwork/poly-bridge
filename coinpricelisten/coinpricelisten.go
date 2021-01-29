@@ -72,7 +72,7 @@ type CoinPriceListen struct {
 	priceUpdateSlot int64
 	priceMarket     map[string]PriceMarket
 	db              coinpricedao.CoinPriceDao
-	exit   chan bool
+	exit            chan bool
 }
 
 func NewCoinPriceListen(priceUpdateSlot int64, priceMarkets []PriceMarket, db coinpricedao.CoinPriceDao) *CoinPriceListen {
@@ -164,7 +164,7 @@ func (cpl *CoinPriceListen) listenPrice() (exit bool) {
 				}
 				break
 			}
-		case <- cpl.exit:
+		case <-cpl.exit:
 			logs.Info("coin price listen exit, market: %s, dao: %s......", cpl.GetPriceMarket(), cpl.db.Name())
 			return true
 		}
