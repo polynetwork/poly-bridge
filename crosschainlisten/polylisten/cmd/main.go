@@ -66,7 +66,7 @@ func getFlagName(flag cli.Flag) string {
 func setupApp() *cli.App {
 	app := cli.NewApp()
 	app.Usage = "poly-bridge Service"
-	app.Action = startServer
+	app.Action = StartServer
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
 	app.Flags = []cli.Flag{
@@ -80,6 +80,19 @@ func setupApp() *cli.App {
 		return nil
 	}
 	return app
+}
+
+func StartServer(ctx *cli.Context) {
+	for true {
+		startServer(ctx)
+		sig := waitSignal()
+		stopServer()
+		if sig != syscall.SIGHUP {
+			break
+		} else {
+			continue
+		}
+	}
 }
 
 func startServer(ctx *cli.Context) {
@@ -106,23 +119,28 @@ func startServer(ctx *cli.Context) {
 	if chainHandler == nil {
 		panic("chain handler is invalid")
 	}
-	chainListen := crosschainlisten.NewCrossChainListen(chainHandler, db)
+	chainListen = crosschainlisten.NewCrossChainListen(chainHandler, db)
 	chainListen.Start()
-	waitToExit()
 }
 
-func waitToExit() {
-	exit := make(chan bool, 0)
+func waitSignal() os.Signal {
+	exit := make(chan os.Signal, 0)
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		for sig := range sc {
-			fmt.Printf("waitToExit - cross chain listen received exit signal:%v.", sig.String())
+			logs.Info("waitToExit - cross chain listen received exit signal:(%s).", sig.String())
+			exit <- sig
 			close(exit)
+			close(sc)
 			break
 		}
 	}()
-	<-exit
+	sig := <-exit
+	return sig
+}
+
+func stopServer() {
 	chainListen.Stop()
 }
 
