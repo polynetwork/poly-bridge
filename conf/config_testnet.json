@@ -106,6 +106,7 @@
   ],
   "EventEffectConfig": {
     "HowOld": 3600,
+    "EffectSlot": 1,
     "Server": "polyswap"
   },
   "CoinPriceUpdateSlot":720,

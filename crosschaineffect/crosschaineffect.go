@@ -29,6 +29,7 @@ import (
 type Effect interface {
 	Effect() error
 	Name() string
+	GetEffectSlot() int64
 }
 
 var crossChainEffect *CrossChainEffect
@@ -98,7 +99,7 @@ func (eff *CrossChainEffect) check() (exit bool) {
 		}
 	}()
 	logs.Debug("cross chain effect, server: %s......", eff.effect.Name())
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Second * time.Duration(eff.effect.GetEffectSlot()))
 	for {
 		select {
 		case <-ticker.C:
