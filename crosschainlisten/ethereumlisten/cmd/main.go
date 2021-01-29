@@ -136,12 +136,12 @@ func waitSignal() os.Signal {
 	exit := make(chan os.Signal, 0)
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer signal.Stop(sc)
 	go func() {
 		for sig := range sc {
-			logs.Info("waitToExit - cross chain listen received exit signal:(%s).", sig.String())
+			logs.Info("cross chain listen received signal:(%s).", sig.String())
 			exit <- sig
 			close(exit)
-			close(sc)
 			break
 		}
 	}()
