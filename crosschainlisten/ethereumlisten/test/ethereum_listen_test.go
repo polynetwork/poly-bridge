@@ -24,6 +24,7 @@ import (
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
 	"testing"
+	"time"
 )
 
 func TestEthereumListen(t *testing.T) {
@@ -47,4 +48,29 @@ func TestEthereumListen(t *testing.T) {
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
 	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
 	chainListen.ListenChain()
+}
+
+func TestEthereumListen_StartStop(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("current directory: %s\n", dir)
+	config := conf.NewConfig("./../../../conf/config_testnet.json")
+	if config == nil {
+		panic("read config failed!")
+	}
+	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
+	if dao == nil {
+		panic("server is not valid")
+	}
+	ethListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
+	if ethListenConfig == nil {
+		panic("config is not valid")
+	}
+	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
+	chainListen.Start()
+	time.Sleep(15 * time.Second)
+	//chainListen.Stop()
 }

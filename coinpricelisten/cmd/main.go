@@ -20,6 +20,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
@@ -79,15 +80,16 @@ func setupApp() *cli.App {
 }
 
 func startServer(ctx *cli.Context) {
+	logs.SetLogger(logs.AdapterFile, `{"filename":"price_market.log"}`)
 	configFile := ctx.GlobalString(getFlagName(configPathFlag))
 	config := conf.NewConfig(configFile)
 	if config == nil {
-		fmt.Printf("startServer - read config failed!")
+		logs.Error("startServer - read config failed!")
 		return
 	}
 	{
 		conf, _ := json.Marshal(config)
-		fmt.Printf("%s\n", string(conf))
+		logs.Info("%s\n", string(conf))
 	}
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	waitToExit()
@@ -99,12 +101,13 @@ func waitToExit() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		for sig := range sc {
-			fmt.Printf("waitToExit - palette explorer received exit signal:%v.", sig.String())
+			fmt.Printf("waitToExit - coin price listen received exit signal:%v.", sig.String())
 			close(exit)
 			break
 		}
 	}()
 	<-exit
+	coinpricelisten.StopCoinPriceListen()
 }
 
 func main() {

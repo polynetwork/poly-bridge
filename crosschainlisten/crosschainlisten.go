@@ -29,15 +29,29 @@ import (
 	"time"
 )
 
+var chainListens [10]*CrossChainListen
+
 func StartCrossChainListen(server string, listenCfg []*conf.ChainListenConfig, dbCfg *conf.DBConfig) {
 	dao := crosschaindao.NewCrossChainDao(server, dbCfg)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	for _, cfg := range listenCfg {
+	for i, cfg := range listenCfg {
 		chainHandle := NewChainHandle(cfg)
+		if chainHandle == nil {
+			panic("chain handler is invalid")
+		}
 		chainListen := NewCrossChainListen(chainHandle, dao)
 		chainListen.Start()
+		chainListens[i] = chainListen
+	}
+}
+
+func StopCrossChainListen() {
+	for _, chainListen := range chainListens {
+		if chainListen != nil {
+			chainListen.Stop()
+		}
 	}
 }
 
@@ -70,38 +84,51 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 type CrossChainListen struct {
 	handle ChainHandle
 	db     crosschaindao.CrossChainDao
+	exit   chan bool
 }
 
 func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao) *CrossChainListen {
 	crossChainListen := &CrossChainListen{
 		handle: handle,
 		db:     db,
+		exit: make(chan bool, 0),
 	}
 	return crossChainListen
 }
 
-func (this *CrossChainListen) Start() {
-	go this.ListenChain()
+func (ccl *CrossChainListen) Start() {
+	logs.Info("start cross chain listen: %s", ccl.handle.GetChainName())
+	go ccl.ListenChain()
 }
 
-func (this *CrossChainListen) ListenChain() {
+func (ccl *CrossChainListen) Stop() {
+	ccl.exit <- true
+	logs.Info("stop cross chain listen: %s", ccl.handle.GetChainName())
+}
+
+func (ccl *CrossChainListen) ListenChain() {
 	for {
-		this.listenChain()
+		exit := ccl.listenChain()
+		if exit == true {
+			close(ccl.exit)
+			break
+		}
 		time.Sleep(time.Second * 5)
 	}
 }
 
-func (this *CrossChainListen) listenChain() {
+func (ccl *CrossChainListen) listenChain() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("service start, recover info: %s", string(debug.Stack()))
+			exit = false
 		}
 	}()
-	chain, err := this.db.GetChain(this.handle.GetChainId())
+	chain, err := ccl.db.GetChain(ccl.handle.GetChainId())
 	if err != nil {
 		panic(err)
 	}
-	height, err := this.handle.GetLatestHeight()
+	height, err := ccl.handle.GetLatestHeight()
 	if err != nil || height == 0 {
 		panic(err)
 	}
@@ -109,43 +136,46 @@ func (this *CrossChainListen) listenChain() {
 		chain.Height = height
 	}
 	if chain.BackwardBlockNumber == 0 {
-		chain.BackwardBlockNumber = this.handle.GetBackwardBlockNumber()
+		chain.BackwardBlockNumber = ccl.handle.GetBackwardBlockNumber()
 	}
-	this.db.UpdateChain(chain)
-	logs.Debug("cross chain listen, chain: %s, dao: %s......", this.handle.GetChainName(), this.db.Name())
-	ticker := time.NewTicker(time.Second * time.Duration(this.handle.GetChainListenSlot()))
+	ccl.db.UpdateChain(chain)
+	logs.Info("cross chain listen, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
+	ticker := time.NewTicker(time.Second * time.Duration(ccl.handle.GetChainListenSlot()))
 	for {
 		select {
 		case <-ticker.C:
-			var height, err = this.handle.GetLatestHeight()
+			var height, err = ccl.handle.GetLatestHeight()
 			if err != nil || height == 0 {
-				logs.Error("listenChain - cannot get chain %s height, err: %s", this.handle.GetChainName(), err)
+				logs.Error("listenChain - cannot get chain %s height, err: %s", ccl.handle.GetChainName(), err)
 				continue
 			}
-			extendHeight, err := this.handle.GetExtendLatestHeight()
+			extendHeight, err := ccl.handle.GetExtendLatestHeight()
 			if err != nil || extendHeight == 0 {
-				logs.Error("ListenChain - cannot get chain %s extend height, err: %s", this.handle.GetChainName(), err)
-			} else if extendHeight >= height+this.handle.GetBackwardBlockNumber() {
-				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", this.handle.GetChainName(), height, extendHeight)
+				logs.Error("ListenChain - cannot get chain %s extend height, err: %s", ccl.handle.GetChainName(), err)
+			} else if extendHeight >= height+ccl.handle.GetBackwardBlockNumber() {
+				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
 			if chain.Height >= height {
 				continue
 			}
-			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", this.handle.GetChainName(), height, chain.Height)
+			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			for chain.Height < height {
-				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := this.handle.HandleNewBlock(chain.Height + 1)
+				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.handle.HandleNewBlock(chain.Height + 1)
 				if err != nil {
 					logs.Error("HandleNewBlock err: %v", err)
 					break
 				}
 				chain.Height += 1
-				err = this.db.UpdateEvents(chain, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+				err = ccl.db.UpdateEvents(chain, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 				if err != nil {
 					logs.Error("UpdateEvents err: %v", err)
 					chain.Height -= 1
 					break
 				}
 			}
+		case <- ccl.exit:
+			logs.Info("cross chain listen exit, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
+			return true
 		}
 	}
 }

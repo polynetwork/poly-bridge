@@ -95,6 +95,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		return nil, nil, nil, nil, err
 	}
 	for _, item := range wrapperTransactions {
+		logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), item.Hash)
 		item.Time = tt
 		item.BlockHeight = height
 		item.SrcChainId = this.GetChainId()
@@ -113,7 +114,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	dstTransactions := make([]*models.DstTransaction, 0)
 	for _, lockEvent := range eccmLockEvents {
 		if lockEvent.Method == _eth_crosschainlock {
-			logs.Info("from chain %s: txhash: %s, txid: %s\n", this.GetChainName(), lockEvent.TxHash, lockEvent.Txid)
+			logs.Info("(lock) from chain: %s, txhash: %s, txid: %s", this.GetChainName(), lockEvent.TxHash, lockEvent.Txid)
 			srcTransaction := &models.SrcTransaction{}
 			srcTransaction.ChainId = this.GetChainId()
 			srcTransaction.Hash = lockEvent.TxHash
@@ -150,7 +151,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	// save unLockEvent to db
 	for _, unLockEvent := range eccmUnLockEvents {
 		if unLockEvent.Method == _eth_crosschainunlock {
-			logs.Info("to chain %s: txhash: %s\n", this.GetChainName(), unLockEvent.TxHash)
+			logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), unLockEvent.TxHash)
 			dstTransaction := &models.DstTransaction{}
 			dstTransaction.ChainId = this.GetChainId()
 			dstTransaction.Hash = unLockEvent.TxHash

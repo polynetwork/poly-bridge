@@ -30,6 +30,8 @@ import (
 	"time"
 )
 
+var feeListen *FeeListen
+
 func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.FeeListenConfig, dbCfg *conf.DBConfig) {
 	dao := chainfeedao.NewChainFeeDao(server, dbCfg)
 	if dao == nil {
@@ -38,10 +40,17 @@ func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.Fe
 	chainFees := make([]ChainFee, 0)
 	for _, cfg := range feeListenCfgs {
 		chainFee := NewChainFee(cfg, feeUpdateSlot)
+		if chainFee == nil {
+			panic("chain fee is not valid")
+		}
 		chainFees = append(chainFees, chainFee)
 	}
-	feeListen := NewFeeListen(feeUpdateSlot, chainFees, dao)
+	feeListen = NewFeeListen(feeUpdateSlot, chainFees, dao)
 	feeListen.Start()
+}
+
+func StopFeeListen() {
+	feeListen.Stop()
 }
 
 type ChainFee interface {
@@ -68,12 +77,14 @@ type FeeListen struct {
 	feeUpdateSlot int64
 	fees          map[uint64]ChainFee
 	db            chainfeedao.ChainFeeDao
+	exit   chan bool
 }
 
 func NewFeeListen(feeUpdateSlot int64, fees []ChainFee, db chainfeedao.ChainFeeDao) *FeeListen {
 	feeListen := &FeeListen{}
 	feeListen.feeUpdateSlot = feeUpdateSlot
 	feeListen.db = db
+	feeListen.exit = make(chan bool, 0)
 	feeListen.fees = make(map[uint64]ChainFee)
 	for _, fee := range fees {
 		feeListen.fees[fee.GetChainId()] = fee
@@ -94,31 +105,42 @@ func NewFeeListen(feeUpdateSlot int64, fees []ChainFee, db chainfeedao.ChainFeeD
 	return feeListen
 }
 
-func (this *FeeListen) Start() {
-	go this.ListenFee()
+func (fl *FeeListen) Start() {
+	logs.Info("start chain fee listen.")
+	go fl.ListenFee()
 }
 
-func (this *FeeListen) ListenFee() {
+func (fl *FeeListen) Stop() {
+	fl.exit <- true
+	logs.Info("stop chain fee listen.")
+}
+
+func (fl *FeeListen) ListenFee() {
 	for {
-		this.listenFee()
+		exit := fl.listenFee()
+		if exit == true {
+			close(fl.exit)
+			break
+		}
 		time.Sleep(time.Second * 5)
 	}
 }
 
-func (this *FeeListen) listenFee() {
+func (fl *FeeListen) listenFee() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("service start, recover info: %s", string(debug.Stack()))
+			exit = false
 		}
 	}()
 
-	logs.Debug("fee listen, chain: %s, dao: %s......", this.GetChainFees(), this.db.Name())
+	logs.Debug("fee listen, chain: %s, dao: %s......", fl.GetChainFees(), fl.db.Name())
 	ticker := time.NewTicker(time.Minute)
 	for {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now%this.feeUpdateSlot != 0 {
+			if now%fl.feeUpdateSlot != 0 {
 				continue
 			}
 			counter := 0
@@ -127,37 +149,40 @@ func (this *FeeListen) listenFee() {
 				counter++
 				logs.Info("do fee update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
 				chainFees := make([]*models.ChainFee, 0)
-				chainFees, err := this.db.GetFees()
+				chainFees, err := fl.db.GetFees()
 				if err != nil {
 					logs.Error("get chain fees err: %v", err)
 					continue
 				}
-				err = this.updateChainFees(chainFees)
+				err = fl.updateChainFees(chainFees)
 				if err != nil {
 					logs.Error("updateChainFees err: %v", err)
 					continue
 				}
-				err = this.db.SaveFees(chainFees)
+				err = fl.db.SaveFees(chainFees)
 				if err != nil {
 					logs.Error("save fees err: %v", err)
 					continue
 				}
 				break
 			}
+		case <- fl.exit:
+			logs.Info("fee listen exit, chain: %s, dao: %s......", fl.GetChainFees(), fl.db.Name())
+			return true
 		}
 	}
 }
 
-func (this *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
+func (fl *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 	chainFee := make(map[uint64]*models.ChainFee, 0)
 	for _, fee := range chainFees {
 		chainFee[fee.ChainId] = fee
 		fee.Ind = 0
 	}
-	for chainId, query := range this.fees {
+	for chainId, query := range fl.fees {
 		fee, ok := chainFee[chainId]
 		if !ok {
-			logs.Error("this is no fee of chain: %d", chainId)
+			logs.Error("fl is no fee of chain: %d", chainId)
 			continue
 		}
 		minFee, maxFee, proxyFee, err := query.GetFee()
@@ -180,9 +205,9 @@ func (this *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 	return nil
 }
 
-func (this *FeeListen) GetChainFees() string {
+func (fl *FeeListen) GetChainFees() string {
 	fees := make([]string, 0)
-	for _, fee := range this.fees {
+	for _, fee := range fl.fees {
 		fees = append(fees, fee.Name())
 	}
 	return strings.Join(fees, ",")

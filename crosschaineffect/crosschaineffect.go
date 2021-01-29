@@ -31,13 +31,19 @@ type Effect interface {
 	Name() string
 }
 
+var crossChainEffect *CrossChainEffect
+
 func StartCrossChainEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) {
 	effect := NewEffect(effCfg, dbCfg)
 	if effect == nil {
 		panic("effect is not valid")
 	}
-	crossChainEffect := NewCrossChainEffect(effect)
+	crossChainEffect = NewCrossChainEffect(effect)
 	crossChainEffect.Start()
+}
+
+func StopCrossChainEffect() {
+	crossChainEffect.Stop()
 }
 
 func NewEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {
@@ -51,42 +57,58 @@ func NewEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {
 }
 
 type CrossChainEffect struct {
-	monitor Effect
+	effect Effect
+	exit   chan bool
 }
 
 func NewCrossChainEffect(monitor Effect) *CrossChainEffect {
 	crossChainMonitor := &CrossChainEffect{
-		monitor: monitor,
+		effect: monitor,
+		exit:make(chan bool, 0),
 	}
 	return crossChainMonitor
 }
 
 func (eff *CrossChainEffect) Start() {
+	logs.Info("start cross chain effect.")
 	go eff.Check()
+}
+
+func (eff *CrossChainEffect) Stop() {
+	eff.exit <- true
+	logs.Info("stop cross chain effect.")
 }
 
 func (eff *CrossChainEffect) Check() {
 	for {
-		eff.check()
+		exit := eff.check()
+		if exit == true {
+			close(eff.exit)
+			break
+		}
 		time.Sleep(time.Second * 5)
 	}
 }
 
-func (eff *CrossChainEffect) check() {
+func (eff *CrossChainEffect) check() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("service start, recover info: %s", string(debug.Stack()))
+			exit = false
 		}
 	}()
-	logs.Debug("cross chain effect, server: %s......", eff.monitor.Name())
+	logs.Debug("cross chain effect, server: %s......", eff.effect.Name())
 	ticker := time.NewTicker(time.Second)
 	for {
 		select {
 		case <-ticker.C:
-			err := eff.monitor.Effect()
+			err := eff.effect.Effect()
 			if err != nil {
-				logs.Error("cross chain monitor err: %v", err)
+				logs.Error("cross chain effect err: %v", err)
 			}
+		case <- eff.exit:
+			logs.Info("cross chain effect exit, server: %s......", eff.effect.Name())
+			return true
 		}
 	}
 }

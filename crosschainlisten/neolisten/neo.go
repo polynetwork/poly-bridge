@@ -110,7 +110,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 					contractMethod := this.parseNeoMethod(notify.State.Value[0].Value)
 					switch contractMethod {
 					case _poly_wrapper_lock:
-						logs.Info("from chain: %s, txhash: %s\n", this.GetChainName(), tx.Txid[2:])
+						logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), tx.Txid[2:])
 						if len(notify.State.Value) < 8 {
 							continue
 						}
@@ -158,7 +158,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 					contractMethod := this.parseNeoMethod(notify.State.Value[0].Value)
 					switch contractMethod {
 					case _neo_crosschainlock:
-						logs.Info("from chain: %s, txhash: %s\n", this.GetChainName(), tx.Txid[2:])
+						logs.Info("(lock) from chain: %s, txhash: %s", this.GetChainName(), tx.Txid[2:])
 						if len(notify.State.Value) < 6 {
 							continue
 						}
@@ -218,7 +218,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						fctx.SrcTransfer = fctransfer
 						srcTransactions = append(srcTransactions, fctx)
 					case _neo_crosschainunlock:
-						logs.Info("to chain: %s, txhash: %s\n", this.GetChainName(), tx.Txid[2:])
+						logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), tx.Txid[2:])
 						if len(notify.State.Value) < 4 {
 							continue
 						}

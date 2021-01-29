@@ -30,6 +30,8 @@ import (
 	"time"
 )
 
+var cpListen *CoinPriceListen
+
 func StartCoinPriceListen(server string, priceUpdateSlot int64, coinPricecfg []*conf.CoinPriceListenConfig, dbCfg *conf.DBConfig) {
 	dao := coinpricedao.NewCoinPriceDao(server, dbCfg)
 	if dao == nil {
@@ -38,10 +40,17 @@ func StartCoinPriceListen(server string, priceUpdateSlot int64, coinPricecfg []*
 	priceMarkets := make([]PriceMarket, 0)
 	for _, cfg := range coinPricecfg {
 		priceMarket := NewPriceMarket(cfg)
+		if priceMarket == nil {
+			panic("price market is not valid")
+		}
 		priceMarkets = append(priceMarkets, priceMarket)
 	}
-	cpListen := NewCoinPriceListen(priceUpdateSlot, priceMarkets, dao)
+	cpListen = NewCoinPriceListen(priceUpdateSlot, priceMarkets, dao)
 	cpListen.Start()
+}
+
+func StopCoinPriceListen() {
+	cpListen.Stop()
 }
 
 type PriceMarket interface {
@@ -63,12 +72,14 @@ type CoinPriceListen struct {
 	priceUpdateSlot int64
 	priceMarket     map[string]PriceMarket
 	db              coinpricedao.CoinPriceDao
+	exit   chan bool
 }
 
 func NewCoinPriceListen(priceUpdateSlot int64, priceMarkets []PriceMarket, db coinpricedao.CoinPriceDao) *CoinPriceListen {
 	cpListen := &CoinPriceListen{}
 	cpListen.priceUpdateSlot = priceUpdateSlot
 	cpListen.db = db
+	cpListen.exit = make(chan bool, 0)
 	cpListen.priceMarket = make(map[string]PriceMarket)
 	for _, market := range priceMarkets {
 		cpListen.priceMarket[market.GetMarketName()] = market
@@ -89,35 +100,46 @@ func NewCoinPriceListen(priceUpdateSlot int64, priceMarkets []PriceMarket, db co
 	return cpListen
 }
 
-func (this *CoinPriceListen) RegisterPriceQuery(priceMarket PriceMarket) {
-	this.priceMarket[priceMarket.GetMarketName()] = priceMarket
+func (cpl *CoinPriceListen) RegisterPriceQuery(priceMarket PriceMarket) {
+	cpl.priceMarket[priceMarket.GetMarketName()] = priceMarket
 }
 
-func (this *CoinPriceListen) Start() {
-	go this.ListenPrice()
+func (cpl *CoinPriceListen) Start() {
+	logs.Info("start coin price listen.")
+	go cpl.ListenPrice()
 }
 
-func (this *CoinPriceListen) ListenPrice() {
+func (cpl *CoinPriceListen) Stop() {
+	cpl.exit <- true
+	logs.Info("stop cross chain listen.")
+}
+
+func (cpl *CoinPriceListen) ListenPrice() {
 	for {
-		this.listenPrice()
+		exit := cpl.listenPrice()
+		if exit == true {
+			close(cpl.exit)
+			break
+		}
 		time.Sleep(time.Second * 5)
 	}
 }
 
-func (this *CoinPriceListen) listenPrice() {
+func (cpl *CoinPriceListen) listenPrice() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("service start, recover info: %s", string(debug.Stack()))
+			exit = false
 		}
 	}()
 
-	logs.Debug("coin price listen, chain: %s, dao: %s......", this.GetPriceMarket(), this.db.Name())
+	logs.Debug("coin price listen, market: %s, dao: %s......", cpl.GetPriceMarket(), cpl.db.Name())
 	ticker := time.NewTicker(time.Minute)
 	for {
 		select {
 		case <-ticker.C:
 			now := time.Now().Unix() / 60
-			if now%this.priceUpdateSlot != 0 {
+			if now%cpl.priceUpdateSlot != 0 {
 				continue
 			}
 			counter := 0
@@ -125,28 +147,31 @@ func (this *CoinPriceListen) listenPrice() {
 				logs.Info("do price update at time: %s", time.Now().Format("2006-01-02 15:04:05"))
 				time.Sleep(time.Second * 5)
 				counter++
-				tokenBasics, err := this.db.GetTokens()
+				tokenBasics, err := cpl.db.GetTokens()
 				if err != nil {
 					logs.Error("get token basic err: %v", err)
 					continue
 				}
-				err = this.updateCoinPrice(tokenBasics)
+				err = cpl.updateCoinPrice(tokenBasics)
 				if err != nil {
 					logs.Error("updateCoinPrice err: %v", err)
 					continue
 				}
-				err = this.db.SavePrices(tokenBasics)
+				err = cpl.db.SavePrices(tokenBasics)
 				if err != nil {
 					logs.Error("save price err: %v", err)
 					continue
 				}
 				break
 			}
+		case <- cpl.exit:
+			logs.Info("coin price listen exit, market: %s, dao: %s......", cpl.GetPriceMarket(), cpl.db.Name())
+			return true
 		}
 	}
 }
 
-func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) error {
+func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) error {
 	marketCoins := make(map[string][]string)
 	marketCoinPrices := make(map[string]*models.PriceMarket)
 	for _, tokenBasic := range tokenBasics {
@@ -162,10 +187,10 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 			priceMarket.Ind = 0
 		}
 	}
-	for market, query := range this.priceMarket {
+	for market, query := range cpl.priceMarket {
 		coins, ok := marketCoins[market]
 		if !ok {
-			logs.Error("this is no coins of market: %s", market)
+			logs.Error("cpl is no coins of market: %s", market)
 			continue
 		}
 		coinPrices, err := query.GetCoinPrice(coins)
@@ -177,7 +202,7 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 		for name, price := range coinPrices {
 			tokenPrice := marketCoinPrices[market+name]
 			if !ok {
-				logs.Error("this is no coins of market: %s and token: %s", market, name)
+				logs.Error("cpl is no coins of market: %s and token: %s", market, name)
 				continue
 			}
 			price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(conf.PRICE_PRECISION))).Int64()
@@ -210,9 +235,9 @@ func (this *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) e
 	return nil
 }
 
-func (this *CoinPriceListen) GetPriceMarket() string {
+func (cpl *CoinPriceListen) GetPriceMarket() string {
 	priceMarkets := make([]string, 0)
-	for _, priceMarket := range this.priceMarket {
+	for _, priceMarket := range cpl.priceMarket {
 		priceMarkets = append(priceMarkets, priceMarket.GetMarketName())
 	}
 	return strings.Join(priceMarkets, ",")

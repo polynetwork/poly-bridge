@@ -18,10 +18,10 @@
 package models
 
 import (
+	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/conf"
 	"poly-bridge/utils"
-	"github.com/shopspring/decimal"
 )
 
 type PolyBridgeResp struct {

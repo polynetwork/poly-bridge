@@ -20,6 +20,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
@@ -30,6 +31,8 @@ import (
 	"strings"
 	"syscall"
 )
+
+var chainListen *crosschainlisten.CrossChainListen
 
 var (
 	logLevelFlag = cli.UintFlag{
@@ -80,15 +83,16 @@ func setupApp() *cli.App {
 }
 
 func startServer(ctx *cli.Context) {
+	logs.SetLogger(logs.AdapterFile, `{"filename":"crosschain_listen.log"}`)
 	configFile := ctx.GlobalString(getFlagName(configPathFlag))
 	config := conf.NewConfig(configFile)
 	if config == nil {
-		fmt.Printf("startServer - read config failed!")
+		logs.Error("startServer - read config failed!")
 		return
 	}
 	{
 		conf, _ := json.Marshal(config)
-		fmt.Printf("%s\n", string(conf))
+		logs.Info("%s\n", string(conf))
 	}
 	db := crosschaindao.NewCrossChainDao(config.Server, config.DBConfig)
 	if db == nil {
@@ -99,7 +103,7 @@ func startServer(ctx *cli.Context) {
 		panic("chain is invalid")
 	}
 	chainHandler := crosschainlisten.NewChainHandle(chainListenConfig)
-	if db == nil {
+	if chainHandler == nil {
 		panic("chain handler is invalid")
 	}
 	chainListen := crosschainlisten.NewCrossChainListen(chainHandler, db)
@@ -113,12 +117,13 @@ func waitToExit() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		for sig := range sc {
-			fmt.Printf("waitToExit - palette explorer received exit signal:%v.", sig.String())
+			fmt.Printf("waitToExit - cross chain listen received exit signal:%v.", sig.String())
 			close(exit)
 			break
 		}
 	}()
 	<-exit
+	chainListen.Stop()
 }
 
 func main() {

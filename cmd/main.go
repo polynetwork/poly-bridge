@@ -107,12 +107,16 @@ func waitToExit() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	go func() {
 		for sig := range sc {
-			fmt.Printf("waitToExit - palette explorer received exit signal:%v.", sig.String())
+			fmt.Printf("waitToExit - bridge server received exit signal:%v.", sig.String())
 			close(exit)
 			break
 		}
 	}()
 	<-exit
+	crosschainlisten.StopCrossChainListen()
+	coinpricelisten.StopCoinPriceListen()
+	chainfeelisten.StopFeeListen()
+	crosschaineffect.StopCrossChainEffect()
 }
 
 func main() {
