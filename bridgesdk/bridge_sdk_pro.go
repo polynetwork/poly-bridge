@@ -105,7 +105,7 @@ func (pro *BridgeSdkPro) GetLatest() *BridgeInfo {
 		pro.mutex.Unlock()
 	}()
 	for _, info := range pro.infos {
-		if info != nil && info.online == true {
+		if info != nil && info.online {
 			return info
 		}
 	}

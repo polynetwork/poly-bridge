@@ -117,7 +117,7 @@ func (cpl *CoinPriceListen) Stop() {
 func (cpl *CoinPriceListen) ListenPrice() {
 	for {
 		exit := cpl.listenPrice()
-		if exit == true {
+		if exit {
 			close(cpl.exit)
 			break
 		}

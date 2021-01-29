@@ -75,7 +75,7 @@ func TestNeoCross(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	if result == true {
+	if result {
 		fmt.Printf("send transaction successful")
 	}
 	neoSdk.WaitTransactionConfirm(itx.HashString())

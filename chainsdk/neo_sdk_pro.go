@@ -200,7 +200,7 @@ func (pro *NeoSdkPro) SendRawTransaction(txHex string) (bool, error) {
 	}
 	for info != nil {
 		result, err := info.sdk.SendRawTransaction(txHex)
-		if err != nil || result == false {
+		if err != nil || !result {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
@@ -210,16 +210,16 @@ func (pro *NeoSdkPro) SendRawTransaction(txHex string) (bool, error) {
 	return false, fmt.Errorf("all node is not working")
 }
 
-func (pro *NeoSdkPro) WaitTransactionConfirm(hash string) {
-	errNum := 0
-	for errNum < 100 {
-		time.Sleep(time.Second * 1)
+func (pro *NeoSdkPro) WaitTransactionConfirm(hash string) bool {
+	num := 0
+	for num < 150 {
+		time.Sleep(time.Second * 2)
 		height, err := pro.GetTransactionHeight(hash)
 		if err != nil || height == 0 {
-			fmt.Printf("transaction %s is pending: %v\n", hash, true)
-			errNum++
+			num ++
 			continue
 		}
-		fmt.Printf("transaction %s is confirmed, block height: %d\n", hash, height)
+		return true
 	}
+	return false
 }

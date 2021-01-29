@@ -82,7 +82,7 @@ func (eff *CrossChainEffect) Stop() {
 func (eff *CrossChainEffect) Check() {
 	for {
 		exit := eff.check()
-		if exit == true {
+		if exit {
 			close(eff.exit)
 			break
 		}

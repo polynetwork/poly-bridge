@@ -118,7 +118,7 @@ func (fl *FeeListen) Stop() {
 func (fl *FeeListen) ListenFee() {
 	for {
 		exit := fl.listenFee()
-		if exit == true {
+		if exit {
 			close(fl.exit)
 			break
 		}

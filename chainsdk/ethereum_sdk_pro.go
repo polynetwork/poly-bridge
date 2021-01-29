@@ -319,20 +319,21 @@ func (pro *EthereumSdkPro) Erc20Info(hash string) (string, string, int64, string
 	return "", "", 0, "", fmt.Errorf("all node is not working")
 }
 
-func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) {
-	errNum := 0
-	for errNum < 100 {
-		time.Sleep(time.Second * 1)
+func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) bool {
+	num := 0
+	for num < 300 {
+		time.Sleep(time.Second * 2)
 		_, ispending, err := pro.TransactionByHash(hash)
-		fmt.Printf("transaction %s is pending: %v\n", hash.String(), ispending)
 		if err != nil {
-			errNum++
+			num ++
 			continue
 		}
-		if ispending == true {
+		if ispending {
+			num ++
 			continue
 		} else {
-			break
+			return true
 		}
 	}
+	return false
 }

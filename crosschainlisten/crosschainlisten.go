@@ -109,7 +109,7 @@ func (ccl *CrossChainListen) Stop() {
 func (ccl *CrossChainListen) ListenChain() {
 	for {
 		exit := ccl.listenChain()
-		if exit == true {
+		if exit {
 			close(ccl.exit)
 			break
 		}
