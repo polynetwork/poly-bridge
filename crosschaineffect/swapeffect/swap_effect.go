@@ -106,13 +106,13 @@ func (eff *SwapEffect) updateStatus() error {
 	}
 	wrapperPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	eff.db.Table("wrapper_transactions").Where("status != ?", conf.STATE_FINISHED).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Find(&wrapperPolyDstRelations)
+	eff.db.Table("wrapper_transactions").Where("status != ?", conf.STATE_FINISHED).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Preload("DstTransaction").Find(&wrapperPolyDstRelations)
 	for _, wrapperPolyDstRelation := range wrapperPolyDstRelations {
 		wrapperTransaction := wrapperPolyDstRelation.WrapperTransaction
 		if wrapperPolyDstRelation.PolyHash == "" {
 			chain, ok := id2Chains[wrapperPolyDstRelation.WrapperTransaction.SrcChainId]
 			if ok {
-				if wrapperPolyDstRelation.WrapperTransaction.BlockHeight-chain.Height > 12 {
+				if chain.Height - wrapperPolyDstRelation.WrapperTransaction.BlockHeight >= chain.BackwardBlockNumber {
 					wrapperTransaction.Status = conf.STATE_SOURCE_CONFIRMED
 				} else {
 					wrapperTransaction.Status = conf.STATE_SOURCE_DONE
@@ -123,7 +123,16 @@ func (eff *SwapEffect) updateStatus() error {
 		} else if wrapperPolyDstRelation.DstHash == "" {
 			wrapperTransaction.Status = conf.STATE_POLY_CONFIRMED
 		} else {
-			wrapperTransaction.Status = conf.STATE_FINISHED
+			chain, ok := id2Chains[wrapperPolyDstRelation.DstTransaction.ChainId]
+			if ok {
+				if chain.Height - wrapperPolyDstRelation.DstTransaction.Height >= 1 {
+					wrapperTransaction.Status = conf.STATE_FINISHED
+				} else {
+					wrapperTransaction.Status = conf.STATE_DESTINATION_DONE
+				}
+			} else {
+				wrapperTransaction.Status = conf.STATE_FINISHED
+			}
 		}
 		wrapperTransactions = append(wrapperTransactions, wrapperTransaction)
 	}
