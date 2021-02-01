@@ -41,7 +41,7 @@ var (
 	configPathFlag = cli.StringFlag{
 		Name:  "cliconfig",
 		Usage: "Server config file `<path>`",
-		Value: "./conf/config.json",
+		Value: "./conf/config_mainnet.json",
 	}
 
 	logDirFlag = cli.StringFlag{
