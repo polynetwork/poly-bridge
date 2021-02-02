@@ -81,23 +81,14 @@ func (pro *PolySDKPro) nodeSelection() {
 }
 
 func (pro *PolySDKPro) selection() {
-	pro.mutex.Lock()
-	defer func() {
-		pro.mutex.Unlock()
-	}()
 	for url, info := range pro.infos {
-		if info == nil {
-			info = NewPolyInfo(url)
-			pro.infos[url] = info
-		}
-		if info == nil {
-			continue
-		}
 		height, err := info.sdk.GetCurrentBlockHeight()
 		if err != nil {
 			logs.Error("get current block height err: %v, url: %s", err, url)
 		}
+		pro.mutex.Lock()
 		info.latestHeight = height
+		pro.mutex.Unlock()
 	}
 }
 

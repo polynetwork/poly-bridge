@@ -38,8 +38,7 @@ type EthereumInfo struct {
 func NewEthereumInfo(url string) *EthereumInfo {
 	sdk, err := NewEthereumSdk(url)
 	if err != nil || sdk == nil {
-		logs.Error("new ethereum sdk err: %v", err)
-		return nil
+		panic(err)
 	}
 	return &EthereumInfo{
 		sdk:          sdk,
@@ -88,23 +87,11 @@ func (pro *EthereumSdkPro) nodeSelection() {
 }
 
 func (pro *EthereumSdkPro) selection() {
-	pro.mutex.Lock()
-	defer func() {
-		pro.mutex.Unlock()
-	}()
 	for url, info := range pro.infos {
-		if info == nil {
-			info = NewEthereumInfo(url)
-			pro.infos[url] = info
-		}
-		if info == nil {
-			continue
-		}
 		height, err := info.sdk.GetCurrentBlockHeight()
 		if err != nil {
 			logs.Error("get current block height err: %v, url: %s", err, url)
-			info.latestHeight = height
-			continue
+			height = 1
 		}
 		/*
 		block, err := info.sdk.GetBlockByNumber(height)
@@ -124,7 +111,9 @@ func (pro *EthereumSdkPro) selection() {
 			}
 		}
 		*/
+		pro.mutex.Lock()
 		info.latestHeight = height - 1
+		pro.mutex.Unlock()
 	}
 }
 
