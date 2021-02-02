@@ -112,7 +112,7 @@ func (eff *SwapEffect) updateStatus() error {
 		if wrapperPolyDstRelation.PolyHash == "" {
 			chain, ok := id2Chains[wrapperPolyDstRelation.WrapperTransaction.SrcChainId]
 			if ok {
-				if chain.Height - wrapperPolyDstRelation.WrapperTransaction.BlockHeight >= chain.BackwardBlockNumber {
+				if chain.Height-wrapperPolyDstRelation.WrapperTransaction.BlockHeight >= chain.BackwardBlockNumber {
 					wrapperTransaction.Status = conf.STATE_SOURCE_CONFIRMED
 				} else {
 					wrapperTransaction.Status = conf.STATE_SOURCE_DONE
@@ -125,7 +125,7 @@ func (eff *SwapEffect) updateStatus() error {
 		} else {
 			chain, ok := id2Chains[wrapperPolyDstRelation.DstTransaction.ChainId]
 			if ok {
-				if chain.Height - wrapperPolyDstRelation.DstTransaction.Height >= 1 {
+				if chain.Height-wrapperPolyDstRelation.DstTransaction.Height >= 1 {
 					wrapperTransaction.Status = conf.STATE_FINISHED
 				} else {
 					wrapperTransaction.Status = conf.STATE_DESTINATION_DONE
