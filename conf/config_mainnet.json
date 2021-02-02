@@ -34,6 +34,9 @@
         },
         {
           "Url": "https://mainnet.infura.io/v3/67c37a240ed64ed68d076f900f05761b"
+        },
+        {
+          "Url": "http://119.28.106.68:10331"
         }
       ],
       "ExtendNodes": [
@@ -53,7 +56,7 @@
       "BackwardBlockNumber":1,
       "Nodes": [
         {
-          "Url": "13.67.34.13:10332"
+          "Url": "http://13.67.34.13:10332"
         },
         {
           "Url": "http://seed1.ngd.network:10332"
