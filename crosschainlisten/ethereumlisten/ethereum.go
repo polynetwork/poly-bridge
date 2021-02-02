@@ -386,7 +386,6 @@ func (this *EthereumChainListen) getExtendLatestHeight(node int) (uint64, error)
 		return 0, fmt.Errorf("response status code: %d", resp.StatusCode)
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Printf("resp body: %s\n", string(respBody))
 	extendHeight := new(ExtendHeightRsp)
 	extendHeight.Status = 1
 	err = json.Unmarshal(respBody, extendHeight)

@@ -20,16 +20,9 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"os"
-)
-
-var (
-	POLY_CROSSCHAIN_ID     = uint64(0)
-	ETHEREUM_CROSSCHAIN_ID = uint64(2)
-	NEO_CROSSCHAIN_ID      = uint64(5)
-	BSC_CROSSCHAIN_ID      = uint64(79)
-	HECO_CROSSCHAIN_ID     = uint64(7)
 )
 
 var (
@@ -58,38 +51,6 @@ const (
 	SERVER_ADDRESS   = "address"
 	SERVER_STAKE     = "stake"
 )
-
-func StateCode2Name(code int) string {
-	if code == STATE_FINISHED {
-		return "finished"
-	} else if code == STATE_PENDDING {
-		return "pendding"
-	} else if code == STATE_SOURCE_DONE {
-		return "source done"
-	} else if code == STATE_SOURCE_CONFIRMED {
-		return "source confirmed"
-	} else if code == STATE_POLY_CONFIRMED {
-		return "poly confirmed"
-	} else {
-		return "unknown"
-	}
-}
-
-func StateName2Code(state string) int {
-	if state == "finished" {
-		return STATE_FINISHED
-	} else if state == "pendding" {
-		return STATE_PENDDING
-	} else if state == "source done" {
-		return STATE_SOURCE_DONE
-	} else if state == "source confirmed" {
-		return STATE_SOURCE_CONFIRMED
-	} else if state == "poly confirmed" {
-		return STATE_POLY_CONFIRMED
-	} else {
-		return -1
-	}
-}
 
 type DBConfig struct {
 	URL      string
@@ -245,7 +206,7 @@ func ReadFile(fileName string) ([]byte, error) {
 	defer func() {
 		err := file.Close()
 		if err != nil {
-			fmt.Errorf("ReadFile: File %s close error %s", fileName, err)
+			logs.Error("ReadFile: File %s close error %s", fileName, err)
 		}
 	}()
 	data, err := ioutil.ReadAll(file)
@@ -258,13 +219,13 @@ func ReadFile(fileName string) ([]byte, error) {
 func NewConfig(filePath string) *Config {
 	fileContent, err := ReadFile(filePath)
 	if err != nil {
-		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
+		logs.Error("NewServiceConfig: failed, err: %s", err)
 		return nil
 	}
 	config := &Config{}
 	err = json.Unmarshal(fileContent, config)
 	if err != nil {
-		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
+		logs.Error("NewServiceConfig: failed, err: %s", err)
 		return nil
 	}
 	return config

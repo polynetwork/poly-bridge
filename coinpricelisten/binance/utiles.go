@@ -84,7 +84,6 @@ func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
 		return nil, fmt.Errorf("response status code: %d", resp.StatusCode)
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Printf("resp body: %s\n", string(respBody))
 	tickers := make([]*Ticker, 0)
 	err = json.Unmarshal(respBody, &tickers)
 	if err != nil {

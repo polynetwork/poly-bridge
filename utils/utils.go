@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
+	ontcommon "github.com/ontio/ontology/common"
 	"poly-bridge/conf"
 	"strconv"
 	"strings"
@@ -40,6 +41,10 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == conf.HECO_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == conf.ONT_CROSSCHAIN_ID {
+		value = HexStringReverse(value)
+		addr, _ := ontcommon.AddressFromHexString(value)
+		return addr.ToBase58()
 	}
 	return value
 }
