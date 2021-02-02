@@ -106,6 +106,7 @@ func (pro *EthereumSdkPro) selection() {
 			info.latestHeight = height
 			continue
 		}
+		/*
 		block, err := info.sdk.GetBlockByNumber(height)
 		if err != nil || block == nil {
 			logs.Error("get current block err: %v, url: %s", err, url)
@@ -122,7 +123,8 @@ func (pro *EthereumSdkPro) selection() {
 				continue
 			}
 		}
-		info.latestHeight = height
+		*/
+		info.latestHeight = height - 1
 	}
 }
 
