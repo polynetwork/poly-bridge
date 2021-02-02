@@ -47,6 +47,10 @@ func NewStakeDao() *StakeDao {
 		ChainId: new(uint64),
 		Height:  5525704,
 	}
+	chains[4] = &models.Chain{
+		ChainId: new(uint64),
+		Height:  0,
+	}
 	chains[7] = &models.Chain{
 		ChainId: new(uint64),
 		Height:  1379404,

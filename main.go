@@ -27,7 +27,7 @@ import (
 )
 
 func main() {
-	logs.SetLogger(logs.AdapterFile, `{"filename":"bridge_http.log"}`)
+	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_http.log"}`)
 	mode := beego.AppConfig.String("runmode")
 	if mode == "dev" {
 		var FilterLog = func(ctx *context.Context) {
