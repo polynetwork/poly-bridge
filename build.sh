@@ -13,9 +13,9 @@ if [ ! -d "./build/bridge_tools" ]; then
   mkdir -p "./build/bridge_tools"
 fi
 mv bridge_tools ./../build/bridge_tools
-cp conf/conf_depoly_mainnet.json ./../build/bridge_tools
-cp conf/conf_depoly_testnet.json ./../build/bridge_tools
-cp conf/conf_dump.json ./../build/bridge_tools
+cp ./conf/conf_depoly_mainnet.json ./../build/bridge_tools
+cp ./conf/conf_depoly_testnet.json ./../build/bridge_tools
+cp ./conf/conf_dump.json ./../build/bridge_tools
 
 cd ./../cmd
 go build -tags $tag -o bridge_server main.go
