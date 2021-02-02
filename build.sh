@@ -14,11 +14,11 @@ if [ ! -d "./$base/bridge_tools" ]; then
   mkdir -p "./$base/bridge_tools"
 fi
 mv bridge_tools ./../$base/bridge_tools
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
-  cp ./conf/config_depoly_mainnet.json ./../$base/bridge_tools
+  cp ./conf/config_deploy_mainnet.json ./../$base/bridge_tools
 else
-  cp ./conf/config_depoly_testnet.json ./../$base/bridge_tools
+  cp ./conf/config_deploy_testnet.json ./../$base/bridge_tools
 fi
 cp ./conf/config_dump.json ./../$base/bridge_tools
 
@@ -29,7 +29,7 @@ if [ ! -d "./$base/bridge_server" ]; then
   mkdir -p "./$base/bridge_server"
 fi
 mv bridge_server ./../$base/bridge_server
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
   cp ./../conf/config_mainnet.json ./../$base/bridge_server
 else
@@ -57,7 +57,7 @@ if [ ! -d "./$base/ethereum_listen" ]; then
   mkdir -p "./$base/ethereum_listen"
 fi
 mv ethereum_listen ./../../../$base/ethereum_listen
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
   cp ./../../../conf/config_mainnet.json ./../../../$base/ethereum_listen
 else
@@ -70,7 +70,7 @@ if [ ! -d "./$base/neo_listen" ]; then
   mkdir -p "./$base/neo_listen"
 fi
 mv neo_listen ./../../../$base/neo_listen
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
   cp ./../../../conf/config_mainnet.json ./../../../$base/neo_listen
 else
@@ -83,7 +83,7 @@ if [ ! -d "./$base/poly_listen" ]; then
   mkdir -p "./$base/poly_listen"
 fi
 mv poly_listen ./../../../$base/poly_listen
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
   cp ./../../../conf/config_mainnet.json ./../../../$base/poly_listen
 else
@@ -99,7 +99,7 @@ if [ ! -d "./$base/crosschain_effect" ]; then
   mkdir -p "./$base/crosschain_effect"
 fi
 mv crosschain_effect ./../../$base/crosschain_effect
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
   cp ./../../conf/config_mainnet.json ./../../$base/crosschain_effect
 else
@@ -114,7 +114,7 @@ if [ ! -d "./$base/coinprice_listen" ]; then
   mkdir -p "./$base/coinprice_listen"
 fi
 mv coinprice_listen ./../../$base/coinprice_listen
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
   cp ./../../conf/config_mainnet.json ./../../$base/coinprice_listen
 else
@@ -129,7 +129,7 @@ if [ ! -d "./$base/chainfee_listen" ]; then
   mkdir -p "./$base/chainfee_listen"
 fi
 mv chainfee_listen ./../../$base/chainfee_listen
-if ["$tag"x = "mainnet"x]
+if [ "$tag"x = "mainnet"x ]
 then
   cp ./../../conf/config_mainnet.json ./../../$base/chainfee_listen
 else
