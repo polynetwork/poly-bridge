@@ -96,7 +96,7 @@ func StartServer(ctx *cli.Context) {
 }
 
 func startServer(ctx *cli.Context) {
-	logs.SetLogger(logs.AdapterFile, `{"filename":"bridge_server.log"}`)
+	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_server.log"}`)
 	configFile := ctx.GlobalString(getFlagName(configPathFlag))
 	config := conf.NewConfig(configFile)
 	if config == nil {

@@ -93,7 +93,7 @@ func StartServer(ctx *cli.Context) {
 }
 
 func startServer(ctx *cli.Context) {
-	logs.SetLogger(logs.AdapterFile, `{"filename":"crosschain_effect.log"}`)
+	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/crosschain_effect.log"}`)
 	configFile := ctx.GlobalString(getFlagName(configPathFlag))
 	config := conf.NewConfig(configFile)
 	if config == nil {
