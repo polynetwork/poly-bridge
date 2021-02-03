@@ -38,6 +38,7 @@ func startUpdateToken(cfg *conf2.DeployConfig) {
 		panic(err)
 	}
 	//
+	db.Where("1 = 1").Delete(&models.CheckFee{})
 	db.Where("1 = 1").Delete(&models.PriceMarket{})
 	db.Where("1 = 1").Delete(&models.TokenMap{})
 	db.Where("1 = 1").Delete(&models.Token{})
@@ -53,6 +54,7 @@ func startUpdateToken(cfg *conf2.DeployConfig) {
 		tokenMap.DstToken.Hash = strings.ToLower(tokenMap.DstToken.Hash)
 	}
 	db.Save(cfg.TokenBasics)
+	db.Save(cfg.ChainFees)
 	tokenMaps := getTokenMapsFromToken(cfg.TokenBasics)
 	tokenMaps = append(tokenMaps, cfg.TokenMaps...)
 	db.Save(tokenMaps)
