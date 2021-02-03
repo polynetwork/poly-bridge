@@ -38,7 +38,7 @@ func startUpdateToken(cfg *conf2.DeployConfig) {
 		panic(err)
 	}
 	//
-	db.Where("1 = 1").Delete(&models.CheckFee{})
+	db.Where("1 = 1").Delete(&models.ChainFee{})
 	db.Where("1 = 1").Delete(&models.PriceMarket{})
 	db.Where("1 = 1").Delete(&models.TokenMap{})
 	db.Where("1 = 1").Delete(&models.Token{})
