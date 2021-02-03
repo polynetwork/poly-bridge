@@ -78,7 +78,7 @@
         },
         {
           "ChainId":7,
-          "Hash":"28FF66a1B95d7CAcf8eDED2e658f768F44841212",
+          "Hash":"8c0859c191d8f100e4a3c0d8c0066c36a0c1f894",
           "Name":"pETH",
           "Precision":18
         }
@@ -113,7 +113,7 @@
         },
         {
           "ChainId":7,
-          "Hash":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
+          "Hash":"6514a5ebff7944099591ae3e8a5c0979c83b2571",
           "Name":"pNEO",
           "Precision":8
         }
@@ -144,7 +144,7 @@
         },
         {
           "ChainId":7,
-          "Hash":"b9478391Eec218DEfA96F7b9A7938cF44e7a2Fd5",
+          "Hash":"A7d1aAc3c9bf61559c25f94132a9f801E8B5F97E",
           "Name":"pUSDT",
           "Precision":6
         }
@@ -217,7 +217,7 @@
         },
         {
           "ChainId":7,
-          "Hash":"7E418a9926c8D1cbd09CC93E8051cC3BbdfE3854",
+          "Hash":"643f3914fB8eDE03d932c79732746a8c11Ae470A",
           "Name":"pDAI",
           "Precision":18
         }
@@ -248,7 +248,7 @@
         },
         {
           "ChainId":7,
-          "Hash":"B119b3b8e5e6eefFBE754B20ee5B8A42809931Fb",
+          "Hash":"e85631B817923487ba40263144eEfF532Cff10a2",
           "Name":"pUSDC",
           "Precision":6
         }
@@ -279,7 +279,7 @@
         },
         {
           "ChainId":7,
-          "Hash":"27FD9f1750315E4758333B511B421e30109fCF7A",
+          "Hash":"002E47D940dfd177dc0Fe78321E17EF84676985D",
           "Name":"psUSD",
           "Precision":18
         }
