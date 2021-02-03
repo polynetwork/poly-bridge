@@ -100,6 +100,15 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		dumpStatus(config.DBConfig)
+	} else if cmd == 3 {
+		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		config := conf2.NewDeployConfig(configFile)
+		if config == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		startUpdateToken(config)
+		dumpStatus(config.DBConfig)
 	}
 }
 
