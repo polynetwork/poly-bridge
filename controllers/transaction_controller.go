@@ -40,7 +40,24 @@ func (c *TransactionController) Transactions() {
 	db.Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
 	var transactionNum int64
 	db.Model(&models.WrapperTransaction{}).Count(&transactionNum)
-	c.Data["json"] = models.MakeTransactionsRsp(transactionsReq.PageSize, transactionsReq.PageNo, (int(transactionNum)+transactionsReq.PageSize-1)/transactionsReq.PageSize,
+	c.Data["json"] = models.MakeWrapperTransactionsRsp(transactionsReq.PageSize, transactionsReq.PageNo, (int(transactionNum)+transactionsReq.PageSize-1)/transactionsReq.PageSize,
+		int(transactionNum), transactions)
+	c.ServeJSON()
+}
+
+func (c *TransactionController) PolyTransactions() {
+	var transactionsReq models.PolyTransactionsReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	transactions := make([]*models.PolyTransaction, 0)
+	db.Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
+	var transactionNum int64
+	db.Model(&models.PolyTransaction{}).Count(&transactionNum)
+	c.Data["json"] = models.MakePolyTransactionsRsp(transactionsReq.PageSize, transactionsReq.PageNo, (int(transactionNum)+transactionsReq.PageSize-1)/transactionsReq.PageSize,
 		int(transactionNum), transactions)
 	c.ServeJSON()
 }

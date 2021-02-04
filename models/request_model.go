@@ -366,7 +366,7 @@ type WrapperTransactionsRsp struct {
 	Transactions []*WrapperTransactionRsp
 }
 
-func MakeTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *WrapperTransactionsRsp {
+func MakeWrapperTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*WrapperTransaction) *WrapperTransactionsRsp {
 	transactionsRsp := &WrapperTransactionsRsp{
 		PageSize:   pageSize,
 		PageNo:     pageNo,
@@ -581,4 +581,64 @@ func MakeAddressRsp(addressHash string, chainId uint64, address string) *Address
 		ChainId:     chainId,
 	}
 	return addressRsp
+}
+
+
+type PolyTransactionReq struct {
+	Hash string
+}
+
+type PolyTransactionRsp struct {
+	Hash       string
+	ChainId    uint64
+	State      uint64
+	Time       uint64
+	Fee        string
+	Height     uint64
+	SrcChainId uint64
+	SrcHash    string
+	DstChainId uint64
+	Key        string
+}
+
+func MakePolyTransactionRsp(transaction *PolyTransaction) *PolyTransactionRsp {
+	transactionRsp := &PolyTransactionRsp{
+		Hash:         transaction.Hash,
+		ChainId:         transaction.ChainId,
+		State:   transaction.State,
+		Time:  transaction.Time,
+		Fee:   transaction.Fee.String(),
+		Height:      transaction.Height,
+		SrcChainId:     transaction.SrcChainId,
+		SrcHash: transaction.SrcHash,
+		DstChainId:    transaction.DstChainId,
+		Key:       transaction.Key,
+	}
+	return transactionRsp
+}
+
+type PolyTransactionsReq struct {
+	PageSize int
+	PageNo   int
+}
+
+type PolyTransactionsRsp struct {
+	PageSize     int
+	PageNo       int
+	TotalPage    int
+	TotalCount   int
+	Transactions []*PolyTransactionRsp
+}
+
+func MakePolyTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*PolyTransaction) *PolyTransactionsRsp {
+	transactionsRsp := &PolyTransactionsRsp{
+		PageSize:   pageSize,
+		PageNo:     pageNo,
+		TotalPage:  totalPage,
+		TotalCount: totalCount,
+	}
+	for _, transaction := range transactions {
+		transactionsRsp.Transactions = append(transactionsRsp.Transactions, MakePolyTransactionRsp(transaction))
+	}
+	return transactionsRsp
 }
