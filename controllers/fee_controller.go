@@ -122,6 +122,7 @@ func (c *FeeController) CheckFee() {
 	for _, check := range checkFeesReq.Checks {
 		checkFee := &models.CheckFee{}
 		checkFee.Hash = check.Hash
+		checkFee.ChainId = check.ChainId
 		checkFee.Amount = new(big.Float).SetInt64(0)
 		checkFee.MinProxyFee = new(big.Float).SetInt64(0)
 		_, ok := chain2Fees[check.ChainId]
