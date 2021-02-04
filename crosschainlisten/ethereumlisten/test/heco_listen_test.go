@@ -32,7 +32,7 @@ func TestHecoListen(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("current directory: %s\n", dir)
-	config := conf.NewConfig("./../../../conf/config_testnet.json")
+	config := conf.NewConfig("./../../../conf/config_mainnet.json")
 	if config == nil {
 		panic("read config failed!")
 	}

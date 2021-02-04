@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"math/big"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -68,6 +69,7 @@ func (c *FeeController) GetFee() {
 }
 
 func (c *FeeController) CheckFee() {
+	logs.Debug("check fee request: %s", string(c.Ctx.Input.RequestBody))
 	var checkFeesReq models.CheckFeesReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &checkFeesReq); err != nil {
