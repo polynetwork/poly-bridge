@@ -41,22 +41,3 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 	bigInt.Int = *data
 	return nil
 }
-
-func (bigInt *BigInt) MarshalJSON() ([]byte, error) {
-	if bigInt == nil {
-		return []byte("null"), nil
-	}
-	return []byte(bigInt.String()), nil
-}
-
-func (bigInt *BigInt) UnmarshalJSON(p []byte) error {
-	if string(p) == "null" {
-		return nil
-	}
-	data, ok := new(big.Int).SetString(string(p), 10)
-	if !ok {
-		return fmt.Errorf("not a valid big integer: %s", p)
-	}
-	bigInt.Int = *data
-	return nil
-}

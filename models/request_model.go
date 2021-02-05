@@ -583,7 +583,6 @@ func MakeAddressRsp(addressHash string, chainId uint64, address string) *Address
 	return addressRsp
 }
 
-
 type PolyTransactionReq struct {
 	Hash string
 }
@@ -603,16 +602,16 @@ type PolyTransactionRsp struct {
 
 func MakePolyTransactionRsp(transaction *PolyTransaction) *PolyTransactionRsp {
 	transactionRsp := &PolyTransactionRsp{
-		Hash:         transaction.Hash,
-		ChainId:         transaction.ChainId,
-		State:   transaction.State,
-		Time:  transaction.Time,
-		Fee:   transaction.Fee.String(),
-		Height:      transaction.Height,
-		SrcChainId:     transaction.SrcChainId,
-		SrcHash: transaction.SrcHash,
-		DstChainId:    transaction.DstChainId,
-		Key:       transaction.Key,
+		Hash:       transaction.Hash,
+		ChainId:    transaction.ChainId,
+		State:      transaction.State,
+		Time:       transaction.Time,
+		Fee:        transaction.Fee.String(),
+		Height:     transaction.Height,
+		SrcChainId: transaction.SrcChainId,
+		SrcHash:    transaction.SrcHash,
+		DstChainId: transaction.DstChainId,
+		Key:        transaction.Key,
 	}
 	return transactionRsp
 }
