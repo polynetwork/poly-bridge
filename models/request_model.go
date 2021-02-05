@@ -273,6 +273,7 @@ type CheckFeeReq struct {
 }
 
 type CheckFeeRsp struct {
+	ChainId uint64
 	Hash        string
 	PayState    int
 	Amount      string
@@ -300,6 +301,7 @@ func MakeCheckFeesRsp(checkFees []*CheckFee) *CheckFeesRsp {
 
 func MakeCheckFeeRsp(checkFee *CheckFee) *CheckFeeRsp {
 	checkFeeRsp := &CheckFeeRsp{
+		ChainId: checkFee.ChainId,
 		Hash:        checkFee.Hash,
 		PayState:    checkFee.PayState,
 		Amount:      checkFee.Amount.String(),
