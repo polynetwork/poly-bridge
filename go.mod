@@ -7,6 +7,7 @@ require (
 	github.com/ethereum/go-ethereum v1.9.15
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
 	github.com/ontio/ontology v1.11.1-0.20200812075204-26cf1fa5dd47
+	github.com/ontio/ontology-go-sdk v1.11.4
 	github.com/polynetwork/poly v0.0.0-20210108071928-86193b89e4e0
 	github.com/polynetwork/poly-go-sdk v0.0.0-20200817120957-365691ad3493
 	github.com/polynetwork/poly-io-test v0.0.0-20200819093740-8cf514b07750 // indirect

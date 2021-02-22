@@ -23,11 +23,10 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
-	"poly-bridge/crosschainlisten/ethereumlisten"
 	"testing"
 )
 
-func TestBscListen(t *testing.T) {
+func TestOntListen(t *testing.T) {
 	dir, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -37,42 +36,16 @@ func TestBscListen(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
+
 	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	bscListenConfig := config.GetChainListenConfig(conf.BSC_CROSSCHAIN_ID)
-	if bscListenConfig == nil {
+	ontListenConfig := config.GetChainListenConfig(conf.ONT_CROSSCHAIN_ID)
+	if ontListenConfig == nil {
 		panic("config is not valid")
 	}
-	chainHandle := crosschainlisten.NewChainHandle(bscListenConfig)
+	chainHandle := crosschainlisten.NewChainHandle(ontListenConfig)
 	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
 	chainListen.ListenChain()
 }
-
-func TestBscListen2(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("current directory: %s\n", dir)
-	config := conf.NewConfig("./../../../conf/config_testnet.json")
-	if config == nil {
-		panic("read config failed!")
-	}
-	bscListenConfig := config.GetChainListenConfig(conf.BSC_CROSSCHAIN_ID)
-	if bscListenConfig == nil {
-		panic("config is not valid")
-	}
-	ethListen := ethereumlisten.NewEthereumChainListen(bscListenConfig)
-	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ethListen.HandleNewBlockBatch(6449539, 6497379)
-	if err != nil {
-		panic(err)
-	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
-	if dao == nil {
-		panic("server is not valid")
-	}
-	dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
-}
-

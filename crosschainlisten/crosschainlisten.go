@@ -23,6 +23,7 @@ import (
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten/ethereumlisten"
 	"poly-bridge/crosschainlisten/neolisten"
+	"poly-bridge/crosschainlisten/ontologylisten"
 	"poly-bridge/crosschainlisten/polylisten"
 	"poly-bridge/models"
 	"runtime/debug"
@@ -76,6 +77,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == conf.HECO_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == conf.ONT_CROSSCHAIN_ID {
+		return ontologylisten.NewOntologyChainListen(chainListenConfig)
 	} else {
 		return nil
 	}

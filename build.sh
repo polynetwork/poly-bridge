@@ -35,6 +35,10 @@ if [ ! -d "./$base/poly_listen" ]; then
   mkdir -p "./$base/poly_listen"
 fi
 
+if [ ! -d "./$base/ontology_listen" ]; then
+  mkdir -p "./$base/ontology_listen"
+fi
+
 if [ ! -d "./$base/crosschain_effect" ]; then
   mkdir -p "./$base/crosschain_effect"
 fi
@@ -109,6 +113,17 @@ then
   cp ./../../../conf/config_mainnet.json ./../../../$base/poly_listen
 else
  cp ./../../../conf/config_testnet.json ./../../../$base/poly_listen
+fi
+
+cd ./../../ontologylisten/cmd
+go build -tags $tag -o ontology_listen main.go
+
+mv ontology_listen ./../../../$base/ontology_listen
+if [ "$tag"x = "mainnet"x ]
+then
+  cp ./../../../conf/config_mainnet.json ./../../../$base/ontology_listen
+else
+ cp ./../../../conf/config_testnet.json ./../../../$base/ontology_listen
 fi
 
 cd ./../..

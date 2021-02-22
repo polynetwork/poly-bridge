@@ -90,22 +90,21 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		return nil, nil, nil, nil, fmt.Errorf("there is no ethereum block!")
 	}
 	tt := blockHeader.Time
-	wrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, height)
+	wrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, height, height)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
 	for _, item := range wrapperTransactions {
 		logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), item.Hash)
 		item.Time = tt
-		item.BlockHeight = height
 		item.SrcChainId = this.GetChainId()
 		item.Status = conf.STATE_SOURCE_DONE
 	}
-	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, height)
+	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, height, height)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	proxyLockEvents, proxyUnlockEvents, err := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, height)
+	proxyLockEvents, proxyUnlockEvents, err := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, height, height)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -121,7 +120,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.State = 1
 			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
 			srcTransaction.Time = tt
-			srcTransaction.Height = height
+			srcTransaction.Height = lockEvent.Height
 			srcTransaction.User = lockEvent.User
 			srcTransaction.DstChainId = uint64(lockEvent.Tchain)
 			srcTransaction.Contract = lockEvent.Contract
@@ -158,7 +157,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.State = 1
 			dstTransaction.Fee = models.NewBigIntFromInt(int64(unLockEvent.Fee))
 			dstTransaction.Time = tt
-			dstTransaction.Height = height
+			dstTransaction.Height = unLockEvent.Height
 			dstTransaction.SrcChainId = uint64(unLockEvent.FChainId)
 			dstTransaction.Contract = unLockEvent.Contract
 			dstTransaction.PolyHash = unLockEvent.RTxHash
@@ -182,7 +181,94 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
 
-func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddr string, height uint64) ([]*models.WrapperTransaction, error) {
+func (this *EthereumChainListen) HandleNewBlockBatch(startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
+	wrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, startHeight, endHeight)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	for _, item := range wrapperTransactions {
+		logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), item.Hash)
+		item.SrcChainId = this.GetChainId()
+		item.Status = conf.STATE_SOURCE_DONE
+	}
+	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, startHeight, endHeight)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	proxyLockEvents, proxyUnlockEvents, err := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, startHeight, endHeight)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	//
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	dstTransactions := make([]*models.DstTransaction, 0)
+	for _, lockEvent := range eccmLockEvents {
+		if lockEvent.Method == _eth_crosschainlock {
+			logs.Info("(lock) from chain: %s, txhash: %s, txid: %s", this.GetChainName(), lockEvent.TxHash, lockEvent.Txid)
+			srcTransaction := &models.SrcTransaction{}
+			srcTransaction.ChainId = this.GetChainId()
+			srcTransaction.Hash = lockEvent.TxHash
+			srcTransaction.State = 1
+			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
+			srcTransaction.Height = lockEvent.Height
+			srcTransaction.User = lockEvent.User
+			srcTransaction.DstChainId = uint64(lockEvent.Tchain)
+			srcTransaction.Contract = lockEvent.Contract
+			srcTransaction.Key = lockEvent.Txid
+			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
+			for _, v := range proxyLockEvents {
+				if v.TxHash == lockEvent.TxHash {
+					toAssetHash := v.ToAssetHash
+					srcTransfer := &models.SrcTransfer{}
+					srcTransfer.ChainId = this.GetChainId()
+					srcTransfer.TxHash = lockEvent.TxHash
+					srcTransfer.From = lockEvent.User
+					srcTransfer.To = lockEvent.Contract
+					srcTransfer.Asset = v.FromAssetHash
+					srcTransfer.Amount = models.NewBigInt(v.Amount)
+					srcTransfer.DstChainId = uint64(v.ToChainId)
+					srcTransfer.DstAsset = toAssetHash
+					srcTransfer.DstUser = v.ToAddress
+					srcTransaction.SrcTransfer = srcTransfer
+					break
+				}
+			}
+			srcTransactions = append(srcTransactions, srcTransaction)
+		}
+	}
+	// save unLockEvent to db
+	for _, unLockEvent := range eccmUnLockEvents {
+		if unLockEvent.Method == _eth_crosschainunlock {
+			logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), unLockEvent.TxHash)
+			dstTransaction := &models.DstTransaction{}
+			dstTransaction.ChainId = this.GetChainId()
+			dstTransaction.Hash = unLockEvent.TxHash
+			dstTransaction.State = 1
+			dstTransaction.Fee = models.NewBigIntFromInt(int64(unLockEvent.Fee))
+			dstTransaction.Height = unLockEvent.Height
+			dstTransaction.SrcChainId = uint64(unLockEvent.FChainId)
+			dstTransaction.Contract = unLockEvent.Contract
+			dstTransaction.PolyHash = unLockEvent.RTxHash
+			for _, v := range proxyUnlockEvents {
+				if v.TxHash == unLockEvent.TxHash {
+					dstTransfer := &models.DstTransfer{}
+					dstTransfer.TxHash = unLockEvent.TxHash
+					dstTransfer.ChainId = this.GetChainId()
+					dstTransfer.From = unLockEvent.Contract
+					dstTransfer.To = v.ToAddress
+					dstTransfer.Asset = v.ToAssetHash
+					dstTransfer.Amount = models.NewBigInt(v.Amount)
+					dstTransaction.DstTransfer = dstTransfer
+					break
+				}
+			}
+			dstTransactions = append(dstTransactions, dstTransaction)
+		}
+	}
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
+}
+
+func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
 	if len(contractAddr) == 0 {
 		return nil, nil
 	}
@@ -192,8 +278,8 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddr strin
 		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
 	opt := &bind.FilterOpts{
-		Start:   height,
-		End:     &height,
+		Start:   startHeight,
+		End:     &endHeight,
 		Context: context.Background(),
 	}
 	// get ethereum lock events from given block
@@ -212,6 +298,7 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddr strin
 			FeeTokenHash: strings.ToLower(evt.FromAsset.String()[2:]),
 			FeeAmount:    models.NewBigInt(evt.Fee),
 			ServerId:     evt.Id.Uint64(),
+			BlockHeight:  evt.Raw.BlockNumber,
 		})
 	}
 	speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)
@@ -230,15 +317,15 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddr strin
 	return wrapperTransactions, nil
 }
 
-func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, height uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
 	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
 	opt := &bind.FilterOpts{
-		Start:   height,
-		End:     &height,
+		Start:   startHeight,
+		End:     &endHeight,
 		Context: context.Background(),
 	}
 	// get ethereum lock events from given block
@@ -258,7 +345,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 			Tchain:   uint32(evt.ToChainId),
 			Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
 			Value:    evt.Rawdata,
-			Height:   height,
+			Height:   evt.Raw.BlockNumber,
 			Fee:      Fee,
 		})
 	}
@@ -278,22 +365,22 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 			RTxHash:  utils.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
 			Contract: hex.EncodeToString(evt.ToContract),
 			FChainId: uint32(evt.FromChainID),
-			Height:   height,
+			Height:   evt.Raw.BlockNumber,
 			Fee:      Fee,
 		})
 	}
 	return eccmLockEvents, eccmUnlockEvents, nil
 }
 
-func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string, height uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
+func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
 	proxyAddress := common.HexToAddress(contractAddr)
 	proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
 	opt := &bind.FilterOpts{
-		Start:   height,
-		End:     &height,
+		Start:   startHeight,
+		End:     &endHeight,
 		Context: context.Background(),
 	}
 	// get ethereum lock events from given block

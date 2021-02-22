@@ -78,7 +78,10 @@
       "BackwardBlockNumber":21,
       "Nodes": [
         {
-          "Url": "https://data-seed-prebsc-1-s1.binance.org:8545"
+          "Url": "https://data-seed-prebsc-2-s2.binance.org:8545"
+        },
+        {
+          "Url": "https://data-seed-prebsc-2-s3.binance.org:8545"
         }
       ],
       "ExtendNodes": [
@@ -92,6 +95,22 @@
       "ChainId":7,
       "ListenSlot":1,
       "BackwardBlockNumber":21,
+      "Nodes": [
+        {
+          "Url": "https://http-testnet.hecochain.com"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"3c92F1E31aACA43Eb4fF8aE498C7E85618680F45",
+      "CCMContract":"D9A3d265a1127051F620e700B5a461af4991EaAE",
+      "ProxyContract":"4a76E52600C6285029c8f7c52183cf86282cA5b8"
+    },
+    {
+      "ChainName":"Ontology",
+      "ChainId":3,
+      "ListenSlot":1,
+      "BackwardBlockNumber":1,
       "Nodes": [
         {
           "Url": "https://http-testnet.hecochain.com"
@@ -159,7 +178,10 @@
       "ChainName":"BSC",
       "Nodes": [
         {
-          "Url": "https://data-seed-prebsc-1-s1.binance.org:8545"
+          "Url": "https://data-seed-prebsc-2-s2.binance.org:8545"
+        },
+        {
+          "Url": "https://data-seed-prebsc-2-s3.binance.org:8545"
         }
       ],
       "GasLimit":120000,
