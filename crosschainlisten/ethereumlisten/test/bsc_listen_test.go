@@ -65,7 +65,7 @@ func TestBscListen2(t *testing.T) {
 		panic("config is not valid")
 	}
 	ethListen := ethereumlisten.NewEthereumChainListen(bscListenConfig)
-	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ethListen.HandleNewBlockBatch(6449539, 6497379)
+	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ethListen.HandleNewBlockBatch(6014032, 6501774)
 	if err != nil {
 		panic(err)
 	}
