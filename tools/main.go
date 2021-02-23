@@ -47,7 +47,7 @@ var (
 
 	cmdFlag = cli.UintFlag{
 		Name:  "cmd",
-		Usage: "cmd",
+		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token",
 		Value: 1,
 	}
 )
@@ -108,6 +108,15 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		startUpdateToken(config)
+		dumpStatus(config.DBConfig)
+	} else if cmd == 4 {
+		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		config := conf2.NewDeployConfig(configFile)
+		if config == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		startAddToken(config)
 		dumpStatus(config.DBConfig)
 	}
 }

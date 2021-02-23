@@ -106,7 +106,7 @@
           "Precision":8
         },
         {
-          "ChainId":6,
+          "ChainId":79,
           "Hash":"b119b3b8e5e6eeffbe754b20ee5b8a42809931fb",
           "Name":"pNEO",
           "Precision":8
@@ -137,7 +137,7 @@
           "Precision":6
         },
         {
-          "ChainId":6,
+          "ChainId":79,
           "Hash":"48389753b64C9e581975457332E60dC49325A653",
           "Name":"pUSDT",
           "Precision":6
@@ -166,7 +166,7 @@
       ],
       "Tokens":[
         {
-          "ChainId":6,
+          "ChainId":79,
           "Hash":"0000000000000000000000000000000000000000",
           "Name":"BNB",
           "Precision":18
@@ -210,7 +210,7 @@
           "Precision":18
         },
         {
-          "ChainId":6,
+          "ChainId":79,
           "Hash":"8F339ABc2A2a8a4D0364C7e35F892c40FBFb4BC0",
           "Name":"pDAI",
           "Precision":18
@@ -241,7 +241,7 @@
           "Precision":6
         },
         {
-          "ChainId":6,
+          "ChainId":79,
           "Hash":"0dBbf67Fb78651D3F6407A421040f1503b486693",
           "Name":"pUSDC",
           "Precision":6
@@ -272,7 +272,7 @@
           "Precision":18
         },
         {
-          "ChainId":6,
+          "ChainId":79,
           "Hash":"89bcD91F7922126C568436841b16d036528E9714",
           "Name":"psUSD",
           "Precision":18
@@ -281,6 +281,31 @@
           "ChainId":7,
           "Hash":"27FD9f1750315E4758333B511B421e30109fCF7A",
           "Name":"psUSD",
+          "Precision":18
+        }
+      ]
+    },
+    {
+      "Name":"CWS",
+      "Precision":18,
+      "Property":1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Crowns"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"7F8F2A4Ae259B3655539a58636f35DAD0A1D9989",
+          "Name":"CWS",
+          "Precision":18
+        },
+        {
+          "ChainId":79,
+          "Hash":"4Ca0ACab9f6B9C084d216F40963c070Eef95033B",
+          "Name":"CWS",
           "Precision":18
         }
       ]
