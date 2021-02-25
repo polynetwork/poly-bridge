@@ -23,6 +23,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/chainfeedao"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -39,7 +40,7 @@ func TestSaveFee_SwapDao(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	db := chainfeedao.NewChainFeeDao(conf.SERVER_POLY_SWAP, config.DBConfig)
+	db := chainfeedao.NewChainFeeDao(basedef.SERVER_POLY_SWAP, config.DBConfig)
 	if db == nil {
 		panic("dao is invalid")
 	}

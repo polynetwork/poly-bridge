@@ -27,6 +27,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
@@ -47,9 +48,9 @@ func TestEthereumCross(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
+	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, conf.ETHEREUM_CROSSCHAIN_ID)
+	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
 	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
 	if err != nil {
 		panic(err)
@@ -101,10 +102,10 @@ func TestEthereum_GetFeeCollector(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
+	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 	address := common.HexToAddress(ethChainListenConfig.WrapperContract)
 	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, conf.ETHEREUM_CROSSCHAIN_ID)
+	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
 	instance, err := wrapper_abi.NewIPolyWrapper(address, ethSdk.GetClient())
 	if err != nil {
 		panic(err)
@@ -122,9 +123,9 @@ func TestEthereumExtractFee(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
+	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, conf.ETHEREUM_CROSSCHAIN_ID)
+	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
 	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
 	if err != nil {
 		panic(err)
@@ -176,9 +177,9 @@ func TestEthereumSpeedup(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ethChainListenConfig := config.GetChainListenConfig(conf.ETHEREUM_CROSSCHAIN_ID)
+	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, conf.ETHEREUM_CROSSCHAIN_ID)
+	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
 	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
 	if err != nil {
 		panic(err)

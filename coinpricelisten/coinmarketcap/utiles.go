@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"strings"
 )
@@ -154,7 +155,7 @@ func (sdk *CoinMarketCapSdk) quotesLatest(coins string, node int) (map[string]*T
 }
 
 func (sdk *CoinMarketCapSdk) GetMarketName() string {
-	return conf.MARKET_COINMARKETCAP
+	return basedef.MARKET_COINMARKETCAP
 }
 
 func (sdk *CoinMarketCapSdk) GetCoinPrice(coins []string) (map[string]float64, error) {

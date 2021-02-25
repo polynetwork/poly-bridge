@@ -23,6 +23,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net/http"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 )
 
@@ -93,7 +94,7 @@ func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
 }
 
 func (sdk *BinanceSdk) GetMarketName() string {
-	return conf.MARKET_BINANCE
+	return basedef.MARKET_BINANCE
 }
 
 func (this *BinanceSdk) GetCoinPrice(coins []string) (map[string]float64, error) {

@@ -15,33 +15,32 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package utils
+package basedef
 
 import (
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
 	ontcommon "github.com/ontio/ontology/common"
-	"poly-bridge/conf"
 	"strconv"
 	"strings"
 )
 
 func Hash2Address(chainId uint64, value string) string {
-	if chainId == conf.ETHEREUM_CROSSCHAIN_ID {
+	if chainId == ETHEREUM_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
-	} else if chainId == conf.NEO_CROSSCHAIN_ID {
+	} else if chainId == NEO_CROSSCHAIN_ID {
 		addrHex, _ := hex.DecodeString(value)
 		addr, _ := helper.UInt160FromBytes(addrHex)
 		return helper.ScriptHashToAddress(addr)
-	} else if chainId == conf.BSC_CROSSCHAIN_ID {
+	} else if chainId == BSC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
-	} else if chainId == conf.HECO_CROSSCHAIN_ID {
+	} else if chainId == HECO_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
-	} else if chainId == conf.ONT_CROSSCHAIN_ID {
+	} else if chainId == ONT_CROSSCHAIN_ID {
 		value = HexStringReverse(value)
 		addr, _ := ontcommon.AddressFromHexString(value)
 		return addr.ToBase58()

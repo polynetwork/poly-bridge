@@ -23,9 +23,8 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"math/big"
-	"poly-bridge/conf"
+	"poly-bridge/basedef"
 	"poly-bridge/models"
-	"poly-bridge/utils"
 )
 
 type FeeController struct {
@@ -57,13 +56,13 @@ func (c *FeeController) GetFee() {
 		return
 	}
 	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
-	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(conf.FEE_PRECISION))
-	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(utils.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 	usdtFee := new(big.Float).Mul(proxyFee, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
-	usdtFee = new(big.Float).Quo(usdtFee, new(big.Float).SetInt64(conf.PRICE_PRECISION))
-	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+	usdtFee = new(big.Float).Quo(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
-	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(utils.Int64FromFigure(int(token.Precision))))
+	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 	c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision)
 	c.ServeJSON()
 }
@@ -82,7 +81,7 @@ func (c *FeeController) CheckFee() {
 	for _, check := range checkFeesReq.Checks {
 		hash2ChainId[check.Hash] = check.ChainId
 		requestHashs = append(requestHashs, check.Hash)
-		requestHashs = append(requestHashs, utils.HexStringReverse(check.Hash))
+		requestHashs = append(requestHashs, basedef.HexStringReverse(check.Hash))
 	}
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
@@ -96,7 +95,7 @@ func (c *FeeController) CheckFee() {
 			}
 		} else {
 			key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
-			key2Txhash[utils.HexStringReverse(srcTransaction.Hash)] = srcTransaction.Hash
+			key2Txhash[basedef.HexStringReverse(srcTransaction.Hash)] = srcTransaction.Hash
 		}
 	}
 	checkHashes := make([]string, 0)
@@ -150,12 +149,12 @@ func (c *FeeController) CheckFee() {
 			continue
 		}
 		x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
-		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(utils.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
-		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
+		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
-		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(conf.PRICE_PRECISION))
-		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(conf.FEE_PRECISION))
-		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(utils.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 		if feePay.Cmp(feeMin) >= 0 {
 			checkFee.PayState = 1
 		} else {

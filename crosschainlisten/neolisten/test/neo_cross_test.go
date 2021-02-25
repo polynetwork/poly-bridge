@@ -23,6 +23,7 @@ import (
 	"github.com/joeqian10/neo-gogogo/sc"
 	"github.com/joeqian10/neo-gogogo/tx"
 	"github.com/joeqian10/neo-gogogo/wallet"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"testing"
@@ -33,9 +34,9 @@ func TestNeoCross(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	neoChainListenConfig := config.GetChainListenConfig(conf.NEO_CROSSCHAIN_ID)
+	neoChainListenConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
 	urls := neoChainListenConfig.GetNodesUrl()
-	neoSdk := chainsdk.NewNeoSdkPro(urls, neoChainListenConfig.ListenSlot, conf.NEO_CROSSCHAIN_ID)
+	neoSdk := chainsdk.NewNeoSdkPro(urls, neoChainListenConfig.ListenSlot, basedef.NEO_CROSSCHAIN_ID)
 
 	w, err := wallet.NewWalletFromFile("")
 	if err != nil {

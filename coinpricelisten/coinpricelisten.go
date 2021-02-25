@@ -20,6 +20,7 @@ package coinpricelisten
 import (
 	"github.com/astaxie/beego/logs"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/coinpricedao"
 	"poly-bridge/coinpricelisten/binance"
 	"poly-bridge/coinpricelisten/coinmarketcap"
@@ -59,9 +60,9 @@ type PriceMarket interface {
 }
 
 func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket {
-	if cfg.MarketName == conf.MARKET_COINMARKETCAP {
+	if cfg.MarketName == basedef.MARKET_COINMARKETCAP {
 		return coinmarketcap.NewCoinMarketCapSdk(cfg)
-	} else if cfg.MarketName == conf.MARKET_BINANCE {
+	} else if cfg.MarketName == basedef.MARKET_BINANCE {
 		return binance.NewBinanceSdk(cfg)
 	} else {
 		return nil
@@ -205,7 +206,7 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 				logs.Error("cpl is no coins of market: %s and token: %s", market, name)
 				continue
 			}
-			price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(conf.PRICE_PRECISION))).Int64()
+			price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(basedef.PRICE_PRECISION))).Int64()
 			tokenPrice.Price = price
 			tokenPrice.Time = time.Now().Unix()
 			tokenPrice.Ind = 1

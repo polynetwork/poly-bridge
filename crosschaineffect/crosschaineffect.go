@@ -19,6 +19,7 @@ package crosschaineffect
 
 import (
 	"github.com/astaxie/beego/logs"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect/explorereffect"
 	"poly-bridge/crosschaineffect/swapeffect"
@@ -48,9 +49,9 @@ func StopCrossChainEffect() {
 }
 
 func NewEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {
-	if server == conf.SERVER_POLY_SWAP {
+	if server == basedef.SERVER_POLY_SWAP {
 		return swapeffect.NewSwapEffect(effCfg, dbCfg)
-	} else if server == conf.SERVER_EXPLORER {
+	} else if server == basedef.SERVER_EXPLORER {
 		return explorereffect.NewExplorerEffect(effCfg, dbCfg)
 	} else {
 		return nil

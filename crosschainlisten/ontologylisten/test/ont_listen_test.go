@@ -20,6 +20,7 @@ package test
 import (
 	"fmt"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
@@ -37,11 +38,11 @@ func TestOntListen(t *testing.T) {
 		panic("read config failed!")
 	}
 
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	ontListenConfig := config.GetChainListenConfig(conf.ONT_CROSSCHAIN_ID)
+	ontListenConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
 	if ontListenConfig == nil {
 		panic("config is not valid")
 	}

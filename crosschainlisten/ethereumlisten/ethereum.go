@@ -29,13 +29,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/crosschainlisten/ethereumlisten/eccm_abi"
 	"poly-bridge/crosschainlisten/ethereumlisten/lock_proxy_abi"
 	"poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
 	"poly-bridge/models"
-	"poly-bridge/utils"
 	"strings"
 )
 
@@ -94,7 +94,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), item.Hash)
 		item.Time = tt
 		item.SrcChainId = this.GetChainId()
-		item.Status = conf.STATE_SOURCE_DONE
+		item.Status = basedef.STATE_SOURCE_DONE
 	}
 	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, height, height)
 	if err != nil {
@@ -185,7 +185,7 @@ func (this *EthereumChainListen) HandleNewBlockBatch(startHeight uint64, endHeig
 	for _, item := range wrapperTransactions {
 		logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), item.Hash)
 		item.SrcChainId = this.GetChainId()
-		item.Status = conf.STATE_SOURCE_DONE
+		item.Status = basedef.STATE_SOURCE_DONE
 	}
 	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, startHeight, endHeight)
 	if err != nil {
@@ -358,7 +358,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 		eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
 			Method:   _eth_crosschainunlock,
 			TxHash:   evt.Raw.TxHash.String()[2:],
-			RTxHash:  utils.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
+			RTxHash:  basedef.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
 			Contract: hex.EncodeToString(evt.ToContract),
 			FChainId: uint32(evt.FromChainID),
 			Height:   evt.Raw.BlockNumber,

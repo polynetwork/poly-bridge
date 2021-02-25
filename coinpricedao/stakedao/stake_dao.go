@@ -20,7 +20,7 @@ package stakedao
 import (
 	"encoding/json"
 	"fmt"
-	"poly-bridge/conf"
+	"poly-bridge/basedef"
 	"poly-bridge/models"
 )
 
@@ -53,5 +53,5 @@ func (dao *StakeDao) GetTokens() ([]*models.TokenBasic, error) {
 }
 
 func (dao *StakeDao) Name() string {
-	return conf.SERVER_STAKE
+	return basedef.SERVER_STAKE
 }

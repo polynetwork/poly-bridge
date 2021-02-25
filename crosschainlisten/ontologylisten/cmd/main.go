@@ -24,6 +24,7 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
@@ -111,7 +112,7 @@ func startServer(ctx *cli.Context) {
 	if db == nil {
 		panic("server is invalid")
 	}
-	chainListenConfig := config.GetChainListenConfig(conf.ONT_CROSSCHAIN_ID)
+	chainListenConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
 	if chainListenConfig == nil {
 		panic("chain is invalid")
 	}

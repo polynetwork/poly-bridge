@@ -19,6 +19,7 @@ package ethereumfee
 
 import (
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 )
@@ -43,7 +44,7 @@ func (this *EthereumFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(conf.FEE_PRECISION))
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(basedef.FEE_PRECISION))
 	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(this.ethCfg.GasLimit))
 	proxyFee := new(big.Int).Mul(gasPrice, new(big.Int).SetInt64(this.ethCfg.ProxyFee))
 	proxyFee = new(big.Int).Div(proxyFee, new(big.Int).SetInt64(100))

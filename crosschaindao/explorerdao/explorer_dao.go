@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
-	"poly-bridge/utils"
 )
 
 type Chain struct {
@@ -174,11 +174,11 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 			return err
 		}
 		for _, transaction := range newSrcTransactions {
-			transaction.User = utils.Hash2Address(transaction.ChainId, transaction.User)
+			transaction.User = basedef.Hash2Address(transaction.ChainId, transaction.User)
 			if transaction.SrcTransfer != nil {
-				transaction.SrcTransfer.From = utils.Hash2Address(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
-				transaction.SrcTransfer.To = utils.Hash2Address(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
-				transaction.SrcTransfer.DstUser = utils.Hash2Address(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
+				transaction.SrcTransfer.From = basedef.Hash2Address(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
+				transaction.SrcTransfer.To = basedef.Hash2Address(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
+				transaction.SrcTransfer.DstUser = basedef.Hash2Address(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
 			}
 		}
 		res := dao.db.Save(newSrcTransactions)
@@ -219,8 +219,8 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		}
 		for _, transaction := range newDstTransactions {
 			if transaction.DstTransfer != nil {
-				transaction.DstTransfer.From = utils.Hash2Address(transaction.DstTransfer.ChainId, transaction.DstTransfer.From)
-				transaction.DstTransfer.To = utils.Hash2Address(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
+				transaction.DstTransfer.From = basedef.Hash2Address(transaction.DstTransfer.ChainId, transaction.DstTransfer.From)
+				transaction.DstTransfer.To = basedef.Hash2Address(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
 			}
 		}
 		res := dao.db.Save(newDstTransactions)
@@ -300,5 +300,5 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 }
 
 func (dao *ExplorerDao) Name() string {
-	return conf.SERVER_EXPLORER
+	return basedef.SERVER_EXPLORER
 }

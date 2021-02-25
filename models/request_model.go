@@ -20,8 +20,7 @@ package models
 import (
 	"github.com/shopspring/decimal"
 	"math/big"
-	"poly-bridge/conf"
-	"poly-bridge/utils"
+	"poly-bridge/basedef"
 )
 
 type PolyBridgeResp struct {
@@ -56,7 +55,7 @@ type TokenBasicRsp struct {
 }
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
-	price := new(big.Float).Quo(new(big.Float).SetInt64(tokenBasic.Price), new(big.Float).SetInt64(conf.PRICE_PRECISION))
+	price := new(big.Float).Quo(new(big.Float).SetInt64(tokenBasic.Price), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenBasicRsp := &TokenBasicRsp{
 		Name:      tokenBasic.Name,
 		Time:      tokenBasic.Time,
@@ -142,7 +141,7 @@ type PriceMarketRsp struct {
 }
 
 func MakePriceMarketRsp(priceMarket *PriceMarket) *PriceMarketRsp {
-	price := new(big.Float).Quo(new(big.Float).SetInt64(priceMarket.Price), new(big.Float).SetInt64(conf.PRICE_PRECISION))
+	price := new(big.Float).Quo(new(big.Float).SetInt64(priceMarket.Price), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	priceMarketRsp := &PriceMarketRsp{
 		TokenBasicName: priceMarket.TokenBasicName,
 		MarketName:     priceMarket.MarketName,
@@ -252,8 +251,8 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		getFeeRsp.UsdtAmount = usdtAmount.String()
 	}
 	{
-		precision := decimal.NewFromInt(conf.PRICE_PRECISION)
-		aaa := new(big.Float).Mul(tokenAmount, new(big.Float).SetInt64(conf.PRICE_PRECISION))
+		precision := decimal.NewFromInt(basedef.PRICE_PRECISION)
+		aaa := new(big.Float).Mul(tokenAmount, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		bbb, _ := aaa.Int64()
 		ccc := decimal.NewFromInt(bbb + 1)
 		tokenAmount := ccc.Div(precision)
@@ -428,7 +427,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
-		precision := decimal.NewFromInt(utils.Int64FromFigure(int(transaction.Token.TokenBasic.Precision)))
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.TokenBasic.Precision)))
 		{
 			bbb := decimal.NewFromBigInt(&transaction.WrapperTransaction.FeeAmount.Int, 0)
 			feeAmount := bbb.Div(precision)

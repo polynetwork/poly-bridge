@@ -26,6 +26,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
@@ -38,9 +39,9 @@ func TestBscCross(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	bscChainListenConfig := config.GetChainListenConfig(conf.BSC_CROSSCHAIN_ID)
+	bscChainListenConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 	urls := bscChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, bscChainListenConfig.ListenSlot, conf.BSC_CROSSCHAIN_ID)
+	ethSdk := chainsdk.NewEthereumSdkPro(urls, bscChainListenConfig.ListenSlot, basedef.BSC_CROSSCHAIN_ID)
 	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
 	if err != nil {
 		panic(err)

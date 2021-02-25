@@ -20,6 +20,7 @@ package test
 import (
 	"fmt"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
@@ -36,11 +37,11 @@ func TestPolyListen(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	polyListenConfig := config.GetChainListenConfig(conf.POLY_CROSSCHAIN_ID)
+	polyListenConfig := config.GetChainListenConfig(basedef.POLY_CROSSCHAIN_ID)
 	if polyListenConfig == nil {
 		panic("config is not valid")
 	}

@@ -20,6 +20,7 @@ package test
 import (
 	"fmt"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
@@ -36,11 +37,11 @@ func TestHecoListen(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	ethListenConfig := config.GetChainListenConfig(conf.HECO_CROSSCHAIN_ID)
+	ethListenConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
 	if ethListenConfig == nil {
 		panic("config is not valid")
 	}

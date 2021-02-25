@@ -22,6 +22,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"time"
@@ -63,7 +64,7 @@ func (eff *SwapEffect) Effect() error {
 	return nil
 }
 func (eff *SwapEffect) Name() string {
-	return conf.SERVER_POLY_SWAP
+	return basedef.SERVER_POLY_SWAP
 }
 
 func (eff *SwapEffect) GetEffectSlot() int64 {
@@ -89,7 +90,7 @@ func (eff *SwapEffect) updateHash() error {
 func (eff *SwapEffect) checkStatus() error {
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	now := time.Now().Unix() - eff.cfg.HowOld
-	eff.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ?", conf.STATE_FINISHED, now).Find(&wrapperTransactions)
+	eff.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ?", basedef.STATE_FINISHED, now).Find(&wrapperTransactions)
 	if len(wrapperTransactions) > 0 {
 		wrapperTransactionsJson, _ := json.Marshal(wrapperTransactions)
 		logs.Error("There is unfinished transactions %s", string(wrapperTransactionsJson))
@@ -106,32 +107,32 @@ func (eff *SwapEffect) updateStatus() error {
 	}
 	wrapperPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	eff.db.Table("wrapper_transactions").Where("status != ?", conf.STATE_FINISHED).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Preload("DstTransaction").Find(&wrapperPolyDstRelations)
+	eff.db.Table("wrapper_transactions").Where("status != ?", basedef.STATE_FINISHED).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Preload("DstTransaction").Find(&wrapperPolyDstRelations)
 	for _, wrapperPolyDstRelation := range wrapperPolyDstRelations {
 		wrapperTransaction := wrapperPolyDstRelation.WrapperTransaction
 		if wrapperPolyDstRelation.PolyHash == "" {
 			chain, ok := id2Chains[wrapperPolyDstRelation.WrapperTransaction.SrcChainId]
 			if ok {
 				if chain.Height-wrapperPolyDstRelation.WrapperTransaction.BlockHeight >= chain.BackwardBlockNumber {
-					wrapperTransaction.Status = conf.STATE_SOURCE_CONFIRMED
+					wrapperTransaction.Status = basedef.STATE_SOURCE_CONFIRMED
 				} else {
-					wrapperTransaction.Status = conf.STATE_SOURCE_DONE
+					wrapperTransaction.Status = basedef.STATE_SOURCE_DONE
 				}
 			} else {
-				wrapperTransaction.Status = conf.STATE_SOURCE_DONE
+				wrapperTransaction.Status = basedef.STATE_SOURCE_DONE
 			}
 		} else if wrapperPolyDstRelation.DstHash == "" {
-			wrapperTransaction.Status = conf.STATE_POLY_CONFIRMED
+			wrapperTransaction.Status = basedef.STATE_POLY_CONFIRMED
 		} else {
 			chain, ok := id2Chains[wrapperPolyDstRelation.DstTransaction.ChainId]
 			if ok {
 				if chain.Height-wrapperPolyDstRelation.DstTransaction.Height >= 1 {
-					wrapperTransaction.Status = conf.STATE_FINISHED
+					wrapperTransaction.Status = basedef.STATE_FINISHED
 				} else {
-					wrapperTransaction.Status = conf.STATE_DESTINATION_DONE
+					wrapperTransaction.Status = basedef.STATE_DESTINATION_DONE
 				}
 			} else {
-				wrapperTransaction.Status = conf.STATE_FINISHED
+				wrapperTransaction.Status = basedef.STATE_FINISHED
 			}
 		}
 		wrapperTransactions = append(wrapperTransactions, wrapperTransaction)

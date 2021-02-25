@@ -19,6 +19,7 @@ package neofee
 
 import (
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 )
@@ -40,7 +41,7 @@ func NewNeoFee(neoCfg *conf.FeeListenConfig, feeUpdateSlot int64) *NeoFee {
 
 func (this *NeoFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
 	gasPrice := new(big.Int).SetUint64(1)
-	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(conf.FEE_PRECISION))
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(basedef.FEE_PRECISION))
 	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(this.neoCfg.GasLimit))
 	proxyFee := new(big.Int).Mul(gasPrice, new(big.Int).SetInt64(this.neoCfg.ProxyFee))
 	proxyFee = new(big.Int).Div(proxyFee, new(big.Int).SetInt64(100))

@@ -18,6 +18,7 @@
 package coinpricedao
 
 import (
+	"poly-bridge/basedef"
 	"poly-bridge/coinpricedao/stakedao"
 	"poly-bridge/coinpricedao/swapdao"
 	"poly-bridge/conf"
@@ -31,9 +32,9 @@ type CoinPriceDao interface {
 }
 
 func NewCoinPriceDao(server string, dbCfg *conf.DBConfig) CoinPriceDao {
-	if server == conf.SERVER_STAKE {
+	if server == basedef.SERVER_STAKE {
 		return stakedao.NewStakeDao()
-	} else if server == conf.SERVER_POLY_SWAP {
+	} else if server == basedef.SERVER_POLY_SWAP {
 		return swapdao.NewSwapDao(dbCfg)
 	} else {
 		return nil

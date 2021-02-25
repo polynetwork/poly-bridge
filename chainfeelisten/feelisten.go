@@ -20,6 +20,7 @@ package chainfeelisten
 import (
 	"github.com/astaxie/beego/logs"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainfeedao"
 	"poly-bridge/chainfeelisten/ethereumfee"
 	"poly-bridge/chainfeelisten/neofee"
@@ -60,13 +61,13 @@ type ChainFee interface {
 }
 
 func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
-	if cfg.ChainId == conf.ETHEREUM_CROSSCHAIN_ID {
+	if cfg.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == conf.NEO_CROSSCHAIN_ID {
+	} else if cfg.ChainId == basedef.NEO_CROSSCHAIN_ID {
 		return neofee.NewNeoFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == conf.BSC_CROSSCHAIN_ID {
+	} else if cfg.ChainId == basedef.BSC_CROSSCHAIN_ID {
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == conf.HECO_CROSSCHAIN_ID {
+	} else if cfg.ChainId == basedef.HECO_CROSSCHAIN_ID {
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	} else {
 		return nil

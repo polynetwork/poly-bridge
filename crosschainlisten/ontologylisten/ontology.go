@@ -21,10 +21,10 @@ import (
 	"encoding/hex"
 	"github.com/astaxie/beego/logs"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
-	"poly-bridge/utils"
 )
 
 const (
@@ -93,16 +93,16 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					if len(states) < 7 {
 						continue
 					}
-					amount, _ := new(big.Int).SetString(utils.HexStringReverse(states[3].(string)), 16)
+					amount, _ := new(big.Int).SetString(basedef.HexStringReverse(states[3].(string)), 16)
 					wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 						Hash:         event.TxHash,
 						User:         states[5].(string),
 						DstChainId:   uint64(states[2].(float64)),
 						DstUser:      states[4].(string),
-						FeeTokenHash: utils.HexStringReverse(states[1].(string)),
+						FeeTokenHash: basedef.HexStringReverse(states[1].(string)),
 						FeeAmount:    models.NewBigInt(amount),
 						ServerId:     uint64(states[2].(float64)),
-						Status:       conf.STATE_SOURCE_DONE,
+						Status:       basedef.STATE_SOURCE_DONE,
 						Time:         tt,
 						BlockHeight:  height,
 						SrcChainId:   this.GetChainId(),
@@ -134,13 +134,13 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 							srcTransfer.Time = tt
 							srcTransfer.From = statesNew[2].(string)
 							srcTransfer.To = states[5].(string)
-							srcTransfer.Asset = utils.HexStringReverse(statesNew[1].(string))
+							srcTransfer.Asset = basedef.HexStringReverse(statesNew[1].(string))
 							if len(srcTransfer.Asset) < 20 {
 								continue
 							}
-							amount, _ := new(big.Int).SetString(utils.HexStringReverse(statesNew[6].(string)), 16)
+							amount, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[6].(string)), 16)
 							srcTransfer.Amount = models.NewBigInt(amount)
-							toChain, _ := new(big.Int).SetString(utils.HexStringReverse(statesNew[3].(string)), 16)
+							toChain, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].(string)), 16)
 							srcTransfer.DstChainId = toChain.Uint64()
 							srcTransfer.DstAsset = statesNew[4].(string)
 							srcTransfer.DstUser = statesNew[5].(string)
@@ -156,7 +156,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransaction.Height = height
 					srcTransaction.User = srcTransfer.From
 					srcTransaction.DstChainId = uint64(states[2].(float64))
-					srcTransaction.Contract = utils.HexStringReverse(states[5].(string))
+					srcTransaction.Contract = basedef.HexStringReverse(states[5].(string))
 					srcTransaction.Key = states[4].(string)
 					srcTransaction.Param = states[6].(string)
 					srcTransaction.SrcTransfer = srcTransfer
@@ -183,11 +183,11 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 							dstTransfer.Time = tt
 							dstTransfer.From = states[5].(string)
 							dstTransfer.To = statesNew[2].(string)
-							dstTransfer.Asset = utils.HexStringReverse(statesNew[1].(string))
+							dstTransfer.Asset = basedef.HexStringReverse(statesNew[1].(string))
 							if len(dstTransfer.Asset) < 20 {
 								continue
 							}
-							amount, _ := new(big.Int).SetString(utils.HexStringReverse(statesNew[3].(string)), 16)
+							amount, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].(string)), 16)
 							dstTransfer.Amount = models.NewBigInt(amount)
 							break
 						}
@@ -200,8 +200,8 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					dstTransaction.Time = tt
 					dstTransaction.Height = height
 					dstTransaction.SrcChainId = uint64(states[3].(float64))
-					dstTransaction.Contract = utils.HexStringReverse(states[5].(string))
-					dstTransaction.PolyHash = utils.HexStringReverse(states[1].(string))
+					dstTransaction.Contract = basedef.HexStringReverse(states[5].(string))
+					dstTransaction.PolyHash = basedef.HexStringReverse(states[1].(string))
 					dstTransaction.DstTransfer = dstTransfer
 					dstTransactions = append(dstTransactions, dstTransaction)
 				default:

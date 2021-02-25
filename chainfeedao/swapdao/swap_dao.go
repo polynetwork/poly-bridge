@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 )
@@ -65,5 +66,5 @@ func (dao *SwapDao) SaveFees(fees []*models.ChainFee) error {
 }
 
 func (dao *SwapDao) Name() string {
-	return conf.SERVER_POLY_SWAP
+	return basedef.SERVER_POLY_SWAP
 }

@@ -19,6 +19,7 @@ package crosschainlisten
 
 import (
 	"github.com/astaxie/beego/logs"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten/ethereumlisten"
@@ -66,17 +67,17 @@ type ChainHandle interface {
 }
 
 func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
-	if chainListenConfig.ChainId == conf.ETHEREUM_CROSSCHAIN_ID {
+	if chainListenConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == conf.POLY_CROSSCHAIN_ID {
+	} else if chainListenConfig.ChainId == basedef.POLY_CROSSCHAIN_ID {
 		return polylisten.NewPolyChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == conf.NEO_CROSSCHAIN_ID {
+	} else if chainListenConfig.ChainId == basedef.NEO_CROSSCHAIN_ID {
 		return neolisten.NewNeoChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == conf.BSC_CROSSCHAIN_ID {
+	} else if chainListenConfig.ChainId == basedef.BSC_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == conf.HECO_CROSSCHAIN_ID {
+	} else if chainListenConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == conf.ONT_CROSSCHAIN_ID {
+	} else if chainListenConfig.ChainId == basedef.ONT_CROSSCHAIN_ID {
 		return ontologylisten.NewOntologyChainListen(chainListenConfig)
 	} else {
 		return nil

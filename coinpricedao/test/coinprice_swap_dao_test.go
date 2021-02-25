@@ -23,6 +23,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/coinpricedao"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -39,7 +40,7 @@ func TestSavePrice_SwapDao(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	db := coinpricedao.NewCoinPriceDao(conf.SERVER_POLY_SWAP, config.DBConfig)
+	db := coinpricedao.NewCoinPriceDao(basedef.SERVER_POLY_SWAP, config.DBConfig)
 	if db == nil {
 		panic("dao is invalid")
 	}

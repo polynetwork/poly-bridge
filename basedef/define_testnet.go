@@ -17,7 +17,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package conf
+package basedef
 
 var (
 	POLY_CROSSCHAIN_ID     = uint64(0)

@@ -18,6 +18,7 @@
 package chainfeedao
 
 import (
+	"poly-bridge/basedef"
 	"poly-bridge/chainfeedao/stakedao"
 	"poly-bridge/chainfeedao/swapdao"
 	"poly-bridge/conf"
@@ -31,9 +32,9 @@ type ChainFeeDao interface {
 }
 
 func NewChainFeeDao(server string, dbCfg *conf.DBConfig) ChainFeeDao {
-	if server == conf.SERVER_STAKE {
+	if server == basedef.SERVER_STAKE {
 		return stakedao.NewStakeDao()
-	} else if server == conf.SERVER_POLY_SWAP {
+	} else if server == basedef.SERVER_POLY_SWAP {
 		return swapdao.NewSwapDao(dbCfg)
 	} else {
 		return nil

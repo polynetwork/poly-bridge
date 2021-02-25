@@ -23,6 +23,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
@@ -39,7 +40,7 @@ func TestCrossChain_SwapDao(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_POLY_SWAP, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_SWAP, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
@@ -83,7 +84,7 @@ func TestCrossChainSrc_SwapDao(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_POLY_SWAP, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_SWAP, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}

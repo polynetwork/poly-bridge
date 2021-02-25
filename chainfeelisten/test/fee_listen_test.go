@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/chainfeedao"
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/conf"
@@ -19,7 +20,7 @@ func TestListenFee(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := chainfeedao.NewChainFeeDao(conf.SERVER_STAKE, config.DBConfig)
+	dao := chainfeedao.NewChainFeeDao(basedef.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}

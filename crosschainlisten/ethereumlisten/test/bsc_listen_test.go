@@ -20,6 +20,7 @@ package test
 import (
 	"fmt"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
@@ -37,11 +38,11 @@ func TestBscListen(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	bscListenConfig := config.GetChainListenConfig(conf.BSC_CROSSCHAIN_ID)
+	bscListenConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 	if bscListenConfig == nil {
 		panic("config is not valid")
 	}
@@ -60,7 +61,7 @@ func TestBscListen2(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	bscListenConfig := config.GetChainListenConfig(conf.BSC_CROSSCHAIN_ID)
+	bscListenConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 	if bscListenConfig == nil {
 		panic("config is not valid")
 	}
@@ -69,7 +70,7 @@ func TestBscListen2(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_STAKE, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}

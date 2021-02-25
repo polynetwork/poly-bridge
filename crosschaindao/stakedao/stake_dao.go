@@ -20,7 +20,7 @@ package stakedao
 import (
 	"encoding/json"
 	"fmt"
-	"poly-bridge/conf"
+	"poly-bridge/basedef"
 	"poly-bridge/models"
 )
 
@@ -96,5 +96,5 @@ func (dao *StakeDao) UpdateChain(chain *models.Chain) error {
 }
 
 func (dao *StakeDao) Name() string {
-	return conf.SERVER_STAKE
+	return basedef.SERVER_STAKE
 }

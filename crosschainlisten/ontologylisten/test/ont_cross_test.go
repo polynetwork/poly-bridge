@@ -23,6 +23,7 @@ import (
 	"github.com/ontio/ontology-go-sdk"
 	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/core/types"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"testing"
@@ -33,9 +34,9 @@ func TestOntCross(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ontChainListenConfig := config.GetChainListenConfig(conf.ONT_CROSSCHAIN_ID)
+	ontChainListenConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
 	urls := ontChainListenConfig.GetNodesUrl()
-	ontsdk := chainsdk.NewOntologySdkPro(urls, ontChainListenConfig.ListenSlot, conf.ONT_CROSSCHAIN_ID)
+	ontsdk := chainsdk.NewOntologySdkPro(urls, ontChainListenConfig.ListenSlot, basedef.ONT_CROSSCHAIN_ID)
 
 	// AScExXzLbkZV32tDFdV7Uoq7ZhCT1bRCGp
 	privateKey, err := keypair.WIF2Key([]byte("KyxsqZ45MCx3t2UbuG9P8h96TzyrzTXGRQnfs9nZKFx6YkjTfHqb"))
