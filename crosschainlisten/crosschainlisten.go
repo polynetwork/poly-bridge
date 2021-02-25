@@ -60,7 +60,6 @@ type ChainHandle interface {
 	GetExtendLatestHeight() (uint64, error)
 	GetLatestHeight() (uint64, error)
 	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error)
-	GetBackwardBlockNumber() uint64
 	GetChainListenSlot() uint64
 	GetChainId() uint64
 	GetChainName() string
@@ -138,9 +137,6 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 	if chain.Height == 0 {
 		chain.Height = height
 	}
-	if chain.BackwardBlockNumber == 0 {
-		chain.BackwardBlockNumber = ccl.handle.GetBackwardBlockNumber()
-	}
 	ccl.db.UpdateChain(chain)
 	logs.Info("cross chain listen, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
 	ticker := time.NewTicker(time.Second * time.Duration(ccl.handle.GetChainListenSlot()))
@@ -155,7 +151,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			extendHeight, err := ccl.handle.GetExtendLatestHeight()
 			if err != nil || extendHeight == 0 {
 				logs.Error("ListenChain - cannot get chain %s extend height, err: %s", ccl.handle.GetChainName(), err)
-			} else if extendHeight >= height+ccl.handle.GetBackwardBlockNumber() {
+			} else if extendHeight >= height+chain.BackwardBlockNumber {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
 			if chain.Height >= height {

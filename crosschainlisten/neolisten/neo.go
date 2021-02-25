@@ -60,10 +60,6 @@ func (this *NeoChainListen) GetLatestHeight() (uint64, error) {
 	return this.neoSdk.GetBlockCount()
 }
 
-func (this *NeoChainListen) GetBackwardBlockNumber() uint64 {
-	return this.neoCfg.BackwardBlockNumber
-}
-
 func (this *NeoChainListen) GetChainListenSlot() uint64 {
 	return this.neoCfg.ListenSlot
 }

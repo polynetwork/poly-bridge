@@ -52,10 +52,6 @@ func (this *OntologyChainListen) GetLatestHeight() (uint64, error) {
 	return this.ontSdk.GetCurrentBlockHeight()
 }
 
-func (this *OntologyChainListen) GetBackwardBlockNumber() uint64 {
-	return this.ontCfg.BackwardBlockNumber
-}
-
 func (this *OntologyChainListen) GetChainListenSlot() uint64 {
 	return this.ontCfg.ListenSlot
 }

@@ -45,10 +45,6 @@ func (this *PolyChainListen) GetLatestHeight() (uint64, error) {
 	return this.polySdk.GetCurrentBlockHeight()
 }
 
-func (this *PolyChainListen) GetBackwardBlockNumber() uint64 {
-	return this.polyCfg.BackwardBlockNumber
-}
-
 func (this *PolyChainListen) GetChainListenSlot() uint64 {
 	return this.polyCfg.ListenSlot
 }

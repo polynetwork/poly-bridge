@@ -65,10 +65,6 @@ func (this *EthereumChainListen) GetLatestHeight() (uint64, error) {
 	return this.ethSdk.GetLatestHeight()
 }
 
-func (this *EthereumChainListen) GetBackwardBlockNumber() uint64 {
-	return this.ethCfg.BackwardBlockNumber
-}
-
 func (this *EthereumChainListen) GetChainListenSlot() uint64 {
 	return this.ethCfg.ListenSlot
 }

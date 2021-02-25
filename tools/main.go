@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"os"
-	conf2 "poly-bridge/tools/conf"
+	"poly-bridge/conf"
 	"runtime"
 	"strings"
 )
@@ -85,7 +85,7 @@ func startServer(ctx *cli.Context) {
 	cmd := ctx.GlobalInt(getFlagName(cmdFlag))
 	if cmd == 1 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf2.NewDeployConfig(configFile)
+		config := conf.NewDeployConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
@@ -94,7 +94,7 @@ func startServer(ctx *cli.Context) {
 		dumpStatus(config.DBConfig)
 	} else if cmd == 2 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf2.NewDumpConfig(configFile)
+		config := conf.NewDumpConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
@@ -102,7 +102,7 @@ func startServer(ctx *cli.Context) {
 		dumpStatus(config.DBConfig)
 	} else if cmd == 3 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf2.NewDeployConfig(configFile)
+		config := conf.NewDeployConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
@@ -111,13 +111,23 @@ func startServer(ctx *cli.Context) {
 		dumpStatus(config.DBConfig)
 	} else if cmd == 4 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf2.NewDeployConfig(configFile)
+		config := conf.NewDeployConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
 		}
 		startAddToken(config)
 		dumpStatus(config.DBConfig)
+	} else if cmd == 5 {
+		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		config := conf.NewConfig(configFile)
+		if config == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		index := strings.LastIndex(configFile, "/")
+		path := configFile[0:index]
+		startAddTransactions(config, path)
 	}
 }
 

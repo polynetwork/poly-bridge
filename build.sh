@@ -57,11 +57,16 @@ go build -tags $tag -o bridge_tools .
 mv bridge_tools ./../$base/bridge_tools
 if [ "$tag"x = "mainnet"x ]
 then
-  cp ./conf/config_deploy_mainnet.json ./../$base/bridge_tools
+  cp ./../conf/config_deploy_mainnet.json ./../$base/bridge_tools
 else
-  cp ./conf/config_deploy_testnet.json ./../$base/bridge_tools
+  cp ./../conf/config_deploy_testnet.json ./../$base/bridge_tools
 fi
-cp ./conf/config_dump.json ./../$base/bridge_tools
+cp ./../conf/config_dump.json ./../$base/bridge_tools
+cp ./../conf/chains.json ./../$base/bridge_tools
+cp ./../conf/wrapper_transactions.json ./../$base/bridge_tools
+cp ./../conf/src_transactions.json ./../$base/bridge_tools
+cp ./../conf/poly_transactions.json ./../$base/bridge_tools
+cp ./../conf/dst_transactions.json ./../$base/bridge_tools
 
 cd ./../cmd
 go build -tags $tag -o bridge_server main.go
@@ -165,6 +170,7 @@ then
 else
   cp ./../../conf/config_testnet.json ./../../$base/chainfee_listen
 fi
+
 cd ./../..
 
 

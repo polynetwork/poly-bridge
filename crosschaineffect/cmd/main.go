@@ -104,7 +104,7 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
-	crosschaineffect.StartCrossChainEffect(config.EventEffectConfig, config.DBConfig)
+	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig)
 }
 
 func waitSignal() os.Signal {

@@ -34,8 +34,8 @@ type Effect interface {
 
 var crossChainEffect *CrossChainEffect
 
-func StartCrossChainEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) {
-	effect := NewEffect(effCfg, dbCfg)
+func StartCrossChainEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) {
+	effect := NewEffect(server, effCfg, dbCfg)
 	if effect == nil {
 		panic("effect is not valid")
 	}
@@ -47,10 +47,10 @@ func StopCrossChainEffect() {
 	crossChainEffect.Stop()
 }
 
-func NewEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {
-	if effCfg.Server == conf.SERVER_POLY_SWAP {
+func NewEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {
+	if server == conf.SERVER_POLY_SWAP {
 		return swapeffect.NewSwapEffect(effCfg, dbCfg)
-	} else if effCfg.Server == conf.SERVER_EXPLORER {
+	} else if server == conf.SERVER_EXPLORER {
 		return explorereffect.NewExplorerEffect(effCfg, dbCfg)
 	} else {
 		return nil

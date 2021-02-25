@@ -68,7 +68,6 @@ type ChainListenConfig struct {
 	ChainName           string
 	ChainId             uint64
 	ListenSlot          uint64
-	BackwardBlockNumber uint64
 	Nodes               []*Restful
 	ExtendNodes         []*Restful
 	WrapperContract     string
@@ -157,7 +156,6 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 type EventEffectConfig struct {
 	HowOld     int64
 	EffectSlot int64
-	Server     string
 }
 
 type Config struct {

@@ -20,15 +20,14 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
-	"poly-bridge/conf"
 )
 
 type DumpConfig struct {
-	DBConfig *conf.DBConfig
+	DBConfig *DBConfig
 }
 
 func NewDumpConfig(filePath string) *DumpConfig {
-	fileContent, err := conf.ReadFile(filePath)
+	fileContent, err := ReadFile(filePath)
 	if err != nil {
 		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
 		return nil

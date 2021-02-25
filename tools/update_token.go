@@ -20,12 +20,12 @@ package main
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"poly-bridge/conf"
 	"poly-bridge/models"
-	conf2 "poly-bridge/tools/conf"
 	"strings"
 )
 
-func startUpdateToken(cfg *conf2.DeployConfig) {
+func startUpdateToken(cfg *conf.DeployConfig) {
 	dbCfg := cfg.DBConfig
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})

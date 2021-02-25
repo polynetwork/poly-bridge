@@ -20,7 +20,6 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
-	"poly-bridge/conf"
 	"poly-bridge/models"
 )
 
@@ -29,11 +28,11 @@ type DeployConfig struct {
 	ChainFees   []*models.ChainFee
 	TokenBasics []*models.TokenBasic
 	TokenMaps   []*models.TokenMap
-	DBConfig    *conf.DBConfig
+	DBConfig    *DBConfig
 }
 
 func NewDeployConfig(filePath string) *DeployConfig {
-	fileContent, err := conf.ReadFile(filePath)
+	fileContent, err := ReadFile(filePath)
 	if err != nil {
 		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
 		return nil

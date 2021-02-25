@@ -107,12 +107,12 @@ func TestSwapEffect_AddDstTransaction(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(conf.SERVER_POLY_SWAP, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(conf.SERVER_EXPLORER, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
 	dstTransactions := make([]*models.DstTransaction, 0)
-	dstTransactionsData := []byte(`[{"Hash":"1eecbe19ea85bd3ea57c3e7496b89f5263aa43d57449e21726f98435904ca7c4","ChainId":4,"State":1,"Time":1608896077,"Fee":3890940000000000,"Height":4810052,"SrcChainId":2,"Contract":"8a0283bb46cbc957ceda71c77f85f0a71a89157a","PolyHash":"d2e8e325265ed314d9f538c2cb3f8e0a71ca2adad8b31db98278a4af6aecc1df","DstTransfer":{"Hash":"1eecbe19ea85bd3ea57c3e7496b89f5263aa43d57449e21726f98435904ca7c4","ChainId":8,"Time":1608896077,"Asset":"0000000000000000000000000000000000000000","From":"8a0283bb46cbc957ceda71c77f85f0a71a89157a","To":"5cd3143f91a13fe971043e1e4605c1c23b46bf44","Amount":2659}}]`)
+	dstTransactionsData := []byte(`[{"Hash":"a1d5eb3a3bf5f90438aae3b3092e8a79d5c60d46c146013015b3957f9077b399","ChainId":2,"State":1,"Time":1614143082,"Fee":237670000000000,"Height":9723051,"SrcChainId":79,"Contract":"d8ae73e06552e270340b63a8bcabf9277a1aac99","PolyHash":"8df512cc3742086c2951e8537dd9bce6c7153e16467f462d30ebf227cb6df368","DstTransfer":{"TxHash":"a1d5eb3a3bf5f90438aae3b3092e8a79d5c60d46c146013015b3957f9077b399","ChainId":2,"Time":1614143082,"Asset":"7f8f2a4ae259b3655539a58636f35dad0a1d9989","From":"d8ae73e06552e270340b63a8bcabf9277a1aac99","To":"735adb7d290ee47a8e677e1c5f3b7e922c3366c4","Amount":499991626530000000000}}]`)
 	err = json.Unmarshal(dstTransactionsData, &dstTransactions)
 	if err != nil {
 		panic(err)
