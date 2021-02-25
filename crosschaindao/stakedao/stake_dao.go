@@ -86,6 +86,10 @@ func (dao *StakeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mo
 	return nil
 }
 
+func (dao *StakeDao) RemoveEvents(srcHashes []string, polyHashes []string, dstHashes []string) error {
+	return nil
+}
+
 func (dao *StakeDao) GetChain(chainId uint64) (*models.Chain, error) {
 	return dao.chains[chainId], nil
 }

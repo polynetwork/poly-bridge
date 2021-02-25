@@ -128,6 +128,7 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 
 type EventEffectConfig struct {
 	HowOld     int64
+	ChainListening int64
 	EffectSlot int64
 }
 

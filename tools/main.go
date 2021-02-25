@@ -20,6 +20,7 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli"
+	"io/ioutil"
 	"os"
 	"poly-bridge/conf"
 	"runtime"
@@ -47,7 +48,7 @@ var (
 
 	cmdFlag = cli.UintFlag{
 		Name:  "cmd",
-		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token",
+		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token 5:add transactions 6:remove transactions",
 		Value: 1,
 	}
 )
@@ -131,7 +132,38 @@ func startServer(ctx *cli.Context) {
 			path = configFile[0:index]
 		}
 		startAddTransactions(config, path)
+	} else if cmd == 6 {
+		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		config := conf.NewConfig(configFile)
+		if config == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		index := strings.LastIndex(configFile, "/")
+		path := "."
+		if index != -1 {
+			path = configFile[0:index]
+		}
+		startRemoveTransactions(config, path)
 	}
+}
+
+func readFile(fileName string) []byte {
+	file, err := os.OpenFile(fileName, os.O_RDONLY, 0666)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("File %s close error %s", fileName, err)
+		}
+	}()
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		panic(err)
+	}
+	return data
 }
 
 func main() {

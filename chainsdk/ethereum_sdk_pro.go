@@ -112,7 +112,7 @@ func (pro *EthereumSdkPro) selection() {
 			}
 		*/
 		pro.mutex.Lock()
-		info.latestHeight = height - 1
+		info.latestHeight = height - 2
 		pro.mutex.Unlock()
 	}
 }

@@ -2,31 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
 )
-
-func readFile(fileName string) []byte {
-	file, err := os.OpenFile(fileName, os.O_RDONLY, 0666)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			fmt.Printf("File %s close error %s", fileName, err)
-		}
-	}()
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
-	return data
-}
 
 func startAddTransactions(cfg *conf.Config, path string) {
 	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)

@@ -119,6 +119,7 @@
   ],
   "EventEffectConfig": {
     "HowOld": 3600,
+    "ChainListening": 300,
     "EffectSlot": 1
   },
   "CoinPriceUpdateSlot":720,

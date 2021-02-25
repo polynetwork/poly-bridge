@@ -24,32 +24,48 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/explorerdao"
+	"time"
 )
 
 type ExplorerEffect struct {
 	dbCfg  *conf.DBConfig
 	effCfg *conf.EventEffectConfig
 	db     *gorm.DB
+	chains []*explorerdao.Chain
+	time int64
 }
 
 func NewExplorerEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *ExplorerEffect {
-	explorerMonitor := &ExplorerEffect{
+	explorerEff := &ExplorerEffect{
 		dbCfg:  dbCfg,
 		effCfg: effCfg,
+		chains: nil,
+		time: 0,
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
-	explorerMonitor.db = db
-	return explorerMonitor
+	explorerEff.db = db
+	chains := make([]*explorerdao.Chain, 0)
+	res := db.Model(&explorerdao.Chain{}).Find(&chains)
+	if res.Error != nil || res.RowsAffected == 0 {
+		panic(err)
+	}
+	explorerEff.chains = chains
+	explorerEff.time = time.Now().Unix()
+	return explorerEff
 }
 
 func (eff *ExplorerEffect) Effect() error {
 	err := eff.updateHash()
 	if err != nil {
 		logs.Error("update hash- err: %s", err)
+	}
+	err = eff.checkChainListening()
+	if err != nil {
+		logs.Error("check chain listening- err: %s", err)
 	}
 	return nil
 }
@@ -75,5 +91,36 @@ func (eff *ExplorerEffect) updateHash() error {
 	if len(updatePolyTransactions) > 0 {
 		eff.db.Save(updatePolyTransactions)
 	}
+	return nil
+}
+
+func (eff *ExplorerEffect) checkChainListening() error {
+	slot := eff.effCfg.ChainListening
+	if slot == 0 {
+		slot = 300
+	}
+	old := eff.time / slot
+	now := time.Now().Unix()
+	new := now / slot
+	if new == old {
+		return nil
+	}
+	id2Chains := make(map[uint64]*explorerdao.Chain)
+	for _, chain := range eff.chains {
+		id2Chains[chain.ChainId] = chain
+	}
+	chains := make([]*explorerdao.Chain, 0)
+	eff.db.Model(&explorerdao.Chain{}).Find(&chains)
+	for _, chain := range chains {
+		old, ok := id2Chains[chain.ChainId]
+		if !ok {
+			continue
+		}
+		if chain.Height == old.Height {
+			logs.Error("Chain %d is not listening!", chain.ChainId)
+		}
+	}
+	eff.chains = chains
+	eff.time = now
 	return nil
 }

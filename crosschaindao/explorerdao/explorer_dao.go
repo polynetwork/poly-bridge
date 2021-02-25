@@ -257,6 +257,17 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 	return nil
 }
 
+func (dao *ExplorerDao) RemoveEvents(srcHashes []string, polyHashes []string, dstHashes []string) error {
+	dao.db.Where("`txhash` in ?", srcHashes).Delete(&SrcTransfer{})
+	dao.db.Where("`txhash` in ?", srcHashes).Delete(&SrcTransaction{})
+
+	dao.db.Where("`txhash` in ?", polyHashes).Delete(&PolyTransaction{})
+
+	dao.db.Where("`txhash` in ?", dstHashes).Delete(&DstTransfer{})
+	dao.db.Where("`txhash` in ?", dstHashes).Delete(&DstTransaction{})
+	return nil
+}
+
 func (dao *ExplorerDao) GetChain(chainId uint64) (*models.Chain, error) {
 	chain := new(Chain)
 	res := dao.db.Where("id = ?", chainId).First(chain)

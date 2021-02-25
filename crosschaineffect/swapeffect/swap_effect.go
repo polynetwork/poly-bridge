@@ -32,12 +32,16 @@ type SwapEffect struct {
 	dbCfg *conf.DBConfig
 	cfg   *conf.EventEffectConfig
 	db    *gorm.DB
+	chains []*models.Chain
+	time int64
 }
 
 func NewSwapEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *SwapEffect {
 	swapEffect := &SwapEffect{
 		dbCfg: dbCfg,
 		cfg:   cfg,
+		chains: nil,
+		time: 0,
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
@@ -45,6 +49,13 @@ func NewSwapEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *SwapEffec
 		panic(err)
 	}
 	swapEffect.db = db
+	chains := make([]*models.Chain, 0)
+	res := db.Model(&models.Chain{}).Find(&chains)
+	if res.Error != nil || res.RowsAffected == 0 {
+		panic(err)
+	}
+	swapEffect.chains = chains
+	swapEffect.time = time.Now().Unix()
 	return swapEffect
 }
 
@@ -60,6 +71,10 @@ func (eff *SwapEffect) Effect() error {
 	err = eff.updateStatus()
 	if err != nil {
 		logs.Error("update status- err: %s", err)
+	}
+	err = eff.checkChainListening()
+	if err != nil {
+		logs.Error("check chain listening- err: %s", err)
 	}
 	return nil
 }
@@ -140,5 +155,36 @@ func (eff *SwapEffect) updateStatus() error {
 	if len(wrapperTransactions) > 0 {
 		eff.db.Save(wrapperTransactions)
 	}
+	return nil
+}
+
+func (eff *SwapEffect) checkChainListening() error {
+	slot := eff.cfg.ChainListening
+	if slot == 0 {
+		slot = 300
+	}
+	old := eff.time / slot
+	now := time.Now().Unix()
+	new := now / slot
+	if new == old {
+		return nil
+	}
+	id2Chains := make(map[uint64]*models.Chain)
+	for _, chain := range eff.chains {
+		id2Chains[*chain.ChainId] = chain
+	}
+	chains := make([]*models.Chain, 0)
+	eff.db.Model(&models.Chain{}).Find(&chains)
+	for _, chain := range chains {
+		old, ok := id2Chains[*chain.ChainId]
+		if !ok {
+			continue
+		}
+		if chain.Height == old.Height {
+			logs.Error("Chain %d is not listening!", chain.ChainId)
+		}
+	}
+	eff.chains = chains
+	eff.time = now
 	return nil
 }

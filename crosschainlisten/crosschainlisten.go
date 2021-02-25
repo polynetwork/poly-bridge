@@ -152,7 +152,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			extendHeight, err := ccl.handle.GetExtendLatestHeight()
 			if err != nil || extendHeight == 0 {
 				logs.Error("ListenChain - cannot get chain %s extend height, err: %s", ccl.handle.GetChainName(), err)
-			} else if extendHeight >= height+chain.BackwardBlockNumber {
+			} else if extendHeight >= height+21 {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
 			if chain.Height >= height {

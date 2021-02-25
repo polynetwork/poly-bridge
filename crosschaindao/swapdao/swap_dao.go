@@ -93,6 +93,18 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 	return nil
 }
 
+func (dao *SwapDao) RemoveEvents(srcHashes []string, polyHashes []string, dstHashes []string) error {
+	dao.db.Where("`tx_hash` in ?", srcHashes).Delete(&models.SrcTransfer{})
+	dao.db.Where("`hash` in ?", srcHashes).Delete(&models.SrcTransaction{})
+	dao.db.Where("`hash` in ?", srcHashes).Delete(&models.WrapperTransaction{})
+
+	dao.db.Where("`hash` in ?", polyHashes).Delete(&models.PolyTransaction{})
+
+	dao.db.Where("`tx_hash` in ?", dstHashes).Delete(&models.DstTransfer{})
+	dao.db.Where("`hash` in ?", dstHashes).Delete(&models.DstTransaction{})
+	return nil
+}
+
 func (dao *SwapDao) GetChain(chainId uint64) (*models.Chain, error) {
 	chain := new(models.Chain)
 	res := dao.db.Where("chain_id = ?", chainId).First(chain)
