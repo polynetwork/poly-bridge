@@ -126,7 +126,10 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		index := strings.LastIndex(configFile, "/")
-		path := configFile[0:index]
+		path := "."
+		if index != -1 {
+			path = configFile[0:index]
+		}
 		startAddTransactions(config, path)
 	}
 }
