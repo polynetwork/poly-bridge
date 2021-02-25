@@ -86,7 +86,7 @@ type WrapperTransactionWithToken struct {
 }
 
 type CheckFee struct {
-	ChainId uint64
+	ChainId     uint64
 	Hash        string
 	PayState    int
 	Amount      *big.Float

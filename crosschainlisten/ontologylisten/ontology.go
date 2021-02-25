@@ -28,10 +28,10 @@ import (
 )
 
 const (
-	_ont_crosschainlock = "makeFromOntProof"
+	_ont_crosschainlock   = "makeFromOntProof"
 	_ont_crosschainunlock = "verifyToOntProof"
-	_ont_lock               = "lock"
-	_ont_unlock               = "unlock"
+	_ont_lock             = "lock"
+	_ont_unlock           = "unlock"
 )
 
 type OntologyChainListen struct {

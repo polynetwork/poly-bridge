@@ -26,4 +26,3 @@ const (
 	SERVER_ADDRESS   = "address"
 	SERVER_STAKE     = "stake"
 )
-

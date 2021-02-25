@@ -29,19 +29,19 @@ import (
 )
 
 type SwapEffect struct {
-	dbCfg *conf.DBConfig
-	cfg   *conf.EventEffectConfig
-	db    *gorm.DB
+	dbCfg  *conf.DBConfig
+	cfg    *conf.EventEffectConfig
+	db     *gorm.DB
 	chains []*models.Chain
-	time int64
+	time   int64
 }
 
 func NewSwapEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *SwapEffect {
 	swapEffect := &SwapEffect{
-		dbCfg: dbCfg,
-		cfg:   cfg,
+		dbCfg:  dbCfg,
+		cfg:    cfg,
 		chains: nil,
-		time: 0,
+		time:   0,
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})

@@ -54,7 +54,6 @@ func startAddTransactions(cfg *conf.Config, path string) {
 		}
 	}
 
-
 	dstTransactions := make([]*models.DstTransaction, 0)
 	{
 		dstTransactionsData := readFile(path + "/dst_transactions.json")

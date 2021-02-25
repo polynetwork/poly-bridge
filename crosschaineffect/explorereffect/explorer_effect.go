@@ -32,7 +32,7 @@ type ExplorerEffect struct {
 	effCfg *conf.EventEffectConfig
 	db     *gorm.DB
 	chains []*explorerdao.Chain
-	time int64
+	time   int64
 }
 
 func NewExplorerEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *ExplorerEffect {
@@ -40,7 +40,7 @@ func NewExplorerEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *Ex
 		dbCfg:  dbCfg,
 		effCfg: effCfg,
 		chains: nil,
-		time: 0,
+		time:   0,
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})

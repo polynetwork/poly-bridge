@@ -38,14 +38,14 @@ type Restful struct {
 }
 
 type ChainListenConfig struct {
-	ChainName           string
-	ChainId             uint64
-	ListenSlot          uint64
-	Nodes               []*Restful
-	ExtendNodes         []*Restful
-	WrapperContract     string
-	CCMContract         string
-	ProxyContract       string
+	ChainName       string
+	ChainId         uint64
+	ListenSlot      uint64
+	Nodes           []*Restful
+	ExtendNodes     []*Restful
+	WrapperContract string
+	CCMContract     string
+	ProxyContract   string
 }
 
 func (cfg *ChainListenConfig) GetNodesUrl() []string {
@@ -127,9 +127,9 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 }
 
 type EventEffectConfig struct {
-	HowOld     int64
+	HowOld         int64
 	ChainListening int64
-	EffectSlot int64
+	EffectSlot     int64
 }
 
 type Config struct {

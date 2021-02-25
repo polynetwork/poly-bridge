@@ -76,4 +76,3 @@ func TestBscListen2(t *testing.T) {
 	}
 	dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 }
-

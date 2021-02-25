@@ -46,7 +46,7 @@ type CheckFeesReq struct {
 }
 
 type CheckFeeRsp struct {
-	ChainId uint64 `json:"ChainId"`
+	ChainId     uint64 `json:"ChainId"`
 	Hash        string `json:"Hash"`
 	PayState    int    `json:"PayState"`
 	Amount      string `json:"Amount"`
