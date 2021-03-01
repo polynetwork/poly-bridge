@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -39,6 +40,9 @@ func NewSwapDao(dbCfg *conf.DBConfig) *SwapDao {
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
+	}
+	if dbCfg.Debug == true {
+		db.Logger.LogMode(logger.Info)
 	}
 	swapDao.db = db
 	return swapDao
@@ -129,6 +133,48 @@ func (dao *SwapDao) UpdateChain(chain *models.Chain) error {
 		return fmt.Errorf("no update!")
 	}
 	return nil
+}
+
+func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic) error {
+	if tokens != nil && len(tokens) > 0 {
+		res := dao.db.Save(tokens)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return fmt.Errorf("add tokens failed!")
+		}
+	}
+	tokenMaps := dao.getTokenMapsFromToken(tokens)
+	if tokenMaps != nil && len(tokenMaps) > 0 {
+		res := dao.db.Save(tokenMaps)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return fmt.Errorf("add tokens map failed!")
+		}
+	}
+	return nil
+}
+
+func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*models.TokenMap {
+	tokenMaps := make([]*models.TokenMap, 0)
+	for _, tokenBasic := range tokenBasics {
+		for _, tokenSrc := range tokenBasic.Tokens {
+			for _, tokenDst := range tokenBasic.Tokens {
+				if tokenDst.ChainId != tokenSrc.ChainId {
+					tokenMaps = append(tokenMaps, &models.TokenMap{
+						SrcChainId:   tokenSrc.ChainId,
+						SrcTokenHash: tokenSrc.Hash,
+						DstChainId:   tokenDst.ChainId,
+						DstTokenHash: tokenDst.Hash,
+					})
+				}
+			}
+		}
+	}
+	return tokenMaps
 }
 
 func (dao *SwapDao) Name() string {

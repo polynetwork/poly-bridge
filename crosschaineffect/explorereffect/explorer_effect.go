@@ -21,6 +21,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/explorerdao"
@@ -46,6 +47,9 @@ func NewExplorerEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *Ex
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
+	}
+	if dbCfg.Debug == true {
+		db.Logger.LogMode(logger.Info)
 	}
 	explorerEff.db = db
 	chains := make([]*explorerdao.Chain, 0)

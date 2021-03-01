@@ -20,6 +20,7 @@ package main
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
@@ -32,7 +33,8 @@ func startDeploy(cfg *conf.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	err = db.Debug().AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
+	db.Logger.LogMode(logger.Info)
+	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
 		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
 	if err != nil {
 		panic(err)

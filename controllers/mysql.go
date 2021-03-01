@@ -21,6 +21,7 @@ import (
 	"github.com/astaxie/beego"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -35,6 +36,10 @@ func newDB() *gorm.DB {
 	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
+	}
+	mode := beego.AppConfig.String("runmode")
+	if mode == "dev" {
+		db.Logger.LogMode(logger.Info)
 	}
 	return db
 }

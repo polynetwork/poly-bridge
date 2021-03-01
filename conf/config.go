@@ -30,6 +30,7 @@ type DBConfig struct {
 	User     string
 	Password string
 	Scheme   string
+	Debug    bool
 }
 
 type Restful struct {

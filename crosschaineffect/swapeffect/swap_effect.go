@@ -22,6 +22,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -49,6 +50,9 @@ func NewSwapEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *SwapEffec
 		panic(err)
 	}
 	swapEffect.db = db
+	if dbCfg.Debug == true {
+		db.Logger.LogMode(logger.Info)
+	}
 	chains := make([]*models.Chain, 0)
 	res := db.Model(&models.Chain{}).Find(&chains)
 	if res.Error != nil || res.RowsAffected == 0 {

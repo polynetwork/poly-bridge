@@ -12,7 +12,6 @@ func startAddTransactions(cfg *conf.Config, path string) {
 	if dao == nil {
 		panic("server is invalid")
 	}
-
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	{
 		wrapperTransactionsData := readFile(path + "/wrapper_transactions.json")

@@ -48,7 +48,7 @@ var (
 
 	cmdFlag = cli.UintFlag{
 		Name:  "cmd",
-		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token 5:add transactions 6:remove transactions",
+		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token 5:add transactions 6:remove transactions 7:add new token",
 		Value: 1,
 	}
 )
@@ -145,6 +145,19 @@ func startServer(ctx *cli.Context) {
 			path = configFile[0:index]
 		}
 		startRemoveTransactions(config, path)
+	} else if cmd == 7 {
+		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		config := conf.NewConfig(configFile)
+		if config == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		index := strings.LastIndex(configFile, "/")
+		path := "."
+		if index != -1 {
+			path = configFile[0:index]
+		}
+		startAddToken2(config, path)
 	}
 }
 

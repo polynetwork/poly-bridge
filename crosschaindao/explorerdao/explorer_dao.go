@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -144,6 +145,15 @@ func (Token) TableName() string {
 	return "chain_token"
 }
 
+type TokenBind struct {
+	SrcHash string `gorm:"column:hash_src"`
+	DstHash string `gorm:"column:hash_dest"`
+}
+
+func (TokenBind) TableName() string {
+	return "chain_token_bind"
+}
+
 type ExplorerDao struct {
 	dbCfg *conf.DBConfig
 	db    *gorm.DB
@@ -157,6 +167,9 @@ func NewExplorerDao(dbCfg *conf.DBConfig) *ExplorerDao {
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
+	}
+	if dbCfg.Debug == true {
+		db.Logger.LogMode(logger.Info)
 	}
 	explorerDao.db = db
 	return explorerDao
@@ -308,6 +321,59 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 		return fmt.Errorf("update chain failed!")
 	}
 	return nil
+}
+
+func (dao *ExplorerDao) AddTokens(tokens []*models.TokenBasic) error {
+	explorerTokens, explorerTokenMaps := dao.BuildTokens(tokens)
+	if explorerTokens != nil && len(explorerTokens) > 0 {
+		res := dao.db.Save(explorerTokens)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return fmt.Errorf("update explorer tokens failed!")
+		}
+	}
+	if explorerTokenMaps != nil && len(explorerTokenMaps) > 0 {
+		res := dao.db.Save(explorerTokenMaps)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return fmt.Errorf("update explorer tokens map failed!")
+		}
+	}
+	return nil
+}
+
+func (dao *ExplorerDao) BuildTokens(tokens []*models.TokenBasic) ([]*Token, []*TokenBind) {
+	explorerTokens := make([]*Token, 0)
+	explorerTokenBinds := make([]*TokenBind, 0)
+	for _, tokenBasic := range tokens {
+		var srcToken *TokenBind
+		for _, token := range tokenBasic.Tokens {
+			explorerToken := &Token{
+				Id:        token.ChainId,
+				Token:     tokenBasic.PriceMarkets[0].MarketName,
+				Hash:      token.Hash,
+				Name:      token.Name,
+				Type:      "",
+				Precision: fmt.Sprintf("%d", basedef.Int64FromFigure(int(token.Precision))),
+				Desc:      token.TokenBasicName,
+			}
+			explorerTokens = append(explorerTokens, explorerToken)
+			dstTokenHash := token.Hash
+			if srcToken != nil {
+				dstTokenHash = srcToken.SrcHash
+			}
+			explorerTokenBind := &TokenBind{
+				SrcHash: token.Hash,
+				DstHash: dstTokenHash,
+			}
+			explorerTokenBinds = append(explorerTokenBinds, explorerTokenBind)
+		}
+	}
+	return explorerTokens, explorerTokenBinds
 }
 
 func (dao *ExplorerDao) Name() string {

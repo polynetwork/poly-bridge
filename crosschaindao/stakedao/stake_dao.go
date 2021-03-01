@@ -39,7 +39,7 @@ func NewStakeDao() *StakeDao {
 		ChainId: new(uint64),
 		Height:  1641496,
 	}
-	chains[79] = &models.Chain{
+	chains[6] = &models.Chain{
 		ChainId: new(uint64),
 		Height:  5698327,
 	}
@@ -53,7 +53,7 @@ func NewStakeDao() *StakeDao {
 	}
 	chains[7] = &models.Chain{
 		ChainId: new(uint64),
-		Height:  1818859,
+		Height:  2479753,
 	}
 	for k, v := range chains {
 		*v.ChainId = k
@@ -96,6 +96,10 @@ func (dao *StakeDao) GetChain(chainId uint64) (*models.Chain, error) {
 
 func (dao *StakeDao) UpdateChain(chain *models.Chain) error {
 	dao.chains[*chain.ChainId] = chain
+	return nil
+}
+
+func (dao *StakeDao) AddTokens(tokens []*models.TokenBasic) error {
 	return nil
 }
 

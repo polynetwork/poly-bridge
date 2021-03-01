@@ -18,9 +18,12 @@
 package main
 
 import (
+	"encoding/json"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/conf"
+	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
 	"strings"
 )
@@ -32,6 +35,7 @@ func startAddToken(cfg *conf.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
+	db.Logger.LogMode(logger.Info)
 	//
 	tokenBasics := make([]*models.TokenBasic, 0)
 	db.Model(&models.TokenBasic{}).Preload("PriceMarkets").Preload("Tokens").Find(&tokenBasics)
@@ -53,4 +57,28 @@ func startAddToken(cfg *conf.DeployConfig) {
 	db.Save(addTokenBasics)
 	tokenMaps := getTokenMapsFromToken(addTokenBasics)
 	db.Save(tokenMaps)
+}
+
+func startAddToken2(cfg *conf.Config, path string) {
+	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)
+	if dao == nil {
+		panic("server is invalid")
+	}
+	//
+	tokenBasics := make([]*models.TokenBasic, 0)
+	{
+		tokenBasicsData := readFile(path + "/tokens.json")
+		if len(tokenBasicsData) > 0 {
+			err := json.Unmarshal(tokenBasicsData, &tokenBasics)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			tokenBasics = nil
+		}
+	}
+	err := dao.AddTokens(tokenBasics)
+	if err != nil {
+		panic(err)
+	}
 }

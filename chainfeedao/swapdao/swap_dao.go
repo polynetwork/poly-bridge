@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -39,6 +40,9 @@ func NewSwapDao(dbCfg *conf.DBConfig) *SwapDao {
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
 	if err != nil {
 		panic(err)
+	}
+	if dbCfg.Debug == true {
+		db.Logger.LogMode(logger.Info)
 	}
 	swapDao.db = db
 	return swapDao

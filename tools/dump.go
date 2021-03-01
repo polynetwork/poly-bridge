@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 )
@@ -31,6 +32,7 @@ func dumpStatus(dbCfg *conf.DBConfig) {
 	if err != nil {
 		panic(err)
 	}
+	db.Logger.LogMode(logger.Info)
 	{
 		chains := make([]*models.Chain, 0)
 		db.Find(&chains)
