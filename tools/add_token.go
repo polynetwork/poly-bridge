@@ -80,6 +80,11 @@ func startAddToken2(cfg *conf.Config, path string) {
 			tokenBasics = nil
 		}
 	}
+	for _, tokenBasic := range tokenBasics {
+		for _, token := range tokenBasic.Tokens {
+			token.Hash = strings.ToLower(token.Hash)
+		}
+	}
 	err := dao.AddTokens(tokenBasics)
 	if err != nil {
 		panic(err)
