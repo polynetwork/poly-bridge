@@ -43,13 +43,14 @@ func NewExplorerEffect(effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *Ex
 		chains: nil,
 		time:   0,
 	}
+	Logger := logger.Default
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
 	if err != nil {
 		panic(err)
-	}
-	if dbCfg.Debug == true {
-		db.Logger.LogMode(logger.Info)
 	}
 	explorerEff.db = db
 	chains := make([]*explorerdao.Chain, 0)

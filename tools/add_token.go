@@ -30,12 +30,15 @@ import (
 
 func startAddToken(cfg *conf.DeployConfig) {
 	dbCfg := cfg.DBConfig
+	Logger := logger.Default
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
 	if err != nil {
 		panic(err)
 	}
-	db.Logger.LogMode(logger.Info)
 	//
 	tokenBasics := make([]*models.TokenBasic, 0)
 	db.Model(&models.TokenBasic{}).Preload("PriceMarkets").Preload("Tokens").Find(&tokenBasics)

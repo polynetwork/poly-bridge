@@ -33,13 +33,14 @@ func newDB() *gorm.DB {
 	password := beego.AppConfig.String("mysqlpass")
 	url := beego.AppConfig.String("mysqlurls")
 	scheme := beego.AppConfig.String("mysqldb")
-	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{})
+	mode := beego.AppConfig.String("runmode")
+	Logger := logger.Default
+	if mode == "dev" {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
 	if err != nil {
 		panic(err)
-	}
-	mode := beego.AppConfig.String("runmode")
-	if mode == "dev" {
-		db.Logger.LogMode(logger.Info)
 	}
 	return db
 }

@@ -71,6 +71,7 @@ cp ./../conf/poly_transactions.json ./../$base/bridge_tools
 cp ./../conf/dst_transactions.json ./../$base/bridge_tools
 cp ./../conf/remove_transactions.json ./../$base/bridge_tools
 cp ./../conf/tokens.json ./../$base/bridge_tools
+cp -rf ./../conf/template ./../$base/bridge_tools
 
 cd ./../cmd
 go build -tags $tag -o bridge_server main.go

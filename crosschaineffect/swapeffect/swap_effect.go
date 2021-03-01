@@ -44,15 +44,16 @@ func NewSwapEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *SwapEffec
 		chains: nil,
 		time:   0,
 	}
+	Logger := logger.Default
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
 	if err != nil {
 		panic(err)
 	}
 	swapEffect.db = db
-	if dbCfg.Debug == true {
-		db.Logger.LogMode(logger.Info)
-	}
 	chains := make([]*models.Chain, 0)
 	res := db.Model(&models.Chain{}).Find(&chains)
 	if res.Error != nil || res.RowsAffected == 0 {

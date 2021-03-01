@@ -28,12 +28,15 @@ import (
 
 func startUpdateToken(cfg *conf.DeployConfig) {
 	dbCfg := cfg.DBConfig
+	Logger := logger.Default
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
 	if err != nil {
 		panic(err)
 	}
-	db.Logger.LogMode(logger.Info)
 	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
 		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
 	if err != nil {

@@ -27,12 +27,15 @@ import (
 )
 
 func dumpStatus(dbCfg *conf.DBConfig) {
+	Logger := logger.Default
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
 	if err != nil {
 		panic(err)
 	}
-	db.Logger.LogMode(logger.Info)
 	{
 		chains := make([]*models.Chain, 0)
 		db.Find(&chains)
