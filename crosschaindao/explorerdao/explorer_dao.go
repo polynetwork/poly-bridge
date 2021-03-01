@@ -371,6 +371,9 @@ func (dao *ExplorerDao) BuildTokens(tokens []*models.TokenBasic) ([]*Token, []*T
 				SrcHash: token.Hash,
 				DstHash: dstTokenHash,
 			}
+			if srcToken == nil {
+				srcToken = explorerTokenBind
+			}
 			explorerTokenBinds = append(explorerTokenBinds, explorerTokenBind)
 		}
 	}
