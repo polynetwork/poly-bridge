@@ -138,7 +138,7 @@ func (dao *SwapDao) UpdateChain(chain *models.Chain) error {
 
 func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic) error {
 	if tokens != nil && len(tokens) > 0 {
-		res := dao.db.Save(tokens)
+		res := dao.db.Create(tokens)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -148,7 +148,7 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic) error {
 	}
 	tokenMaps := dao.getTokenMapsFromToken(tokens)
 	if tokenMaps != nil && len(tokenMaps) > 0 {
-		res := dao.db.Save(tokenMaps)
+		res := dao.db.Create(tokenMaps)
 		if res.Error != nil {
 			return res.Error
 		}
