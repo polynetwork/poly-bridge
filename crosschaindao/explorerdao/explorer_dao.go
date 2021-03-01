@@ -355,7 +355,7 @@ func (dao *ExplorerDao) BuildTokens(tokens []*models.TokenBasic) ([]*Token, []*T
 		for _, token := range tokenBasic.Tokens {
 			explorerToken := &Token{
 				Id:        token.ChainId,
-				Token:     tokenBasic.PriceMarkets[0].MarketName,
+				Token:     tokenBasic.PriceMarkets[0].Name,
 				Hash:      token.Hash,
 				Name:      token.Name,
 				Type:      dao.tokenType(token.ChainId),
