@@ -70,7 +70,7 @@ func startAddToken2(cfg *conf.Config, path string) {
 	//
 	tokenBasics := make([]*models.TokenBasic, 0)
 	{
-		tokenBasicsData := readFile(path + "/tokens.json")
+		tokenBasicsData := readFile(path + "/add_tokens.json")
 		if len(tokenBasicsData) > 0 {
 			err := json.Unmarshal(tokenBasicsData, &tokenBasics)
 			if err != nil {

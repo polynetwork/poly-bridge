@@ -158,6 +158,19 @@ func startServer(ctx *cli.Context) {
 			path = configFile[0:index]
 		}
 		startAddToken2(config, path)
+	} else if cmd == 8 {
+		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		config := conf.NewConfig(configFile)
+		if config == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		index := strings.LastIndex(configFile, "/")
+		path := "."
+		if index != -1 {
+			path = configFile[0:index]
+		}
+		startRemoveTokenMaps(config, path)
 	}
 }
 

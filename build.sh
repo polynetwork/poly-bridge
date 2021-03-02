@@ -70,7 +70,8 @@ cp ./../conf/src_transactions.json ./../$base/bridge_tools
 cp ./../conf/poly_transactions.json ./../$base/bridge_tools
 cp ./../conf/dst_transactions.json ./../$base/bridge_tools
 cp ./../conf/remove_transactions.json ./../$base/bridge_tools
-cp ./../conf/tokens.json ./../$base/bridge_tools
+cp ./../conf/add_tokens.json ./../$base/bridge_tools
+cp ./../conf/remove_tokenmaps.json ./../$base/bridge_tools
 cp -rf ./../conf/template ./../$base/bridge_tools
 
 cd ./../cmd
