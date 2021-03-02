@@ -18,7 +18,8 @@ PolyBridge的API。
 * [POST transactionsofstate](#post-transactionsofstate)
 
 ## Test Node
-[40.115.153.174:30330](http://40.115.153.174:30330/v1/)
+[testnet](https://bridge.poly.network/testnet/v1/)
+[mainnet](https://bridge.poly.network/v1/)
 
 ## 交易状态码
 
