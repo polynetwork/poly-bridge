@@ -120,6 +120,7 @@ func (pro *BridgeSdkPro) CheckFee(checks []*CheckFeeReq) ([]*CheckFeeRsp, error)
 	for info != nil {
 		rsp, err := info.sdk.CheckFee(checks)
 		if err != nil {
+			logs.Error("check fee err: %v, url: %s", err, info.sdk.url)
 			info.online = false
 			info = pro.GetLatest()
 		} else {
