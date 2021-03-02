@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm/logger"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"strings"
 )
 
 func startRemoveTokenMaps(cfg *conf.Config, path string) {
@@ -35,6 +36,6 @@ func startRemoveTokenMaps(cfg *conf.Config, path string) {
 	}
 	for _, tokenMap := range tokenMaps {
 		db.Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
-			tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstChainId, tokenMap.DstTokenHash).Delete(&models.TokenMap{})
+			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
 	}
 }

@@ -48,7 +48,7 @@ var (
 
 	cmdFlag = cli.UintFlag{
 		Name:  "cmd",
-		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token 5:add transactions 6:remove transactions 7:add new token",
+		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token 5:add transactions 6:remove transactions 7:add new token 8:remove token maps",
 		Value: 1,
 	}
 )
