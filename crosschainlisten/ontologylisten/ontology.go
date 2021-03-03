@@ -100,6 +100,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					}
 					amount, _ := new(big.Int).SetString(basedef.HexStringReverse(states[6].(string)), 16)
 					toChain, _ := new(big.Int).SetString(basedef.HexStringReverse(states[3].(string)), 16)
+					serverId, _ := new(big.Int).SetString(basedef.HexStringReverse(states[7].(string)), 16)
 					wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 						Hash:         event.TxHash,
 						User:         states[2].(string),
@@ -107,7 +108,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						DstUser:      states[4].(string),
 						FeeTokenHash: basedef.HexStringReverse(states[1].(string)),
 						FeeAmount:    models.NewBigInt(amount),
-						ServerId:     uint64(states[7].(float64)),
+						ServerId:     serverId.Uint64(),
 						Status:       basedef.STATE_SOURCE_DONE,
 						Time:         tt,
 						BlockHeight:  height,
