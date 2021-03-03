@@ -1,4 +1,5 @@
 {
+  "Server":"polyswap",
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",

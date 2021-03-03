@@ -108,14 +108,14 @@
       "ListenSlot":1,
       "Nodes": [
         {
-          "Url": "https://http-testnet.hecochain.com"
+          "Url": "http://polaris4.ont.io:20336"
         }
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"3c92F1E31aACA43Eb4fF8aE498C7E85618680F45",
-      "CCMContract":"D9A3d265a1127051F620e700B5a461af4991EaAE",
-      "ProxyContract":"4a76E52600C6285029c8f7c52183cf86282cA5b8"
+      "WrapperContract":"3854f04f0cf8ad6c81e7c865352d7b5cf82182ea",
+      "CCMContract":"0900000000000000000000000000000000000000",
+      "ProxyContract":"33c439c502cb4b6ac5a1e8057a65fe1fa7c300e2"
     }
   ],
   "EventEffectConfig": {
@@ -156,6 +156,15 @@
         }
       ],
       "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":3,
+      "ChainName":"Ontology",
+      "Nodes": [
+      ],
+      "GasLimit":2000000000,
       "ProxyFee":120,
       "MinFee": 20
     },

@@ -396,6 +396,14 @@ func (dao *ExplorerDao) tokenType(chainId uint64) string {
 	}
 }
 
+func (dao *ExplorerDao) AddChains(chain []*models.Chain, chainFees []*models.ChainFee) error {
+	return nil
+}
+
+func (dao *ExplorerDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
+	return nil
+}
+
 func (dao *ExplorerDao) Name() string {
 	return basedef.SERVER_EXPLORER
 }

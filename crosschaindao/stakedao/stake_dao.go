@@ -103,6 +103,14 @@ func (dao *StakeDao) AddTokens(tokens []*models.TokenBasic) error {
 	return nil
 }
 
+func (dao *StakeDao) AddChains(chain []*models.Chain, chainFees []*models.ChainFee) error {
+	return nil
+}
+
+func (dao *StakeDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
+	return nil
+}
+
 func (dao *StakeDao) Name() string {
 	return basedef.SERVER_STAKE
 }

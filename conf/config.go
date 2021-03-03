@@ -19,10 +19,8 @@ package conf
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/astaxie/beego/logs"
-	"io/ioutil"
-	"os"
+	"poly-bridge/basedef"
 )
 
 type DBConfig struct {
@@ -171,26 +169,8 @@ func (cfg *Config) GetFeeListenConfig(chainId uint64) *FeeListenConfig {
 	return nil
 }
 
-func ReadFile(fileName string) ([]byte, error) {
-	file, err := os.OpenFile(fileName, os.O_RDONLY, 0666)
-	if err != nil {
-		return nil, fmt.Errorf("ReadFile: open file %s error %s", fileName, err)
-	}
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			logs.Error("ReadFile: File %s close error %s", fileName, err)
-		}
-	}()
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, fmt.Errorf("ReadFile: ioutil.ReadAll %s error %s", fileName, err)
-	}
-	return data, nil
-}
-
 func NewConfig(filePath string) *Config {
-	fileContent, err := ReadFile(filePath)
+	fileContent, err := basedef.ReadFile(filePath)
 	if err != nil {
 		logs.Error("NewServiceConfig: failed, err: %s", err)
 		return nil

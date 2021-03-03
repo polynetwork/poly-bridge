@@ -21,61 +21,45 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"poly-bridge/conf"
+	"poly-bridge/bridge_tools/conf"
+	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
 	"strings"
 )
 
-func startDeploy(cfg *conf.DeployConfig) {
+func startUpdateToken(cfg *conf.DeployConfig) {
 	dbCfg := cfg.DBConfig
 	Logger := logger.Default
 	if dbCfg.Debug == true {
 		Logger = Logger.LogMode(logger.Info)
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
 	if err != nil {
 		panic(err)
 	}
-	err = db.Debug().AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
+	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
 		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
 	if err != nil {
 		panic(err)
 	}
 	//
+	db.Where("1 = 1").Delete(&models.Chain{})
+	db.Where("1 = 1").Delete(&models.ChainFee{})
+	db.Where("1 = 1").Delete(&models.PriceMarket{})
+	db.Where("1 = 1").Delete(&models.TokenMap{})
+	db.Where("1 = 1").Delete(&models.Token{})
+	db.Where("1 = 1").Delete(&models.TokenBasic{})
+	//
+	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)
+	if dao == nil {
+		panic("server is invalid")
+	}
 	for _, tokenBasic := range cfg.TokenBasics {
 		for _, token := range tokenBasic.Tokens {
 			token.Hash = strings.ToLower(token.Hash)
 		}
 	}
-	for _, tokenMap := range cfg.TokenMaps {
-		tokenMap.SrcToken.Hash = strings.ToLower(tokenMap.SrcToken.Hash)
-		tokenMap.DstToken.Hash = strings.ToLower(tokenMap.DstToken.Hash)
-	}
-
-	db.Save(cfg.Chains)
-	db.Save(cfg.TokenBasics)
-	db.Save(cfg.ChainFees)
-	tokenMaps := getTokenMapsFromToken(cfg.TokenBasics)
-	tokenMaps = append(tokenMaps, cfg.TokenMaps...)
-	db.Save(tokenMaps)
-}
-
-func getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*models.TokenMap {
-	tokenMaps := make([]*models.TokenMap, 0)
-	for _, tokenBasic := range tokenBasics {
-		for _, tokenSrc := range tokenBasic.Tokens {
-			for _, tokenDst := range tokenBasic.Tokens {
-				if tokenDst.ChainId != tokenSrc.ChainId {
-					tokenMaps = append(tokenMaps, &models.TokenMap{
-						SrcChainId:   tokenSrc.ChainId,
-						SrcTokenHash: tokenSrc.Hash,
-						DstChainId:   tokenDst.ChainId,
-						DstTokenHash: tokenDst.Hash,
-					})
-				}
-			}
-		}
-	}
-	return tokenMaps
+	dao.AddTokens(cfg.TokenBasics)
+	dao.AddChains(cfg.Chains, cfg.ChainFees)
 }

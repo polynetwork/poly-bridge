@@ -15,28 +15,27 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package conf
+package main
 
 import (
-	"encoding/json"
-	"fmt"
+	"poly-bridge/bridge_tools/conf"
+	"poly-bridge/crosschaindao"
+	"strings"
 )
 
-type DumpConfig struct {
-	DBConfig *DBConfig
-}
+func startUpdate(cfg *conf.UpdateConfig) {
+	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)
+	if dao == nil {
+		panic("server is invalid")
+	}
+	//
+	for _, tokenBasic := range cfg.TokenBasics {
+		for _, token := range tokenBasic.Tokens {
+			token.Hash = strings.ToLower(token.Hash)
+		}
+	}
 
-func NewDumpConfig(filePath string) *DumpConfig {
-	fileContent, err := ReadFile(filePath)
-	if err != nil {
-		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
-		return nil
-	}
-	config := &DumpConfig{}
-	err = json.Unmarshal(fileContent, config)
-	if err != nil {
-		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
-		return nil
-	}
-	return config
+	dao.AddTokens(cfg.TokenBasics)
+	dao.AddChains(cfg.Chains, cfg.ChainFees)
+	dao.RemoveTokenMaps(cfg.RemoveTokenMaps)
 }

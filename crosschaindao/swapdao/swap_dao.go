@@ -25,6 +25,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"strings"
 )
 
 type SwapDao struct {
@@ -136,6 +137,30 @@ func (dao *SwapDao) UpdateChain(chain *models.Chain) error {
 	return nil
 }
 
+func (dao *SwapDao) AddChains(chain []*models.Chain, chainFees []*models.ChainFee) error {
+	if chain == nil || len(chain) == 0 {
+		return nil
+	}
+	res := dao.db.Create(chain)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("add chain failed!")
+	}
+	if chainFees == nil || len(chainFees) == 0 {
+		return nil
+	}
+	res = dao.db.Create(chainFees)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("add chain fee failed!")
+	}
+	return nil
+}
+
 func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic) error {
 	if tokens != nil && len(tokens) > 0 {
 		res := dao.db.Create(tokens)
@@ -176,6 +201,14 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 		}
 	}
 	return tokenMaps
+}
+
+func (dao *SwapDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
+	for _, tokenMap := range tokenMaps {
+		dao.db.Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
+			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
+	}
+	return nil
 }
 
 func (dao *SwapDao) Name() string {

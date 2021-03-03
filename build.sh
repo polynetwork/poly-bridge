@@ -51,28 +51,19 @@ if [ ! -d "./$base/chainfee_listen" ]; then
   mkdir -p "./$base/chainfee_listen"
 fi
 
-cd ./tools
+cd ./bridge_tools
 go build -tags $tag -o bridge_tools .
 
 mv bridge_tools ./../$base/bridge_tools
 if [ "$tag"x = "mainnet"x ]
 then
-  cp ./../conf/config_deploy_mainnet.json ./../$base/bridge_tools
-  cp ./../conf/config_mainnet.json ./../$base/bridge_tools
+  cp ./conf/config_deploy_mainnet.json ./../$base/bridge_tools
 else
-  cp ./../conf/config_deploy_testnet.json ./../$base/bridge_tools
-  cp ./../conf/config_testnet.json ./../$base/bridge_tools
+  cp ./conf/config_deploy_testnet.json ./../$base/bridge_tools
 fi
-cp ./../conf/config_dump.json ./../$base/bridge_tools
-cp ./../conf/chains.json ./../$base/bridge_tools
-cp ./../conf/wrapper_transactions.json ./../$base/bridge_tools
-cp ./../conf/src_transactions.json ./../$base/bridge_tools
-cp ./../conf/poly_transactions.json ./../$base/bridge_tools
-cp ./../conf/dst_transactions.json ./../$base/bridge_tools
-cp ./../conf/remove_transactions.json ./../$base/bridge_tools
-cp ./../conf/add_tokens.json ./../$base/bridge_tools
-cp ./../conf/remove_tokenmaps.json ./../$base/bridge_tools
-cp -rf ./../conf/template ./../$base/bridge_tools
+cp ./conf/config_transactions.json ./../$base/bridge_tools
+cp ./conf/config_update.json ./../$base/bridge_tools
+cp -rf ./conf/template ./../$base/bridge_tools
 
 cd ./../cmd
 go build -tags $tag -o bridge_server main.go

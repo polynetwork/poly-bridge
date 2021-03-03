@@ -15,33 +15,25 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package conf
+package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"poly-bridge/models"
+	"poly-bridge/bridge_tools/conf"
+	"poly-bridge/crosschaindao"
 )
 
-type DeployConfig struct {
-	Chains      []*models.Chain
-	ChainFees   []*models.ChainFee
-	TokenBasics []*models.TokenBasic
-	TokenMaps   []*models.TokenMap
-	DBConfig    *DBConfig
-}
-
-func NewDeployConfig(filePath string) *DeployConfig {
-	fileContent, err := ReadFile(filePath)
-	if err != nil {
-		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
-		return nil
+func startTransactions(cfg *conf.TransactionsConfig) {
+	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)
+	if dao == nil {
+		panic("server is invalid")
 	}
-	config := &DeployConfig{}
-	err = json.Unmarshal(fileContent, config)
+	//
+	err := dao.UpdateEvents(nil, cfg.WrapperTransactions, cfg.SrcTransactions, cfg.PolyTransactions, cfg.DstTransactions)
 	if err != nil {
-		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
-		return nil
+		panic(err)
 	}
-	return config
+	err = dao.RemoveEvents(cfg.RemoveTransactions, cfg.RemoveTransactions, cfg.RemoveTransactions)
+	if err != nil {
+		panic(err)
+	}
 }

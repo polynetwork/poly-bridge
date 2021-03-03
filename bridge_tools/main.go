@@ -20,9 +20,8 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli"
-	"io/ioutil"
 	"os"
-	"poly-bridge/conf"
+	"poly-bridge/bridge_tools/conf"
 	"runtime"
 	"strings"
 )
@@ -37,18 +36,18 @@ var (
 	configPathFlag = cli.StringFlag{
 		Name:  "cliconfig",
 		Usage: "Server config file `<path>`",
-		Value: "./tools/conf/config_deploy_testnet.json",
+		Value: "./bridge_tools/conf/config_deploy_testnet.json",
 	}
 
 	logDirFlag = cli.StringFlag{
 		Name:  "logdir",
 		Usage: "log directory",
-		Value: "./Log-tools/",
+		Value: "./Log-bridge_tools/",
 	}
 
 	cmdFlag = cli.UintFlag{
 		Name:  "cmd",
-		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:add new token 5:add transactions 6:remove transactions 7:add new token 8:remove token maps",
+		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:update bridge 5:update transactions",
 		Value: 1,
 	}
 )
@@ -95,7 +94,7 @@ func startServer(ctx *cli.Context) {
 		dumpStatus(config.DBConfig)
 	} else if cmd == 2 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewDumpConfig(configFile)
+		config := conf.NewDeployConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
@@ -112,84 +111,22 @@ func startServer(ctx *cli.Context) {
 		dumpStatus(config.DBConfig)
 	} else if cmd == 4 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewDeployConfig(configFile)
+		config := conf.NewUpdateConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
 		}
-		startAddToken(config)
+		startUpdate(config)
 		dumpStatus(config.DBConfig)
 	} else if cmd == 5 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewConfig(configFile)
+		config := conf.NewTransactionsConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
 			return
 		}
-		index := strings.LastIndex(configFile, "/")
-		path := "."
-		if index != -1 {
-			path = configFile[0:index]
-		}
-		startAddTransactions(config, path)
-	} else if cmd == 6 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		index := strings.LastIndex(configFile, "/")
-		path := "."
-		if index != -1 {
-			path = configFile[0:index]
-		}
-		startRemoveTransactions(config, path)
-	} else if cmd == 7 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		index := strings.LastIndex(configFile, "/")
-		path := "."
-		if index != -1 {
-			path = configFile[0:index]
-		}
-		startAddToken2(config, path)
-	} else if cmd == 8 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		index := strings.LastIndex(configFile, "/")
-		path := "."
-		if index != -1 {
-			path = configFile[0:index]
-		}
-		startRemoveTokenMaps(config, path)
+		startTransactions(config)
 	}
-}
-
-func readFile(fileName string) []byte {
-	file, err := os.OpenFile(fileName, os.O_RDONLY, 0666)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			fmt.Printf("File %s close error %s", fileName, err)
-		}
-	}()
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
-	return data
 }
 
 func main() {
