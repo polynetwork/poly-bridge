@@ -32,6 +32,7 @@ const (
 	_ont_crosschainunlock = "verifyToOntProof"
 	_ont_lock             = "lock"
 	_ont_unlock           = "unlock"
+	ont_wrapper_lock = "PolyWrapperLock"
 )
 
 type OntologyChainListen struct {
@@ -88,20 +89,20 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				states := notify.States.([]interface{})
 				contractMethod, _ := states[0].(string)
 				switch contractMethod {
-				case _ont_crosschainlock:
+				case ont_wrapper_lock:
 					logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), event.TxHash)
-					if len(states) < 7 {
+					if len(states) < 8 {
 						continue
 					}
-					amount, _ := new(big.Int).SetString(basedef.HexStringReverse(states[3].(string)), 16)
+					amount, _ := new(big.Int).SetString(basedef.HexStringReverse(states[6].(string)), 16)
 					wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 						Hash:         event.TxHash,
-						User:         states[5].(string),
-						DstChainId:   uint64(states[2].(float64)),
+						User:         states[2].(string),
+						DstChainId:   uint64(states[3].(float64)),
 						DstUser:      states[4].(string),
 						FeeTokenHash: basedef.HexStringReverse(states[1].(string)),
 						FeeAmount:    models.NewBigInt(amount),
-						ServerId:     uint64(states[2].(float64)),
+						ServerId:     uint64(states[7].(float64)),
 						Status:       basedef.STATE_SOURCE_DONE,
 						Time:         tt,
 						BlockHeight:  height,
