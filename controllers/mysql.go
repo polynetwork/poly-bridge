@@ -38,7 +38,7 @@ func newDB() *gorm.DB {
 	if mode == "dev" {
 		Logger = Logger.LogMode(logger.Info)
 	}
-	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
+	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
 	}

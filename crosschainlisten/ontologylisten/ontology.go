@@ -32,7 +32,7 @@ const (
 	_ont_crosschainunlock = "verifyToOntProof"
 	_ont_lock             = "lock"
 	_ont_unlock           = "unlock"
-	ont_wrapper_lock = "PolyWrapperLock"
+	ont_wrapper_lock      = "PolyWrapperLock"
 )
 
 type OntologyChainListen struct {

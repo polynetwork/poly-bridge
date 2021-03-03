@@ -26,7 +26,7 @@ import (
 )
 
 type DeployConfig struct {
-	Server                string
+	Server      string
 	Chains      []*models.Chain
 	ChainFees   []*models.ChainFee
 	TokenBasics []*models.TokenBasic
@@ -50,13 +50,13 @@ func NewDeployConfig(filePath string) *DeployConfig {
 }
 
 type UpdateConfig struct {
-	Server                string
-	Chains      []*models.Chain
-	ChainFees   []*models.ChainFee
-	TokenBasics []*models.TokenBasic
-	TokenMaps   []*models.TokenMap
-	RemoveTokenMaps   []*models.TokenMap
-	DBConfig    *conf.DBConfig
+	Server          string
+	Chains          []*models.Chain
+	ChainFees       []*models.ChainFee
+	TokenBasics     []*models.TokenBasic
+	TokenMaps       []*models.TokenMap
+	RemoveTokenMaps []*models.TokenMap
+	DBConfig        *conf.DBConfig
 }
 
 func NewUpdateConfig(filePath string) *UpdateConfig {
@@ -75,13 +75,13 @@ func NewUpdateConfig(filePath string) *UpdateConfig {
 }
 
 type TransactionsConfig struct {
-	Server      string
-	SrcTransactions      []*models.SrcTransaction
+	Server              string
+	SrcTransactions     []*models.SrcTransaction
 	WrapperTransactions []*models.WrapperTransaction
-	PolyTransactions []*models.PolyTransaction
-	DstTransactions []*models.DstTransaction
-	RemoveTransactions []string
-	DBConfig    *conf.DBConfig
+	PolyTransactions    []*models.PolyTransaction
+	DstTransactions     []*models.DstTransaction
+	RemoveTransactions  []string
+	DBConfig            *conf.DBConfig
 }
 
 func NewTransactionsConfig(filePath string) *TransactionsConfig {

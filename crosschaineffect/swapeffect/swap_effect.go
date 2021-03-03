@@ -49,7 +49,7 @@ func NewSwapEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *SwapEffec
 		Logger = Logger.LogMode(logger.Info)
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger:Logger})
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
 	}
