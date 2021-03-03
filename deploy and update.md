@@ -24,7 +24,7 @@
 ```
 cd build_testnet
 cd bridge_tools
-./bridge_tools --cliconfig config_deploy_testnet.json
+./bridge_tools --cliconfig config_deploy_testnet.json --cmd 1
 ```
 
 部署主网网：
@@ -58,11 +58,11 @@ cd ./../bridge_http
 
 升级测试网
 
-配置升级文件 ./build_testnet/bridge_tools/config_update.json
+配置升级文件 ./build_testnet/bridge_tools/config_update_testnet.json
 ```
 cd build_testnet
 cd bridge_tools
-./bridge_tools --cliconfig config_update.json --cmd 4
+./bridge_tools --cliconfig config_update_testnet.json --cmd 4
 ```
 
 更新配置文件 ./build_testnet/bridge_server/config_testnet.json
@@ -71,11 +71,11 @@ cd bridge_tools
 
 升级主网
 
-配置升级文件 ./build_mainnet/bridge_tools/config_update.json
+配置升级文件 ./build_mainnet/bridge_tools/config_update_mainnet.json
 ```
 cd build_mainnet
 cd bridge_tools
-./bridge_tools --cliconfig config_update.json --cmd 4
+./bridge_tools --cliconfig config_update_mainnet.json --cmd 4
 ```
 
 更新配置文件 ./build_mainnet/bridge_server/config_mainnet.json
