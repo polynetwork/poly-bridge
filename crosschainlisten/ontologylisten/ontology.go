@@ -87,7 +87,11 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		for _, notify := range event.Notify {
 			if notify.ContractAddress == this.ontCfg.WrapperContract {
 				states := notify.States.([]interface{})
-				contractMethod, _ := states[0].(string)
+				contractMethod, ok := states[0].(string)
+				if !ok {
+					continue
+				}
+				contractMethod = this.parseOntolofyMethod(contractMethod)
 				switch contractMethod {
 				case ont_wrapper_lock:
 					logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), event.TxHash)
@@ -126,8 +130,8 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						if !ok {
 							continue
 						}
-						contractMethod := this.parseOntolofyMethod(method)
-						if contractMethod == _ont_lock {
+						method = this.parseOntolofyMethod(method)
+						if method == _ont_lock {
 							if len(statesNew) < 7 {
 								continue
 							}
@@ -175,8 +179,8 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						if !ok {
 							continue
 						}
-						contractMethod := this.parseOntolofyMethod(method)
-						if contractMethod == _ont_unlock {
+						method = this.parseOntolofyMethod(method)
+						if method == _ont_unlock {
 							if len(statesNew) < 4 {
 								continue
 							}
