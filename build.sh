@@ -58,11 +58,12 @@ mv bridge_tools ./../$base/bridge_tools
 if [ "$tag"x = "mainnet"x ]
 then
   cp ./conf/config_deploy_mainnet.json ./../$base/bridge_tools
+  cp ./conf/config_update_mainnet.json ./../$base/bridge_tools
 else
   cp ./conf/config_deploy_testnet.json ./../$base/bridge_tools
+  cp ./conf/config_update_testnet.json ./../$base/bridge_tools
 fi
 cp ./conf/config_transactions.json ./../$base/bridge_tools
-cp ./conf/config_update.json ./../$base/bridge_tools
 cp -rf ./conf/template ./../$base/bridge_tools
 
 cd ./../cmd
