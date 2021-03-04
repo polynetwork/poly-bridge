@@ -18,8 +18,12 @@
 package main
 
 import (
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/bridge_tools/conf"
 	"poly-bridge/crosschaindao"
+	"poly-bridge/models"
 	"strings"
 )
 
@@ -35,7 +39,22 @@ func startUpdate(cfg *conf.UpdateConfig) {
 		}
 	}
 
-	dao.AddTokens(cfg.TokenBasics)
+	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps)
 	dao.AddChains(cfg.Chains, cfg.ChainFees)
 	dao.RemoveTokenMaps(cfg.RemoveTokenMaps)
+}
+
+func startUpdate1(cfg *conf.UpdateConfig) {
+	Logger := logger.Default
+	dbCfg := cfg.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(err)
+	}
+	db.Model(&models.TokenMap{}).Where("1 = 1").Update("property", 1)
+	db.Model(&models.Token{}).Where("1 = 1").Update("property", 1)
 }

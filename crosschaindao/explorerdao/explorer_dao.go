@@ -324,7 +324,7 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 	return nil
 }
 
-func (dao *ExplorerDao) AddTokens(tokens []*models.TokenBasic) error {
+func (dao *ExplorerDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
 	explorerTokens, explorerTokenMaps := dao.BuildTokens(tokens)
 	if explorerTokens != nil && len(explorerTokens) > 0 {
 		res := dao.db.Save(explorerTokens)
@@ -334,6 +334,12 @@ func (dao *ExplorerDao) AddTokens(tokens []*models.TokenBasic) error {
 		if res.RowsAffected == 0 {
 			return fmt.Errorf("update explorer tokens failed!")
 		}
+	}
+	for _, tokenMap := range tokenMaps {
+		explorerTokenMaps = append(explorerTokenMaps, &TokenBind{
+			SrcHash: tokenMap.SrcTokenHash,
+			DstHash: tokenMap.DstTokenHash,
+		})
 	}
 	if explorerTokenMaps != nil && len(explorerTokenMaps) > 0 {
 		res := dao.db.Save(explorerTokenMaps)

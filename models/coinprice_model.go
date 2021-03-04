@@ -57,6 +57,7 @@ type Token struct {
 	Name           string      `gorm:"size:64;not null"`
 	Precision      uint64      `gorm:"type:bigint(20);not null"`
 	TokenBasicName string      `gorm:"size:64;not null"`
+	Property     int64          `gorm:"type:bigint(20);not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 	TokenMaps      []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
 }
@@ -68,6 +69,7 @@ type TokenMap struct {
 	DstChainId   uint64 `gorm:"primaryKey;type:bigint(20);not null"`
 	DstTokenHash string `gorm:"primaryKey;size:66;not null"`
 	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
+	Property     int64          `gorm:"type:bigint(20);not null"`
 }
 
 type WrapperTransactionWithToken struct {

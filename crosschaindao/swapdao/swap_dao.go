@@ -161,9 +161,9 @@ func (dao *SwapDao) AddChains(chain []*models.Chain, chainFees []*models.ChainFe
 	return nil
 }
 
-func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic) error {
+func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
 	if tokens != nil && len(tokens) > 0 {
-		res := dao.db.Create(tokens)
+		res := dao.db.Save(tokens)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -171,9 +171,10 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic) error {
 			return fmt.Errorf("add tokens failed!")
 		}
 	}
-	tokenMaps := dao.getTokenMapsFromToken(tokens)
-	if tokenMaps != nil && len(tokenMaps) > 0 {
-		res := dao.db.Create(tokenMaps)
+	addTokenMaps := dao.getTokenMapsFromToken(tokens)
+	addTokenMaps = append(addTokenMaps, tokenMaps...)
+	if addTokenMaps != nil && len(addTokenMaps) > 0 {
+		res := dao.db.Create(addTokenMaps)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -195,6 +196,7 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 						SrcTokenHash: tokenSrc.Hash,
 						DstChainId:   tokenDst.ChainId,
 						DstTokenHash: tokenDst.Hash,
+						Property:1,
 					})
 				}
 			}
@@ -205,8 +207,12 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 
 func (dao *SwapDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
 	for _, tokenMap := range tokenMaps {
+		dao.db.Model(&models.TokenMap{}).Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
+			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Update("property", 0)
+		/*
 		dao.db.Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
 			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
+		*/
 	}
 	return nil
 }

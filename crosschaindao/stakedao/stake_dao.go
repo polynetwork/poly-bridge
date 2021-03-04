@@ -104,7 +104,7 @@ func (dao *StakeDao) UpdateChain(chain *models.Chain) error {
 	return nil
 }
 
-func (dao *StakeDao) AddTokens(tokens []*models.TokenBasic) error {
+func (dao *StakeDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
 	return nil
 }
 

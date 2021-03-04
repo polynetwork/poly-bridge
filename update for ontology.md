@@ -25,6 +25,11 @@ cd bridge_tools
 
 更新配置文件 [config_testnet](https://github.com/polynetwork/poly-bridge/blob/master/conf/config_testnet.json)
 
+```
+cd build_testnet
+cd bridge_server
+vi ./config_testnet.json
+```
 重启bridge_server。
 
 ## 升级主网
@@ -51,5 +56,11 @@ cd bridge_tools
 ```
 
 更新配置文件 [config_mainnet](https://github.com/polynetwork/poly-bridge/blob/master/conf/config_mainnet.json)
+
+```
+cd build_mainnet
+cd bridge_server
+vi ./config_mainnet.json
+```
 
 重启bridge_server。

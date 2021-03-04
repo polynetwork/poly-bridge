@@ -53,6 +53,6 @@ func startDeploy(cfg *conf.DeployConfig) {
 			token.Hash = strings.ToLower(token.Hash)
 		}
 	}
-	dao.AddTokens(cfg.TokenBasics)
+	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps)
 	dao.AddChains(cfg.Chains, cfg.ChainFees)
 }

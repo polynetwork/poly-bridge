@@ -32,7 +32,7 @@ type CrossChainDao interface {
 	GetChain(chainId uint64) (*models.Chain, error)
 	UpdateChain(chain *models.Chain) error
 	AddChains(chain []*models.Chain, chainFees []*models.ChainFee) error
-	AddTokens(tokens []*models.TokenBasic) error
+	AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error
 	RemoveTokenMaps(tokenMaps []*models.TokenMap) error
 	Name() string
 }

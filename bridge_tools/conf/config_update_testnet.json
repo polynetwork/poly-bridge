@@ -41,7 +41,8 @@
           "ChainId":3,
           "Hash":"0200000000000000000000000000000000000000",
           "Name":"ONG",
-          "Precision":9
+          "Precision":9,
+          "Property":0
         }
       ]
     }
