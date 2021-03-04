@@ -55,6 +55,11 @@ func startUpdate1(cfg *conf.UpdateConfig) {
 	if err != nil {
 		panic(err)
 	}
+	err = db.AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
+		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
+	if err != nil {
+		panic(err)
+	}
 	db.Model(&models.TokenMap{}).Where("1 = 1").Update("property", 1)
 	db.Model(&models.Token{}).Where("1 = 1").Update("property", 1)
 }
