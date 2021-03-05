@@ -196,7 +196,7 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 						SrcTokenHash: tokenSrc.Hash,
 						DstChainId:   tokenDst.ChainId,
 						DstTokenHash: tokenDst.Hash,
-						Property:1,
+						Property:     1,
 					})
 				}
 			}
@@ -210,8 +210,8 @@ func (dao *SwapDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
 		dao.db.Model(&models.TokenMap{}).Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
 			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Update("property", 0)
 		/*
-		dao.db.Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
-			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
+			dao.db.Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
+				tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
 		*/
 	}
 	return nil

@@ -107,7 +107,7 @@ type TokenRsp struct {
 	Hash           string
 	ChainId        uint64
 	Name           string
-	Property     int64
+	Property       int64
 	TokenBasicName string
 	TokenBasic     *TokenBasicRsp
 	TokenMaps      []*TokenMapRsp
@@ -119,7 +119,7 @@ func MakeTokenRsp(token *Token) *TokenRsp {
 		ChainId:        token.ChainId,
 		Name:           token.Name,
 		TokenBasicName: token.TokenBasicName,
-		Property: token.Property,
+		Property:       token.Property,
 	}
 	if token.TokenBasic != nil {
 		tokenRsp.TokenBasic = MakeTokenBasicRsp(token.TokenBasic)
@@ -194,7 +194,7 @@ func MakeTokenMapRsp(tokenMap *TokenMap) *TokenMapRsp {
 	tokenMapRsp := &TokenMapRsp{
 		SrcTokenHash: tokenMap.SrcTokenHash,
 		DstTokenHash: tokenMap.DstTokenHash,
-		Property: tokenMap.Property,
+		Property:     tokenMap.Property,
 	}
 	if tokenMap.SrcToken != nil {
 		tokenMapRsp.SrcToken = MakeTokenRsp(tokenMap.SrcToken)
