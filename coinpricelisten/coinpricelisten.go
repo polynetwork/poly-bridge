@@ -186,6 +186,7 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 			marketCoins[priceMarket.MarketName] = coins
 			marketCoinPrices[priceMarket.MarketName+priceMarket.Name] = priceMarket
 			priceMarket.Ind = 0
+			tokenBasic.Ind = 0
 		}
 	}
 	for market, query := range cpl.priceMarket {

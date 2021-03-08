@@ -20,6 +20,7 @@
 ```
 cd build_testnet
 cd bridge_tools
+./bridge_tools --cliconfig config_update_mainnet.json --cmd 6
 ./bridge_tools --cliconfig config_update_testnet.json --cmd 4
 ```
 
@@ -52,6 +53,7 @@ vi ./config_testnet.json
 ```
 cd build_mainnet
 cd bridge_tools
+./bridge_tools --cliconfig config_update_mainnet.json --cmd 6
 ./bridge_tools --cliconfig config_update_mainnet.json --cmd 4
 ```
 
@@ -61,6 +63,6 @@ cd bridge_tools
 cd build_mainnet
 cd bridge_server
 vi ./config_mainnet.json
-```
+``` 
 
 重启bridge_server。
