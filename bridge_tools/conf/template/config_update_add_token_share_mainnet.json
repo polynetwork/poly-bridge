@@ -1,0 +1,39 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name":"SHARE",
+      "Precision":18,
+      "Price": 20000000000,
+      "Ind": 1,
+      "Property":1,
+      "Tokens":[
+        {
+          "ChainId":6,
+          "Hash":"07721c5b7536293e9cd9861E0De5f43fC3ac3c2e",
+          "Name":"SHARE",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":7,
+          "Hash":"41198c6736d23734E6d17a6F0B4f2D15d2621A3a",
+          "Name":"SHARE",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    }
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}
