@@ -1,0 +1,70 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"123456",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name":"BAC",
+      "Precision":18,
+      "Property":1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Basis Cash"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":79,
+          "Hash":"e146dc148c95985c035a8d06da450fa065f3cf36",
+          "Name":"BAC",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":2,
+          "Hash":"6678C7f809c699c9B1F7da6F263b5cF407b8EB1d",
+          "Name":"BAC",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    },
+    {
+      "Name":"BASv2",
+      "Precision":18,
+      "Property":1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Basis Share"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":79,
+          "Hash":"b758554eb7bb401b8a9c3be2ad13200b312b9a69",
+          "Name":"BASv2",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":2,
+          "Hash":"61ADf6f0D936C8602893228bbB83d1AC08eB60FB",
+          "Name":"BASv2",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    }
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}
