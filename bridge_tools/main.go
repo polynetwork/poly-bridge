@@ -36,7 +36,7 @@ var (
 	configPathFlag = cli.StringFlag{
 		Name:  "cliconfig",
 		Usage: "Server config file `<path>`",
-		Value: "./bridge_tools/conf/config_deploy_testnet.json",
+		Value: "./bridge_tools/conf/config_transactions.json",
 	}
 
 	logDirFlag = cli.StringFlag{
@@ -126,14 +126,6 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		startTransactions(config)
-	} else if cmd == 6 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewUpdateConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		startUpdate1(config)
 	}
 }
 
