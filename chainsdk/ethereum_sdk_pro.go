@@ -24,6 +24,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math"
 	"math/big"
 	"runtime/debug"
 	"sync"
@@ -89,7 +90,7 @@ func (pro *EthereumSdkPro) nodeSelection() {
 func (pro *EthereumSdkPro) selection() {
 	for url, info := range pro.infos {
 		height, err := info.sdk.GetCurrentBlockHeight()
-		if err != nil {
+		if err != nil || height == math.MaxUint64 {
 			logs.Error("get current block height err: %v, url: %s", err, url)
 			height = 1
 		}
