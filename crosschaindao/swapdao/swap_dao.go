@@ -52,7 +52,7 @@ func NewSwapDao(dbCfg *conf.DBConfig) *SwapDao {
 
 func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
 	if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
-		res := dao.db.Create(wrapperTransactions)
+		res := dao.db.Save(wrapperTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -61,7 +61,7 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		}
 	}
 	if srcTransactions != nil && len(srcTransactions) > 0 {
-		res := dao.db.Create(srcTransactions)
+		res := dao.db.Save(srcTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -70,7 +70,7 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		}
 	}
 	if polyTransactions != nil && len(polyTransactions) > 0 {
-		res := dao.db.Create(polyTransactions)
+		res := dao.db.Save(polyTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -79,7 +79,7 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		}
 	}
 	if dstTransactions != nil && len(dstTransactions) > 0 {
-		res := dao.db.Create(dstTransactions)
+		res := dao.db.Save(dstTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -174,7 +174,7 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.T
 	addTokenMaps := dao.getTokenMapsFromToken(tokens)
 	addTokenMaps = append(addTokenMaps, tokenMaps...)
 	if addTokenMaps != nil && len(addTokenMaps) > 0 {
-		res := dao.db.Create(addTokenMaps)
+		res := dao.db.Save(addTokenMaps)
 		if res.Error != nil {
 			return res.Error
 		}
