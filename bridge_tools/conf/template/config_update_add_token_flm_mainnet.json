@@ -9,7 +9,7 @@
   },
   "TokenBasics":[
     {
-      "Name":"Flamingo",
+      "Name":"FLM",
       "Precision":8,
       "Ind": 1,
       "Property":1,
@@ -37,7 +37,7 @@
       ]
     },
     {
-      "Name":"Switcheo",
+      "Name":"SWTH",
       "Precision":8,
       "Ind": 1,
       "Property":1,
@@ -64,6 +64,10 @@
         }
       ]
     }
+  ],
+  "RemoveTokens": [
+    "Switcheo",
+    "Flamingo"
   ],
   "TokenMaps":[
   ],
