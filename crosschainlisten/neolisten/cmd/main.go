@@ -108,7 +108,7 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
-	db := crosschaindao.NewCrossChainDao(config.Server, config.DBConfig)
+	db := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if db == nil {
 		panic("server is invalid")
 	}

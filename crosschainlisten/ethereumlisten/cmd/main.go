@@ -116,7 +116,7 @@ func startServer(ctx *cli.Context) {
 	}
 	chain := ctx.GlobalUint64(getFlagName(chainFlag))
 
-	db := crosschaindao.NewCrossChainDao(config.Server, config.DBConfig)
+	db := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if db == nil {
 		panic("server is invalid")
 	}
