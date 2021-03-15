@@ -410,6 +410,10 @@ func (dao *ExplorerDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
 	return nil
 }
 
+func (dao *ExplorerDao) RemoveTokens(tokens []string) error {
+	return nil
+}
+
 func (dao *ExplorerDao) Name() string {
 	return basedef.SERVER_EXPLORER
 }

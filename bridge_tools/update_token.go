@@ -51,7 +51,7 @@ func startUpdateToken(cfg *conf.DeployConfig) {
 	db.Where("1 = 1").Delete(&models.Token{})
 	db.Where("1 = 1").Delete(&models.TokenBasic{})
 	//
-	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.Backup, cfg.DBConfig)
 	if dao == nil {
 		panic("server is invalid")
 	}

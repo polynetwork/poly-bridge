@@ -24,7 +24,7 @@ import (
 )
 
 func startUpdate(cfg *conf.UpdateConfig) {
-	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.Backup, cfg.DBConfig)
 	if dao == nil {
 		panic("server is invalid")
 	}
@@ -34,7 +34,7 @@ func startUpdate(cfg *conf.UpdateConfig) {
 			token.Hash = strings.ToLower(token.Hash)
 		}
 	}
-
+	dao.RemoveTokens(cfg.RemoveTokens)
 	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps)
 	dao.AddChains(cfg.Chains, cfg.ChainFees)
 	dao.RemoveTokenMaps(cfg.RemoveTokenMaps)

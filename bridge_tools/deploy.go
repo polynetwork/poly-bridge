@@ -44,7 +44,7 @@ func startDeploy(cfg *conf.DeployConfig) {
 		panic(err)
 	}
 	//
-	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.Backup, cfg.DBConfig)
 	if dao == nil {
 		panic("server is invalid")
 	}

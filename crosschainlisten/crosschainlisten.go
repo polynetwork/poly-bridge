@@ -34,8 +34,8 @@ import (
 
 var chainListens [10]*CrossChainListen
 
-func StartCrossChainListen(server string, listenCfg []*conf.ChainListenConfig, dbCfg *conf.DBConfig) {
-	dao := crosschaindao.NewCrossChainDao(server, dbCfg)
+func StartCrossChainListen(server string, backup bool, listenCfg []*conf.ChainListenConfig, dbCfg *conf.DBConfig) {
+	dao := crosschaindao.NewCrossChainDao(server, backup, dbCfg)
 	if dao == nil {
 		panic("server is not valid")
 	}

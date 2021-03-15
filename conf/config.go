@@ -134,6 +134,7 @@ type EventEffectConfig struct {
 
 type Config struct {
 	Server                string
+	Backup                bool
 	ChainListenConfig     []*ChainListenConfig
 	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig

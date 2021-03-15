@@ -27,6 +27,7 @@ import (
 
 type DeployConfig struct {
 	Server      string
+	Backup                bool
 	Chains      []*models.Chain
 	ChainFees   []*models.ChainFee
 	TokenBasics []*models.TokenBasic
@@ -51,11 +52,13 @@ func NewDeployConfig(filePath string) *DeployConfig {
 
 type UpdateConfig struct {
 	Server          string
+	Backup          bool
 	Chains          []*models.Chain
 	ChainFees       []*models.ChainFee
 	TokenBasics     []*models.TokenBasic
 	TokenMaps       []*models.TokenMap
 	RemoveTokenMaps []*models.TokenMap
+	RemoveTokens []string
 	DBConfig        *conf.DBConfig
 }
 
@@ -76,6 +79,7 @@ func NewUpdateConfig(filePath string) *UpdateConfig {
 
 type TransactionsConfig struct {
 	Server              string
+	Backup                bool
 	SrcTransactions     []*models.SrcTransaction
 	WrapperTransactions []*models.WrapperTransaction
 	PolyTransactions    []*models.PolyTransaction

@@ -31,11 +31,13 @@ import (
 type SwapDao struct {
 	dbCfg *conf.DBConfig
 	db    *gorm.DB
+	backup bool
 }
 
-func NewSwapDao(dbCfg *conf.DBConfig) *SwapDao {
+func NewSwapDao(dbCfg *conf.DBConfig, backup bool) *SwapDao {
 	swapDao := &SwapDao{
 		dbCfg: dbCfg,
+		backup: backup,
 	}
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -75,7 +77,7 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 			return res.Error
 		}
 	}
-	if chain != nil {
+	if chain != nil && !dao.backup {
 		res := dao.db.Save(chain)
 		if res.Error != nil {
 			return res.Error
@@ -199,6 +201,39 @@ func (dao *SwapDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
 				tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
 		*/
 	}
+	return nil
+}
+
+func (dao *SwapDao) RemoveTokens(tokens []string) error {
+	for _, token := range tokens {
+		err := dao.RemoveToken(token)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (dao *SwapDao) RemoveToken(token string) error {
+	tokenBasic := new(models.TokenBasic)
+	res := dao.db.Model(&models.TokenBasic{}).Where("name = ?", token).Preload("Tokens").Preload("PriceMarkets").First(tokenBasic)
+	if res.Error != nil {
+		return res.Error
+	}
+	tokenBasics := make([]*models.TokenBasic, 0)
+	tokenBasics = append(tokenBasics, tokenBasic)
+	tokenMaps := dao.getTokenMapsFromToken(tokenBasics)
+	err := dao.RemoveTokenMaps(tokenMaps)
+	if err != nil {
+		return err
+	}
+	for _, token := range tokenBasic.Tokens {
+		dao.db.Where("hash = ? and chain_id = ?",token.Hash, token.ChainId).Delete(&models.Token{})
+	}
+	for _, priceMarket := range tokenBasic.PriceMarkets {
+		dao.db.Where("token_basic_name = ? and market_name = ?",priceMarket.TokenBasicName, priceMarket.MarketName).Delete(&models.PriceMarket{})
+	}
+	dao.db.Where("name = ?",tokenBasic.Name).Delete(&models.Token{})
 	return nil
 }
 

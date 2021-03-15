@@ -116,6 +116,10 @@ func (dao *StakeDao) RemoveTokenMaps(tokenMaps []*models.TokenMap) error {
 	return nil
 }
 
+func (dao *StakeDao) RemoveTokens(tokens []string) error {
+	return nil
+}
+
 func (dao *StakeDao) Name() string {
 	return basedef.SERVER_STAKE
 }

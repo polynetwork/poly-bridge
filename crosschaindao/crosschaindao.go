@@ -33,13 +33,14 @@ type CrossChainDao interface {
 	UpdateChain(chain *models.Chain) error
 	AddChains(chain []*models.Chain, chainFees []*models.ChainFee) error
 	AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error
+	RemoveTokens(tokens []string) error
 	RemoveTokenMaps(tokenMaps []*models.TokenMap) error
 	Name() string
 }
 
-func NewCrossChainDao(server string, dbCfg *conf.DBConfig) CrossChainDao {
+func NewCrossChainDao(server string, backup bool, dbCfg *conf.DBConfig) CrossChainDao {
 	if server == basedef.SERVER_POLY_SWAP {
-		return swapdao.NewSwapDao(dbCfg)
+		return swapdao.NewSwapDao(dbCfg, backup)
 	} else if server == basedef.SERVER_EXPLORER {
 		return explorerdao.NewExplorerDao(dbCfg)
 	} else if server == basedef.SERVER_STAKE {
