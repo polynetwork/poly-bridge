@@ -233,7 +233,7 @@ func (dao *SwapDao) RemoveToken(token string) error {
 	for _, priceMarket := range tokenBasic.PriceMarkets {
 		dao.db.Where("token_basic_name = ? and market_name = ?",priceMarket.TokenBasicName, priceMarket.MarketName).Delete(&models.PriceMarket{})
 	}
-	dao.db.Where("name = ?",tokenBasic.Name).Delete(&models.Token{})
+	dao.db.Where("name = ?",tokenBasic.Name).Delete(&models.TokenBasic{})
 	return nil
 }
 
