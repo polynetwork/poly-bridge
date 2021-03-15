@@ -223,9 +223,9 @@ func (dao *SwapDao) RemoveToken(token string) error {
 	tokenBasics := make([]*models.TokenBasic, 0)
 	tokenBasics = append(tokenBasics, tokenBasic)
 	tokenMaps := dao.getTokenMapsFromToken(tokenBasics)
-	err := dao.RemoveTokenMaps(tokenMaps)
-	if err != nil {
-		return err
+	for _, tokenMap := range tokenMaps {
+		dao.db.Where("src_chain_id = ? and src_token_hash = ? and dst_chain_id = ? and dst_token_hash = ?",
+			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
 	}
 	for _, token := range tokenBasic.Tokens {
 		dao.db.Where("hash = ? and chain_id = ?",token.Hash, token.ChainId).Delete(&models.Token{})
