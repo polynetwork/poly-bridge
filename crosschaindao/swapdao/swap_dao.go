@@ -56,17 +56,11 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		if res.Error != nil {
 			return res.Error
 		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update wrapper Transactions failed!")
-		}
 	}
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		res := dao.db.Save(srcTransactions)
 		if res.Error != nil {
 			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update src Transactions failed!")
 		}
 	}
 	if polyTransactions != nil && len(polyTransactions) > 0 {
@@ -74,26 +68,17 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		if res.Error != nil {
 			return res.Error
 		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update poly Transactions failed!")
-		}
 	}
 	if dstTransactions != nil && len(dstTransactions) > 0 {
 		res := dao.db.Save(dstTransactions)
 		if res.Error != nil {
 			return res.Error
 		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update dst Transactions failed!")
-		}
 	}
 	if chain != nil {
 		res := dao.db.Save(chain)
 		if res.Error != nil {
 			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update chain failed!")
 		}
 	}
 	return nil

@@ -1,0 +1,72 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"123456",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name":"Flamingo",
+      "Precision":8,
+      "Ind": 1,
+      "Property":1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Flamingo"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":4,
+          "Hash":"4d9eab13620fe3569ba3b0e56e2877739e4145e3",
+          "Name":"Flamingo",
+          "Property":1,
+          "Precision":8
+        },
+        {
+          "ChainId":7,
+          "Hash":"a0e910ce120d6220ceb3ad0000dbb4843eb912f5",
+          "Name":"Flamingo",
+          "Property":1,
+          "Precision":8
+        }
+      ]
+    },
+    {
+      "Name":"Switcheo",
+      "Precision":8,
+      "Ind": 1,
+      "Property":1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Switcheo"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":4,
+          "Hash":"3e09e602eeeb401a2fec8e8ea137d59aae54a139",
+          "Name":"Switcheo",
+          "Property":1,
+          "Precision":8
+        },
+        {
+          "ChainId":7,
+          "Hash":"14127C943752d265B21D6963F8576A05c5c8e59c",
+          "Name":"Switcheo",
+          "Property":1,
+          "Precision":8
+        }
+      ]
+    }
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}
