@@ -57,6 +57,10 @@ func (this *PolyChainListen) GetChainName() string {
 	return this.polyCfg.ChainName
 }
 
+func (this *PolyChainListen) GetDefer() uint64 {
+	return this.polyCfg.Defer
+}
+
 func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
 	block, err := this.polySdk.GetBlockByHeight(height)
 	if err != nil {

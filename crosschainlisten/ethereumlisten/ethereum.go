@@ -77,6 +77,10 @@ func (this *EthereumChainListen) GetChainName() string {
 	return this.ethCfg.ChainName
 }
 
+func (this *EthereumChainListen) GetDefer() uint64 {
+	return this.ethCfg.Defer
+}
+
 func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {

@@ -40,6 +40,7 @@ type ChainListenConfig struct {
 	ChainName       string
 	ChainId         uint64
 	ListenSlot      uint64
+	Defer           uint64
 	Nodes           []*Restful
 	ExtendNodes     []*Restful
 	WrapperContract string

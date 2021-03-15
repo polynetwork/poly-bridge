@@ -77,6 +77,10 @@ func (this *NeoChainListen) parseNeoMethod(v string) string {
 	return string(xx)
 }
 
+func (this *NeoChainListen) GetDefer() uint64 {
+	return this.neoCfg.Defer
+}
+
 func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {

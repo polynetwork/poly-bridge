@@ -19,6 +19,7 @@ package crosschainlisten
 
 import (
 	"github.com/astaxie/beego/logs"
+	"math"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
@@ -64,6 +65,7 @@ type ChainHandle interface {
 	GetChainListenSlot() uint64
 	GetChainId() uint64
 	GetChainName() string
+	GetDefer() uint64
 }
 
 func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
@@ -145,7 +147,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 		select {
 		case <-ticker.C:
 			var height, err = ccl.handle.GetLatestHeight()
-			if err != nil || height == 0 {
+			if err != nil || height == 0 || height == math.MaxUint64 {
 				logs.Error("listenChain - cannot get chain %s height, err: %s", ccl.handle.GetChainName(), err)
 				continue
 			}
@@ -155,11 +157,11 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			} else if extendHeight >= height+21 {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
-			if chain.Height >= height {
+			if chain.Height >= height - ccl.handle.GetDefer() {
 				continue
 			}
 			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
-			for chain.Height < height {
+			for chain.Height < height - ccl.handle.GetDefer() {
 				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.handle.HandleNewBlock(chain.Height + 1)
 				if err != nil {
 					logs.Error("HandleNewBlock err: %v", err)

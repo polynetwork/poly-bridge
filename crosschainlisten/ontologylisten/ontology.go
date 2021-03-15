@@ -70,6 +70,10 @@ func (this *OntologyChainListen) parseOntolofyMethod(v string) string {
 	return string(xx)
 }
 
+func (this *OntologyChainListen) GetDefer() uint64 {
+	return this.ontCfg.Defer
+}
+
 func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
 	block, err := this.ontSdk.GetBlockByHeight(uint32(height))
 	if err != nil {
