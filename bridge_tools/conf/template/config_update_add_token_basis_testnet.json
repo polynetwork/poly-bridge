@@ -3,7 +3,7 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"123456",
+    "Password":"wKd5sstfSsY3/Q==",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -21,7 +21,7 @@
       "Tokens":[
         {
           "ChainId":79,
-          "Hash":"e146dc148c95985c035a8d06da450fa065f3cf36",
+          "Hash":"62D475e25f7492027eB1888599f96f195B0D6065",
           "Name":"BAC",
           "Property":1,
           "Precision":18
@@ -48,7 +48,7 @@
       "Tokens":[
         {
           "ChainId":79,
-          "Hash":"b758554eb7bb401b8a9c3be2ad13200b312b9a69",
+          "Hash":"4a2f867152E5370fb026b768CaC4647750c5Ae02",
           "Name":"BASv2",
           "Property":1,
           "Precision":18
@@ -62,6 +62,10 @@
         }
       ]
     }
+  ],
+  "RemoveTokens": [
+    "BAC",
+    "BASv2"
   ],
   "TokenMaps":[
   ],
