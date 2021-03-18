@@ -186,7 +186,7 @@ func (eff *SwapEffect) checkChainListening() error {
 			continue
 		}
 		if chain.Height == old.Height {
-			logs.Error("Chain %d is not listening!", chain.ChainId)
+			logs.Error("Chain %d is not listening!", *chain.ChainId)
 		}
 	}
 	eff.chains = chains
