@@ -38,7 +38,7 @@ func TestBscListen(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, true, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
@@ -70,7 +70,7 @@ func TestBscListen2(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, true, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}

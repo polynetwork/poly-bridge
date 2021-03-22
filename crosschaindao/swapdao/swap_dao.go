@@ -114,6 +114,9 @@ func (dao *SwapDao) UpdateChain(chain *models.Chain) error {
 	if chain == nil {
 		return fmt.Errorf("no value!")
 	}
+	if dao.backup {
+		return nil
+	}
 	res := dao.db.Save(chain)
 	if res.Error != nil {
 		return res.Error
