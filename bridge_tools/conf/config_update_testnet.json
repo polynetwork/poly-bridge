@@ -25,7 +25,7 @@
     {
       "Name":"ONG",
       "Precision":9,
-      "Property":0,
+      "Property":1,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",

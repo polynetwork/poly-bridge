@@ -18,6 +18,7 @@
 package crosschainlisten
 
 import (
+	"fmt"
 	"github.com/astaxie/beego/logs"
 	"math"
 	"poly-bridge/basedef"
@@ -42,7 +43,7 @@ func StartCrossChainListen(server string, backup bool, listenCfg []*conf.ChainLi
 	for i, cfg := range listenCfg {
 		chainHandle := NewChainHandle(cfg)
 		if chainHandle == nil {
-			panic("chain handler is invalid")
+			panic(fmt.Sprintf("chain %d handler is invalid", cfg.ChainId))
 		}
 		chainListen := NewCrossChainListen(chainHandle, dao)
 		chainListen.Start()

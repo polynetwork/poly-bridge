@@ -1,9 +1,10 @@
 {
   "Server":"polyswap",
+  "Backup": false,
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"root",
+    "Password":"wKd5sstfSsY3/Q==",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -12,6 +13,7 @@
       "ChainName":"Poly",
       "ChainId":0,
       "ListenSlot":1,
+      "Defer": 1,
       "Nodes": [
         {
           "Url": "http://138.91.6.125:20336"
@@ -30,6 +32,7 @@
       "ChainName":"Ethereum",
       "ChainId":2,
       "ListenSlot":5,
+      "Defer": 4,
       "Nodes": [
         {
           "Url": "http://18.140.187.37:10331"
@@ -49,6 +52,7 @@
       "ChainName":"NEO",
       "ChainId":5,
       "ListenSlot":1,
+      "Defer": 1,
       "Nodes": [
         {
           "Url": "http://seed8.ngd.network:20332"
@@ -73,6 +77,7 @@
       "ChainName":"BSC",
       "ChainId":79,
       "ListenSlot":1,
+      "Defer": 1,
       "Nodes": [
         {
           "Url": "https://data-seed-prebsc-2-s2.binance.org:8545"
@@ -91,6 +96,7 @@
       "ChainName":"HECO",
       "ChainId":7,
       "ListenSlot":1,
+      "Defer": 1,
       "Nodes": [
         {
           "Url": "https://http-testnet.hecochain.com"

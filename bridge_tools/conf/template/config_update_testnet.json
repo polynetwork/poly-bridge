@@ -1,9 +1,10 @@
 {
   "Server":"polyswap",
+  "Backup": false,
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"",
+    "Password":"wKd5sstfSsY3/Q==",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -25,7 +26,8 @@
     {
       "Name":"ONG",
       "Precision":9,
-      "Property":0,
+      "Ind": 1,
+      "Property":1,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
@@ -41,6 +43,46 @@
           "ChainId":3,
           "Hash":"0200000000000000000000000000000000000000",
           "Name":"ONG",
+          "Property":1,
+          "Precision":9
+        },
+        {
+          "ChainId":2,
+          "Hash":"42d9feF0Cbd9c3000CECe9764d99A4a6fE9E1B34",
+          "Name":"ONG",
+          "Property":1,
+          "Precision":9
+        }
+      ]
+    },
+    {
+      "Name":"ONTD",
+      "Precision":9,
+      "Ind": 1,
+      "Property":1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Ontology"
+        },
+        {
+          "MarketName":"binance",
+          "Name":"ONTUSDT"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":3,
+          "Hash":"869951e3397550e800d5faf579857cdb637a0051",
+          "Name":"ONTD",
+          "Property":1,
+          "Precision":9
+        },
+        {
+          "ChainId":2,
+          "Hash":"76130c293AA35bf7B3e5fED1E9aE1E5DF12C6A92",
+          "Name":"ONTD",
+          "Property":1,
           "Precision":9
         }
       ]
