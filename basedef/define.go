@@ -28,5 +28,5 @@ const (
 )
 
 const (
-	ADDRESS_LENGTH = 32
+	ADDRESS_LENGTH = 64
 )
