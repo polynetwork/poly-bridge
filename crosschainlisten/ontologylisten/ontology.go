@@ -105,6 +105,11 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					amount, _ := new(big.Int).SetString(basedef.HexStringReverse(states[6].(string)), 16)
 					toChain, _ := new(big.Int).SetString(basedef.HexStringReverse(states[3].(string)), 16)
 					serverId, _ := new(big.Int).SetString(basedef.HexStringReverse(states[7].(string)), 16)
+					srcUser := states[2].(string)
+					dstUser := states[4].(string)
+					if len(srcUser) > basedef.ADDRESS_LENGTH || len(dstUser) > basedef.ADDRESS_LENGTH {
+						continue
+					}
 					wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 						Hash:         event.TxHash,
 						User:         states[2].(string),
@@ -155,6 +160,15 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 							srcTransfer.DstChainId = toChain.Uint64()
 							srcTransfer.DstAsset = statesNew[4].(string)
 							srcTransfer.DstUser = statesNew[5].(string)
+							if len(srcTransfer.From) > basedef.ADDRESS_LENGTH {
+								srcTransfer.From = ""
+							}
+							if len(srcTransfer.To) > basedef.ADDRESS_LENGTH {
+								srcTransfer.To = ""
+							}
+							if len(srcTransfer.DstUser) > basedef.ADDRESS_LENGTH {
+								srcTransfer.DstUser = ""
+							}
 							break
 						}
 					}
