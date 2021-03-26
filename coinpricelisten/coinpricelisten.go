@@ -51,7 +51,9 @@ func StartCoinPriceListen(server string, priceUpdateSlot int64, coinPricecfg []*
 }
 
 func StopCoinPriceListen() {
-	cpListen.Stop()
+	if cpListen != nil {
+		cpListen.Stop()
+	}
 }
 
 type PriceMarket interface {

@@ -45,7 +45,9 @@ func StartCrossChainEffect(server string, effCfg *conf.EventEffectConfig, dbCfg 
 }
 
 func StopCrossChainEffect() {
-	crossChainEffect.Stop()
+	if crossChainEffect != nil {
+		crossChainEffect.Stop()
+	}
 }
 
 func NewEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {

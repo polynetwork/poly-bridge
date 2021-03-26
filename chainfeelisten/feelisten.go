@@ -52,7 +52,9 @@ func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.Fe
 }
 
 func StopFeeListen() {
-	feeListen.Stop()
+	if feeListen != nil {
+		feeListen.Stop()
+	}
 }
 
 type ChainFee interface {

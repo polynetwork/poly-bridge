@@ -1,6 +1,6 @@
 {
   "Server":"polyswap",
-  "Backup": false,
+  "Backup": true,
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
@@ -13,7 +13,7 @@
       "ChainName":"Poly",
       "ChainId":0,
       "ListenSlot":1,
-      "Defer": 1,
+      "Defer": 6,
       "Nodes": [
         {
           "Url": "http://13.92.155.62:20336"
@@ -29,7 +29,7 @@
       "ChainName":"Ethereum",
       "ChainId":2,
       "ListenSlot":5,
-      "Defer": 1,
+      "Defer": 12,
       "Nodes": [
         {
           "Url": "http://onto-eth.ont.io:10331"
@@ -55,7 +55,7 @@
       "ChainName":"NEO",
       "ChainId":4,
       "ListenSlot":1,
-      "Defer": 1,
+      "Defer": 6,
       "Nodes": [
         {
           "Url": "http://13.67.34.13:10332"
@@ -80,7 +80,7 @@
       "ChainName":"BSC",
       "ChainId":6,
       "ListenSlot":1,
-      "Defer": 1,
+      "Defer": 12,
       "Nodes": [
         {
           "Url": "https://bsc-dataseed.binance.org/"
@@ -96,7 +96,7 @@
       "ChainName":"HECO",
       "ChainId":7,
       "ListenSlot":1,
-      "Defer": 1,
+      "Defer": 12,
       "Nodes": [
         {
           "Url": "https://http-mainnet.hecochain.com"
@@ -111,8 +111,8 @@
     {
       "ChainName":"Ontology",
       "ChainId":3,
-      "ListenSlot":1,
-      "Defer": 1,
+      "ListenSlot":6,
+      "Defer": 6,
       "Nodes": [
         {
           "Url": "http://dappnode4.ont.io:20336"
