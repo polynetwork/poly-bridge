@@ -51,6 +51,8 @@ hasPay = 收取的BNB * (BNB的USDT价格) > (eth.gas_limit * eth.gas_price) * (
 
 ## API Info
 
+查询服务的状态
+
 ### GET /
 
 Request 
@@ -71,7 +73,243 @@ Example Response
 }
 ```
 
+### POST tokenbasics
+
+获取目前可以跨链的资产信息。
+
+TokenBasic是币的本位信息，各链上不同的usdt，都对应usdt为本位。
+Token为本位币在各个链上的详细信息，如eth上的usdt，bsc上的usdt。
+TokenMap为币之间的跨链映射关系，如eth上的usdt可以跨链到bsc上的usdt，则有eth的usdt到bsc的usdt的映射，如bsc上的usdt不可以跨链到eth上的usdt，则没有bsc的usdt到eth的usdt的映射。
+
+Request 
+```
+http://localhost:8080/v1/tokenbasics/
+```
+
+BODY raw
+```
+{
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/tokenbasics/' \
+--data-raw '{
+}'
+```
+
+Example Response
+```
+{
+    "TotalCount": 20,
+    "TokenBasics": [
+        {
+            "Name": "CWS",
+            "Precision": 18,
+            "Price": "46.35938146",
+            "Ind": 1,
+            "Time": 1616803238,
+            "Property": 1,
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "ac0104cca91d167873b8601d2e71eb3d4d8c33e0",
+                    "ChainId": 2,
+                    "Name": "CWS",
+                    "Property": 1,
+                    "TokenBasicName": "CWS",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "bcf39f0edda668c58371e519af37ca705f2bfcbd",
+                    "ChainId": 6,
+                    "Name": "CWS",
+                    "Property": 1,
+                    "TokenBasicName": "CWS",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ]
+        },
+        {
+            "Name": "DAI",
+            "Precision": 18,
+            "Price": "1.00509312",
+            "Ind": 1,
+            "Time": 1616803238,
+            "Property": 1,
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "643f3914fb8ede03d932c79732746a8c11ae470a",
+                    "ChainId": 7,
+                    "Name": "pDAI",
+                    "Property": 1,
+                    "TokenBasicName": "DAI",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "6b175474e89094c44da98b954eedeac495271d0f",
+                    "ChainId": 2,
+                    "Name": "DAI",
+                    "Property": 0,
+                    "TokenBasicName": "DAI",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "7b956c0c11fcffb9c9227ca1925ba4c3486b36f1",
+                    "ChainId": 3,
+                    "Name": "DAI",
+                    "Property": 1,
+                    "TokenBasicName": "DAI",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "8f339abc2a2a8a4d0364c7e35f892c40fbfb4bc0",
+                    "ChainId": 6,
+                    "Name": "pDAI",
+                    "Property": 1,
+                    "TokenBasicName": "DAI",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ]
+        },
+        {
+            "Name": "ETH",
+            "Precision": 18,
+            "Price": "1704.503055",
+            "Ind": 1,
+            "Time": 1616803238,
+            "Property": 1,
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "0000000000000000000000000000000000000000",
+                    "ChainId": 2,
+                    "Name": "ETH",
+                    "Property": 0,
+                    "TokenBasicName": "ETH",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "8c0859c191d8f100e4a3c0d8c0066c36a0c1f894",
+                    "ChainId": 7,
+                    "Name": "pETH",
+                    "Property": 1,
+                    "TokenBasicName": "ETH",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "b9478391eec218defa96f7b9a7938cf44e7a2fd5",
+                    "ChainId": 6,
+                    "Name": "pETH",
+                    "Property": 1,
+                    "TokenBasicName": "ETH",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "df19600d334bb13c6a9e3e9777aa8ec6ed6a4a79",
+                    "ChainId": 3,
+                    "Name": "ETH",
+                    "Property": 1,
+                    "TokenBasicName": "ETH",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ]
+        },
+        {
+            "Name": "FLM",
+            "Precision": 8,
+            "Price": "0.45932281",
+            "Ind": 1,
+            "Time": 1616803238,
+            "Property": 1,
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "4d9eab13620fe3569ba3b0e56e2877739e4145e3",
+                    "ChainId": 4,
+                    "Name": "Flamingo",
+                    "Property": 1,
+                    "TokenBasicName": "FLM",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "a0e910ce120d6220ceb3ad0000dbb4843eb912f5",
+                    "ChainId": 7,
+                    "Name": "Flamingo",
+                    "Property": 1,
+                    "TokenBasicName": "FLM",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ]
+        },
+        {
+            "Name": "nNEO",
+            "Precision": 8,
+            "Price": "41.74652049",
+            "Ind": 1,
+            "Time": 1616803238,
+            "Property": 1,
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "6514a5ebff7944099591ae3e8a5c0979c83b2571",
+                    "ChainId": 7,
+                    "Name": "pNEO",
+                    "Property": 1,
+                    "TokenBasicName": "nNEO",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "9a576d927dda934b8ce69f35ec2c1025ceb10e6f",
+                    "ChainId": 3,
+                    "Name": "nNEO",
+                    "Property": 1,
+                    "TokenBasicName": "nNEO",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "b119b3b8e5e6eeffbe754b20ee5b8a42809931fb",
+                    "ChainId": 6,
+                    "Name": "pNEO",
+                    "Property": 1,
+                    "TokenBasicName": "nNEO",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "f46719e2d16bf50cddcef9d4bbfece901f73cbb6",
+                    "ChainId": 4,
+                    "Name": "nNEO",
+                    "Property": 1,
+                    "TokenBasicName": "nNEO",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ]
+        }
+    ]
+}
+```
+
 ### POST tokens
+
+获取一条链上，目前支持跨链的资产列表。
 
 Request 
 ```
@@ -296,7 +534,9 @@ Example Response
 ```
 
 ### POST token
-   
+
+获取一条链上的一个跨链资产的信息。
+
 Request 
 ```
 http://localhost:8080/v1/token/
@@ -305,6 +545,7 @@ http://localhost:8080/v1/token/
 BODY raw
 ```
 {
+   "ChainId": 2,
    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }
 ```
@@ -313,6 +554,7 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/token/' \
 --data-raw '{
+   "ChainId": 2,
    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb"
 }'
 ```
@@ -365,6 +607,8 @@ Example Response
 ```
 
 ### POST tokenmap
+
+查询一条链上一个资产的跨链到目标链以及资产的映射关系。
 
 Request 
 ```
@@ -439,6 +683,8 @@ Example Response
 
 ### POST tokenmapreverse
 
+查询一条链上一个资产可以被跨链过来的源链以及资产的映射关系。
+
 Request 
 ```
 http://localhost:8080/v1/tokenmapreverse/
@@ -510,200 +756,10 @@ Example Response
 }
 ```
 
-### POST tokenbasics
-
-Request 
-```
-http://localhost:8080/v1/tokenbasics/
-```
-
-BODY raw
-```
-{
-}
-```
-
-Example Request
-```
-curl --location --request POST 'http://localhost:8080/v1/tokenbasics/' \
---data-raw '{
-}'
-```
-
-Example Response
-```
-{
-    "TotalCount": 6,
-    "TokenBasics": [
-        {
-            "Name": "BNB",
-            "Precision": 18,
-            "Price": "41.84074196",
-            "Ind": 1,
-            "Time": 1610668843,
-            "PriceMarkets": null,
-            "Tokens": [
-                {
-                    "Hash": "0000000000000000000000000000000000000000",
-                    "ChainId": 79,
-                    "Name": "BNB",
-                    "TokenBasicName": "BNB",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "09c6a1b0b32a8b2c327532518c68f9b0c54255b8",
-                    "ChainId": 2,
-                    "Name": "BNB",
-                    "TokenBasicName": "BNB",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                }
-            ]
-        },
-        {
-            "Name": "Ethereum",
-            "Precision": 18,
-            "Price": "1227.921489",
-            "Ind": 1,
-            "Time": 1610668843,
-            "PriceMarkets": null,
-            "Tokens": [
-                {
-                    "Hash": "0000000000000000000000000000000000000000",
-                    "ChainId": 2,
-                    "Name": "Ethereum",
-                    "TokenBasicName": "Ethereum",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "23535b6fd46b8f867ed010bab4c2bd8ef0d0c64f",
-                    "ChainId": 4,
-                    "Name": "pnWETH",
-                    "TokenBasicName": "Ethereum",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                }
-            ]
-        },
-        {
-            "Name": "Neo",
-            "Precision": 8,
-            "Price": "23.0547776",
-            "Ind": 1,
-            "Time": 1610668843,
-            "PriceMarkets": null,
-            "Tokens": [
-                {
-                    "Hash": "17da3881ab2d050fea414c80b3fa8324d756f60e",
-                    "ChainId": 4,
-                    "Name": "nNeo",
-                    "TokenBasicName": "Neo",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "7e269f2f33a97c64192e9889faeec72a6fcdb397",
-                    "ChainId": 2,
-                    "Name": "eNEO",
-                    "TokenBasicName": "Neo",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                }
-            ]
-        },
-        {
-            "Name": "USDT",
-            "Precision": 6,
-            "Price": "0.99896425",
-            "Ind": 1,
-            "Time": 1610668843,
-            "PriceMarkets": null,
-            "Tokens": [
-                {
-                    "Hash": "23f5075740c2c99c569ffd0768c383a92d1a4ad7",
-                    "ChainId": 79,
-                    "Name": "USDT",
-                    "TokenBasicName": "USDT",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
-                    "ChainId": 2,
-                    "Name": "USDT",
-                    "TokenBasicName": "USDT",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
-                    "ChainId": 4,
-                    "Name": "pnUSDT",
-                    "TokenBasicName": "USDT",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                }
-            ]
-        },
-        {
-            "Name": "WBTC",
-            "Precision": 8,
-            "Price": "39108.08931",
-            "Ind": 1,
-            "Time": 1610668843,
-            "PriceMarkets": null,
-            "Tokens": [
-                {
-                    "Hash": "557563dc4ed3fd256eba55b9622f53331ab97c2f",
-                    "ChainId": 2,
-                    "Name": "WBTC",
-                    "TokenBasicName": "WBTC",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "a3ce15f11d4427b6bad5630036f368a98e923e95",
-                    "ChainId": 79,
-                    "Name": "WBTC",
-                    "TokenBasicName": "WBTC",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                }
-            ]
-        },
-        {
-            "Name": "WING",
-            "Precision": 9,
-            "Price": "12.91266349",
-            "Ind": 1,
-            "Time": 1610668843,
-            "PriceMarkets": null,
-            "Tokens": [
-                {
-                    "Hash": "0a7bf54d2684885d731dc63917a3178a2a1a8d4a",
-                    "ChainId": 79,
-                    "Name": "WING",
-                    "TokenBasicName": "WING",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                },
-                {
-                    "Hash": "b60e03e6973b1d0b90a763f5b64c48ca7cb8c2d1",
-                    "ChainId": 2,
-                    "Name": "WING",
-                    "TokenBasicName": "WING",
-                    "TokenBasic": null,
-                    "TokenMaps": null
-                }
-            ]
-        }
-    ]
-}
-```
-
 ### POST getfee
+
+获取到一个指定链的跨链需要收取的源链上资产金额。
+用户在做一次跨链操作时，在源链交易上收取了用户的费用。
 
 Request 
 ```
@@ -743,6 +799,8 @@ Example Response
 
 ### POST checkfee
 
+检查一个源链交易是否支付了满足要求的手续费。
+
 Request 
 ```
 http://localhost:8080/v1/checkfee/
@@ -751,7 +809,7 @@ http://localhost:8080/v1/checkfee/
 BODY raw
 ```
 {
-    "Hashs": ["000000000000000000000000000000000000000000000000000000000000175c"]
+    "Checks":[{"Hash":"0000000000000000000000000000000000000000000000000000000000000024","ChainId":6},{"Hash":"0000000000000000000000000000000000000000000000000000000000000e72","ChainId":79}]
 }
 ```
 
@@ -759,26 +817,36 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/checkfee/' \
 --data-raw '{
-    "Hashs": ["000000000000000000000000000000000000000000000000000000000000175c"]
+    "Checks":[{"Hash":"0000000000000000000000000000000000000000000000000000000000000024","ChainId":6},{"Hash":"0000000000000000000000000000000000000000000000000000000000000e72","ChainId":79}]
 }'
 ```
 
 Example Response
 ```
 {
-    "TotalCount": 1,
+    "TotalCount": 2,
     "CheckFees": [
         {
-            "Hash": "000000000000000000000000000000000000000000000000000000000000175c",
-            "PayState": 1,
-            "Amount": "12.27921489",
+            "ChainId": 6,
+            "Hash": "0000000000000000000000000000000000000000000000000000000000000024",
+            "PayState": -1,
+            "Amount": "0",
             "MinProxyFee": "0"
+        },
+        {
+            "ChainId": 79,
+            "Hash": "0000000000000000000000000000000000000000000000000000000000000e72",
+            "PayState": -1,
+            "Amount": "0.3881888898738662",
+            "MinProxyFee": "0.5590046679671925"
         }
     ]
 }
 ```
 
 ### POST transactions
+
+获取跨链交易列表。
 
 Request 
 ```
@@ -826,6 +894,8 @@ Example Response
 ```
 
 ### POST transactionsofaddress
+
+获取指定地址上的跨链交易列表。
 
 Request 
 ```
@@ -907,6 +977,7 @@ Example Response
 ```
 
 ### POST transactionofhash
+获取指定hash的跨链交易。
 
 Request 
 ```
@@ -976,6 +1047,8 @@ Example Response
 ```
 
 ### POST transactionsofstate
+
+获取指定状态的跨链交易。
 
 Request 
 ```
