@@ -197,7 +197,7 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 	for market, query := range cpl.priceMarket {
 		coins, ok := marketCoins[market]
 		if !ok {
-			logs.Error("cpl is no coins of market: %s", market)
+			logs.Error("there is no coins of market: %s", market)
 			continue
 		}
 		coinPrices, err := query.GetCoinPrice(coins)
