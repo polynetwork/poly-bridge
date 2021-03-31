@@ -29,8 +29,18 @@ cd bridge_tools
 cd build_mainnet
 cd bridge_server
 vi ./config_mainnet.json
+bridge_server --cliconfig config_mainnet.json
 ``` 
 
 重启bridge_server。
+
+运行独立的cook币价实时监听程序
+
+更新配置文件 [config_mainnet_cook_price.json](https://github.com/polynetwork/poly-bridge/blob/master/conf/config_mainnet_cook_price.json)
+```
+cd build_mainnet
+cd coinprice_listen
+coinprice_listen --cliconfig config_mainnet_cook_price.json
+``` 
 
 不需要更新bridge_server的备份和bridge_http

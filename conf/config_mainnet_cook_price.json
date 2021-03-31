@@ -1,0 +1,206 @@
+{
+  "Server":"polyswap",
+  "Backup": false,
+  "DBConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"123456",
+    "Scheme":"polyswap",
+    "Debug": false
+  },
+  "ChainListenConfig":[
+    {
+      "ChainName":"Poly",
+      "ChainId":0,
+      "ListenSlot":1,
+      "Defer": 6,
+      "Nodes": [
+        {
+          "Url": "http://13.92.155.62:20336"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"",
+      "CCMContract":"0300000000000000000000000000000000000000",
+      "ProxyContract":""
+    },
+    {
+      "ChainName":"Ethereum",
+      "ChainId":2,
+      "ListenSlot":5,
+      "Defer": 12,
+      "Nodes": [
+        {
+          "Url": "http://onto-eth.ont.io:10331"
+        },
+        {
+          "Url": "https://mainnet.infura.io/v3/67c37a240ed64ed68d076f900f05761b"
+        },
+        {
+          "Url": "http://119.28.106.68:10331"
+        }
+      ],
+      "ExtendNodes": [
+        {
+          "Url": "https://api.etherscan.io/api",
+          "Key": "W4SW61XNZAVGYFRUYNIBV1C8TBIXJDQCS9"
+        }
+      ],
+      "WrapperContract":"2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac",
+      "CCMContract":"838bf9e95cb12dd76a54c9f9d2e3082eaf928270",
+      "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906"
+    },
+    {
+      "ChainName":"NEO",
+      "ChainId":4,
+      "ListenSlot":1,
+      "Defer": 6,
+      "Nodes": [
+        {
+          "Url": "http://13.67.34.13:10332"
+        },
+        {
+          "Url": "http://seed1.ngd.network:10332"
+        },
+        {
+          "Url": "http://seed5.ngd.network:10332"
+        },
+        {
+          "Url": "http://wallet.ngd.network:10332"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"125c83403763670c215f9c7c815ef759b258a41b",
+      "CCMContract":"82a3401fb9a60db42c6fa2ea2b6d62e872d6257f",
+      "ProxyContract":"e7fb2e1d937e71dbbb512e6375746181127282e7"
+    },
+    {
+      "ChainName":"BSC",
+      "ChainId":6,
+      "ListenSlot":1,
+      "Defer": 12,
+      "Nodes": [
+        {
+          "Url": "https://bsc-dataseed.binance.org/"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"E3D0FB6E3cB5DA61EB18b06D035052441009d1E6",
+      "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
+      "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03"
+    },
+    {
+      "ChainName":"HECO",
+      "ChainId":7,
+      "ListenSlot":1,
+      "Defer": 12,
+      "Nodes": [
+        {
+          "Url": "https://http-mainnet.hecochain.com"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"4fE451186c0D69205ACc1fA00FD75fc6d71e47eE",
+      "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
+      "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6"
+    },
+    {
+      "ChainName":"Ontology",
+      "ChainId":3,
+      "ListenSlot":6,
+      "Defer": 6,
+      "Nodes": [
+        {
+          "Url": "http://dappnode4.ont.io:20336"
+        },
+        {
+          "Url": "http://dappnode2.ont.io:20336"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"c93837e82178d406af8c84e1841c6960af251cb5",
+      "CCMContract":"0900000000000000000000000000000000000000",
+      "ProxyContract":"86b4ab5d99037113867247a1e68f70e348c07597"
+    }
+  ],
+  "EventEffectConfig": {
+    "HowOld": 3600,
+    "ChainListening": 300,
+    "EffectSlot": 1
+  },
+  "CoinPriceUpdateSlot":1,
+  "CoinPriceListenConfig":[
+    {
+      "MarketName":"self",
+      "Nodes": [
+        {
+          "Url": "http://124.156.209.180:8899/"
+        }
+      ]
+    }
+  ],
+  "FeeUpdateSlot":5,
+  "FeeListenConfig": [
+    {
+      "ChainId":2,
+      "ChainName":"Ethereum",
+      "Nodes": [
+        {
+          "Url": "https://mainnet.infura.io/v3/67c37a240ed64ed68d076f900f05761b"
+        },{
+          "Url": "http://onto-eth.ont.io:10331"
+        }
+      ],
+      "GasLimit":220000,
+      "ProxyFee":140,
+      "MinFee": 40
+    },
+    {
+      "ChainId":4,
+      "ChainName":"NEO",
+      "Nodes": [
+      ],
+      "GasLimit":5000000,
+      "ProxyFee":140,
+      "MinFee": 40
+    },
+    {
+      "ChainId":6,
+      "ChainName":"BSC",
+      "Nodes": [
+        {
+          "Url": "https://bsc-dataseed.binance.org/"
+        }
+      ],
+      "GasLimit":220000,
+      "ProxyFee":140,
+      "MinFee": 40
+    },
+    {
+      "ChainId":7,
+      "ChainName":"HECO",
+      "Nodes": [
+        {
+          "Url": "https://http-mainnet.hecochain.com"
+        }
+      ],
+      "GasLimit":220000,
+      "ProxyFee":140,
+      "MinFee": 40
+    },
+    {
+      "ChainId":3,
+      "ChainName":"Ontology",
+      "Nodes": [
+      ],
+      "GasLimit":200000000,
+      "ProxyFee":120,
+      "MinFee": 20
+    }
+  ]
+}
