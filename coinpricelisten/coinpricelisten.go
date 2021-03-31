@@ -209,7 +209,7 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 		for name, price := range coinPrices {
 			tokenPrice := marketCoinPrices[market+name]
 			if !ok {
-				logs.Error("cpl is no coins of market: %s and token: %s", market, name)
+				logs.Error("there is no coins of market: %s and token: %s", market, name)
 				continue
 			}
 			price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(basedef.PRICE_PRECISION))).Int64()

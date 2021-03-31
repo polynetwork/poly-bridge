@@ -71,12 +71,12 @@ func (sdk *SelfSdk) quotesLatest(node int, url string) ([]*Ticker, error) {
 		return nil, fmt.Errorf("response status code: %d", resp.StatusCode)
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	tickers := make([]*Ticker, 0)
-	err = json.Unmarshal(respBody, &tickers)
+	var rsp Rsp
+	err = json.Unmarshal(respBody, &rsp)
 	if err != nil {
 		return nil, err
 	}
-	return tickers, nil
+	return rsp.Prices, nil
 }
 
 func (sdk *SelfSdk) GetMarketName() string {
