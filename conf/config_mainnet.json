@@ -151,6 +151,14 @@
           "Url": "https://api1.binance.com/"
         }
       ]
+    },
+    {
+      "MarketName":"self",
+      "Nodes": [
+        {
+          "Url": "http://124.156.209.180:8899/"
+        }
+      ]
     }
   ],
   "FeeUpdateSlot":5,

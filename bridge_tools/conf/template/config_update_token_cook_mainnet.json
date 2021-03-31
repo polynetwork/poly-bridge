@@ -1,0 +1,53 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"127.0.0.1:3306",
+    "User":"root",
+    "Password":"root",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name":"COOK",
+      "Precision":18,
+      "Property":1,
+      "PriceMarkets":[
+        {
+          "MarketName":"self",
+          "Name":"cook"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId": 2,
+          "Hash": "FF75CEd57419bcaEBe5F05254983b013B0646eF5",
+          "Name":"COOK",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":6,
+          "Hash":"965b0Df5BDA0E7a0649324D78f03D5F7F2De086a",
+          "Name":"COOK",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":7,
+          "Hash":"74189862B069e2Be5f7c8E6ff08eA8E1B1948519",
+          "Name":"COOK",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    }
+  ],
+  "RemoveTokens": [
+    "COOK"
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}
