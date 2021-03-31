@@ -24,6 +24,7 @@ import (
 	"poly-bridge/coinpricedao"
 	"poly-bridge/coinpricelisten/binance"
 	"poly-bridge/coinpricelisten/coinmarketcap"
+	"poly-bridge/coinpricelisten/self"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"runtime/debug"
@@ -66,6 +67,8 @@ func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket {
 		return coinmarketcap.NewCoinMarketCapSdk(cfg)
 	} else if cfg.MarketName == basedef.MARKET_BINANCE {
 		return binance.NewBinanceSdk(cfg)
+	} else if cfg.MarketName == basedef.MARKET_SELF {
+		return self.NewSelfSdk(cfg)
 	} else {
 		return nil
 	}
