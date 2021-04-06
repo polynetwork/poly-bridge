@@ -22,9 +22,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"poly-swap-bridge/basedef"
-	"poly-swap-bridge/conf"
-	"poly-swap-bridge/models"
+	"poly-bridge/basedef"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 )
 
 type BridgeDao struct {

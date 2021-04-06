@@ -22,9 +22,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"poly-swap-bridge/basedef"
-	"poly-swap-bridge/conf"
-	"poly-swap-bridge/models"
+	"poly-bridge/basedef"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 	"strings"
 )
 
@@ -78,7 +78,8 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 		}
 	}
 	if chain != nil && !dao.backup {
-		res := dao.db.Save(chain)
+		chain.HeightSwap = 0
+		res := dao.db.Updates(chain)
 		if res.Error != nil {
 			return res.Error
 		}
@@ -117,7 +118,8 @@ func (dao *BridgeDao) UpdateChain(chain *models.Chain) error {
 	if dao.backup {
 		return nil
 	}
-	res := dao.db.Save(chain)
+	chain.HeightSwap = 0
+	res := dao.db.Updates(chain)
 	if res.Error != nil {
 		return res.Error
 	}
