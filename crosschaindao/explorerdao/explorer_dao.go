@@ -393,8 +393,6 @@ func (dao *ExplorerDao) tokenType(chainId uint64) string {
 		return "bep20"
 	} else if chainId == basedef.ONT_CROSSCHAIN_ID {
 		return "oep4"
-	} else if chainId == basedef.O3_CROSSCHAIN_ID {
-		return "o3"
 	} else {
 		return ""
 	}
