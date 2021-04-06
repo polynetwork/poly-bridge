@@ -22,6 +22,7 @@ const (
 )
 
 const (
+	SERVER_POLY_BRIDGE = "polybridge"
 	SERVER_POLY_SWAP = "polyswap"
 	SERVER_EXPLORER  = "explorer"
 	SERVER_ADDRESS   = "address"

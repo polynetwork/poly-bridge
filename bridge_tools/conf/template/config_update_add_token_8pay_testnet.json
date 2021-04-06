@@ -1,0 +1,46 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"10.203.0.11:3306",
+    "User":"root",
+    "Password":"PAIGWICQFKDNzdL5aTw0pIPrBeoYinXu4A==",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name":"8PAY",
+      "Precision":18,
+      "PriceMarkets":[
+        {
+          "MarketName":"self",
+          "Name":"8pay"
+        }
+      ],
+      "Property":1,
+      "Tokens":[
+        {
+          "ChainId":6,
+          "Hash":"Feea0bDd3D07eb6FE305938878C0caDBFa169042",
+          "Name":"8pay",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":2,
+          "Hash":"Feea0bDd3D07eb6FE305938878C0caDBFa169042",
+          "Name":"8pay",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    }
+  ],
+  "RemoveTokens": [
+    "8PAY"
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}

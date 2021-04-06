@@ -1,5 +1,5 @@
 {
-  "Server":"polyswap",
+  "Server":"polybridge",
   "Backup": false,
   "DBConfig":{
     "URL":"localhost:3306",

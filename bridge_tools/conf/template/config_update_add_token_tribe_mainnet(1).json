@@ -1,42 +1,42 @@
 {
-  "Server":"explorer",
+  "Server":"polyswap",
   "DBConfig":{
-    "URL":"10.203.0.11:3306",
+    "URL":"10.**.**.**:3306",
     "User":"root",
-    "Password":"PAIGWICQFKDNzdL5aTw0pIPrBeoYinXu4A==",
-    "Scheme":"cross_chain_explorer4",
-    "Debug": true
+    "Password":"P**=",
+    "Scheme":"polyswap"
   },
   "TokenBasics":[
     {
-      "Name":"COOK",
+      "Name":"Tribe",
       "Precision":18,
       "Property":1,
+      "Ind": 1,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
-          "Name":"Cook Protocol"
+          "Name":"Tribe"
         }
       ],
       "Tokens":[
         {
-          "ChainId": 2,
-          "Hash": "FF75CEd57419bcaEBe5F05254983b013B0646eF5",
-          "Name":"COOK",
+          "ChainId":2,
+          "Hash":"c7283b66Eb1EB5FB86327f08e1B5816b0720212B",
+          "Name":"TRIBE",
           "Property":1,
           "Precision":18
         },
         {
           "ChainId":6,
-          "Hash":"965b0Df5BDA0E7a0649324D78f03D5F7F2De086a",
-          "Name":"COOK",
+          "Hash":"7bE1BE4FDc499bC6FeC8d4a4C0936BAD7799565A",
+          "Name":"TRIBE",
           "Property":1,
           "Precision":18
         },
         {
           "ChainId":7,
-          "Hash":"74189862B069e2Be5f7c8E6ff08eA8E1B1948519",
-          "Name":"COOK",
+          "Hash":"38999Fa3a7320bD2c3609BF0f8cB5CD4C11D3Fe1",
+          "Name":"TRIBE",
           "Property":1,
           "Precision":18
         }

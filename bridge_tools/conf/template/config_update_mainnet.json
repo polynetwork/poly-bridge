@@ -9,36 +9,12 @@
     "Debug": true
   },
   "TokenBasics":[
-    {
-      "Name":"BAC",
-      "Precision":18,
-      "Property":1,
-      "PriceMarkets":[
-        {
-          "MarketName":"coinmarketcap",
-          "Name":"Basis Cash"
-        }
-      ],
-      "Tokens":[
-        {
-          "ChainId":79,
-          "Hash":"e146dc148c95985c035a8d06da450fa065f3cf36",
-          "Name":"BAC",
-          "Precision":18
-        },
-        {
-          "ChainId":2,
-          "Hash":"6678C7f809c699c9B1F7da6F263b5cF407b8EB1d",
-          "Name":"BAC",
-          "Precision":18
-        }
-      ]
-    }
   ],
   "RemoveTokens": [
-    "BAC"
   ],
   "TokenMaps":[
+    "ad3f96ae966ad60347f31845b7e4b333104c52fb",
+    ""
   ],
   "RemoveTokenMaps": [
   ]

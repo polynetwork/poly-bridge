@@ -155,13 +155,15 @@ func (TokenBind) TableName() string {
 }
 
 type ExplorerDao struct {
-	dbCfg *conf.DBConfig
-	db    *gorm.DB
+	dbCfg  *conf.DBConfig
+	db     *gorm.DB
+	backup bool
 }
 
-func NewExplorerDao(dbCfg *conf.DBConfig) *ExplorerDao {
+func NewExplorerDao(dbCfg *conf.DBConfig, backup bool) *ExplorerDao {
 	explorerDao := &ExplorerDao{
-		dbCfg: dbCfg,
+		dbCfg:  dbCfg,
+		backup: backup,
 	}
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -194,13 +196,16 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 				transaction.SrcTransfer.To = basedef.Hash2Address(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
 				transaction.SrcTransfer.DstUser = basedef.Hash2Address(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
 			}
+			if transaction.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+				transaction.Hash, transaction.Key = transaction.Key, transaction.Hash
+			}
+			if transaction.SrcTransfer != nil {
+				transaction.SrcTransfer.TxHash = transaction.Hash
+			}
 		}
 		res := dao.db.Save(newSrcTransactions)
 		if res.Error != nil {
 			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update src Transactions failed!")
 		}
 	}
 	if polyTransactions != nil && len(polyTransactions) > 0 {
@@ -216,9 +221,6 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		res := dao.db.Save(newPolyTransactions)
 		if res.Error != nil {
 			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update poly Transactions failed!")
 		}
 	}
 	if dstTransactions != nil && len(dstTransactions) > 0 {
@@ -241,11 +243,8 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 		if res.Error != nil {
 			return res.Error
 		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update dst Transactions failed!")
-		}
 	}
-	if chain != nil {
+	if chain != nil && !dao.backup {
 		chainJson, err := json.Marshal(chain)
 		if err != nil {
 			return err
@@ -263,9 +262,6 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 			"height": gorm.Expr("?", newChain.Height)})
 		if res.Error != nil {
 			return res.Error
-		}
-		if res.RowsAffected == 0 {
-			return fmt.Errorf("update chain failed!")
 		}
 	}
 	return nil
@@ -308,6 +304,9 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 	if err != nil {
 		return err
 	}
+	if dao.backup {
+		return nil
+	}
 	newChain := new(Chain)
 	err = json.Unmarshal(chainJson, newChain)
 	if err != nil {
@@ -317,9 +316,6 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 		"height": gorm.Expr("?", newChain.Height)})
 	if res.Error != nil {
 		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		return fmt.Errorf("update chain failed!")
 	}
 	return nil
 }
@@ -397,6 +393,8 @@ func (dao *ExplorerDao) tokenType(chainId uint64) string {
 		return "bep20"
 	} else if chainId == basedef.ONT_CROSSCHAIN_ID {
 		return "oep4"
+	} else if chainId == basedef.O3_CROSSCHAIN_ID {
+		return "o3"
 	} else {
 		return ""
 	}

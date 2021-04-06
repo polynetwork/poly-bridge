@@ -1,5 +1,5 @@
 {
-  "Server":"polyswap",
+  "Server":"polybridge",
   "Backup": false,
   "DBConfig":{
     "URL":"localhost:3306",
@@ -182,7 +182,7 @@
       "ChainName":"NEO",
       "Nodes": [
       ],
-      "GasLimit":5000000,
+      "GasLimit":300000,
       "ProxyFee":140,
       "MinFee": 40
     },
