@@ -78,7 +78,6 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 		}
 	}
 	if chain != nil && !dao.backup {
-		chain.HeightSwap = 0
 		res := dao.db.Updates(chain)
 		if res.Error != nil {
 			return res.Error
@@ -108,6 +107,7 @@ func (dao *BridgeDao) GetChain(chainId uint64) (*models.Chain, error) {
 	if res.RowsAffected == 0 {
 		return nil, fmt.Errorf("no record!")
 	}
+	chain.HeightSwap = 0
 	return chain, nil
 }
 
@@ -118,7 +118,6 @@ func (dao *BridgeDao) UpdateChain(chain *models.Chain) error {
 	if dao.backup {
 		return nil
 	}
-	chain.HeightSwap = 0
 	res := dao.db.Updates(chain)
 	if res.Error != nil {
 		return res.Error

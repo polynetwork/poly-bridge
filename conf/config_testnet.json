@@ -4,7 +4,7 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"wKd5sstfSsY3/Q==",
+    "Password":"123456",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -16,10 +16,7 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url": "http://138.91.6.125:20336"
-        },
-        {
-          "Url": "http://40.115.182.238:20336"
+          "Url": "http://124.156.226.204:20336"
         }
       ],
       "ExtendNodes": [
@@ -35,7 +32,7 @@
       "Defer": 4,
       "Nodes": [
         {
-          "Url": "http://18.140.187.37:10331"
+          "Url": "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea"
         }
       ],
       "ExtendNodes": [

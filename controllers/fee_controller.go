@@ -167,3 +167,142 @@ func (c *FeeController) CheckFee() {
 	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
 	c.ServeJSON()
 }
+
+func (c *FeeController) getSwapSrcTransactions(o3Hashs []string) (map[string]string,error) {
+	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
+	res := db.Table("dst_transactions").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
+		Where("dst_transactions.hash in ?", o3Hashs).
+		Joins("inner join poly_transactions on dst_transactions.poly_hash = poly_transactions.hash").
+		Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.hash").
+		Find(srcPolyDstRelations)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	checkHashes := make(map[string]string, 0)
+	for _, srcPolyDstRelation := range srcPolyDstRelations {
+		checkHashes[srcPolyDstRelation.DstHash] = srcPolyDstRelation.SrcHash
+	}
+	return checkHashes, nil
+}
+
+func (c *FeeController) CheckSwapFee() {
+	logs.Debug("check fee request: %s", string(c.Ctx.Input.RequestBody))
+	var checkFeesReq models.CheckFeesReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &checkFeesReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	hash2ChainId := make(map[string]uint64, 0)
+	requestHashs := make([]string, 0)
+	for _, check := range checkFeesReq.Checks {
+		hash2ChainId[check.Hash] = check.ChainId
+		requestHashs = append(requestHashs, check.Hash)
+		requestHashs = append(requestHashs, basedef.HexStringReverse(check.Hash))
+	}
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
+	key2Txhash := make(map[string]string, 0)
+	o3Hashs := make([]string, 0)
+	for _, srcTransaction := range srcTransactions {
+		prefix := srcTransaction.Key[0:8]
+		if prefix == "00000000" {
+			chainId, ok := hash2ChainId[srcTransaction.Key]
+			if ok && chainId == srcTransaction.ChainId {
+				key2Txhash[srcTransaction.Key] = srcTransaction.Hash
+			}
+		} else {
+			key2Txhash[srcTransaction.Hash] = srcTransaction.Hash
+			key2Txhash[basedef.HexStringReverse(srcTransaction.Hash)] = srcTransaction.Hash
+		}
+		o3Hashs = append(o3Hashs, srcTransaction.Hash)
+	}
+	srcHashs, err := c.getSwapSrcTransactions(o3Hashs)
+	if err != nil {
+		c.Data["json"] = err.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+
+	checkHashes := make([]string, 0)
+	for _, check := range checkFeesReq.Checks {
+		newHash1, ok1 := key2Txhash[check.Hash]
+		if ok1 {
+			newHash2, ok2 := srcHashs[newHash1]
+			if ok2 {
+				checkHashes = append(checkHashes, newHash2)
+			}
+		}
+	}
+	//
+	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
+	db.Table("wrapper_transactions").Where("hash in ?", checkHashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	txHash2WrapperTransaction := make(map[string]*models.WrapperTransactionWithToken, 0)
+	for _, wrapperTransactionWithToken := range wrapperTransactionWithTokens {
+		txHash2WrapperTransaction[wrapperTransactionWithToken.Hash] = wrapperTransactionWithToken
+	}
+	chainFees := make([]*models.ChainFee, 0)
+	db.Preload("TokenBasic").Find(&chainFees)
+	chain2Fees := make(map[uint64]*models.ChainFee, 0)
+	for _, chainFee := range chainFees {
+		chain2Fees[chainFee.ChainId] = chainFee
+	}
+	checkFees := make([]*models.CheckFee, 0)
+	for _, check := range checkFeesReq.Checks {
+		checkFee := &models.CheckFee{}
+		checkFee.Hash = check.Hash
+		checkFee.ChainId = check.ChainId
+		checkFee.Amount = new(big.Float).SetInt64(0)
+		checkFee.MinProxyFee = new(big.Float).SetInt64(0)
+		_, ok := chain2Fees[check.ChainId]
+		if !ok {
+			checkFee.PayState = -1
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		newHash, ok := key2Txhash[check.Hash]
+		if !ok {
+			checkFee.PayState = 0
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		newHash, ok = srcHashs[newHash]
+		if !ok {
+			checkFee.PayState = 0
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		wrapperTransactionWithToken, ok := txHash2WrapperTransaction[newHash]
+		if !ok {
+			checkFee.PayState = -1
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		chainFee, ok := chain2Fees[wrapperTransactionWithToken.DstChainId]
+		if !ok {
+			checkFee.PayState = -1
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		x := new(big.Int).Mul(&wrapperTransactionWithToken.FeeAmount.Int, big.NewInt(wrapperTransactionWithToken.FeeToken.TokenBasic.Price))
+		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(wrapperTransactionWithToken.FeeToken.Precision))))
+		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
+		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+		if feePay.Cmp(feeMin) >= 0 {
+			checkFee.PayState = 1
+		} else {
+			checkFee.PayState = -1
+		}
+		checkFee.Amount = feePay
+		checkFee.MinProxyFee = feeMin
+		checkFees = append(checkFees, checkFee)
+	}
+	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
+	c.ServeJSON()
+}
