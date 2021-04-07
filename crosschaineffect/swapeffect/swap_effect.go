@@ -109,8 +109,9 @@ func (eff *SwapEffect) updateHash() error {
 
 func (eff *SwapEffect) checkStatus() error {
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	now := time.Now().Unix() - eff.cfg.HowOld
-	eff.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ?", basedef.STATE_FINISHED, now).Find(&wrapperTransactions)
+	checkEnd := time.Now().Unix() - eff.cfg.HowOld
+	checkStart := checkEnd - 5 * 24 * 60 * 60
+	eff.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ? and time > ?", basedef.STATE_FINISHED, checkEnd, checkStart).Find(&wrapperTransactions)
 	if len(wrapperTransactions) > 0 {
 		wrapperTransactionsJson, _ := json.Marshal(wrapperTransactions)
 		logs.Error("There is unfinished transactions %s", string(wrapperTransactionsJson))
