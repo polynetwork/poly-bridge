@@ -32,6 +32,7 @@ func init() {
 		beego.NSRouter("/tokenmapreverse/", &controllers.TokenMapController{}, "post:TokenMapReverse"),
 		beego.NSRouter("/getfee/", &controllers.FeeController{}, "post:GetFee"),
 		beego.NSRouter("/checkfee/", &controllers.FeeController{}, "post:CheckFee"),
+		beego.NSRouter("/checkswapfee/", &controllers.FeeController{}, "post:CheckSwapFee"),
 		beego.NSRouter("/transactions/", &controllers.TransactionController{}, "post:Transactions"),
 		beego.NSRouter("/transactionsofaddress/", &controllers.TransactionController{}, "post:TransactionsOfAddress"),
 		beego.NSRouter("/transactionofhash/", &controllers.TransactionController{}, "post:TransactionOfHash"),
