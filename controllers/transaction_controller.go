@@ -141,7 +141,7 @@ func (c *TransactionController) TransactionOfHash() {
 		c.ServeJSON()
 		return
 	}
-	if srcPolyDstRelation.ChainId != basedef.O3_CROSSCHAIN_ID {
+	if srcPolyDstRelation.DstTransaction.ChainId != basedef.O3_CROSSCHAIN_ID {
 		chains := make([]*models.Chain, 0)
 		db.Model(&models.Chain{}).Find(&chains)
 		chainsMap := make(map[uint64]*models.Chain)
