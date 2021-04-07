@@ -71,5 +71,5 @@ func (dao *BridgeDao) SaveFees(fees []*models.ChainFee) error {
 }
 
 func (dao *BridgeDao) Name() string {
-	return basedef.SERVER_POLY_SWAP
+	return basedef.SERVER_POLY_BRIDGE
 }
