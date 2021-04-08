@@ -58,6 +58,12 @@ var (
 		Usage: "Set chain. 2:Ethereum 8:Bsc",
 		Value: 100000,
 	}
+
+	heightFlag = cli.UintFlag{
+		Name:  "height",
+		Usage: "Set chain. 2:Ethereum 8:Bsc",
+		Value: 100000,
+	}
 )
 
 //getFlagName deal with short flag, and return the flag name whether flag name have short name
@@ -115,6 +121,7 @@ func startServer(ctx *cli.Context) {
 		logs.Info("%s\n", string(conf))
 	}
 	chain := ctx.GlobalUint64(getFlagName(chainFlag))
+	height := ctx.GlobalUint64(getFlagName(heightFlag))
 
 	db := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if db == nil {
@@ -129,6 +136,7 @@ func startServer(ctx *cli.Context) {
 		panic("chain handler is invalid")
 	}
 	chainListen = crosschainlisten.NewCrossChainListen(chainHandler, db)
+	chainListen.SetHeight(height)
 	chainListen.Start()
 }
 
