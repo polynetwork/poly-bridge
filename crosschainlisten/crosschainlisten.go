@@ -91,6 +91,7 @@ type CrossChainListen struct {
 	handle ChainHandle
 	db     crosschaindao.CrossChainDao
 	exit   chan bool
+	height uint64
 }
 
 func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao) *CrossChainListen {
@@ -100,6 +101,10 @@ func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao) *Cr
 		exit:   make(chan bool, 0),
 	}
 	return crossChainListen
+}
+
+func (ccl *CrossChainListen) SetHeight(height uint64) {
+	ccl.height = height
 }
 
 func (ccl *CrossChainListen) Start() {
@@ -142,6 +147,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 		chain.Height = height
 	}
 	ccl.db.UpdateChain(chain)
+	if ccl.height != 0 {
+		chain.Height = ccl.height
+	}
 	logs.Info("cross chain listen, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
 	ticker := time.NewTicker(time.Second * time.Duration(ccl.handle.GetChainListenSlot()))
 	for {
