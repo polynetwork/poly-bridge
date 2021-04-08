@@ -86,6 +86,7 @@ func setupApp() *cli.App {
 		configPathFlag,
 		logDirFlag,
 		chainFlag,
+		heightFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
