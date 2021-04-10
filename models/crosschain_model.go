@@ -57,7 +57,6 @@ type SrcTransfer struct {
 type PolyTransaction struct {
 	Hash       string  `gorm:"primaryKey;size:66;not null"`
 	ChainId    uint64  `gorm:"type:bigint(20);not null"`
-	//Standard   uint8   `gorm:"type:int(8);not null"`
 	State      uint64  `gorm:"type:bigint(20);not null"`
 	Time       uint64  `gorm:"type:bigint(20);not null"`
 	Fee        *BigInt `gorm:"type:varchar(64);not null"`
@@ -125,5 +124,5 @@ type SrcPolyDstRelation struct {
 	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
 	ChainId            uint64          `gorm:"type:bigint(20);not null"`
 	TokenHash          string          `gorm:"type:varchar(66);not null"`
-	Token              *Token          `gorm:"foreignKey:AssetHash,ChainId;references:Hash,ChainId"`
+	Token              *Token          `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
 }
