@@ -37,15 +37,17 @@ type Restful struct {
 }
 
 type ChainListenConfig struct {
-	ChainName       string
-	ChainId         uint64
-	ListenSlot      uint64
-	Defer           uint64
-	Nodes           []*Restful
-	ExtendNodes     []*Restful
-	WrapperContract string
-	CCMContract     string
-	ProxyContract   string
+	ChainName          string
+	ChainId            uint64
+	ListenSlot         uint64
+	Defer              uint64
+	Nodes              []*Restful
+	ExtendNodes        []*Restful
+	WrapperContract    string
+	CCMContract        string
+	ProxyContract      string
+	NFTWrapperContract string
+	NFTProxyContract   string
 }
 
 func (cfg *ChainListenConfig) GetNodesUrl() []string {

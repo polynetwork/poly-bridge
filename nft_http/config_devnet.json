@@ -1,0 +1,52 @@
+{
+  "SDKConfig":[
+    {
+      "ChainName":"Ethereum",
+      "ChainId":2,
+      "Nodes": [
+        {
+          "Url": "http://onto-eth.ont.io:10331"
+        },
+        {
+          "Url": "https://mainnet.infura.io/v3/67c37a240ed64ed68d076f900f05761b"
+        },
+        {
+          "Url": "http://119.28.106.68:10331"
+        }
+      ],
+      "ExtendNodes": [
+        {
+          "Url": "https://api.etherscan.io/api",
+          "Key": "W4SW61XNZAVGYFRUYNIBV1C8TBIXJDQCS9"
+        }
+      ]
+    },
+    {
+      "ChainName":"BSC",
+      "ChainId":6,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "https://bsc-dataseed.binance.org/"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"E3D0FB6E3cB5DA61EB18b06D035052441009d1E6",
+      "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
+      "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03"
+    },
+    {
+      "ChainName":"HECO",
+      "ChainId":7,
+      "Nodes": [
+        {
+          "Url": "https://http-mainnet.hecochain.com"
+        }
+      ],
+      "ExtendNodes": [
+      ]
+    }
+  ]
+}

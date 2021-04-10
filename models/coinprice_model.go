@@ -19,13 +19,20 @@ package models
 
 import "math/big"
 
+const (
+	TokenTypeErc20 uint8 = iota
+	TokenTypeErc721
+)
+
 type TokenBasic struct {
 	Name         string         `gorm:"primaryKey;size:64;not null"`
 	Precision    uint64         `gorm:"type:bigint(20);not null"`
 	Price        int64          `gorm:"size:64;not null"`
-	Ind          uint64         `gorm:"type:bigint(20);not null"`
+	Ind          uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
 	Time         int64          `gorm:"type:bigint(20);not null"`
-	Property     int64          `gorm:"type:bigint(20);not null"`
+	Property     int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
+	Standard     uint8          `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
+	Meta         string         `gorm:"type:varchar(128)"`
 	PriceMarkets []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
 	Tokens       []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
@@ -58,6 +65,7 @@ type Token struct {
 	Precision      uint64      `gorm:"type:bigint(20);not null"`
 	TokenBasicName string      `gorm:"size:64;not null"`
 	Property       int64       `gorm:"type:bigint(20);not null"`
+	Standard       uint8       `gorm:"type:int(8);not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 	TokenMaps      []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
 }
@@ -69,6 +77,7 @@ type TokenMap struct {
 	DstChainId   uint64 `gorm:"primaryKey;type:bigint(20);not null"`
 	DstTokenHash string `gorm:"primaryKey;size:66;not null"`
 	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
+	Standard     uint8  `gorm:"type:int(8);not null"`
 	Property     int64  `gorm:"type:bigint(20);not null"`
 }
 

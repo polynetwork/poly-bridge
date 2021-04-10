@@ -83,8 +83,8 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Preload("PolyTransaction").
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
-		Preload("Token").
-		Preload("Token.TokenBasic").
+		Preload("Asset").
+		Preload("Asset.TokenBasic").
 		Limit(transactionsOfAddressReq.PageSize).Offset(transactionsOfAddressReq.PageSize * transactionsOfAddressReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
@@ -115,8 +115,8 @@ func (c *TransactionController) getTransactionByHash(hash string) (*models.SrcPo
 		Preload("PolyTransaction").
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
-		Preload("Token").
-		Preload("Token.TokenBasic").
+		Preload("Asset").
+		Preload("Asset.TokenBasic").
 		Order("src_transactions.time desc").
 		Find(srcPolyDstRelation)
 	if res.RowsAffected == 0 {

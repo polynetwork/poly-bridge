@@ -27,6 +27,7 @@ type Chain struct {
 type SrcTransaction struct {
 	Hash        string       `gorm:"primaryKey;size:66;not null"`
 	ChainId     uint64       `gorm:"type:bigint(20);not null"`
+	Standard    uint8        `gorm:"type:int(8);not null"`
 	State       uint64       `gorm:"type:bigint(20);not null"`
 	Time        uint64       `gorm:"type:bigint(20);not null"`
 	Fee         *BigInt      `gorm:"type:varchar(64);not null"`
@@ -42,6 +43,7 @@ type SrcTransaction struct {
 type SrcTransfer struct {
 	TxHash     string  `gorm:"primaryKey;size:66;not null"`
 	ChainId    uint64  `gorm:"type:bigint(20);not null"`
+	Standard   uint8   `gorm:"type:int(8);not null"`
 	Time       uint64  `gorm:"type:bigint(20);not null"`
 	Asset      string  `gorm:"type:varchar(66);not null"`
 	From       string  `gorm:"type:varchar(66);not null"`
@@ -55,6 +57,7 @@ type SrcTransfer struct {
 type PolyTransaction struct {
 	Hash       string  `gorm:"primaryKey;size:66;not null"`
 	ChainId    uint64  `gorm:"type:bigint(20);not null"`
+	Standard   uint8   `gorm:"type:int(8);not null"`
 	State      uint64  `gorm:"type:bigint(20);not null"`
 	Time       uint64  `gorm:"type:bigint(20);not null"`
 	Fee        *BigInt `gorm:"type:varchar(64);not null"`
@@ -75,6 +78,7 @@ type PolySrcRelation struct {
 type DstTransaction struct {
 	Hash        string       `gorm:"primaryKey;size:66;not null"`
 	ChainId     uint64       `gorm:"type:bigint(20);not null"`
+	Standard    uint8        `gorm:"type:int(8);not null"`
 	State       uint64       `gorm:"type:bigint(20);not null"`
 	Time        uint64       `gorm:"type:bigint(20);not null"`
 	Fee         *BigInt      `gorm:"type:varchar(64);not null"`
@@ -86,19 +90,21 @@ type DstTransaction struct {
 }
 
 type DstTransfer struct {
-	TxHash  string  `gorm:"primaryKey;size:66;not null"`
-	ChainId uint64  `gorm:"type:bigint(20);not null"`
-	Time    uint64  `gorm:"type:bigint(20);not null"`
-	Asset   string  `gorm:"type:varchar(66);not null"`
-	From    string  `gorm:"type:varchar(66);not null"`
-	To      string  `gorm:"type:varchar(66);not null"`
-	Amount  *BigInt `gorm:"type:varchar(64);not null"`
+	TxHash   string  `gorm:"primaryKey;size:66;not null"`
+	ChainId  uint64  `gorm:"type:bigint(20);not null"`
+	Standard uint8   `gorm:"type:int(8);not null"`
+	Time     uint64  `gorm:"type:bigint(20);not null"`
+	Asset    string  `gorm:"type:varchar(66);not null"`
+	From     string  `gorm:"type:varchar(66);not null"`
+	To       string  `gorm:"type:varchar(66);not null"`
+	Amount   *BigInt `gorm:"type:varchar(64);not null"`
 }
 
 type WrapperTransaction struct {
 	Hash         string  `gorm:"primaryKey;size:66;not null"`
 	User         string  `gorm:"type:varchar(66);not null"`
 	SrcChainId   uint64  `gorm:"type:bigint(20);not null"`
+	Standard     uint8   `gorm:"type:int(8);not null"`
 	BlockHeight  uint64  `gorm:"type:bigint(20);not null"`
 	Time         uint64  `gorm:"type:bigint(20);not null"`
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
@@ -119,5 +125,5 @@ type SrcPolyDstRelation struct {
 	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
 	ChainId            uint64          `gorm:"type:bigint(20);not null"`
 	TokenHash          string          `gorm:"type:varchar(66);not null"`
-	Token              *Token          `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
+	Token              *Token          `gorm:"foreignKey:AssetHash,ChainId;references:Hash,ChainId"`
 }

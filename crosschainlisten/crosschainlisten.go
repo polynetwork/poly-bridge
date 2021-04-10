@@ -166,11 +166,11 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			} else if extendHeight >= height+21 {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
-			if chain.Height >= height - ccl.handle.GetDefer() {
+			if chain.Height >= height-ccl.handle.GetDefer() {
 				continue
 			}
 			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
-			for chain.Height < height - ccl.handle.GetDefer() {
+			for chain.Height < height-ccl.handle.GetDefer() {
 				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.handle.HandleNewBlock(chain.Height + 1)
 				if err != nil {
 					logs.Error("HandleNewBlock err: %v", err)

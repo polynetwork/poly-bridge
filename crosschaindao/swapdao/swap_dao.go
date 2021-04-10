@@ -29,14 +29,14 @@ import (
 )
 
 type SwapDao struct {
-	dbCfg *conf.DBConfig
-	db    *gorm.DB
+	dbCfg  *conf.DBConfig
+	db     *gorm.DB
 	backup bool
 }
 
 func NewSwapDao(dbCfg *conf.DBConfig, backup bool) *SwapDao {
 	swapDao := &SwapDao{
-		dbCfg: dbCfg,
+		dbCfg:  dbCfg,
 		backup: backup,
 	}
 	Logger := logger.Default
@@ -232,12 +232,12 @@ func (dao *SwapDao) RemoveToken(token string) error {
 			tokenMap.SrcChainId, strings.ToLower(tokenMap.SrcTokenHash), tokenMap.DstChainId, strings.ToLower(tokenMap.DstTokenHash)).Delete(&models.TokenMap{})
 	}
 	for _, token := range tokenBasic.Tokens {
-		dao.db.Where("hash = ? and chain_id = ?",token.Hash, token.ChainId).Delete(&models.Token{})
+		dao.db.Where("hash = ? and chain_id = ?", token.Hash, token.ChainId).Delete(&models.Token{})
 	}
 	for _, priceMarket := range tokenBasic.PriceMarkets {
-		dao.db.Where("token_basic_name = ? and market_name = ?",priceMarket.TokenBasicName, priceMarket.MarketName).Delete(&models.PriceMarket{})
+		dao.db.Where("token_basic_name = ? and market_name = ?", priceMarket.TokenBasicName, priceMarket.MarketName).Delete(&models.PriceMarket{})
 	}
-	dao.db.Where("name = ?",tokenBasic.Name).Delete(&models.TokenBasic{})
+	dao.db.Where("name = ?", tokenBasic.Name).Delete(&models.TokenBasic{})
 	return nil
 }
 
