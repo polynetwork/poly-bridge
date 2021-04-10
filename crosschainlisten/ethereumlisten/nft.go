@@ -89,7 +89,7 @@ func (e *EthereumChainListen) HandleNFTNewBlock(
 		}
 	}
 
-	addTokenStandard(wrapperTransactions, srcTransactions, dstTransactions)
+	addERC721TokenStandard(wrapperTransactions, srcTransactions, dstTransactions)
 
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
@@ -149,7 +149,7 @@ func (e *EthereumChainListen) HandleNFTBlockBatch(
 		}
 	}
 
-	addTokenStandard(wrapperTransactions, srcTransactions, dstTransactions)
+	addERC721TokenStandard(wrapperTransactions, srcTransactions, dstTransactions)
 
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }

@@ -172,7 +172,7 @@ func convertUnlockProxyEvent(evt *nftlp.PolyNFTLockProxyUnlockEvent) *models.Pro
 	}
 }
 
-func addTokenStandard(
+func addERC721TokenStandard(
 	wptxs []*models.WrapperTransaction,
 	srcTxs []*models.SrcTransaction,
 	dstTxs []*models.DstTransaction) {
