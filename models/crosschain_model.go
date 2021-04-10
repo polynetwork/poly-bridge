@@ -57,7 +57,7 @@ type SrcTransfer struct {
 type PolyTransaction struct {
 	Hash       string  `gorm:"primaryKey;size:66;not null"`
 	ChainId    uint64  `gorm:"type:bigint(20);not null"`
-	Standard   uint8   `gorm:"type:int(8);not null"`
+	//Standard   uint8   `gorm:"type:int(8);not null"`
 	State      uint64  `gorm:"type:bigint(20);not null"`
 	Time       uint64  `gorm:"type:bigint(20);not null"`
 	Fee        *BigInt `gorm:"type:varchar(64);not null"`

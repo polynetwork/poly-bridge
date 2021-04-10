@@ -171,3 +171,25 @@ func convertUnlockProxyEvent(evt *nftlp.PolyNFTLockProxyUnlockEvent) *models.Pro
 		Amount:      evt.TokenId,
 	}
 }
+
+func addTokenStandard(
+	wptxs []*models.WrapperTransaction,
+	srcTxs []*models.SrcTransaction,
+	dstTxs []*models.DstTransaction) {
+
+	for _, v := range wptxs {
+		v.Standard = models.TokenTypeErc721
+	}
+	for _, v := range srcTxs {
+		v.Standard = models.TokenTypeErc721
+		if v.SrcTransfer != nil {
+			v.SrcTransfer.Standard = models.TokenTypeErc721
+		}
+	}
+	for _, v := range dstTxs {
+		v.Standard = models.TokenTypeErc721
+		if v.DstTransfer != nil {
+			v.DstTransfer.Standard = models.TokenTypeErc721
+		}
+	}
+}
