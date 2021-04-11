@@ -180,13 +180,15 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 
 	// filter and append nft wrap events
-	nftWrapTx, nftSrcTx, _, nftDstTx, err := this.HandleNFTNewBlock(height, tt, eccmLockEvents, eccmUnLockEvents)
-	if err != nil {
-		return nil, nil, nil, nil, err
+	if isContract(this.ethCfg.NFTProxyContract) && isContract(this.ethCfg.NFTWrapperContract) {
+		nftWrapTx, nftSrcTx, _, nftDstTx, err := this.HandleNFTNewBlock(height, tt, eccmLockEvents, eccmUnLockEvents)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		wrapperTransactions = append(wrapperTransactions, nftWrapTx...)
+		srcTransactions = append(srcTransactions, nftSrcTx...)
+		dstTransactions = append(dstTransactions, nftDstTx...)
 	}
-	wrapperTransactions = append(wrapperTransactions, nftWrapTx...)
-	srcTransactions = append(srcTransactions, nftSrcTx...)
-	dstTransactions = append(dstTransactions, nftDstTx...)
 
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
@@ -276,13 +278,15 @@ func (this *EthereumChainListen) HandleNewBlockBatch(startHeight uint64, endHeig
 		}
 	}
 
-	nftWrapTx, nftSrcTx, _, nftDstTx, err := this.HandleNFTBlockBatch(startHeight, endHeight, eccmLockEvents, eccmUnLockEvents)
-	if err != nil {
-		return nil, nil, nil, nil, err
+	if isContract(this.ethCfg.NFTProxyContract) && isContract(this.ethCfg.NFTWrapperContract) {
+		nftWrapTx, nftSrcTx, _, nftDstTx, err := this.HandleNFTBlockBatch(startHeight, endHeight, eccmLockEvents, eccmUnLockEvents)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		wrapperTransactions = append(wrapperTransactions, nftWrapTx...)
+		srcTransactions = append(srcTransactions, nftSrcTx...)
+		dstTransactions = append(dstTransactions, nftDstTx...)
 	}
-	wrapperTransactions = append(wrapperTransactions, nftWrapTx...)
-	srcTransactions = append(srcTransactions, nftSrcTx...)
-	dstTransactions = append(dstTransactions, nftDstTx...)
 
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
