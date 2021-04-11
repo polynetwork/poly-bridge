@@ -175,7 +175,6 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 	// save unLockEvent to db
 	for _, unLockEvent := range eccmUnLockEvents {
-		isNft := this.isNFTECCMUnlockEvent(unLockEvent)
 		if unLockEvent.Method == _eth_crosschainunlock {
 			logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), unLockEvent.TxHash)
 			dstTransaction := &models.DstTransaction{}
@@ -189,7 +188,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.Contract = unLockEvent.Contract
 			dstTransaction.PolyHash = unLockEvent.RTxHash
 			for _, v := range proxyUnlockEvents {
-				if v.TxHash == unLockEvent.TxHash && !isNft {
+				if v.TxHash == unLockEvent.TxHash {
 					dstTransfer := &models.DstTransfer{}
 					dstTransfer.TxHash = unLockEvent.TxHash
 					dstTransfer.Time = tt
