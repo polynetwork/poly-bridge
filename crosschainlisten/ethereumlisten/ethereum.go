@@ -125,6 +125,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
 	for _, lockEvent := range eccmLockEvents {
+		isNft := this.isNFTECCMLockEvent(lockEvent)
 		if lockEvent.Method == _eth_crosschainlock {
 			logs.Info("(lock) from chain: %s, txhash: %s, txid: %s", this.GetChainName(), lockEvent.TxHash, lockEvent.Txid)
 			srcTransaction := &models.SrcTransaction{}
@@ -140,7 +141,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Key = lockEvent.Txid
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			for _, v := range erc20ProxyLockEvents {
-				if v.TxHash == lockEvent.TxHash {
+				if v.TxHash == lockEvent.TxHash  && !isNft {
 					toAssetHash := v.ToAssetHash
 					srcTransfer := &models.SrcTransfer{}
 					srcTransfer.Time = tt
@@ -158,7 +159,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				}
 			}
 			for _, v := range nftProxyLockEvents {
-				if v.TxHash == lockEvent.TxHash {
+				if v.TxHash == lockEvent.TxHash && isNft {
 					toAssetHash := v.ToAssetHash
 					srcTransfer := &models.SrcTransfer{}
 					srcTransfer.Time = tt
@@ -182,6 +183,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 	// save unLockEvent to db
 	for _, unLockEvent := range eccmUnLockEvents {
+		isNft := this.isNFTECCMUnlockEvent(unLockEvent)
 		if unLockEvent.Method == _eth_crosschainunlock {
 			logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), unLockEvent.TxHash)
 			dstTransaction := &models.DstTransaction{}
@@ -195,7 +197,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.Contract = unLockEvent.Contract
 			dstTransaction.PolyHash = unLockEvent.RTxHash
 			for _, v := range erc20ProxyUnlockEvents {
-				if v.TxHash == unLockEvent.TxHash {
+				if v.TxHash == unLockEvent.TxHash && !isNft {
 					dstTransfer := &models.DstTransfer{}
 					dstTransfer.TxHash = unLockEvent.TxHash
 					dstTransfer.Time = tt
@@ -209,7 +211,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				}
 			}
 			for _, v := range nftProxyUnlockEvents {
-				if v.TxHash == unLockEvent.TxHash {
+				if v.TxHash == unLockEvent.TxHash && isNft {
 					dstTransfer := &models.DstTransfer{}
 					dstTransfer.TxHash = unLockEvent.TxHash
 					dstTransfer.Time = tt
