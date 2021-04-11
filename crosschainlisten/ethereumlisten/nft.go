@@ -6,12 +6,29 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/go_abi/eccm_abi"
 	nftlp "poly-bridge/go_abi/nft_lock_proxy_abi"
 	nftwp "poly-bridge/go_abi/nft_wrap_abi"
 	"poly-bridge/models"
+	"strings"
 )
+
+var minAddr, _ = new(big.Int).SetString("1111111111111111111111111111111111111111", 10)
+
+func isContract(addr string) bool {
+	if strings.Trim(addr, " ") == "" {
+		return false
+	}
+	if addr == "0000000000000000000000000000000000000000" {
+		return false
+	}
+	if len(addr) < 40 {
+		return false
+	}
+	return true
+}
 
 func (e *EthereumChainListen) NFTWrapperAddress() common.Address {
 	return common.HexToAddress(e.ethCfg.NFTWrapperContract)
