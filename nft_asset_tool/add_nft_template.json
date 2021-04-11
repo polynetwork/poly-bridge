@@ -2,9 +2,9 @@
   "Server":"polyswap",
   "Backup": false,
   "DBConfig":{
-    "URL":"localhost:3306",
+    "URL":"127.0.0.1:3306",
     "User":"root",
-    "Password":"111111",
+    "Password":"wKd5sstfSsY3/Q==",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -13,22 +13,25 @@
       "Name":"cat1",
       "Assets":[
         {
-          "ChainId":6,
-          "Hash":"0x03d84da9432F7Cb5364A8b99286f97c59f738001",
+          "ChainId":2,
+          "Hash":"a85c9FC8F2c9060d674E0CA97F703a0A30619305",
           "Name":"cat1",
-          "BaseUri": "http://106.75.250.160:10060/minio/"
+          "Meta": "http://106.75.250.160:10060/minio/",
+          "Property": 1,
+          "Standard": 1
         },
         {
-          "ChainId":2,
-          "Hash":"0x03d84da9432F7Cb5364A8b99286f97c59f738001",
+          "ChainId":79,
+          "Hash":"455B51D882571E244d03668f1a458ca74E70d196",
           "Name":"cat1",
-          "BaseUri": "http://106.75.250.160:10060/minio/"
+          "Meta": "http://106.75.250.160:10060/minio/",
+          "Property": 1,
+          "Standard": 1
         }
       ]
     }
   ],
-  "RemoveAssets": [
-    "cat1"
-  ],
+  "RemoveAssets": [],
+  "AssetMaps": [],
   "RemoveAssetMaps": []
 }
