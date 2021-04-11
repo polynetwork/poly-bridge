@@ -25,8 +25,8 @@ import (
 	"time"
 
 	log "github.com/astaxie/beego/logs"
-	"github.com/polynetwork/poly-nft-bridge/dao/crosschaindao"
-	"github.com/polynetwork/poly-nft-bridge/utils/files"
+	"poly-bridge/crosschaindao"
+	"poly-bridge/utils/files"
 	"github.com/urfave/cli"
 )
 
@@ -87,20 +87,20 @@ func handleAddAsset(ctx *cli.Context) error {
 
 	nowTime := time.Now().Unix()
 	for _, assetBasic := range cfg.AssetBasics {
-		for _, token := range assetBasic.Assets {
+		for _, token := range assetBasic.Tokens {
 			token.Hash = slimHash(token.Hash)
 		}
 		assetBasic.Time = nowTime
 	}
 
 	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.Backup, cfg.DBConfig)
-	if err := dao.RemoveAssets(cfg.RemoveAssets); err != nil {
+	if err := dao.RemoveTokens(cfg.RemoveAssets); err != nil {
 		return err
 	}
-	if err := dao.AddAssets(cfg.AssetBasics); err != nil {
+	if err := dao.AddTokens(cfg.AssetBasics, cfg.AssetMaps); err != nil {
 		return err
 	}
-	if err := dao.RemoveAssetMaps(cfg.RemoveAssetMaps); err != nil {
+	if err := dao.RemoveTokenMaps(cfg.RemoveAssetMaps); err != nil {
 		return err
 	}
 

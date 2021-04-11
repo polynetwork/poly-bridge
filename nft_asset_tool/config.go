@@ -18,8 +18,8 @@
 package main
 
 import (
-	"github.com/polynetwork/poly-nft-bridge/conf"
-	"github.com/polynetwork/poly-nft-bridge/models"
+	"poly-bridge/conf"
+	"poly-bridge/models"
 )
 
 type AddAssetConfig struct {
@@ -28,8 +28,9 @@ type AddAssetConfig struct {
 	DBConfig *conf.DBConfig
 	//Chains          []*models.Chain
 	//ChainFees       []*models.ChainFee
-	AssetBasics []*models.NFTAssetBasic
+	AssetBasics []*models.TokenBasic
+	AssetMaps   []*models.TokenMap
 	//AssetMaps       []*models.NFTAssetMap
-	RemoveAssetMaps []*models.NFTAssetMap
+	RemoveAssetMaps []*models.TokenMap
 	RemoveAssets    []string
 }

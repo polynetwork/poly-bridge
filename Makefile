@@ -26,7 +26,7 @@ poly_listen:
 	@mkdir -p $(BaseDir)/poly_listen/logs
 	@$(GOBUILD) -o $(BaseDir)/poly_listen/listener crosschainlisten/polylisten/cmd/main.go
 
-nft_asset_tool:
+nftasset_tool:
 	@mkdir -p $(BaseDir)/nft_asset_tool/logs
 	@$(GOBUILD) -o $(BaseDir)/nft_asset_tool/asset_tool nft_asset_tool/*.go
 
