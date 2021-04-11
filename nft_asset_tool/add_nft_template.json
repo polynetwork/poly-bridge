@@ -1,0 +1,34 @@
+{
+  "Server":"polyswap",
+  "Backup": false,
+  "DBConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"111111",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "AssetBasics":[
+    {
+      "Name":"cat1",
+      "Assets":[
+        {
+          "ChainId":6,
+          "Hash":"0x03d84da9432F7Cb5364A8b99286f97c59f738001",
+          "Name":"cat1",
+          "BaseUri": "http://106.75.250.160:10060/minio/"
+        },
+        {
+          "ChainId":2,
+          "Hash":"0x03d84da9432F7Cb5364A8b99286f97c59f738001",
+          "Name":"cat1",
+          "BaseUri": "http://106.75.250.160:10060/minio/"
+        }
+      ]
+    }
+  ],
+  "RemoveAssets": [
+    "cat1"
+  ],
+  "RemoveAssetMaps": []
+}

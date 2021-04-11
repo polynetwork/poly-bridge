@@ -1,0 +1,48 @@
+{
+  "Ethereum": {
+    "ChainID": 2,
+    "RPC": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144",
+    "Admin": "",
+    "Keystore": "",
+    "ECCD": "",
+    "ECCM": "",
+    "CCMP": "",
+    "NFTLockProxy": "",
+    "NFTWrap": "",
+    "FeeToken": "",
+    "FeeCollector": ""
+  },
+  "Bsc": {
+    "ChainID": 79,
+    "RPC": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144",
+    "Admin": "",
+    "Keystore": "",
+    "ECCD": "",
+    "ECCM": "",
+    "CCMP": "",
+    "NFTLockProxy": "",
+    "NFTWrap": "",
+    "FeeToken": "",
+    "FeeCollector": ""
+  },
+  "Heco": {
+    "ChainID": 7,
+    "RPC": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144",
+    "Admin": "",
+    "Keystore": "",
+    "ECCD": "",
+    "ECCM": "",
+    "CCMP": "",
+    "NFTLockProxy": "",
+    "NFTWrap": "",
+    "FeeToken": "",
+    "FeeCollector": ""
+  },
+  "Poly": {
+    "RPC": "",
+    "Keystore": "",
+    "Passphrase": ""
+  },
+  "LevelDB": "./leveldb",
+  "OSS": ""
+}
