@@ -76,9 +76,34 @@ func (c *FeeController) CheckFee() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
+	checkFeesReq4Nomal := make([]*models.CheckFeeReq, 0)
+	checkFeesReq4O3 := make([]*models.CheckFeeReq, 0)
+	for _, v := range checkFeesReq.Checks {
+		if v.ChainId == basedef.O3_CROSSCHAIN_ID {
+			checkFeesReq4O3 = append(checkFeesReq4O3, v)
+		} else {
+			checkFeesReq4Nomal = append(checkFeesReq4Nomal, v)
+		}
+	}
+	checkFees4Normal := make([]*models.CheckFee, 0)
+	checkFees4O3 := make([]*models.CheckFee, 0)
+	if len(checkFeesReq4O3) > 0 {
+		checkFees4O3 = c.CheckSwapFee(checkFeesReq4O3)
+	}
+	if len(checkFeesReq4Nomal) > 0 {
+		checkFees4Normal = c.CheckSwapFee(checkFeesReq4Nomal)
+	}
+	checkFees := make([]*models.CheckFee, 0)
+	checkFees = append(checkFees, checkFees4Normal...)
+	checkFees = append(checkFees, checkFees4O3...)
+	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
+	c.ServeJSON()
+}
+
+func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFee {
 	hash2ChainId := make(map[string]uint64, 0)
 	requestHashs := make([]string, 0)
-	for _, check := range checkFeesReq.Checks {
+	for _, check := range Checks {
 		hash2ChainId[check.Hash] = check.ChainId
 		requestHashs = append(requestHashs, check.Hash)
 		requestHashs = append(requestHashs, basedef.HexStringReverse(check.Hash))
@@ -99,7 +124,7 @@ func (c *FeeController) CheckFee() {
 		}
 	}
 	checkHashes := make([]string, 0)
-	for _, check := range checkFeesReq.Checks {
+	for _, check := range Checks {
 		newHash, ok := key2Txhash[check.Hash]
 		if ok {
 			checkHashes = append(checkHashes, newHash)
@@ -118,7 +143,7 @@ func (c *FeeController) CheckFee() {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	checkFees := make([]*models.CheckFee, 0)
-	for _, check := range checkFeesReq.Checks {
+	for _, check := range Checks {
 		checkFee := &models.CheckFee{}
 		checkFee.Hash = check.Hash
 		checkFee.ChainId = check.ChainId
@@ -164,8 +189,7 @@ func (c *FeeController) CheckFee() {
 		checkFee.MinProxyFee = feeMin
 		checkFees = append(checkFees, checkFee)
 	}
-	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
-	c.ServeJSON()
+	return checkFees
 }
 
 func (c *FeeController) getSwapSrcTransactions(o3Hashs []string) (map[string]string, error) {
@@ -175,7 +199,7 @@ func (c *FeeController) getSwapSrcTransactions(o3Hashs []string) (map[string]str
 		Where("dst_transactions.hash in ?", o3Hashs).
 		Joins("inner join poly_transactions on dst_transactions.poly_hash = poly_transactions.hash").
 		Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.hash").
-		Find(srcPolyDstRelations)
+		Find(&srcPolyDstRelations)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -186,18 +210,10 @@ func (c *FeeController) getSwapSrcTransactions(o3Hashs []string) (map[string]str
 	return checkHashes, nil
 }
 
-func (c *FeeController) CheckSwapFee() {
-	logs.Debug("check fee request: %s", string(c.Ctx.Input.RequestBody))
-	var checkFeesReq models.CheckFeesReq
-	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &checkFeesReq); err != nil {
-		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
-		c.Ctx.ResponseWriter.WriteHeader(400)
-		c.ServeJSON()
-	}
+func (c *FeeController) CheckSwapFee(Checks []*models.CheckFeeReq) []*models.CheckFee {
 	hash2ChainId := make(map[string]uint64, 0)
 	requestHashs := make([]string, 0)
-	for _, check := range checkFeesReq.Checks {
+	for _, check := range Checks {
 		hash2ChainId[check.Hash] = check.ChainId
 		requestHashs = append(requestHashs, check.Hash)
 		requestHashs = append(requestHashs, basedef.HexStringReverse(check.Hash))
@@ -221,14 +237,11 @@ func (c *FeeController) CheckSwapFee() {
 	}
 	srcHashs, err := c.getSwapSrcTransactions(o3Hashs)
 	if err != nil {
-		c.Data["json"] = err.Error()
-		c.Ctx.ResponseWriter.WriteHeader(400)
-		c.ServeJSON()
-		return
+		return nil
 	}
 
 	checkHashes := make([]string, 0)
-	for _, check := range checkFeesReq.Checks {
+	for _, check := range Checks {
 		newHash1, ok1 := key2Txhash[check.Hash]
 		if ok1 {
 			newHash2, ok2 := srcHashs[newHash1]
@@ -251,7 +264,7 @@ func (c *FeeController) CheckSwapFee() {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	checkFees := make([]*models.CheckFee, 0)
-	for _, check := range checkFeesReq.Checks {
+	for _, check := range Checks {
 		checkFee := &models.CheckFee{}
 		checkFee.Hash = check.Hash
 		checkFee.ChainId = check.ChainId
@@ -303,6 +316,5 @@ func (c *FeeController) CheckSwapFee() {
 		checkFee.MinProxyFee = feeMin
 		checkFees = append(checkFees, checkFee)
 	}
-	c.Data["json"] = models.MakeCheckFeesRsp(checkFees)
-	c.ServeJSON()
+	return checkFees
 }
