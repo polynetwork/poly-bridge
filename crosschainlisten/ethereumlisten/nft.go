@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"poly-bridge/go_abi/eccm_abi"
 	nftlp "poly-bridge/go_abi/nft_lock_proxy_abi"
 	nftwp "poly-bridge/go_abi/nft_wrap_abi"
@@ -47,12 +48,14 @@ func isContract(addr string) bool {
 func (e *EthereumChainListen) isNFTECCMLockEvent(event *models.ECCMLockEvent) bool {
 	addr1 := common.HexToAddress(event.Contract)
 	addr2 := common.HexToAddress(e.ethCfg.NFTProxyContract)
+	logs.Info("----- event contract %s, nft proxy %s", event.Contract, e.ethCfg.NFTProxyContract)
 	return bytes.Equal(addr1.Bytes(), addr2.Bytes())
 }
 
 func (e *EthereumChainListen) isNFTECCMUnlockEvent(event *models.ECCMUnlockEvent) bool {
 	addr1 := common.HexToAddress(event.Contract)
 	addr2 := common.HexToAddress(e.ethCfg.NFTProxyContract)
+	logs.Info("----- event contract %s, nft proxy %s", event.Contract, e.ethCfg.NFTProxyContract)
 	return bytes.Equal(addr1.Bytes(), addr2.Bytes())
 }
 
