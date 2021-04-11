@@ -18,8 +18,8 @@
 package self
 
 type Rsp struct {
-	Code int
-	Msg string
+	Code   int
+	Msg    string
 	Prices []*Ticker
 }
 

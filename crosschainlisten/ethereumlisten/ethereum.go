@@ -32,9 +32,9 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
-	"poly-bridge/crosschainlisten/ethereumlisten/eccm_abi"
-	"poly-bridge/crosschainlisten/ethereumlisten/lock_proxy_abi"
-	"poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
+	"poly-bridge/go_abi/eccm_abi"
+	"poly-bridge/go_abi/lock_proxy_abi"
+	"poly-bridge/go_abi/wrapper_abi"
 	"poly-bridge/models"
 	"strings"
 )
@@ -178,6 +178,16 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransactions = append(dstTransactions, dstTransaction)
 		}
 	}
+
+	// filter and append nft wrap events
+	nftWrapTx, nftSrcTx, _, nftDstTx, err := this.HandleNFTNewBlock(height, tt, eccmLockEvents, eccmUnLockEvents)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	wrapperTransactions = append(wrapperTransactions, nftWrapTx...)
+	srcTransactions = append(srcTransactions, nftSrcTx...)
+	dstTransactions = append(dstTransactions, nftDstTx...)
+
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
 
@@ -265,6 +275,15 @@ func (this *EthereumChainListen) HandleNewBlockBatch(startHeight uint64, endHeig
 			dstTransactions = append(dstTransactions, dstTransaction)
 		}
 	}
+
+	nftWrapTx, nftSrcTx, _, nftDstTx, err := this.HandleNFTBlockBatch(startHeight, endHeight, eccmLockEvents, eccmUnLockEvents)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	wrapperTransactions = append(wrapperTransactions, nftWrapTx...)
+	srcTransactions = append(srcTransactions, nftSrcTx...)
+	dstTransactions = append(dstTransactions, nftDstTx...)
+
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
 

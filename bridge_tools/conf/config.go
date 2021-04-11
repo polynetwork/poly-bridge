@@ -27,7 +27,7 @@ import (
 
 type DeployConfig struct {
 	Server      string
-	Backup                bool
+	Backup      bool
 	Chains      []*models.Chain
 	ChainFees   []*models.ChainFee
 	TokenBasics []*models.TokenBasic
@@ -58,7 +58,7 @@ type UpdateConfig struct {
 	TokenBasics     []*models.TokenBasic
 	TokenMaps       []*models.TokenMap
 	RemoveTokenMaps []*models.TokenMap
-	RemoveTokens []string
+	RemoveTokens    []string
 	DBConfig        *conf.DBConfig
 }
 
@@ -79,7 +79,7 @@ func NewUpdateConfig(filePath string) *UpdateConfig {
 
 type TransactionsConfig struct {
 	Server              string
-	Backup                bool
+	Backup              bool
 	SrcTransactions     []*models.SrcTransaction
 	WrapperTransactions []*models.WrapperTransaction
 	PolyTransactions    []*models.PolyTransaction

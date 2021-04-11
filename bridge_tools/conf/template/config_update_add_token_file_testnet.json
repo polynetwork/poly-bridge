@@ -1,0 +1,48 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"**",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name":"FILE",
+      "Precision":18,
+      "Property":1,
+      "Ind": 1,
+      "Price": 1000000,
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"263730F5E01BeCA0A310873b25320f848F8501b5",
+          "Name":"FILE",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId": 79,
+          "Hash": "B7660A5eAe05277Cbb9F55CA82df215143876b39",
+          "Name":"FILE",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId": 7,
+          "Hash": "B7660A5eAe05277Cbb9F55CA82df215143876b39",
+          "Name":"FILE",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    }
+  ],
+  "RemoveTokens": [
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}

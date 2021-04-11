@@ -57,4 +57,3 @@ func TestListenSelfCoinPrice(t *testing.T) {
 	cpListen := coinpricelisten.NewCoinPriceListen(config.CoinPriceUpdateSlot, priceMarkets, dao)
 	cpListen.ListenPrice()
 }
-

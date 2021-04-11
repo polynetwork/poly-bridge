@@ -519,6 +519,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 }
 
 type TransactionsOfAddressReq struct {
+	State int // -1 表示查全部
 	Addresses []string
 	PageSize  int
 	PageNo    int

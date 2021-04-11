@@ -29,7 +29,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
-	"poly-bridge/crosschainlisten/ethereumlisten/wrapper_abi"
+	"poly-bridge/go_abi/wrapper_abi"
 	"strings"
 	"testing"
 )

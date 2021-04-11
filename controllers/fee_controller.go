@@ -168,7 +168,7 @@ func (c *FeeController) CheckFee() {
 	c.ServeJSON()
 }
 
-func (c *FeeController) getSwapSrcTransactions(o3Hashs []string) (map[string]string,error) {
+func (c *FeeController) getSwapSrcTransactions(o3Hashs []string) (map[string]string, error) {
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Table("dst_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
