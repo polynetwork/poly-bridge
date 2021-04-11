@@ -173,13 +173,13 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			for chain.Height < height-ccl.handle.GetDefer() {
 				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.handle.HandleNewBlock(chain.Height + 1)
 				if err != nil {
-					logs.Error("HandleNewBlock err: %v", err)
+					logs.Error("HandleNewBlock %d err: %v", chain.Height + 1, err)
 					break
 				}
 				chain.Height += 1
 				err = ccl.db.UpdateEvents(chain, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 				if err != nil {
-					logs.Error("UpdateEvents err: %v", err)
+					logs.Error("UpdateEvents on block %d err: %v", chain.Height + 1, err)
 					chain.Height -= 1
 					break
 				}
