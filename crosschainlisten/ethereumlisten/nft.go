@@ -45,7 +45,6 @@ func (e *EthereumChainListen) HandleNFTNewBlock(
 	eccmUnLockEvents []*models.ECCMUnlockEvent) (
 	[]*models.WrapperTransaction,
 	[]*models.SrcTransaction,
-	[]*models.PolyTransaction,
 	[]*models.DstTransaction,
 	error,
 ) {
@@ -67,7 +66,7 @@ func (e *EthereumChainListen) HandleNFTNewBlock(
 
 	wrapperTransactions, err := e.getNFTWrapperEventByBlockNumber(wrapAddr, height, height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
 	for _, wtx := range wrapperTransactions {
 		logs.Info("(wrapper) from chain: %s, txhash: %s", chainName, wtx.Hash)
@@ -81,7 +80,7 @@ func (e *EthereumChainListen) HandleNFTNewBlock(
 	//}
 	proxyLockEvents, proxyUnlockEvents, err := e.getNFTProxyEventByBlockNumber(proxyAddr, height, height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	srcTransactions := make([]*models.SrcTransaction, 0)
@@ -105,7 +104,7 @@ func (e *EthereumChainListen) HandleNFTNewBlock(
 
 	addERC721TokenStandard(wrapperTransactions, srcTransactions, dstTransactions)
 
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
+	return wrapperTransactions, srcTransactions, dstTransactions, nil
 }
 
 func (e *EthereumChainListen) HandleNFTBlockBatch(
@@ -115,7 +114,6 @@ func (e *EthereumChainListen) HandleNFTBlockBatch(
 ) (
 	[]*models.WrapperTransaction,
 	[]*models.SrcTransaction,
-	[]*models.PolyTransaction,
 	[]*models.DstTransaction,
 	error,
 ) {
@@ -128,7 +126,7 @@ func (e *EthereumChainListen) HandleNFTBlockBatch(
 
 	wrapperTransactions, err := e.getNFTWrapperEventByBlockNumber(wrapAddr, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
 	for _, wtx := range wrapperTransactions {
 		logs.Info("(wrapper) from chain: %s, txhash: %s", chainName, wtx.Hash)
@@ -141,7 +139,7 @@ func (e *EthereumChainListen) HandleNFTBlockBatch(
 	//}
 	proxyLockEvents, proxyUnlockEvents, err := e.getNFTProxyEventByBlockNumber(proxyAddr, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
 	//
 
@@ -165,7 +163,7 @@ func (e *EthereumChainListen) HandleNFTBlockBatch(
 
 	addERC721TokenStandard(wrapperTransactions, srcTransactions, dstTransactions)
 
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
+	return wrapperTransactions, srcTransactions, dstTransactions, nil
 }
 
 func (e *EthereumChainListen) getNFTWrapperEventByBlockNumber(
