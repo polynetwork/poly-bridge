@@ -183,7 +183,7 @@ func (e *EthereumChainListen) getNFTWrapperEventByBlockNumber(
 	error,
 ) {
 	if !isContract(wrapAddrStr) {
-		return nil, fmt.Errorf("invalid wrapper contract")
+		return nil, nil
 	}
 
 	wrapAddr := common.HexToAddress(wrapAddrStr)
@@ -273,7 +273,7 @@ func (e *EthereumChainListen) getNFTProxyEventByBlockNumber(
 	error,
 ) {
 	if !isContract(proxyAddrStr) {
-		return nil, nil, fmt.Errorf("invalid nft contract address")
+		return nil, nil, nil
 	}
 
 	proxyAddr := common.HexToAddress(proxyAddrStr)
