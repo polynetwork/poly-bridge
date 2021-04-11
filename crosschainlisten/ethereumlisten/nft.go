@@ -6,7 +6,6 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/go_abi/eccm_abi"
 	nftlp "poly-bridge/go_abi/nft_lock_proxy_abi"
@@ -14,8 +13,6 @@ import (
 	"poly-bridge/models"
 	"strings"
 )
-
-var minAddr, _ = new(big.Int).SetString("1111111111111111111111111111111111111111", 10)
 
 func isContract(addr string) bool {
 	if strings.Trim(addr, " ") == "" {
