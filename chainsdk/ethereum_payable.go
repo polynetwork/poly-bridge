@@ -322,11 +322,12 @@ func (s *EthereumSdk) GetTokensById(wrapperAddr, asset common.Address, tokenIdLi
 	}
 
 	sink := polycm.NewZeroCopySink(nil)
-	sink.WriteUint8(uint8(len(tokenIdList)))
-	for _, v := range tokenIdList {
+	list := []*big.Int{big.NewInt(int64(len(tokenIdList)))}
+	list = append(list, tokenIdList...)
+	for _, v := range list {
 		hash := common.BytesToHash(v.Bytes())
 		reversed := polycm.ToArrayReverse(hash[:])
-		data, err := polycm.Uint256ParseFromBytes(reversed)
+		data, err := polycm.Uint256ParseFromBytes(reversed[:])
 		if err != nil {
 			return nil, err
 		}
