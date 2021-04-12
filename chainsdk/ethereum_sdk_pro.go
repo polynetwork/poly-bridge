@@ -352,12 +352,12 @@ func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (
 	}
 }
 
-func (pro *EthereumSdkPro) GetNFTs(asset, owner common.Address, start, end int) ([]*big.Int, error) {
+func (pro *EthereumSdkPro) GetNFTs(asset, owner common.Address, start, length int) (map[*big.Int]string, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("current node is not working")
 	}
-	return info.sdk.GetOwnerNFTs(asset, owner, start, end)
+	return info.sdk.GetOwnerNFTs(asset, owner, start, length)
 }
 
 func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) ([]*big.Int, error) {
