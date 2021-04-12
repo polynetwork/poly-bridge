@@ -146,6 +146,12 @@ func output(c *beego.Controller, data interface{}) {
 	c.ServeJSON()
 }
 
+func customOutput(c *beego.Controller, code int, msg string) {
+	c.Data["json"] = models.MakeErrorRsp(msg)
+	c.Ctx.ResponseWriter.WriteHeader(code)
+	c.ServeJSON()
+}
+
 func getPageNo(totalNo, pageSize int) int {
 	return (int(totalNo) + pageSize - 1) / pageSize
 }

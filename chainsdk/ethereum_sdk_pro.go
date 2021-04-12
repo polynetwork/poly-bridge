@@ -348,6 +348,24 @@ func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (int, error) 
 	return 0, fmt.Errorf("all node is not working")
 }
 
+func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (common.Address, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return EmptyAddress, fmt.Errorf("all node is not working")
+	}
+
+	for info != nil {
+		owner, err := info.sdk.GetNFTOwner(asset, tokenId)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return owner, nil
+		}
+	}
+	return EmptyAddress, fmt.Errorf("all node is not working")
+}
+
 func (pro *EthereumSdkPro) GetNFTs(asset, owner common.Address, start, end int) ([]*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
@@ -384,7 +402,7 @@ func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) ([
 	return nil, fmt.Errorf("all node is not working")
 }
 
-func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (map[uint64]string, error) {
+func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (map[string]string, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
