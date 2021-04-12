@@ -167,10 +167,10 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						srcTransaction.Standard = models.TokenTypeErc721
 						srcTransaction.SrcTransfer.Standard = models.TokenTypeErc721
 					}
+					srcTransactions = append(srcTransactions, srcTransaction)
 					break
 				}
 			}
-			srcTransactions = append(srcTransactions, srcTransaction)
 		}
 	}
 	// save unLockEvent to db
@@ -202,10 +202,10 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						dstTransaction.Standard = models.TokenTypeErc721
 						dstTransaction.DstTransfer.Standard = models.TokenTypeErc721
 					}
+					dstTransactions = append(dstTransactions, dstTransaction)
 					break
 				}
 			}
-			dstTransactions = append(dstTransactions, dstTransaction)
 		}
 	}
 
