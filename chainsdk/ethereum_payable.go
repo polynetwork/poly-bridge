@@ -296,6 +296,7 @@ func (s *EthereumSdk) GetOwnerNFTs(wrapperAddr, asset common.Address, owner comm
 	if err != nil {
 		return nil, err
 	}
+
 	enc, err := wrapper.GetTokensByIndex(nil, asset, owner, big.NewInt(int64(start)), big.NewInt(int64(length)))
 	if err != nil {
 		return nil, err
@@ -311,7 +312,8 @@ func (s *EthereumSdk) GetOwnerNFTs(wrapperAddr, asset common.Address, owner comm
 	)
 	for {
 		if num, eof = source.NextHash(); !eof {
-			tokenId = new(big.Int).SetBytes(bytes.ReverseRune(num[:]))
+			bz := bytes.ReverseRune(num[:])
+			tokenId = new(big.Int).SetBytes(bz)
 		} else {
 			break
 		}
@@ -321,8 +323,7 @@ func (s *EthereumSdk) GetOwnerNFTs(wrapperAddr, asset common.Address, owner comm
 			break
 		}
 	}
-
-	return res, nil
+	return nil, nil
 }
 
 func (s *EthereumSdk) GetAssetNFTs(asset common.Address, indexStart, indexEnd int) ([]*big.Int, error) {

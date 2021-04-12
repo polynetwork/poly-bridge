@@ -20,6 +20,7 @@ package controllers
 import (
 	"bytes"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"math/big"
 	"poly-bridge/chainsdk"
 	"strings"
@@ -54,6 +55,7 @@ func (c *ItemController) Items() {
 	asset := common.HexToAddress(req.Asset)
 	totalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
+		logs.Error("get nft balance err: %v", err)
 		nodeInvalid(&c.Controller)
 		return
 	}
@@ -67,6 +69,7 @@ func (c *ItemController) Items() {
 	}
 
 	if start >= totalCnt {
+		logs.Error("start %d > totalCnt %d", start, totalCnt)
 		empty()
 		return
 	}
@@ -85,6 +88,7 @@ func (c *ItemController) Items() {
 
 	res, err := sdk.GetNFTs(wrapper, asset, owner, start, req.PageSize)
 	if err != nil || len(res) == 0 {
+		logs.Error("batch get NFT token infos err: %v", err)
 		empty()
 		return
 	}

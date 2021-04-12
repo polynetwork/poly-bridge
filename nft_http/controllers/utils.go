@@ -20,6 +20,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -91,6 +92,7 @@ func Initialize(c *conf.Config) {
 		pro := chainsdk.NewEthereumSdkPro(v.GetNodesUrl(), v.ListenSlot, v.ChainId)
 		sdks[v.ChainId] = pro
 		wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
+		logs.Info("load chain id %d, contract %s", v.ChainId, v.NFTWrapperContract)
 	}
 }
 
