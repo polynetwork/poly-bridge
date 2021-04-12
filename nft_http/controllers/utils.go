@@ -20,6 +20,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
+	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -32,6 +33,7 @@ var (
 	db   = newDB()
 	sdks = make(map[uint64]*chainsdk.EthereumSdkPro)
 	assets = make([]*models.Token, 0)
+	wrapperAddrs = make(map[uint64]common.Address)
 )
 
 func newDB() *gorm.DB {
@@ -88,6 +90,7 @@ func Initialize(c *conf.Config) {
 	for _, v := range c.ChainListenConfig {
 		pro := chainsdk.NewEthereumSdkPro(v.GetNodesUrl(), v.ListenSlot, v.ChainId)
 		sdks[v.ChainId] = pro
+		wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
 	}
 }
 
@@ -97,6 +100,15 @@ func selectNode(chainID uint64) *chainsdk.EthereumSdkPro {
 		return nil
 	}
 	return pro
+}
+
+var emptyAddr = common.Address{}
+func selectWrapper(chainID uint64) common.Address {
+	addr, ok := wrapperAddrs[chainID]
+	if !ok {
+		return emptyAddr
+	}
+	return addr
 }
 
 const (
