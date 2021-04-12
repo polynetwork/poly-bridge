@@ -291,8 +291,8 @@ func (s *EthereumSdk) GetNFTOwner(asset common.Address, tokenID *big.Int) (commo
 	return cm.OwnerOf(nil, tokenID)
 }
 
-func (s *EthereumSdk) GetOwnerNFTs(asset common.Address, owner common.Address, start, length int) (map[*big.Int]string, error) {
-	wrapper, err := nftwrap.NewPolyNFTWrapper(asset, s.backend())
+func (s *EthereumSdk) GetOwnerNFTs(wrapperAddr, asset common.Address, owner common.Address, start, length int) (map[*big.Int]string, error) {
+	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return nil, err
 	}

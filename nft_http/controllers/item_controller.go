@@ -44,10 +44,14 @@ func (c *ItemController) Items() {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}
+	wrapper := selectWrapper(req.ChainId)
+	if wrapper == emptyAddr {
+		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+		return
+	}
 
 	owner := common.HexToAddress(req.Address)
 	asset := common.HexToAddress(req.Asset)
-
 	totalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
 		nodeInvalid(&c.Controller)
@@ -79,7 +83,7 @@ func (c *ItemController) Items() {
 		return
 	}
 
-	res, err := sdk.GetNFTs(asset, owner, start, req.PageSize)
+	res, err := sdk.GetNFTs(wrapper, asset, owner, start, req.PageSize)
 	if err != nil || len(res) == 0 {
 		empty()
 		return
