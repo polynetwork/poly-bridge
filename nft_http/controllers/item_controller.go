@@ -48,7 +48,6 @@ func (c *ItemController) Items() {
 	owner := common.HexToAddress(req.Address)
 	asset := common.HexToAddress(req.Asset)
 
-	items := make([]*Item, 0)
 	totalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
 		nodeInvalid(&c.Controller)
@@ -57,7 +56,6 @@ func (c *ItemController) Items() {
 
 	totalPage := getPageNo(totalCnt, req.PageSize)
 	start := req.PageNo * req.PageSize
-	end := start + req.PageSize
 
 	empty := func() {
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{})
@@ -68,16 +66,12 @@ func (c *ItemController) Items() {
 		empty()
 		return
 	}
-	if end > totalCnt {
-		end = totalCnt
-	}
 
 	tokenIdStr := strings.Trim(req.TokenId, " ")
 	if tokenIdStr != "" {
-		//list = []*big.Int{tokenId}
 		item, err := findItem(sdk, asset, owner, tokenIdStr)
 		if err != nil {
-			customOutput(&c.Controller, ErrCodeNotExist, err.Error())
+			empty()
 			return
 		}
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{item})
@@ -85,26 +79,17 @@ func (c *ItemController) Items() {
 		return
 	}
 
-	list, err := sdk.GetNFTs(asset, owner, start, end)
-	if err != nil {
-		nodeInvalid(&c.Controller)
-		return
-	}
-	if len(list) == 0 {
+	res, err := sdk.GetNFTs(asset, owner, start, req.PageSize)
+	if err != nil || len(res) == 0 {
 		empty()
 		return
 	}
 
-	urlmap, err := sdk.GetNFTURLs(asset, list)
-	if err != nil {
-		nodeInvalid(&c.Controller)
-		return
-	}
-
-	for _, v := range list {
+	items := make([]*Item, 0)
+	for tokenId, url := range res {
 		items = append(items, &Item{
-			TokenId: v.String(),
-			Url:     urlmap[v.String()],
+			TokenId: tokenId.String(),
+			Url:     url,
 		})
 	}
 

@@ -23,6 +23,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
+	"poly-bridge/utils/bytes"
 	"strings"
 
 	"github.com/ethereum/go-ethereum"
@@ -290,21 +291,38 @@ func (s *EthereumSdk) GetNFTOwner(asset common.Address, tokenID *big.Int) (commo
 	return cm.OwnerOf(nil, tokenID)
 }
 
-func (s *EthereumSdk) GetOwnerNFTs(asset common.Address, owner common.Address, indexStart, indexEnd int) ([]*big.Int, error) {
-	list := make([]*big.Int, 0)
-	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
+func (s *EthereumSdk) GetOwnerNFTs(asset common.Address, owner common.Address, start, length int) (map[*big.Int]string, error) {
+	wrapper, err := nftwrap.NewPolyNFTWrapper(asset, s.backend())
 	if err != nil {
 		return nil, err
 	}
-	for i := indexStart; i < indexEnd; i++ {
-		idx := new(big.Int).SetInt64(int64(i))
-		tokenId, err := cm.TokenOfOwnerByIndex(nil, owner, idx)
-		if err != nil {
+	enc, err := wrapper.GetTokensByIndex(nil, asset, owner, big.NewInt(int64(start)), big.NewInt(int64(length)))
+	if err != nil {
+		return nil, err
+	}
+
+	source := polycm.NewZeroCopySource(enc)
+	var (
+		num     polycm.Uint256
+		url     string
+		tokenId *big.Int
+		eof     bool
+		res     = make(map[*big.Int]string)
+	)
+	for {
+		if num, eof = source.NextHash(); !eof {
+			tokenId = new(big.Int).SetBytes(bytes.ReverseRune(num[:]))
+		} else {
 			break
 		}
-		list = append(list, tokenId)
+		if url, eof = source.NextString(); !eof {
+			res[tokenId] = url
+		} else {
+			break
+		}
 	}
-	return list, nil
+
+	return res, nil
 }
 
 func (s *EthereumSdk) GetAssetNFTs(asset common.Address, indexStart, indexEnd int) ([]*big.Int, error) {
