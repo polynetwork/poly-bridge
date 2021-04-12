@@ -18,14 +18,11 @@
 package controllers
 
 import (
-	"bytes"
-	"fmt"
-	"github.com/astaxie/beego/logs"
 	"math/big"
-	"poly-bridge/chainsdk"
 	"strings"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -62,33 +59,40 @@ func (c *ItemController) Items() {
 
 	totalPage := getPageNo(totalCnt, req.PageSize)
 	start := req.PageNo * req.PageSize
-
 	empty := func() {
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{})
 		output(&c.Controller, data)
 	}
 
-	if start >= totalCnt {
-		logs.Error("start %d > totalCnt %d", start, totalCnt)
-		empty()
-		return
-	}
-
 	tokenIdStr := strings.Trim(req.TokenId, " ")
 	if tokenIdStr != "" {
-		item, err := findItem(sdk, asset, owner, tokenIdStr)
+		tokenId, ok := new(big.Int).SetString(tokenIdStr, 10)
+		if !ok {
+			input(&c.Controller, req)
+			return
+		}
+		url, err := sdk.GetAndCheckTokenUrl(wrapper, asset, owner, tokenId)
 		if err != nil {
 			empty()
 			return
 		}
+		item := &Item{TokenId: tokenId.String(), Url: url}
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{item})
 		output(&c.Controller, data)
 		return
 	}
 
-	res, err := sdk.GetNFTs(wrapper, asset, owner, start, req.PageSize)
-	if err != nil || len(res) == 0 {
+	if start >= totalCnt {
+		empty()
+		return
+	}
+	res, err := sdk.GetTokensByIndex(wrapper, asset, owner, start, req.PageSize)
+	if err != nil {
 		logs.Error("batch get NFT token infos err: %v", err)
+		empty()
+		return
+	}
+	if len(res) == 0 {
 		empty()
 		return
 	}
@@ -103,34 +107,4 @@ func (c *ItemController) Items() {
 
 	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, items)
 	output(&c.Controller, data)
-}
-
-func findItem(sdk *chainsdk.EthereumSdkPro, asset, owner common.Address, tokenIdString string) (*Item, error) {
-	tokenId, ok := new(big.Int).SetString(tokenIdString, 10)
-	if !ok {
-		return nil, fmt.Errorf("invalid params")
-	}
-
-	addr, err := sdk.GetNFTOwner(asset, tokenId)
-	if err != nil {
-		return nil, err
-	}
-
-	if !bytes.Equal(addr.Bytes(), owner.Bytes()) {
-		return nil, fmt.Errorf("user is not token's owner")
-	}
-
-	data, err := sdk.GetNFTURLs(asset, []*big.Int{tokenId})
-	if err != nil {
-		return nil, err
-	}
-	url, ok := data[tokenId.String()]
-	if !ok {
-		return nil, fmt.Errorf("token %s url not exist", tokenId.String())
-	}
-
-	return &Item{
-		TokenId: tokenId.String(),
-		Url:     url,
-	}, nil
 }

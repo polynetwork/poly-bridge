@@ -19,16 +19,17 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math"
 	"math/big"
 	"runtime/debug"
 	"sync"
 	"time"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 type EthereumInfo struct {
@@ -352,12 +353,28 @@ func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (
 	}
 }
 
-func (pro *EthereumSdkPro) GetNFTs(wrapperAddr, asset, owner common.Address, start, length int) (map[*big.Int]string, error) {
+func (pro *EthereumSdkPro) GetTokensByIndex(wrapperAddr, asset, owner common.Address, start, length int) (map[*big.Int]string, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("current node is not working")
 	}
-	return info.sdk.GetOwnerNFTs(wrapperAddr, asset, owner, start, length)
+	return info.sdk.GetTokensByIndex(wrapperAddr, asset, owner, start, length)
+}
+
+func (pro *EthereumSdkPro) GetTokensById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[*big.Int]string, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("current node is not working")
+	}
+	return info.sdk.GetTokensById(wrapperAddr, asset, tokenIdList)
+}
+
+func (pro *EthereumSdkPro) GetAndCheckTokenUrl(wrapperAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return "", fmt.Errorf("current node is not working")
+	}
+	return info.sdk.GetAndCheckTokenUrl(wrapperAddr, asset, owner, tokenId)
 }
 
 func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) ([]*big.Int, error) {
