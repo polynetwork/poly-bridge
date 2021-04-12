@@ -7,5 +7,5 @@ nft_http/*net.conf
 nft_http/*net.json
 crosschainlisten/ethereumlisten/*.json
 nft_asset_tool/*.json
-nft_asset_tool/readme.md
+nft_asset_tool/*.md
 conf/*.json

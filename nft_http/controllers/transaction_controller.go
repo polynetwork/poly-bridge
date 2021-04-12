@@ -225,15 +225,15 @@ func findSrcPolyDstRelation(wrapTxs []*models.WrapperTransaction) []*SrcPolyDstR
 		srcAssetHash := v.SrcTransaction.SrcTransfer.Asset
 		srcAsset := findAsset(v.WrapperTransaction.SrcChainId, srcAssetHash)
 		if srcAsset != nil {
-			//v.AssetHash = asset.Hash
 			v.SrcAsset = srcAsset
 		}
 
-		dstAssetHash := v.DstTransaction.DstTransfer.Asset
-		dstAsset := findAsset(v.WrapperTransaction.DstChainId, dstAssetHash)
-		if dstAsset != nil {
-			//v.AssetHash = asset.Hash
-			v.DstAsset = dstAsset
+		if v.DstTransaction != nil && v.DstTransaction.DstTransfer != nil {
+			dstAssetHash := v.DstTransaction.DstTransfer.Asset
+			dstAsset := findAsset(v.WrapperTransaction.DstChainId, dstAssetHash)
+			if dstAsset != nil {
+				v.DstAsset = dstAsset
+			}
 		}
 	}
 
