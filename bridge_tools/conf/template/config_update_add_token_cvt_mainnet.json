@@ -8,28 +8,28 @@
   },
   "TokenBasics":[
     {
-      "Name":"CVT",
+      "Name":"BLES",
       "Precision":18,
       "Property":1,
       "Ind": 1,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
-          "Name":"CyberVein"
+          "Name":"Blind Boxes"
         }
       ],
       "Tokens":[
         {
           "ChainId":2,
-          "Hash":"Be428c3867F05deA2A89Fc76a102b544eaC7f772",
-          "Name":"CVT",
+          "Hash":"e796d6ca1ceb1b022ece5296226bf784110031cd",
+          "Name":"BLES",
           "Property":1,
           "Precision":18
         },
         {
           "ChainId":6,
-          "Hash":"D27547A4e3bA5FBc8ac6C2477151aB8E17e4D341",
-          "Name":"CVT",
+          "Hash":"393d87e44c7b1f5ba521b351532c24ece253b849",
+          "Name":"BLES",
           "Property":1,
           "Precision":18
         }
