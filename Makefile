@@ -26,11 +26,11 @@ poly_listen:
 	@mkdir -p $(BaseDir)/poly_listen/logs
 	@$(GOBUILD) -o $(BaseDir)/poly_listen/listener crosschainlisten/polylisten/cmd/main.go
 
-nftasset_tool:
-	@mkdir -p $(BaseDir)/nft_asset_tool/logs
-	@$(GOBUILD) -o $(BaseDir)/nft_asset_tool/asset_tool nft_asset_tool/*.go
+bridge_tool:
+	@mkdir -p $(BaseDir)/bridge_tools
+	@$(GOBUILD) -o $(BaseDir)/bridge_tools/bridge_tool bridge_tools/*.go
 
-nft_deploy_tool:
+nft_bridge_deploy:
 	@mkdir -p $(BaseDir)/nft_deploy_tool/logs
 	@$(GOBUILD) -o $(BaseDir)/nft_deploy_tool/deploy_tool nft_deploy_tool/*.go
 
