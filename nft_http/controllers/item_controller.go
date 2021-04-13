@@ -18,10 +18,12 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"strings"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type ItemController struct {
@@ -40,64 +42,66 @@ func (c *ItemController) Items() {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}
+	wrapper := selectWrapper(req.ChainId)
+	if wrapper == emptyAddr {
+		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+		return
+	}
 
 	owner := common.HexToAddress(req.Address)
 	asset := common.HexToAddress(req.Asset)
-
-	items := make([]*Item, 0)
 	totalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
+		logs.Error("get nft balance err: %v", err)
 		nodeInvalid(&c.Controller)
 		return
 	}
 
 	totalPage := getPageNo(totalCnt, req.PageSize)
 	start := req.PageNo * req.PageSize
-	end := start + req.PageSize
-
 	empty := func() {
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{})
 		output(&c.Controller, data)
+	}
+
+	tokenIdStr := strings.Trim(req.TokenId, " ")
+	if tokenIdStr != "" {
+		tokenId, ok := new(big.Int).SetString(tokenIdStr, 10)
+		if !ok {
+			input(&c.Controller, req)
+			return
+		}
+		url, err := sdk.GetAndCheckTokenUrl(wrapper, asset, owner, tokenId)
+		if err != nil {
+			empty()
+			return
+		}
+		item := &Item{TokenId: tokenId.String(), Url: url}
+		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{item})
+		output(&c.Controller, data)
+		return
 	}
 
 	if start >= totalCnt {
 		empty()
 		return
 	}
-	if end > totalCnt {
-		end = totalCnt
+	res, err := sdk.GetTokensByIndex(wrapper, asset, owner, start, req.PageSize)
+	if err != nil {
+		logs.Error("batch get NFT token infos err: %v", err)
+		empty()
+		return
 	}
-
-	var list []*big.Int
-	tokenIdStr := strings.Trim(req.TokenId, " ")
-	if tokenIdStr != "" {
-		tokenId, ok := new(big.Int).SetString(tokenIdStr, 10)
-		if !ok {
-			customInput(&c.Controller, ErrCodeRequest, "token id string invalid")
-			return
-		}
-		list = []*big.Int{tokenId}
-	} else {
-		if list, err = sdk.GetNFTs(asset, owner, start, end); err != nil {
-			nodeInvalid(&c.Controller)
-			return
-		}
-	}
-	if len(list) == 0 {
+	if len(res) == 0 {
 		empty()
 		return
 	}
 
-	urlmap, err := sdk.GetNFTURLs(asset, list)
-	if err != nil {
-		nodeInvalid(&c.Controller)
-		return
-	}
-
-	for _, v := range list {
+	items := make([]*Item, 0)
+	for tokenId, url := range res {
 		items = append(items, &Item{
-			TokenId: v.Uint64(),
-			Url:     urlmap[v.Uint64()],
+			TokenId: tokenId.String(),
+			Url:     url,
 		})
 	}
 

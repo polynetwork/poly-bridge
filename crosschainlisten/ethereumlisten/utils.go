@@ -103,6 +103,7 @@ func wrapLockEvent2WrapTx(evt *nftwp.PolyNFTWrapperPolyWrapperLock) *models.Wrap
 		FeeAmount:    models.NewBigInt(evt.Fee),
 		ServerId:     evt.Id.Uint64(),
 		BlockHeight:  evt.Raw.BlockNumber,
+		Standard:     models.TokenTypeErc721,
 	}
 }
 
@@ -112,6 +113,7 @@ func wrapSpeedUpEvent2WrapTx(evt *nftwp.PolyNFTWrapperPolyWrapperSpeedUp) *model
 		User:         evt.Sender.String(),
 		FeeTokenHash: evt.FeeToken.String(),
 		FeeAmount:    models.NewBigInt(evt.Efee),
+		Standard:     models.TokenTypeErc721,
 	}
 }
 

@@ -25,15 +25,16 @@ import (
 	"math/big"
 	"strings"
 
+	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
+	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
+	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
+	xecdsa "poly-bridge/utils/ecdsa"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	polycm "github.com/polynetwork/poly/common"
-	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
-	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
-	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
-	xecdsa "poly-bridge/utils/ecdsa"
 )
 
 var NativeFeeToken = common.HexToAddress("0x0000000000000000000000000000000000000000")
@@ -290,21 +291,55 @@ func (s *EthereumSdk) GetNFTOwner(asset common.Address, tokenID *big.Int) (commo
 	return cm.OwnerOf(nil, tokenID)
 }
 
-func (s *EthereumSdk) GetOwnerNFTs(asset common.Address, owner common.Address, indexStart, indexEnd int) ([]*big.Int, error) {
-	list := make([]*big.Int, 0)
-	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
+func (s *EthereumSdk) GetAndCheckTokenUrl(wrapperAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
+	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
+	if err != nil {
+		return "", err
+	}
+
+	return wrapper.GetAndCheckTokenUrl(nil, asset, owner, tokenId)
+}
+
+func (s *EthereumSdk) GetTokensByIndex(wrapperAddr, asset common.Address, owner common.Address, start, length int) (map[*big.Int]string, error) {
+	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return nil, err
 	}
-	for i := indexStart; i < indexEnd; i++ {
-		idx := new(big.Int).SetInt64(int64(i))
-		tokenId, err := cm.TokenOfOwnerByIndex(nil, owner, idx)
-		if err != nil {
-			break
-		}
-		list = append(list, tokenId)
+
+	enc, err := wrapper.GetTokensByIndex(nil, asset, owner, big.NewInt(int64(start)), big.NewInt(int64(length)))
+	if err != nil {
+		return nil, err
 	}
-	return list, nil
+
+	res := filterTokenInfo(enc)
+	return res, nil
+}
+
+func (s *EthereumSdk) GetTokensById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[*big.Int]string, error) {
+	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
+	if err != nil {
+		return nil, err
+	}
+
+	sink := polycm.NewZeroCopySink(nil)
+	sink.WriteUint8(uint8(len(tokenIdList)))
+	for _, v := range tokenIdList {
+		hash := common.BytesToHash(v.Bytes())
+		reversed := polycm.ToArrayReverse(hash[:])
+		data, err := polycm.Uint256ParseFromBytes(reversed)
+		if err != nil {
+			return nil, err
+		}
+		sink.WriteHash(data)
+	}
+
+	enc, err := wrapper.GetTokensByIds(nil, asset, sink.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	res := filterTokenInfo(enc)
+	return res, nil
 }
 
 func (s *EthereumSdk) GetAssetNFTs(asset common.Address, indexStart, indexEnd int) ([]*big.Int, error) {
@@ -324,17 +359,17 @@ func (s *EthereumSdk) GetAssetNFTs(asset common.Address, indexStart, indexEnd in
 	return list, nil
 }
 
-func (s *EthereumSdk) GetOwnerNFTUrls(asset common.Address, tokenIds []*big.Int) (map[uint64]string, error) {
+func (s *EthereumSdk) GetOwnerNFTUrls(asset common.Address, tokenIds []*big.Int) (map[string]string, error) {
 	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
 	if err != nil {
 		return nil, err
 	}
 
-	res := make(map[uint64]string)
+	res := make(map[string]string)
 	for _, tokenId := range tokenIds {
 		url, err := cm.TokenURI(nil, tokenId)
 		if err == nil {
-			res[tokenId.Uint64()] = url
+			res[tokenId.String()] = url
 		}
 	}
 	return res, nil
@@ -422,4 +457,30 @@ func assembleSafeTransferCallData(toAddress common.Address, chainID uint64) []by
 	sink.WriteVarBytes(toAddress.Bytes())
 	sink.WriteUint64(chainID)
 	return sink.Bytes()
+}
+
+func filterTokenInfo(enc []byte) map[*big.Int]string {
+	source := polycm.NewZeroCopySource(enc)
+	var (
+		num     polycm.Uint256
+		url     string
+		tokenId *big.Int
+		eof     bool
+		res     = make(map[*big.Int]string)
+	)
+	for {
+		if num, eof = source.NextHash(); !eof {
+			bz := polycm.ToArrayReverse(num[:])
+			tokenId = new(big.Int).SetBytes(bz)
+		} else {
+			break
+		}
+		if url, eof = source.NextString(); !eof {
+			res[tokenId] = url
+		} else {
+			break
+		}
+	}
+
+	return res
 }

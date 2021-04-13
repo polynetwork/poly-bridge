@@ -19,16 +19,17 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math"
 	"math/big"
 	"runtime/debug"
 	"sync"
 	"time"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 type EthereumInfo struct {
@@ -333,71 +334,61 @@ func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) bool {
 func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (int, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return 0, fmt.Errorf("all node is not working")
+		return 0, fmt.Errorf("current node is not working")
 	}
 
-	for info != nil {
-		balance, err := info.sdk.GetNFTBalance(asset, owner)
-		if err != nil {
-			info.latestHeight = 0
-			info = pro.GetLatest()
-		} else {
-			return int(balance.Int64()), nil
-		}
+	balance, err := info.sdk.GetNFTBalance(asset, owner)
+	if err != nil {
+		return 0, err
 	}
-	return 0, fmt.Errorf("all node is not working")
+	return int(balance.Int64()), nil
 }
 
-func (pro *EthereumSdkPro) GetNFTs(asset, owner common.Address, start, end int) ([]*big.Int, error) {
+func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (common.Address, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
+		return EmptyAddress, fmt.Errorf("current node is not working")
+	} else {
+		return info.sdk.GetNFTOwner(asset, tokenId)
 	}
+}
 
-	for info != nil {
-		list, err := info.sdk.GetOwnerNFTs(asset, owner, start, end)
-		if err != nil {
-			info.latestHeight = 0
-			info = pro.GetLatest()
-		} else {
-			return list, nil
-		}
+func (pro *EthereumSdkPro) GetTokensByIndex(wrapperAddr, asset, owner common.Address, start, length int) (map[*big.Int]string, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("current node is not working")
 	}
-	return nil, fmt.Errorf("all node is not working")
+	return info.sdk.GetTokensByIndex(wrapperAddr, asset, owner, start, length)
+}
+
+func (pro *EthereumSdkPro) GetTokensById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[*big.Int]string, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("current node is not working")
+	}
+	return info.sdk.GetTokensById(wrapperAddr, asset, tokenIdList)
+}
+
+func (pro *EthereumSdkPro) GetAndCheckTokenUrl(wrapperAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return "", fmt.Errorf("current node is not working")
+	}
+	return info.sdk.GetAndCheckTokenUrl(wrapperAddr, asset, owner, tokenId)
 }
 
 func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) ([]*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
+		return nil, fmt.Errorf("current node is not working")
 	}
-
-	for info != nil {
-		list, err := info.sdk.GetAssetNFTs(asset, start, end)
-		if err != nil {
-			info.latestHeight = 0
-			info = pro.GetLatest()
-		} else {
-			return list, nil
-		}
-	}
-	return nil, fmt.Errorf("all node is not working")
+	return info.sdk.GetAssetNFTs(asset, start, end)
 }
 
-func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (map[uint64]string, error) {
+func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (map[string]string, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
+		return nil, fmt.Errorf("current node is not working")
 	}
-
-	for info != nil {
-		list, err := info.sdk.GetOwnerNFTUrls(asset, tokenIds)
-		if err != nil {
-			info.latestHeight = 0
-			info = pro.GetLatest()
-		} else {
-			return list, nil
-		}
-	}
-	return nil, fmt.Errorf("all node is not working")
+	return info.sdk.GetOwnerNFTUrls(asset, tokenIds)
 }

@@ -28,11 +28,11 @@ type AssetItems struct {
 }
 
 type Item struct {
-	TokenId uint64
+	TokenId string
 	Url     string
 }
 
-func (i *Item) instance(tokenId uint64, t *models.TokenBasic) *Item {
+func (i *Item) instance(tokenId string, t *models.TokenBasic) *Item {
 	i.TokenId = tokenId
 	// todo: format and parse meta data
 	i.Url = t.Meta

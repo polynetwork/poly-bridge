@@ -20,6 +20,8 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -32,6 +34,7 @@ var (
 	db   = newDB()
 	sdks = make(map[uint64]*chainsdk.EthereumSdkPro)
 	assets = make([]*models.Token, 0)
+	wrapperAddrs = make(map[uint64]common.Address)
 )
 
 func newDB() *gorm.DB {
@@ -88,6 +91,8 @@ func Initialize(c *conf.Config) {
 	for _, v := range c.ChainListenConfig {
 		pro := chainsdk.NewEthereumSdkPro(v.GetNodesUrl(), v.ListenSlot, v.ChainId)
 		sdks[v.ChainId] = pro
+		wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
+		logs.Info("load chain id %d, contract %s", v.ChainId, v.NFTWrapperContract)
 	}
 }
 
@@ -97,6 +102,15 @@ func selectNode(chainID uint64) *chainsdk.EthereumSdkPro {
 		return nil
 	}
 	return pro
+}
+
+var emptyAddr = common.Address{}
+func selectWrapper(chainID uint64) common.Address {
+	addr, ok := wrapperAddrs[chainID]
+	if !ok {
+		return emptyAddr
+	}
+	return addr
 }
 
 const (
@@ -143,6 +157,12 @@ func nodeInvalid(c *beego.Controller) {
 
 func output(c *beego.Controller, data interface{}) {
 	c.Data["json"] = data
+	c.ServeJSON()
+}
+
+func customOutput(c *beego.Controller, code int, msg string) {
+	c.Data["json"] = models.MakeErrorRsp(msg)
+	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 }
 
