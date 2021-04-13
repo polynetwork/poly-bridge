@@ -50,18 +50,23 @@ func (c *ItemController) Items() {
 
 	owner := common.HexToAddress(req.Address)
 	asset := common.HexToAddress(req.Asset)
-	totalCnt, err := sdk.NFTBalance(asset, owner)
+	bigTotalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
 		logs.Error("get nft balance err: %v", err)
 		nodeInvalid(&c.Controller)
 		return
 	}
+	totalCnt := int(bigTotalCnt.Uint64())
 
 	totalPage := getPageNo(totalCnt, req.PageSize)
 	start := req.PageNo * req.PageSize
 	empty := func() {
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{})
 		output(&c.Controller, data)
+	}
+	if totalCnt == 0 {
+		empty()
+		return
 	}
 
 	tokenIdStr := strings.Trim(req.TokenId, " ")
@@ -73,6 +78,7 @@ func (c *ItemController) Items() {
 		}
 		url, err := sdk.GetAndCheckTokenUrl(wrapper, asset, owner, tokenId)
 		if err != nil {
+			logs.Error("getAndCheckTokenUrl err: %v", err)
 			empty()
 			return
 		}
@@ -88,7 +94,7 @@ func (c *ItemController) Items() {
 	}
 	res, err := sdk.GetTokensByIndex(wrapper, asset, owner, start, req.PageSize)
 	if err != nil {
-		logs.Error("batch get NFT token infos err: %v", err)
+		logs.Error("GetTokensByIndex err: %v", err)
 		empty()
 		return
 	}
