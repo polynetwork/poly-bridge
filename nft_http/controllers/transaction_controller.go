@@ -78,7 +78,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 	var transactionNum int64
 	db.Model(&models.SrcTransfer{}).
 		Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
-		Where("`from` in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses).
+		Where("src_transfers.standard = ? and `from` in ? or src_transfers.dst_user in ?", models.TokenTypeErc721, req.Addresses, req.Addresses).
 		Count(&transactionNum)
 
 	// get chains
@@ -146,7 +146,7 @@ func (c *TransactionController) TransactionsOfState() {
 
 	var transactionNum int64
 	db.Model(&models.WrapperTransaction{}).
-		Where("status = ?", req.State).
+		Where("standard = ? and status = ?", models.TokenTypeErc721, req.State).
 		Count(&transactionNum)
 
 	totalPage := (int(transactionNum) + req.PageSize - 1) / req.PageSize
