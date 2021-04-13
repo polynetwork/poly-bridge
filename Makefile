@@ -14,32 +14,18 @@ nft_bridge_http:
 	@mkdir -p $(BaseDir)/nft_bridge_http/logs
 	@$(GOBUILD) -o $(BaseDir)/nft_bridge_http/http_service nft_http/*.go
 
-eth_listen:
-	@mkdir -p $(BaseDir)/eth_listen/logs
-	@mkdir -p $(BaseDir)/bsc_listen/logs
-	@mkdir -p $(BaseDir)/heco_listen/logs
-	@$(GOBUILD) -o $(BaseDir)/eth_listen/listener crosschainlisten/ethereumlisten/cmd/main.go
-	@cp $(BaseDir)/eth_listen/listener $(BaseDir)/bsc_listen/listener
-	@cp $(BaseDir)/eth_listen/listener $(BaseDir)/heco_listen/listener
-
-poly_listen:
-	@mkdir -p $(BaseDir)/poly_listen/logs
-	@$(GOBUILD) -o $(BaseDir)/poly_listen/listener crosschainlisten/polylisten/cmd/main.go
-
 bridge_tool:
 	@mkdir -p $(BaseDir)/bridge_tools
 	@$(GOBUILD) -o $(BaseDir)/bridge_tools/bridge_tool bridge_tools/*.go
 
-nft_bridge_deploy:
-	@mkdir -p $(BaseDir)/nft_deploy_tool/logs
-	@$(GOBUILD) -o $(BaseDir)/nft_deploy_tool/deploy_tool nft_deploy_tool/*.go
+deploy_tool:
+	@mkdir -p $(BaseDir)/deploy_tool
+	@$(GOBUILD) -o $(BaseDir)/deploy_tool/deploy_tool chain_tool/*.go
 
 all:
-	make nft_http eth_listen poly_listen nft_asset_tool nft_deploy_tool
+	make nft_bridge_http bridge_tool deploy_tool
 
 clean:
-	rm -rf $(BaseDir)/nft_bridge_http/http_service
-	rm -rf $(BaseDir)/eth_listen/listener
-	rm -rf $(BaseDir)/bsc_listen/listener
-	rm -rf $(BaseDir)/heco_listen/listener
-	rm -rf $(BaseDir)/poly_listen/listener
+	@rm -rf $(BaseDir)/nft_bridge_http/http_service
+	@rm -rf $(BaseDir)/bridge_tools/bridge_tool
+	@rm -rf $(BaseDir)/deploy_tool/deploy_tool

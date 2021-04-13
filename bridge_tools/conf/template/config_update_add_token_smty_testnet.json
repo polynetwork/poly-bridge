@@ -1,0 +1,44 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"127.0.0.1:3306",
+    "User":"root",
+    "Password":"wKd5sstfSsY3/Q==",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name":"SMTY",
+      "Precision":18,
+      "Property":1,
+      "Ind": 1,
+      "Price": 1000000,
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"F56b31edda06A1340c37A3813858363f515D3E96",
+          "Name":"SMTY",
+          "Property":1,
+          "Precision":18,
+          "Standard": 0
+        },
+        {
+          "ChainId": 79,
+          "Hash": "8141E53a80cD102fbafb98A56332629E521c5897",
+          "Name":"SMTY",
+          "Property":1,
+          "Precision":18,
+          "Standard": 0
+        }
+      ]
+    }
+  ],
+  "RemoveTokens": [
+    "SMTY"
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}

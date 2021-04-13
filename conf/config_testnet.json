@@ -4,7 +4,7 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"wKd5sstfSsY3/Q==",
+    "Password":"111111",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -44,7 +44,7 @@
       "WrapperContract":"e498fb7D00468a67A79dE5D4Ca264d3350165280",
       "CCMContract":"726532586c50ec9f4080b71f906a3d9779bbd64f",
       "ProxyContract":"D8aE73e06552E270340b63A8bcAbf9277a1aac99",
-      "NFTWrapperContract":"88aD4fD94a05602E595101a3e3171f91289C8f6b",
+      "NFTWrapperContract":"2E830E0cf3dc8643B497F88C07c8A72EFE24B11f",
       "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
     },
     {
@@ -87,7 +87,7 @@
       "WrapperContract":"Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5",
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c",
-      "NFTWrapperContract":"B5e86d80287835115a81562073b1Cff3fCe564E9",
+      "NFTWrapperContract":"f634B7156ba77F697c22F24BEa5294c213100fdd",
       "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
     },
     {

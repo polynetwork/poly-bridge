@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/astaxie/beego v1.12.1
+	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/goleveldb v1.0.0
 	github.com/ethereum/go-ethereum v1.9.15
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
