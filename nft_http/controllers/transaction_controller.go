@@ -78,7 +78,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 	var transactionNum int64
 	db.Model(&models.SrcTransfer{}).
 		Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
-		Where("src_transfers.standard = ? and `from` in ? or src_transfers.dst_user in ?", models.TokenTypeErc721, req.Addresses, req.Addresses).
+		Where("src_transfers.standard = ? and (`from` in ? or src_transfers.dst_user in ?)", models.TokenTypeErc721, req.Addresses, req.Addresses).
 		Count(&transactionNum)
 
 	// get chains
