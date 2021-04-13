@@ -1,0 +1,45 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"10.203.0.11:3306",
+    "User":"root",
+    "Password":"PAIGWICQFKDNzdL5aTw0pIPrBeoYinXu4A==",
+    "Scheme":"polyswap"
+  },
+  "TokenBasics":[
+    {
+      "Name":"BLES",
+      "Precision":18,
+      "Property":1,
+      "Ind": 1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"Blind Boxes"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"e796d6ca1ceb1b022ece5296226bf784110031cd",
+          "Name":"BLES",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":6,
+          "Hash":"393d87e44c7b1f5ba521b351532c24ece253b849",
+          "Name":"BLES",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    }
+  ],
+  "RemoveTokens": [
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}

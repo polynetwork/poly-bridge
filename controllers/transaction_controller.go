@@ -121,7 +121,7 @@ func (c *TransactionController) getTransactionByHash(hash string) (*models.SrcPo
 		Preload("Token").
 		Preload("Token.TokenBasic").
 		Order("src_transactions.time desc").
-		Find(srcPolyDstRelation)
+		Find(&srcPolyDstRelation)
 	if res.RowsAffected == 0 {
 		return nil, fmt.Errorf("transacion: %s does not exist", hash)
 	}
