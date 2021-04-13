@@ -331,64 +331,128 @@ func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) bool {
 	return false
 }
 
-func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (int, error) {
+func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (balance *big.Int, err error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return 0, fmt.Errorf("current node is not working")
+		return nil, fmt.Errorf("all node is not working")
 	}
 
-	balance, err := info.sdk.GetNFTBalance(asset, owner)
-	if err != nil {
-		return 0, err
+	for info != nil {
+		if balance, err = info.sdk.GetNFTBalance(asset, owner); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
 	}
-	return int(balance.Int64()), nil
+	return
 }
 
-func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (common.Address, error) {
+func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (owner common.Address, err error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return EmptyAddress, fmt.Errorf("current node is not working")
-	} else {
-		return info.sdk.GetNFTOwner(asset, tokenId)
+		return EmptyAddress, fmt.Errorf("all node is not working")
 	}
+
+	for info != nil {
+		if owner, err = info.sdk.GetNFTOwner(asset, tokenId); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
+	}
+	return
 }
 
-func (pro *EthereumSdkPro) GetTokensByIndex(wrapperAddr, asset, owner common.Address, start, length int) (map[*big.Int]string, error) {
+func (pro *EthereumSdkPro) GetTokensByIndex(
+	wrapperAddr, asset, owner common.Address,
+	start, length int,
+) (res map[*big.Int]string, err error) {
+
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("current node is not working")
+		return nil, fmt.Errorf("all node is not working")
 	}
-	return info.sdk.GetTokensByIndex(wrapperAddr, asset, owner, start, length)
+
+	for info != nil {
+		if res, err = info.sdk.GetTokensByIndex(wrapperAddr, asset, owner, start, length); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
+	}
+	return
 }
 
-func (pro *EthereumSdkPro) GetTokensById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[*big.Int]string, error) {
+func (pro *EthereumSdkPro) GetTokensById(
+	wrapperAddr, asset common.Address,
+	tokenIdList []*big.Int,
+) (res map[*big.Int]string, err error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("current node is not working")
+		return nil, fmt.Errorf("all node is not working")
 	}
-	return info.sdk.GetTokensById(wrapperAddr, asset, tokenIdList)
+
+	for info != nil {
+		if res, err = info.sdk.GetTokensById(wrapperAddr, asset, tokenIdList); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
+	}
+	return
 }
 
-func (pro *EthereumSdkPro) GetAndCheckTokenUrl(wrapperAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
+func (pro *EthereumSdkPro) GetAndCheckTokenUrl(
+	wrapperAddr, asset, owner common.Address,
+	tokenId *big.Int,
+) (url string, err error) {
+
 	info := pro.GetLatest()
 	if info == nil {
-		return "", fmt.Errorf("current node is not working")
+		return "", fmt.Errorf("all node is not working")
 	}
-	return info.sdk.GetAndCheckTokenUrl(wrapperAddr, asset, owner, tokenId)
+
+	for info != nil {
+		if url, err = info.sdk.GetAndCheckTokenUrl(wrapperAddr, asset, owner, tokenId); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
+	}
+	return
 }
 
-func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) ([]*big.Int, error) {
+func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) (list []*big.Int, err error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("current node is not working")
+		return nil, fmt.Errorf("all node is not working")
 	}
-	return info.sdk.GetAssetNFTs(asset, start, end)
+	for info != nil {
+		if list, err = info.sdk.GetAssetNFTs(asset, start, end); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
+	}
+	return
 }
 
-func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (map[string]string, error) {
+func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (res map[string]string, err error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("current node is not working")
+		return nil, fmt.Errorf("all node is not working")
 	}
-	return info.sdk.GetOwnerNFTUrls(asset, tokenIds)
+	for info != nil {
+		if res, err = info.sdk.GetOwnerNFTUrls(asset, tokenIds); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
+	}
+	return
+}
+
+func (pro *EthereumSdkPro) reset(info *EthereumInfo) *EthereumInfo {
+	info.latestHeight = 0
+	return pro.GetLatest()
 }

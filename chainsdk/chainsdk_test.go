@@ -22,7 +22,7 @@ const (
 )
 
 var (
-	testmode = C_BSC_DEV
+	testmode = C_BSC_TEST
 	ctx      *TestConfig
 
 	cs = map[string]*TestConfig{
