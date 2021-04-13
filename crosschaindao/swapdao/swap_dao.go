@@ -188,6 +188,7 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 						DstChainId:   tokenDst.ChainId,
 						DstTokenHash: tokenDst.Hash,
 						Property:     1,
+						Standard: 	  tokenBasic.Standard,
 					})
 				}
 			}
