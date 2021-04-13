@@ -1,0 +1,45 @@
+{
+  "Server":"polyswap",
+  "DBConfig":{
+    "URL":"10.203.0.11:3306",
+    "User":"root",
+    "Password":"PAIGWICQFKDNzdL5aTw0pIPrBeoYinXu4A==",
+    "Scheme":"polyswap"
+  },
+  "TokenBasics":[
+    {
+      "Name":"CVT",
+      "Precision":18,
+      "Property":1,
+      "Ind": 1,
+      "PriceMarkets":[
+        {
+          "MarketName":"coinmarketcap",
+          "Name":"CyberVein"
+        }
+      ],
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"Be428c3867F05deA2A89Fc76a102b544eaC7f772",
+          "Name":"CVT",
+          "Property":1,
+          "Precision":18
+        },
+        {
+          "ChainId":6,
+          "Hash":"D27547A4e3bA5FBc8ac6C2477151aB8E17e4D341",
+          "Name":"CVT",
+          "Property":1,
+          "Precision":18
+        }
+      ]
+    }
+  ],
+  "RemoveTokens": [
+  ],
+  "TokenMaps":[
+  ],
+  "RemoveTokenMaps": [
+  ]
+}
