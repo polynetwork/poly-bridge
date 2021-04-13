@@ -8,4 +8,6 @@ nft_http/*net.json
 crosschainlisten/ethereumlisten/*.json
 conf/*.json
 conf/config_testnet.json
-chain_tool/*.json
+chain_tool/config_devnet.json
+chain_tool/config_testnet.json
+chain_tool/config_mainnet.json
