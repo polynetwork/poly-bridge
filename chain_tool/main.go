@@ -19,21 +19,26 @@ package main
 
 import (
 	"crypto/ecdsa"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
-	"runtime"
-
-	log "github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum/common"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
+	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
+	pabi "poly-bridge/utils/abi"
 	xecdsa "poly-bridge/utils/ecdsa"
 	"poly-bridge/utils/files"
 	"poly-bridge/utils/leveldb"
 	"poly-bridge/utils/math"
 	"poly-bridge/utils/wallet"
+	"runtime"
+	"strings"
+
+	log "github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/polynetwork/poly/native/service/header_sync/bsc"
 	polyutils "github.com/polynetwork/poly/native/service/utils"
 	"github.com/urfave/cli"
@@ -72,6 +77,7 @@ func setupApp() *cli.App {
 		//NativeTokenFlag,
 		AmountFlag,
 		TokenIdFlag,
+		MethodCodeFlag,
 	}
 	app.Commands = []cli.Command{
 		CmdSample,
@@ -107,6 +113,7 @@ func setupApp() *cli.App {
 		CmdNativeTransfer,
 		CmdTokenUrls,
 		CmdNFTBalance,
+		CmdParseLockParams,
 	}
 
 	app.Before = beforeCommands
@@ -781,6 +788,35 @@ func handleNFTBalance(ctx *cli.Context) error {
 	}
 
 	log.Info("user %s balance on NFT Asset %s is %d", owner.Hex(), asset.Hex(), data.Uint64())
+	return nil
+}
+
+func handleDecodeWrapLock(ctx *cli.Context) error {
+	log.Info("start to decode wrapper lock method params")
+
+	code := flag2string(ctx, MethodCodeFlag)
+	code = strings.TrimPrefix(code, "0x")
+
+	abiStr := strings.NewReader(nftwrap.PolyNFTWrapperABI)
+	wrapperABI, err := abi.JSON(abiStr)
+	if err != nil {
+		return err
+	}
+
+	enc, err := hex.DecodeString(code)
+	if err != nil {
+		return err
+	}
+
+	data := new(chainsdk.WrapLockMethod)
+	err = pabi.UnpackMethod(wrapperABI, "lock", data, enc[:])
+	if err != nil {
+		return err
+	}
+
+	log.Info("data: {\r\n toChainId %d\r\n tokenId %d\r\n fromAsset %s\r\n toAddress %s\r\n feeToken %s\r\n fee %s\r\n dataId %d\r\n}",
+		data.ToChainId, data.TokenId.Uint64(), data.FromAsset.Hex(), data.ToAddress.Hex(), data.FeeToken.Hex(), data.Fee.String(), data.Id)
+
 	return nil
 }
 

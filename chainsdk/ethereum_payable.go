@@ -453,6 +453,16 @@ func (s *EthereumSdk) WrapLockWithNativeFeeToken(
 	return hash, nil
 }
 
+type WrapLockMethod struct {
+	FromAsset common.Address
+	ToChainId uint64
+	ToAddress common.Address
+	TokenId   *big.Int
+	FeeToken  common.Address
+	Fee       *big.Int
+	Id        *big.Int
+}
+
 func assembleSafeTransferCallData(toAddress common.Address, chainID uint64) []byte {
 	sink := polycm.NewZeroCopySink(nil)
 	sink.WriteVarBytes(toAddress.Bytes())

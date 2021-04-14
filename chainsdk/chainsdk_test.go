@@ -15,14 +15,16 @@ type TestConfig struct {
 }
 
 const (
-	C_ETH_DEV  = "eth_dev"
-	C_BSC_DEV  = "bsc_dev"
-	C_ETH_TEST = "eth_test"
-	C_BSC_TEST = "bsc_test"
+	C_ETH_DEV           = "eth_dev"
+	C_BSC_DEV           = "bsc_dev"
+	C_ETH_TEST          = "eth_test"
+	C_BSC_TEST          = "bsc_test"
+	C_ETH_SEASCAPE_TEST = "eth_seascape_test"
+	C_BSC_SEASCAPE_TEST = "bsc_seascape_test"
 )
 
 var (
-	testmode = C_BSC_TEST
+	testmode = C_BSC_SEASCAPE_TEST
 	ctx      *TestConfig
 
 	cs = map[string]*TestConfig{
@@ -48,6 +50,18 @@ var (
 			EthUrl:      "https://data-seed-prebsc-2-s2.binance.org:8545",
 			WrapAddress: common.HexToAddress("0x2E830E0cf3dc8643B497F88C07c8A72EFE24B11f"),
 			Asset:       common.HexToAddress("0x455B51D882571E244d03668f1a458ca74E70d196"),
+			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
+		},
+		C_ETH_SEASCAPE_TEST: &TestConfig{
+			EthUrl:      "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea",
+			WrapAddress: common.HexToAddress("0xbaBaAF5CF7f63437755aAAFE7a4106463c5cD540"),
+			Asset:       common.HexToAddress("0xa85c9FC8F2c9060d674E0CA97F703a0A30619305"),
+			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
+		},
+		C_BSC_SEASCAPE_TEST: &TestConfig{
+			EthUrl:      "https://data-seed-prebsc-2-s2.binance.org:8545",
+			WrapAddress: common.HexToAddress("0x2E830E0cf3dc8643B497F88C07c8A72EFE24B11f"),
+			Asset:       common.HexToAddress("0x66638f4970c2ae63773946906922c07a583b6069"),
 			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
 		},
 	}
