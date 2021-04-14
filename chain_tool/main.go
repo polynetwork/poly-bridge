@@ -213,8 +213,7 @@ func handleCmdDeployNFTContract(ctx *cli.Context) error {
 	name := flag2string(ctx, NFTNameFlag)
 	symbol := flag2string(ctx, NFTSymbolFlag)
 	owner := xecdsa.Key2address(adm)
-	proxy := common.HexToAddress(cc.NFTLockProxy)
-	if addr, err := sdk.DeployNFT(adm, proxy, name, symbol); err != nil {
+	if addr, err := sdk.DeployNFT(adm, name, symbol); err != nil {
 		return fmt.Errorf("deploy nft contract for owner %s on chain %d failed, err: %v", owner.Hex(), cc.SideChainID, err)
 	} else {
 		log.Info("deploy nft contract %s for user %s on chain %d success!", addr.Hex(), owner.Hex(), cc.SideChainID)

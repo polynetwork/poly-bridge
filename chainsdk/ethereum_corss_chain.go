@@ -139,7 +139,6 @@ func (s *EthereumSdk) GetLockProxyNFTCCMP(proxyAddr common.Address) (common.Addr
 
 func (s *EthereumSdk) DeployNFT(
 	key *ecdsa.PrivateKey,
-	lockProxy common.Address,
 	name, symbol string,
 ) (common.Address, error) {
 
@@ -147,7 +146,7 @@ func (s *EthereumSdk) DeployNFT(
 	if err != nil {
 		return EmptyAddress, err
 	}
-	address, tx, inst, err := nftmapping.DeployCrossChainNFTMapping(auth, s.backend(), lockProxy, name, symbol)
+	address, tx, inst, err := nftmapping.DeployCrossChainNFTMapping(auth, s.backend(), name, symbol)
 	if err != nil {
 		return EmptyAddress, err
 	}

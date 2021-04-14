@@ -69,6 +69,9 @@ func newDB() *gorm.DB {
 		//Preload("TokenMaps.DstToken").
 		Find(&assets)
 
+	for _, v := range assets {
+		logs.Info("load asset %s, chainid %d", v.TokenBasicName, v.ChainId)
+	}
 	return db
 }
 
