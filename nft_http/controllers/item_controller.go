@@ -84,6 +84,7 @@ func (c *ItemController) Items() {
 		}
 		item := &Item{TokenId: tokenId.String(), Url: url}
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{item})
+		//fetcher.Fetch()
 		output(&c.Controller, data)
 		return
 	}

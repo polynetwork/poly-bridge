@@ -28,6 +28,7 @@ import (
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/nft_http/meta"
 )
 
 var (
@@ -35,6 +36,7 @@ var (
 	sdks = make(map[uint64]*chainsdk.EthereumSdkPro)
 	assets = make([]*models.Token, 0)
 	wrapperAddrs = make(map[uint64]common.Address)
+	fetcher *meta.StoreFetcher
 )
 
 func newDB() *gorm.DB {
@@ -52,8 +54,22 @@ func newDB() *gorm.DB {
 		panic(err)
 	}
 
-	err = db.Debug().AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
-		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
+	// todo(fuk): delete after debug
+	err = db.Debug().AutoMigrate(
+		&models.Chain{},
+		&models.WrapperTransaction{},
+		&models.ChainFee{},
+		&models.TokenBasic{},
+		&models.Token{},
+		&models.PriceMarket{},
+		&models.TokenMap{},
+		&models.SrcTransaction{},
+		&models.SrcTransfer{},
+		&models.PolyTransaction{},
+		&models.DstTransaction{},
+		&models.DstTransfer{},
+		&models.NFTProfile{},
+		)
 	if err != nil {
 		panic(err)
 	}
@@ -96,6 +112,21 @@ func Initialize(c *conf.Config) {
 		sdks[v.ChainId] = pro
 		wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
 		logs.Info("load chain id %d, contract %s", v.ChainId, v.NFTWrapperContract)
+	}
+
+	storeFetcher, err := meta.NewStoreFetcher(db, 1000)
+	if err != nil {
+		panic(err)
+	}
+
+	// todo: register multi fetcher
+	err = storeFetcher.Register(
+		meta.FetcherTypeMockSeascape,
+		"seascape",
+		"https://api.seascape.network/nft/metadata/",
+		)
+	if err != nil {
+		panic(err)
 	}
 }
 
