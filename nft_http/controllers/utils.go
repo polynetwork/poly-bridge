@@ -21,17 +21,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"poly-bridge/chainsdk"
+	"poly-bridge/conf"
+	"poly-bridge/models"
+	"poly-bridge/nft_http/meta"
+	"time"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"poly-bridge/chainsdk"
-	"poly-bridge/conf"
-	"poly-bridge/models"
-	"poly-bridge/nft_http/meta"
-	"time"
 )
 
 var (
@@ -41,6 +42,7 @@ var (
 	assets       = make([]*models.Token, 0)
 	wrapperAddrs = make(map[uint64]common.Address)
 	fetcher      *meta.StoreFetcher
+	feeTokens    = make(map[uint64]*models.Token)
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -58,59 +60,25 @@ func NewDB(cfg *conf.DBConfig) *gorm.DB {
 		panic(err)
 	}
 
-	// todo(fuk): delete after debug
-	//err = db.Debug().AutoMigrate(
-	//	&models.Chain{},
-	//	&models.WrapperTransaction{},
-	//	&models.ChainFee{},
-	//	&models.TokenBasic{},
-	//	&models.Token{},
-	//	&models.PriceMarket{},
-	//	&models.TokenMap{},
-	//	&models.SrcTransaction{},
-	//	&models.SrcTransfer{},
-	//	&models.PolyTransaction{},
-	//	&models.DstTransaction{},
-	//	&models.DstTransfer{},
-	//	&models.NFTProfile{},
-	//)
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	//db.Model(&models.Token{}).
-	//	Where("standard = ?", models.TokenTypeErc721).
-	//	Preload("TokenBasic").
-	//	Find(&assets)
-
 	db.Where("standard = ? and property=?", models.TokenTypeErc721, 1).
 		Preload("TokenBasic").
-		//Preload("TokenMaps").
-		//Preload("TokenMaps.DstToken").
 		Find(&assets)
-
 	for _, v := range assets {
-		logs.Info("load asset %s, chainid %d", v.TokenBasicName, v.ChainId)
+		logs.Info("load asset %s, chainid %d, hash %s", v.TokenBasicName, v.ChainId, v.Hash)
+	}
+
+	feeTokenList := make([]*models.Token, 0)
+	db.Where("hash=?", nativeHash).
+		Preload("TokenBasic").
+		Find(&feeTokenList)
+	for _, v := range feeTokenList {
+		feeTokens[v.ChainId] = v
+		logs.Info("load chainid %d feeToken %s", v.ChainId, v.TokenBasicName)
 	}
 	return db
 }
 
 func Initialize(c *conf.Config) {
-	//var err error
-	//Logger := logger.Default
-	//if c.DBConfig.Debug {
-	//	Logger = Logger.LogMode(logger.Info)
-	//}
-	//link := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
-	//	c.DBConfig.User,
-	//	c.DBConfig.Password,
-	//	c.DBConfig.URL,
-	//	c.DBConfig.Scheme,
-	//)
-	//if db, err = gorm.Open(mysql.Open(link), &gorm.Config{Logger: Logger}); err != nil {
-	//	panic(err)
-	//}
-
 	db = NewDB(c.DBConfig)
 
 	for _, v := range c.ChainListenConfig {
