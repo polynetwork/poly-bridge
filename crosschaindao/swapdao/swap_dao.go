@@ -154,6 +154,12 @@ func (dao *SwapDao) AddChains(chain []*models.Chain, chainFees []*models.ChainFe
 
 func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
 	if tokens != nil && len(tokens) > 0 {
+		for _, basic := range tokens {
+			for _, token := range basic.Tokens {
+				token.Standard = basic.Standard
+				token.Property = basic.Property
+			}
+		}
 		res := dao.db.Save(tokens)
 		if res.Error != nil {
 			return res.Error
@@ -180,8 +186,6 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 	tokenMaps := make([]*models.TokenMap, 0)
 	for _, tokenBasic := range tokenBasics {
 		for _, tokenSrc := range tokenBasic.Tokens {
-			tokenSrc.Standard = tokenBasic.Standard
-			tokenSrc.Property = tokenBasic.Property
 			for _, tokenDst := range tokenBasic.Tokens {
 				if tokenDst.ChainId != tokenSrc.ChainId {
 					tokenMaps = append(tokenMaps, &models.TokenMap{
@@ -190,7 +194,7 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 						DstChainId:   tokenDst.ChainId,
 						DstTokenHash: tokenDst.Hash,
 						Property:     tokenBasic.Property,
-						Standard: 	  tokenBasic.Standard,
+						Standard:     tokenBasic.Standard,
 					})
 				}
 			}
