@@ -20,6 +20,7 @@ package controllers
 import (
 	"math/big"
 	"poly-bridge/models"
+	"sort"
 	"strings"
 	"time"
 
@@ -120,17 +121,23 @@ func (c *ItemController) Items() {
 }
 
 func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Token) []*Item {
+	assetName := nftAsset.TokenBasicName
 	profileReqs := make([]*mcm.FetchRequestParams, 0)
 	for tokenId, url := range data {
-		profileReqs = append(profileReqs, &mcm.FetchRequestParams{
+		req := &mcm.FetchRequestParams{
 			TokenId: models.NewBigInt(tokenId),
 			Url:     url,
-		})
+		}
+		profileReqs = append(profileReqs, req)
 	}
+
+	// fetch meta data list
 	tBeforeBatchFetch := time.Now().UnixNano()
-	profiles, _ := fetcher.BatchFetch(nftAsset.TokenBasicName, profileReqs)
+	profiles, _ := fetcher.BatchFetch(assetName, profileReqs)
 	tAfterBatchFetch := time.Now().UnixNano()
 
+	// convert to items
+	tBeforeConvert := time.Now().UnixNano()
 	profileMap := make(map[string]*models.NFTProfile)
 	if profiles != nil {
 		for _, v := range profiles {
@@ -138,16 +145,21 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 		}
 	}
 	items := make([]*Item, 0)
-	tBeforeConvert := time.Now().UnixNano()
 	for tokenId, _ := range data {
 		profile := profileMap[tokenId.String()]
-		items = append(items, new(Item).instance(nftAsset.TokenBasicName, tokenId, profile))
+		item := new(Item).instance(assetName, tokenId, profile)
+		items = append(items, item)
 	}
 	tAfterConvert := time.Now().UnixNano()
 
-	logs.Info("getProfileItemsWithChainData - batchFetchTime: %d milli second, convertTime: %d milli second",
-		(tAfterBatchFetch-tBeforeBatchFetch)/int64(time.Millisecond),
-		(tAfterConvert-tBeforeConvert)/int64(time.Millisecond),
+	// sort items with token id
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].TokenId < items[j].TokenId
+	})
+
+	logs.Info("getProfileItemsWithChainData - batchFetchTime: %d microsecond, convertTime: %d microsecond",
+		(tAfterBatchFetch-tBeforeBatchFetch)/int64(time.Microsecond),
+		(tAfterConvert-tBeforeConvert)/int64(time.Microsecond),
 	)
 	return items
 }
