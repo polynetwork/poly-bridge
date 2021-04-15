@@ -19,7 +19,6 @@ package models
 
 import (
 	"math/big"
-	"poly-bridge/nft_http/meta"
 )
 
 const (
@@ -28,17 +27,17 @@ const (
 )
 
 type TokenBasic struct {
-	Name            string           `gorm:"primaryKey;size:64;not null"`
-	Precision       uint64           `gorm:"type:bigint(20);not null"`
-	Price           int64            `gorm:"size:64;not null"`
-	Ind             uint64           `gorm:"type:bigint(20);not null"` // 显示价格是否可用
-	Time            int64            `gorm:"type:bigint(20);not null"`
-	Property        int64            `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
-	Standard        uint8            `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
-	Meta            string           `gorm:"type:varchar(128)"`
-	MetaFetcherType meta.FetcherType `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: seascape: 1,
-	PriceMarkets    []*PriceMarket   `gorm:"foreignKey:TokenBasicName;references:Name"`
-	Tokens          []*Token         `gorm:"foreignKey:TokenBasicName;references:Name"`
+	Name            string         `gorm:"primaryKey;size:64;not null"`
+	Precision       uint64         `gorm:"type:bigint(20);not null"`
+	Price           int64          `gorm:"size:64;not null"`
+	Ind             uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
+	Time            int64          `gorm:"type:bigint(20);not null"`
+	Property        int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
+	Standard        uint8          `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
+	Meta            string         `gorm:"type:varchar(128)"`
+	MetaFetcherType int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: seascape: 1,
+	PriceMarkets    []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
+	Tokens          []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
 type PriceMarket struct {
