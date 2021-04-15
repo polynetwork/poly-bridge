@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
-	"gorm.io/gorm"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
@@ -33,30 +32,25 @@ type FeeController struct {
 }
 
 func (c *FeeController) GetFee() {
-	var req models.GetFeeReq
+	var getFeeReq models.GetFeeReq
 	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-
-	CustomGetFee(&c.Controller, db, req.SrcChainId, req.DstChainId, req.Hash)
-}
-
-func CustomGetFee(c *beego.Controller, cdb *gorm.DB, srcChainId, dstChainId uint64, hash string) {
 	token := new(models.Token)
-	res := cdb.Where("hash = ? and chain_id = ?", hash, srcChainId).Preload("TokenBasic").First(token)
+	res := db.Where("hash = ? and chain_id = ?", getFeeReq.Hash, getFeeReq.SrcChainId).Preload("TokenBasic").First(token)
 	if res.RowsAffected == 0 {
-		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have token: %s", srcChainId, hash))
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have token: %s", getFeeReq.SrcChainId, getFeeReq.Hash))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
 	chainFee := new(models.ChainFee)
-	res = cdb.Where("chain_id = ?", dstChainId).Preload("TokenBasic").First(chainFee)
+	res = db.Where("chain_id = ?", getFeeReq.DstChainId).Preload("TokenBasic").First(chainFee)
 	if res.RowsAffected == 0 {
-		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", dstChainId))
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
@@ -69,7 +63,7 @@ func CustomGetFee(c *beego.Controller, cdb *gorm.DB, srcChainId, dstChainId uint
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
-	c.Data["json"] = models.MakeGetFeeRsp(srcChainId, hash, dstChainId, usdtFee, tokenFee, tokenFeeWithPrecision)
+	c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision)
 	c.ServeJSON()
 }
 
@@ -97,7 +91,7 @@ func (c *FeeController) CheckFee() {
 		checkFees4O3 = c.CheckSwapFee(checkFeesReq4O3)
 	}
 	if len(checkFeesReq4Nomal) > 0 {
-		checkFees4Normal = c.CheckSwapFee(checkFeesReq4Nomal)
+		checkFees4Normal = c.checkFee(checkFeesReq4Nomal)
 	}
 	checkFees := make([]*models.CheckFee, 0)
 	checkFees = append(checkFees, checkFees4Normal...)
