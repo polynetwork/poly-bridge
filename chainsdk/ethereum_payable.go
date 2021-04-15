@@ -360,17 +360,17 @@ func (s *EthereumSdk) GetAssetNFTs(asset common.Address, indexStart, indexEnd in
 	return list, nil
 }
 
-func (s *EthereumSdk) GetOwnerNFTUrls(asset common.Address, tokenIds []*big.Int) (map[string]string, error) {
+func (s *EthereumSdk) GetOwnerNFTUrls(asset common.Address, tokenIds []*big.Int) (map[*big.Int]string, error) {
 	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
 	if err != nil {
 		return nil, err
 	}
 
-	res := make(map[string]string)
+	res := make(map[*big.Int]string)
 	for _, tokenId := range tokenIds {
 		url, err := cm.TokenURI(nil, tokenId)
 		if err == nil {
-			res[tokenId.String()] = url
+			res[tokenId] = url
 		}
 	}
 	return res, nil

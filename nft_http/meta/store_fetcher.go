@@ -1,7 +1,7 @@
 package meta
 
 import (
-	"fmt"
+	"errors"
 	"math/big"
 	"poly-bridge/models"
 	"poly-bridge/nft_http/meta/cache"
@@ -31,9 +31,9 @@ const (
 	FetcherTypeMockSeascape
 )
 
-func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (MetaFetcher, error) {
-	var fetcher MetaFetcher
+var ErrFetcherNotExist = errors.New("fetcher not exist")
 
+func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (fetcher MetaFetcher) {
 	switch fetcherTyp {
 	case FetcherTypeMockSeascape:
 		fetcher = seascape.NewMockFetcher(assetName, baseUri)
@@ -42,10 +42,7 @@ func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (MetaFetcher,
 	default:
 		fetcher = nil
 	}
-	if fetcher == nil {
-		return nil, fmt.Errorf("invalid fetcher type")
-	}
-	return fetcher, nil
+	return
 }
 
 type StoreFetcher struct {
@@ -68,23 +65,33 @@ func NewStoreFetcher(orm *gorm.DB, cacheSize int) (*StoreFetcher, error) {
 	return sf, nil
 }
 
-func (s *StoreFetcher) Register(ft FetcherType, asset string, baseUri string) error {
-	fetcher, err := NewFetcher(ft, asset, baseUri)
-	if err != nil {
-		return err
+func (s *StoreFetcher) Register(ft FetcherType, asset string, baseUri string) {
+	fetcher := NewFetcher(ft, asset, baseUri)
+	if fetcher == nil {
+		return
 	}
 	s.fetcher[ft] = fetcher
 	s.assetFetcher[asset] = ft
-	return nil
 }
 
 func (s *StoreFetcher) selectFetcher(asset string) MetaFetcher {
-	typ := s.assetFetcher[asset]
-	fetcher := s.fetcher[typ]
+	typ, ok := s.assetFetcher[asset]
+	if !ok {
+		return nil
+	}
+	fetcher, ok := s.fetcher[typ]
+	if !ok {
+		return nil
+	}
 	return fetcher
 }
 
 func (s *StoreFetcher) Fetch(asset string, req *FetchRequestParams) (profile *models.NFTProfile, err error) {
+	fetcher := s.selectFetcher(asset)
+	if fetcher == nil {
+		return nil, ErrFetcherNotExist
+	}
+
 	var ok bool
 	if profile, ok = s.cache.Get(asset, req.TokenId); ok {
 		return
@@ -98,7 +105,6 @@ func (s *StoreFetcher) Fetch(asset string, req *FetchRequestParams) (profile *mo
 		return profile, nil
 	}
 
-	fetcher := s.selectFetcher(asset)
 	if profile, err = fetcher.Fetch(req); err != nil {
 		return nil, err
 	}
@@ -109,6 +115,11 @@ func (s *StoreFetcher) Fetch(asset string, req *FetchRequestParams) (profile *mo
 }
 
 func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*models.NFTProfile, error) {
+	fetcher := s.selectFetcher(asset)
+	if fetcher == nil {
+		return nil, ErrFetcherNotExist
+	}
+
 	finalList := make([]*models.NFTProfile, 0)
 	uncacheList := make([]*models.BigInt, 0)
 	needFetchMap := make(map[string]*FetchRequestParams, 0)
@@ -127,7 +138,7 @@ func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*
 
 	persisted := make([]*models.NFTProfile, 0)
 	s.db.Where("token_basic_name = ? and nft_token_id in (?)", asset, uncacheList).Find(&persisted)
-	for _,  v := range persisted {
+	for _, v := range persisted {
 		tid := v.NftTokenId.String()
 		finalList = append(finalList, v)
 		delete(needFetchMap, tid)
@@ -142,7 +153,6 @@ func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*
 		return finalList, nil
 	}
 
-	fetcher := s.selectFetcher(asset)
 	profiles, err := fetcher.BatchFetch(needFetchList)
 	if err != nil {
 		return nil, err

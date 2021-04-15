@@ -42,9 +42,7 @@ func beforeTest() {
 	if sf, err = NewStoreFetcher(db, 1000); err != nil {
 		panic(err)
 	}
-	if err = sf.Register(FetcherTypeMockSeascape, asset, baseUri); err != nil {
-		panic(err)
-	}
+	sf.Register(FetcherTypeMockSeascape, asset, baseUri)
 }
 
 func TestStoreFetcher_Fetch(t *testing.T) {
@@ -77,8 +75,8 @@ func TestStoreFetcher_BatchFetch(t *testing.T) {
 	for _, id := range ids {
 		tid := models.NewBigIntFromInt(id)
 		req := &FetchRequestParams{
-			TokenId:tid,
-			Url: fmt.Sprintf("%s%d", baseUri, id)}
+			TokenId: tid,
+			Url:     fmt.Sprintf("%s%d", baseUri, id)}
 		reqs = append(reqs, req)
 		tids = append(tids, tid)
 	}

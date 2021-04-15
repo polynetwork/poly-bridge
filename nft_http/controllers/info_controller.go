@@ -63,29 +63,20 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	assets := make([]*models.Token, 0)
-	db.Where("chain_id = ? and standard = ? and property=1", req.ChainId, models.TokenTypeErc721).
-		Preload("TokenBasic").
-		Find(&assets)
-	totalCnt := len(assets)
+	//assets := make([]*models.Token, 0)
+	//db.Where("chain_id = ? and standard = ? and property=1", req.ChainId, models.TokenTypeErc721).
+	//	Preload("TokenBasic").
+	//	Find(&assets)
+	//totalCnt := len(assets)
 
+	chainAssets := selectAssetsByChainId(req.ChainId)
+	totalCnt := len(chainAssets)
 	assetItems := make([]*AssetItems, 0)
-	for _, v := range assets {
+	for _, v := range chainAssets {
 		addr := common.HexToAddress(v.Hash)
 		tokenIds, _ := sdk.GetAssetNFTs(addr, 0, req.Size)
-		items := make([]*Item, 0)
-		if len(tokenIds) > 0 {
-			urlmap, _ := sdk.GetNFTURLs(addr, tokenIds)
-			if len(urlmap) > 0 {
-				for tkid, url := range urlmap {
-					items = append(items, &Item{
-						TokenId: tkid,
-						Url:     url,
-					})
-				}
-			}
-		}
-
+		chainData, _ := sdk.GetNFTURLs(addr, tokenIds)
+		items := getProfileItemsWithChainData(chainData, v)
 		assetItem := &AssetItems{
 			Asset: new(AssetRsp).instance(v),
 			Items: items,

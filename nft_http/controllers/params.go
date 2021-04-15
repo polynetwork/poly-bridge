@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
@@ -28,14 +29,26 @@ type AssetItems struct {
 }
 
 type Item struct {
+	AssetName string
 	TokenId string
-	Url     string
+	Name string
+	Url string
+	Image string
+	Desc string
+	Meta string
 }
 
-func (i *Item) instance(tokenId string, t *models.TokenBasic) *Item {
-	i.TokenId = tokenId
-	// todo: format and parse meta data
-	i.Url = t.Meta
+func (i *Item) instance(tokenId *big.Int, profile *models.NFTProfile) *Item {
+	i.TokenId = tokenId.String()
+	if profile == nil {
+		return i
+	}
+	i.AssetName = profile.TokenBasicName
+	i.Name = profile.Name
+	i.Url  = profile.Url
+	i.Image = profile.Image
+	i.Desc = profile.Description
+	i.Meta = profile.Text
 	return i
 }
 
