@@ -18,6 +18,7 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -28,13 +29,15 @@ import (
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/nft_http/meta"
 )
 
 var (
-	db   = newDB()
-	sdks = make(map[uint64]*chainsdk.EthereumSdkPro)
-	assets = make([]*models.Token, 0)
+	db           = newDB()
+	sdks         = make(map[uint64]*chainsdk.EthereumSdkPro)
+	assets       = make([]*models.Token, 0)
 	wrapperAddrs = make(map[uint64]common.Address)
+	fetcher      *meta.StoreFetcher
 )
 
 func newDB() *gorm.DB {
@@ -52,8 +55,22 @@ func newDB() *gorm.DB {
 		panic(err)
 	}
 
-	err = db.Debug().AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
-		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{})
+	// todo(fuk): delete after debug
+	err = db.Debug().AutoMigrate(
+		&models.Chain{},
+		&models.WrapperTransaction{},
+		&models.ChainFee{},
+		&models.TokenBasic{},
+		&models.Token{},
+		&models.PriceMarket{},
+		&models.TokenMap{},
+		&models.SrcTransaction{},
+		&models.SrcTransfer{},
+		&models.PolyTransaction{},
+		&models.DstTransaction{},
+		&models.DstTransfer{},
+		&models.NFTProfile{},
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +80,7 @@ func newDB() *gorm.DB {
 	//	Preload("TokenBasic").
 	//	Find(&assets)
 
-	db.Where("standard = ?", models.TokenTypeErc721).
+	db.Where("standard = ? and property=?", models.TokenTypeErc721, 1).
 		Preload("TokenBasic").
 		//Preload("TokenMaps").
 		//Preload("TokenMaps.DstToken").
@@ -97,6 +114,22 @@ func Initialize(c *conf.Config) {
 		wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
 		logs.Info("load chain id %d, contract %s", v.ChainId, v.NFTWrapperContract)
 	}
+
+	storeFetcher, err := meta.NewStoreFetcher(db, 1000)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, asset := range assets {
+		if asset.TokenBasic == nil {
+			continue
+		}
+		fetcherTyp := asset.TokenBasic.MetaFetcherType
+		baseUri := asset.TokenBasic.Meta
+		assetName := asset.TokenBasic.Name
+		storeFetcher.Register(fetcherTyp, assetName, baseUri)
+	}
+	fetcher = storeFetcher
 }
 
 func selectNode(chainID uint64) *chainsdk.EthereumSdkPro {
@@ -108,12 +141,34 @@ func selectNode(chainID uint64) *chainsdk.EthereumSdkPro {
 }
 
 var emptyAddr = common.Address{}
+
 func selectWrapper(chainID uint64) common.Address {
 	addr, ok := wrapperAddrs[chainID]
 	if !ok {
 		return emptyAddr
 	}
 	return addr
+}
+
+func selectNFTAsset(addr string) *models.Token {
+	for _,  v:= range assets {
+		origin := common.HexToAddress(v.Hash)
+		src := common.HexToAddress(addr)
+		if bytes.Equal(origin.Bytes(), src.Bytes()) {
+			return v
+		}
+	}
+	return nil
+}
+
+func selectAssetsByChainId(chainId uint64) []*models.Token {
+	res := make([]*models.Token, 0)
+	for _, v := range assets {
+		if v.ChainId == chainId {
+			res = append(res, v)
+		}
+	}
+	return res
 }
 
 const (
@@ -173,7 +228,7 @@ func getPageNo(totalNo, pageSize int) int {
 	return (int(totalNo) + pageSize - 1) / pageSize
 }
 
-func findFeeToken(cid uint64, hash string) *models.Token{
+func findFeeToken(cid uint64, hash string) *models.Token {
 	feeTokens := make([]*models.Token, 0)
 	db.Model(&models.Token{}).
 		Where("hash = ?", nativeHash).

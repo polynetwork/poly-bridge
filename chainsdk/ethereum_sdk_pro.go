@@ -437,7 +437,7 @@ func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) (l
 	return
 }
 
-func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (res map[string]string, err error) {
+func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (res map[*big.Int]string, err error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")

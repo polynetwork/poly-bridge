@@ -19,18 +19,19 @@ package controllers
 
 import (
 	"math/big"
+	"poly-bridge/models"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
+	mcm "poly-bridge/nft_http/meta/common"
 )
 
 type ItemController struct {
 	beego.Controller
 }
 
-// todo: cache url and token ids
 func (c *ItemController) Items() {
 	var req ItemsOfAddressReq
 	if !input(&c.Controller, &req) {
@@ -45,6 +46,11 @@ func (c *ItemController) Items() {
 	wrapper := selectWrapper(req.ChainId)
 	if wrapper == emptyAddr {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+		return
+	}
+	nftAsset := selectNFTAsset(req.Address)
+	if nftAsset == nil {
+		customInput(&c.Controller, ErrCodeRequest, "NFT Asset not exist")
 		return
 	}
 
@@ -82,7 +88,11 @@ func (c *ItemController) Items() {
 			empty()
 			return
 		}
-		item := &Item{TokenId: tokenId.String(), Url: url}
+		profile, err := fetcher.Fetch(nftAsset.TokenBasicName, &mcm.FetchRequestParams{
+			TokenId: models.NewBigInt(tokenId),
+			Url:     url,
+		})
+		item := new(Item).instance(tokenId, profile)
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{item})
 		output(&c.Controller, data)
 		return
@@ -103,14 +113,30 @@ func (c *ItemController) Items() {
 		return
 	}
 
-	items := make([]*Item, 0)
-	for tokenId, url := range res {
-		items = append(items, &Item{
-			TokenId: tokenId.String(),
+	items := getProfileItemsWithChainData(res, nftAsset)
+	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, items)
+	output(&c.Controller, data)
+}
+
+func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Token) []*Item {
+	profileReqs := make([]*mcm.FetchRequestParams, 0)
+	for tokenId, url := range data {
+		profileReqs = append(profileReqs, &mcm.FetchRequestParams{
+			TokenId: models.NewBigInt(tokenId),
 			Url:     url,
 		})
 	}
-
-	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, items)
-	output(&c.Controller, data)
+	profiles, _ := fetcher.BatchFetch(nftAsset.TokenBasicName, profileReqs)
+	profileMap := make(map[string]*models.NFTProfile)
+	if profiles != nil {
+		for _, v := range profiles {
+			profileMap[v.NftTokenId.String()] = v
+		}
+	}
+	items := make([]*Item, 0)
+	for tokenId, _ := range data {
+		profile := profileMap[tokenId.String()]
+		items = append(items, new(Item).instance(tokenId, profile))
+	}
+	return items
 }

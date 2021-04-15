@@ -126,6 +126,11 @@ var (
 		Name: "length",
 		Usage: "batch get user tokens info with length",
 	}
+
+	MethodCodeFlag = cli.StringFlag{
+		Name: "code",
+		Usage: "decode method code to params, and code format MUST be hex string",
+	}
 )
 
 var (
@@ -431,6 +436,15 @@ var (
 		Flags: []cli.Flag{
 			AssetFlag,
 			SrcAccountFlag,
+		},
+	}
+
+	CmdParseLockParams = cli.Command{
+		Name: "decodeLock",
+		Usage: "decode NFT Wrapper Lock method",
+		Action: handleDecodeWrapLock,
+		Flags: []cli.Flag{
+			MethodCodeFlag,
 		},
 	}
 )
