@@ -21,6 +21,7 @@ import (
 	"math/big"
 	"poly-bridge/models"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -126,7 +127,10 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 			Url:     url,
 		})
 	}
+	tBeforeBatchFetch := time.Now().UnixNano()
 	profiles, _ := fetcher.BatchFetch(nftAsset.TokenBasicName, profileReqs)
+	tAfterBatchFetch := time.Now().UnixNano()
+
 	profileMap := make(map[string]*models.NFTProfile)
 	if profiles != nil {
 		for _, v := range profiles {
@@ -134,9 +138,16 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 		}
 	}
 	items := make([]*Item, 0)
+	tBeforeConvert := time.Now().UnixNano()
 	for tokenId, _ := range data {
 		profile := profileMap[tokenId.String()]
 		items = append(items, new(Item).instance(nftAsset.TokenBasicName, tokenId, profile))
 	}
+	tAfterConvert := time.Now().UnixNano()
+
+	logs.Info("getProfileItemsWithChainData - batchFetchTime: %d milli second, convertTime: %d milli second",
+		(tAfterBatchFetch-tBeforeBatchFetch)/int64(time.Millisecond),
+		(tAfterConvert-tBeforeConvert)/int64(time.Millisecond),
+	)
 	return items
 }
