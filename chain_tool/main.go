@@ -111,6 +111,7 @@ func setupApp() *cli.App {
 		CmdApproveFee,
 		CmdWrapAllowance,
 		CmdNativeTransfer,
+		CmdTransferNFT,
 		CmdTokenUrls,
 		CmdNFTBalance,
 		CmdParseLockParams,
@@ -763,7 +764,7 @@ func handleCmdNativeTransfer(ctx *cli.Context) error {
 	return nil
 }
 
-func handleBatchGetTokenUrls(ctx *cli.Context) error {
+func handleCmdBatchGetTokenUrls(ctx *cli.Context) error {
 	log.Info("start to get user's NFT token urls...")
 
 	asset := flag2address(ctx, AssetFlag)
@@ -784,7 +785,7 @@ func handleBatchGetTokenUrls(ctx *cli.Context) error {
 	return nil
 }
 
-func handleNFTBalance(ctx *cli.Context) error {
+func handleCmdNFTBalance(ctx *cli.Context) error {
 	log.Info("start to get user's NFT balance")
 
 	asset := flag2address(ctx, AssetFlag)
@@ -799,7 +800,28 @@ func handleNFTBalance(ctx *cli.Context) error {
 	return nil
 }
 
-func handleDecodeWrapLock(ctx *cli.Context) error {
+func handleCmdTransferNFT(ctx *cli.Context) error {
+	log.Info("start to transfer NFT token...")
+
+	asset := flag2address(ctx, AssetFlag)
+	from := flag2address(ctx, SrcAccountFlag)
+	to := flag2address(ctx, DstAccountFlag)
+	tokenId := flag2big(ctx, TokenIdFlag)
+	key, err := wallet.LoadEthAccount(storage, cc.Keystore, from.Hex(), defaultAccPwd)
+	if err != nil {
+		return err
+	}
+
+	tx, err := sdk.NFTSafeTransferTo(key, asset, from, to, tokenId)
+	if err != nil {
+		return err
+	}
+
+	log.Info("%s transfer NFT %d to %s success, tx %s", from.Hex(), tokenId.Uint64(), to.Hex(), tx.Hex())
+	return nil
+}
+
+func handleCmdDecodeWrapLock(ctx *cli.Context) error {
 	log.Info("start to decode wrapper lock method params")
 
 	code := flag2string(ctx, MethodCodeFlag)

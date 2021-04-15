@@ -20,7 +20,9 @@ package controllers
 import (
 	"math/big"
 	"poly-bridge/models"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -48,14 +50,14 @@ func (c *ItemController) Items() {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}
-	nftAsset := selectNFTAsset(req.Address)
+	nftAsset := selectNFTAsset(req.Asset)
 	if nftAsset == nil {
 		customInput(&c.Controller, ErrCodeRequest, "NFT Asset not exist")
 		return
 	}
 
-	owner := common.HexToAddress(req.Address)
 	asset := common.HexToAddress(req.Asset)
+	owner := common.HexToAddress(req.Address)
 	bigTotalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
 		logs.Error("get nft balance err: %v", err)
@@ -77,7 +79,7 @@ func (c *ItemController) Items() {
 
 	tokenIdStr := strings.Trim(req.TokenId, " ")
 	if tokenIdStr != "" {
-		tokenId, ok := new(big.Int).SetString(tokenIdStr, 10)
+		tokenId, ok := string2Big(tokenIdStr)
 		if !ok {
 			input(&c.Controller, req)
 			return
@@ -119,14 +121,23 @@ func (c *ItemController) Items() {
 }
 
 func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Token) []*Item {
+	assetName := nftAsset.TokenBasicName
 	profileReqs := make([]*mcm.FetchRequestParams, 0)
 	for tokenId, url := range data {
-		profileReqs = append(profileReqs, &mcm.FetchRequestParams{
+		req := &mcm.FetchRequestParams{
 			TokenId: models.NewBigInt(tokenId),
 			Url:     url,
-		})
+		}
+		profileReqs = append(profileReqs, req)
 	}
-	profiles, _ := fetcher.BatchFetch(nftAsset.TokenBasicName, profileReqs)
+
+	// fetch meta data list
+	tBeforeBatchFetch := time.Now().UnixNano()
+	profiles, _ := fetcher.BatchFetch(assetName, profileReqs)
+	tAfterBatchFetch := time.Now().UnixNano()
+
+	// convert to items
+	tBeforeConvert := time.Now().UnixNano()
 	profileMap := make(map[string]*models.NFTProfile)
 	if profiles != nil {
 		for _, v := range profiles {
@@ -136,7 +147,25 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 	items := make([]*Item, 0)
 	for tokenId, _ := range data {
 		profile := profileMap[tokenId.String()]
-		items = append(items, new(Item).instance(nftAsset.TokenBasicName, tokenId, profile))
+		item := new(Item).instance(assetName, tokenId, profile)
+		items = append(items, item)
 	}
+	tAfterConvert := time.Now().UnixNano()
+
+	// sort items with token id
+	sort.Slice(items, func(i, j int) bool {
+		itemi, _ := string2Big(items[i].TokenId)
+		itemj, _ := string2Big(items[j].TokenId)
+		return itemi.Cmp(itemj) < 0
+	})
+
+	logs.Info("getProfileItemsWithChainData - batchFetchTime: %d microsecond, convertTime: %d microsecond",
+		(tAfterBatchFetch-tBeforeBatchFetch)/int64(time.Microsecond),
+		(tAfterConvert-tBeforeConvert)/int64(time.Microsecond),
+	)
 	return items
+}
+
+func string2Big(str string) (*big.Int, bool) {
+	return new(big.Int).SetString(str, 10)
 }

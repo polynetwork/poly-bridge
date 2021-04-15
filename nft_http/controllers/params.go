@@ -48,7 +48,9 @@ func (i *Item) instance(assetName string, tokenId *big.Int, profile *models.NFTP
 	i.Url = profile.Url
 	i.Image = profile.Image
 	i.Desc = profile.Description
-	i.Meta = profile.Text
+
+	// todo(fuk): useless field
+	//i.Meta = profile.Text
 	return i
 }
 
