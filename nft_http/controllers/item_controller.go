@@ -92,7 +92,7 @@ func (c *ItemController) Items() {
 			TokenId: models.NewBigInt(tokenId),
 			Url:     url,
 		})
-		item := new(Item).instance(tokenId, profile)
+		item := new(Item).instance(nftAsset.TokenBasicName, tokenId, profile)
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{item})
 		output(&c.Controller, data)
 		return
@@ -136,7 +136,7 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 	items := make([]*Item, 0)
 	for tokenId, _ := range data {
 		profile := profileMap[tokenId.String()]
-		items = append(items, new(Item).instance(tokenId, profile))
+		items = append(items, new(Item).instance(nftAsset.TokenBasicName, tokenId, profile))
 	}
 	return items
 }

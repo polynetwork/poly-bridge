@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	configFile = "../config_devnet.json"
+	configFile = "./../../conf/config_devnet.json"
 	sf         *StoreFetcher
 
 	asset   = "seascape"
