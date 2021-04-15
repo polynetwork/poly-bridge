@@ -20,37 +20,39 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"poly-bridge/chainsdk"
+	"poly-bridge/conf"
+	"poly-bridge/models"
+	"poly-bridge/nft_http/meta"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"poly-bridge/chainsdk"
-	"poly-bridge/conf"
-	"poly-bridge/models"
-	"poly-bridge/nft_http/meta"
 )
 
 var (
-	db           = newDB()
+	db           *gorm.DB
 	sdks         = make(map[uint64]*chainsdk.EthereumSdkPro)
 	assets       = make([]*models.Token, 0)
 	wrapperAddrs = make(map[uint64]common.Address)
 	fetcher      *meta.StoreFetcher
 )
 
-func newDB() *gorm.DB {
-	user := beego.AppConfig.String("mysqluser")
-	password := beego.AppConfig.String("mysqlpass")
-	url := beego.AppConfig.String("mysqlurls")
-	scheme := beego.AppConfig.String("mysqldb")
-	mode := beego.AppConfig.String("runmode")
+func NewDB(cfg *conf.DBConfig) *gorm.DB {
+	user := cfg.User
+	password := cfg.Password
+	url := cfg.URL
+	scheme := cfg.Scheme
 	Logger := logger.Default
-	if mode == "dev" {
+	if cfg.Debug {
 		Logger = Logger.LogMode(logger.Info)
 	}
-	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	format := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", user, password, url, scheme)
+	db, err := gorm.Open(mysql.Open(format), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
 	}
@@ -108,6 +110,8 @@ func Initialize(c *conf.Config) {
 	//	panic(err)
 	//}
 
+	db = NewDB(c.DBConfig)
+
 	for _, v := range c.ChainListenConfig {
 		pro := chainsdk.NewEthereumSdkPro(v.GetNodesUrl(), v.ListenSlot, v.ChainId)
 		sdks[v.ChainId] = pro
@@ -151,7 +155,7 @@ func selectWrapper(chainID uint64) common.Address {
 }
 
 func selectNFTAsset(addr string) *models.Token {
-	for _,  v:= range assets {
+	for _, v := range assets {
 		origin := common.HexToAddress(v.Hash)
 		src := common.HexToAddress(addr)
 		if bytes.Equal(origin.Bytes(), src.Bytes()) {

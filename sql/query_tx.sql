@@ -3,7 +3,7 @@ use polyswap;
 -- query wrapper, src_transactions, src_transfers, poly_transactions, dst_transactions, dst_transfers
 -- set src chain transaction hash as @txhash, e.g:
 
-set @txhash='de48a86bdc5f5b49678537942455d8ba52e65836bf99724b505785af3c5fcaa0';
+set @txhash='af394e1a44d84aa573572b459e4fd43c377e167feeffde59c30d2de9aa4d6d8f';
 select * from wrapper_transactions where hash=@txhash;
 select * from src_transactions where hash=@txhash;
 select * from src_transfers where tx_hash=@txhash;

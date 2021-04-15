@@ -38,12 +38,12 @@ type Item struct {
 	Meta      string
 }
 
-func (i *Item) instance(tokenId *big.Int, profile *models.NFTProfile) *Item {
+func (i *Item) instance(assetName string, tokenId *big.Int, profile *models.NFTProfile) *Item {
+	i.AssetName = assetName
 	i.TokenId = tokenId.String()
 	if profile == nil {
 		return i
 	}
-	i.AssetName = profile.TokenBasicName
 	i.Name = profile.Name
 	i.Url = profile.Url
 	i.Image = profile.Image
