@@ -230,40 +230,91 @@ func (s *WrapperTransactionRsp) instance(transaction *models.WrapperTransaction)
 	return s
 }
 
-type WrapperTransactionsReq struct {
+type TransactionBriefsReq struct {
 	PageSize int
 	PageNo   int
 }
 
-type WrapperTransactionsRsp struct {
+type TransactionBriefRelation struct {
+	models.WrapperTransaction
+	SrcAsset string
+	TokenId  string
+}
+
+type TransactionBriefRsp struct {
+	Hash        string
+	Status      uint64
+	BlockHeight uint64
+	SrcChainId  uint64
+	DstChainId  uint64
+	Time        uint64
+	TokenId     string
+	AssetName   string
+}
+
+func (s *TransactionBriefRsp) instance(assetName string, r *TransactionBriefRelation) *TransactionBriefRsp {
+	s.AssetName = assetName
+	s.Hash = r.Hash
+	s.Status = r.Status
+	s.BlockHeight = r.BlockHeight
+	s.SrcChainId = r.SrcChainId
+	s.DstChainId = r.DstChainId
+	s.Time = r.Time
+	s.TokenId = r.TokenId
+	return s
+}
+
+type TransactionBriefsRsp struct {
 	PageSize     int
 	PageNo       int
 	TotalPage    int
 	TotalCount   int
-	Transactions []*WrapperTransactionRsp
+	Transactions []*TransactionBriefRsp
 }
 
-func (s *WrapperTransactionsRsp) instance(
+func (s *TransactionBriefsRsp) instance(
 	pageSize, pageNo, totalPage, totalCount int,
-	transactions []*models.WrapperTransaction,
-) *WrapperTransactionsRsp {
+	txs []*TransactionBriefRsp,
+) *TransactionBriefsRsp {
 
 	s.PageSize = pageSize
 	s.PageNo = pageNo
-	s.TotalCount = totalCount
 	s.TotalPage = totalPage
-	s.Transactions = make([]*WrapperTransactionRsp, 0)
-
-	if transactions == nil {
-		return s
-	}
-
-	for _, v := range transactions {
-		tx := new(WrapperTransactionRsp).instance(v)
-		s.Transactions = append(s.Transactions, tx)
-	}
+	s.TotalCount = totalCount
+	s.Transactions = txs
 	return s
 }
+
+//
+//type WrapperTransactionsRsp struct {
+//	PageSize     int
+//	PageNo       int
+//	TotalPage    int
+//	TotalCount   int
+//	Transactions []*WrapperTransactionRsp
+//}
+//
+//func (s *WrapperTransactionsRsp) instance(
+//	pageSize, pageNo, totalPage, totalCount int,
+//	transactions []*models.WrapperTransaction,
+//) *WrapperTransactionsRsp {
+//
+//	s.PageSize = pageSize
+//	s.PageNo = pageNo
+//	s.TotalCount = totalCount
+//	s.TotalPage = totalPage
+//	s.Transactions = make([]*WrapperTransactionRsp, 0)
+//
+//	if transactions == nil {
+//		return s
+//	}
+//
+//	for _, v := range transactions {
+//		tx := new(WrapperTransactionRsp).instance(v)
+//		s.Transactions = append(s.Transactions, tx)
+//	}
+//	return s
+//}
 
 type TransactionStateRsp struct {
 	Hash       string
