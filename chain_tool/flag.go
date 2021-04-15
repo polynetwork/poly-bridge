@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"poly-bridge/basedef"
+
 	"github.com/urfave/cli"
 )
 
@@ -118,17 +119,17 @@ var (
 	}
 
 	StartFlag = cli.Uint64Flag{
-		Name: "start",
+		Name:  "start",
 		Usage: "batch get user tokens info with index start",
 	}
 
 	LengthFlag = cli.Uint64Flag{
-		Name: "length",
+		Name:  "length",
 		Usage: "batch get user tokens info with length",
 	}
 
 	MethodCodeFlag = cli.StringFlag{
-		Name: "code",
+		Name:  "code",
 		Usage: "decode method code to params, and code format MUST be hex string",
 	}
 )
@@ -418,9 +419,9 @@ var (
 	}
 
 	CmdTokenUrls = cli.Command{
-		Name: "urls",
-		Usage: "batch get users token url",
-		Action: handleBatchGetTokenUrls,
+		Name:   "urls",
+		Usage:  "batch get users token url",
+		Action: handleCmdBatchGetTokenUrls,
 		Flags: []cli.Flag{
 			AssetFlag,
 			SrcAccountFlag,
@@ -430,19 +431,31 @@ var (
 	}
 
 	CmdNFTBalance = cli.Command{
-		Name: "nftBalance",
-		Usage: "get NFT balance",
-		Action: handleNFTBalance,
+		Name:   "nftBalance",
+		Usage:  "get NFT balance",
+		Action: handleCmdNFTBalance,
 		Flags: []cli.Flag{
 			AssetFlag,
 			SrcAccountFlag,
 		},
 	}
 
+	CmdTransferNFT = cli.Command{
+		Name:   "transferNFT",
+		Usage:  "transfer NFT token.",
+		Action: handleCmdTransferNFT,
+		Flags: []cli.Flag{
+			AssetFlag,
+			SrcAccountFlag,
+			DstAccountFlag,
+			TokenIdFlag,
+		},
+	}
+
 	CmdParseLockParams = cli.Command{
-		Name: "decodeLock",
-		Usage: "decode NFT Wrapper Lock method",
-		Action: handleDecodeWrapLock,
+		Name:   "decodeLock",
+		Usage:  "decode NFT Wrapper Lock method",
+		Action: handleCmdDecodeWrapLock,
 		Flags: []cli.Flag{
 			MethodCodeFlag,
 		},
