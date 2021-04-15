@@ -50,14 +50,14 @@ func (c *ItemController) Items() {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}
-	nftAsset := selectNFTAsset(req.Address)
+	nftAsset := selectNFTAsset(req.Asset)
 	if nftAsset == nil {
 		customInput(&c.Controller, ErrCodeRequest, "NFT Asset not exist")
 		return
 	}
 
-	owner := common.HexToAddress(req.Address)
 	asset := common.HexToAddress(req.Asset)
+	owner := common.HexToAddress(req.Address)
 	bigTotalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
 		logs.Error("get nft balance err: %v", err)
@@ -79,7 +79,7 @@ func (c *ItemController) Items() {
 
 	tokenIdStr := strings.Trim(req.TokenId, " ")
 	if tokenIdStr != "" {
-		tokenId, ok := new(big.Int).SetString(tokenIdStr, 10)
+		tokenId, ok := string2Big(tokenIdStr)
 		if !ok {
 			input(&c.Controller, req)
 			return
@@ -154,8 +154,8 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 
 	// sort items with token id
 	sort.Slice(items, func(i, j int) bool {
-		itemi, _ := new(big.Int).SetString(items[i].TokenId, 10)
-		itemj, _ := new(big.Int).SetString(items[i].TokenId, 10)
+		itemi, _ := string2Big(items[i].TokenId)
+		itemj, _ := string2Big(items[j].TokenId)
 		return itemi.Cmp(itemj) < 0
 	})
 
@@ -164,4 +164,8 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 		(tAfterConvert-tBeforeConvert)/int64(time.Microsecond),
 	)
 	return items
+}
+
+func string2Big(str string) (*big.Int, bool) {
+	return new(big.Int).SetString(str, 10)
 }
