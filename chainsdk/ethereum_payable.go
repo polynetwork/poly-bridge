@@ -209,6 +209,35 @@ func (s *EthereumSdk) MintNFT(
 	return tx.Hash(), nil
 }
 
+func (s *EthereumSdk) NFTSafeTransferTo(
+	nftOwnerKey *ecdsa.PrivateKey,
+	asset,
+	from,
+	to common.Address,
+	tokenID *big.Int,
+) (common.Hash, error) {
+
+	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
+	if err != nil {
+		return EmptyHash, err
+	}
+
+	auth, err := s.makeAuth(nftOwnerKey)
+	if err != nil {
+		return EmptyHash, err
+	}
+
+	tx, err := cm.SafeTransferFrom(auth, from, to, tokenID)
+	if err != nil {
+		return EmptyHash, err
+	}
+
+	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+		return EmptyHash, err
+	}
+	return tx.Hash(), nil
+}
+
 func (s *EthereumSdk) NFTSafeTransferFrom(
 	nftOwnerKey *ecdsa.PrivateKey,
 	asset,
