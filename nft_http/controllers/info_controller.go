@@ -19,9 +19,10 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"poly-bridge/nft_http/meta"
 
 	"github.com/astaxie/beego"
-	"github.com/ethereum/go-ethereum/common"
 	"poly-bridge/models"
 	"poly-bridge/utils/net"
 )
@@ -73,15 +74,18 @@ func (c *InfoController) Home() {
 	totalCnt := len(chainAssets)
 	assetItems := make([]*AssetItems, 0)
 	for _, v := range chainAssets {
-		addr := common.HexToAddress(v.Hash)
-		tokenIds, _ := sdk.GetAssetNFTs(addr, 0, req.Size)
-		chainData, _ := sdk.GetNFTURLs(addr, tokenIds)
-		items := getProfileItemsWithChainData(chainData, v)
-		assetItem := &AssetItems{
-			Asset: new(AssetRsp).instance(v),
-			Items: items,
+		if v.TokenBasic.MetaFetcherType != meta.FetcherTypeUnknown {
+			addr := common.HexToAddress(v.Hash)
+			tokenIds, _ := sdk.GetAssetNFTs(addr, 0, req.Size)
+			chainData, _ := sdk.GetNFTURLs(addr, tokenIds)
+			items := getProfileItemsWithChainData(chainData, v)
+			assetItem := &AssetItems{
+				Asset: new(AssetRsp).instance(v),
+				Items: items,
+			}
+			assetItems = append(assetItems, assetItem)
+			break
 		}
-		assetItems = append(assetItems, assetItem)
 	}
 	data := new(HomeRsp).instance(totalCnt, assetItems)
 	output(&c.Controller, data)
