@@ -25,6 +25,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"poly-bridge/nft_http/meta"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -36,10 +37,12 @@ import (
 
 var (
 	db           *gorm.DB
+	txCounter    *TransactionCounter
 	sdks         = make(map[uint64]*chainsdk.EthereumSdkPro)
 	assets       = make([]*models.Token, 0)
 	wrapperAddrs = make(map[uint64]common.Address)
 	fetcher      *meta.StoreFetcher
+	feeTokens    = make(map[uint64]*models.Token)
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -57,66 +60,37 @@ func NewDB(cfg *conf.DBConfig) *gorm.DB {
 		panic(err)
 	}
 
-	// todo(fuk): delete after debug
-	err = db.Debug().AutoMigrate(
-		&models.Chain{},
-		&models.WrapperTransaction{},
-		&models.ChainFee{},
-		&models.TokenBasic{},
-		&models.Token{},
-		&models.PriceMarket{},
-		&models.TokenMap{},
-		&models.SrcTransaction{},
-		&models.SrcTransfer{},
-		&models.PolyTransaction{},
-		&models.DstTransaction{},
-		&models.DstTransfer{},
-		&models.NFTProfile{},
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	//db.Model(&models.Token{}).
-	//	Where("standard = ?", models.TokenTypeErc721).
-	//	Preload("TokenBasic").
-	//	Find(&assets)
-
 	db.Where("standard = ? and property=?", models.TokenTypeErc721, 1).
 		Preload("TokenBasic").
-		//Preload("TokenMaps").
-		//Preload("TokenMaps.DstToken").
 		Find(&assets)
-
 	for _, v := range assets {
-		logs.Info("load asset %s, chainid %d", v.TokenBasicName, v.ChainId)
+		logs.Info("load asset %s, chainid %d, hash %s", v.TokenBasicName, v.ChainId, v.Hash)
+	}
+
+	feeTokenList := make([]*models.Token, 0)
+	db.Where("hash=?", nativeHash).
+		Preload("TokenBasic").
+		Find(&feeTokenList)
+	for _, v := range feeTokenList {
+		feeTokens[v.ChainId] = v
+		logs.Info("load chainid %d feeToken %s", v.ChainId, v.TokenBasicName)
 	}
 	return db
 }
 
 func Initialize(c *conf.Config) {
-	//var err error
-	//Logger := logger.Default
-	//if c.DBConfig.Debug {
-	//	Logger = Logger.LogMode(logger.Info)
-	//}
-	//link := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
-	//	c.DBConfig.User,
-	//	c.DBConfig.Password,
-	//	c.DBConfig.URL,
-	//	c.DBConfig.Scheme,
-	//)
-	//if db, err = gorm.Open(mysql.Open(link), &gorm.Config{Logger: Logger}); err != nil {
-	//	panic(err)
-	//}
-
 	db = NewDB(c.DBConfig)
 
 	for _, v := range c.ChainListenConfig {
-		pro := chainsdk.NewEthereumSdkPro(v.GetNodesUrl(), v.ListenSlot, v.ChainId)
-		sdks[v.ChainId] = pro
-		wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
-		logs.Info("load chain id %d, contract %s", v.ChainId, v.NFTWrapperContract)
+		urls := v.GetNodesUrl()
+		if len(urls) > 0 {
+			pro := chainsdk.NewEthereumSdkPro(v.GetNodesUrl(), v.ListenSlot, v.ChainId)
+			sdks[v.ChainId] = pro
+			wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
+			logs.Info("load chain id %d, contract %s", v.ChainId, v.NFTWrapperContract)
+		} else {
+			logs.Warn("chain %s node is empty", v.ChainName)
+		}
 	}
 
 	storeFetcher, err := meta.NewStoreFetcher(db, 1000)
@@ -134,6 +108,37 @@ func Initialize(c *conf.Config) {
 		storeFetcher.Register(fetcherTyp, assetName, baseUri)
 	}
 	fetcher = storeFetcher
+
+	txCounter = NewTransactionCounter()
+}
+
+type TransactionCounter struct {
+	Count    int64
+	LastTime int64
+}
+
+func NewTransactionCounter() *TransactionCounter {
+	s := new(TransactionCounter)
+	s.refresh()
+	return s
+}
+
+func (s *TransactionCounter) refresh() {
+	db.Model(&models.WrapperTransaction{}).
+		Where("standard = ?", models.TokenTypeErc721).
+		Count(&s.Count)
+
+	s.LastTime = time.Now().Unix()
+}
+
+func (s *TransactionCounter) Number() int64 {
+	now := time.Now().Unix()
+	if now-s.LastTime < 120 {
+		return s.Count
+	}
+
+	s.refresh()
+	return s.Count
 }
 
 func selectNode(chainID uint64) *chainsdk.EthereumSdkPro {
