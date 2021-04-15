@@ -18,9 +18,12 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
-	xc "poly-bridge/controllers"
+	"fmt"
+	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/models"
+
+	"github.com/astaxie/beego"
 )
 
 type FeeController struct {
@@ -32,5 +35,32 @@ func (c *FeeController) GetFee() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	xc.CustomGetFee(&c.Controller, db, req.SrcChainId, req.DstChainId, req.Hash)
+	token := new(models.Token)
+	res := db.Where("hash = ? and chain_id = ?", req.Hash, req.SrcChainId).
+		Preload("TokenBasic").
+		First(token)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have token: %s", req.SrcChainId, req.Hash))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	chainFee := new(models.ChainFee)
+	res = db.Where("chain_id = ?", req.DstChainId).Preload("TokenBasic").First(chainFee)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", req.DstChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+	usdtFee := new(big.Float).Mul(proxyFee, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
+	usdtFee = new(big.Float).Quo(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
+	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
+	c.Data["json"] = models.MakeGetFeeRsp(req.SrcChainId, req.Hash, req.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision)
+	c.ServeJSON()
 }
