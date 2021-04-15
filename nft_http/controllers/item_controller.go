@@ -154,7 +154,9 @@ func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Tok
 
 	// sort items with token id
 	sort.Slice(items, func(i, j int) bool {
-		return items[i].TokenId < items[j].TokenId
+		itemi, _ := new(big.Int).SetString(items[i].TokenId, 10)
+		itemj, _ := new(big.Int).SetString(items[i].TokenId, 10)
+		return itemi.Cmp(itemj) < 0
 	})
 
 	logs.Info("getProfileItemsWithChainData - batchFetchTime: %d microsecond, convertTime: %d microsecond",
