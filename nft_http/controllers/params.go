@@ -235,6 +235,12 @@ type TransactionBriefsReq struct {
 	PageNo   int
 }
 
+type TransactionBriefsOfAddressReq struct {
+	PageSize int
+	PageNo   int
+	Addresses  []string
+}
+
 type TransactionBriefRelation struct {
 	models.WrapperTransaction
 	SrcAsset string
