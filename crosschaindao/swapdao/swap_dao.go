@@ -180,6 +180,8 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 	tokenMaps := make([]*models.TokenMap, 0)
 	for _, tokenBasic := range tokenBasics {
 		for _, tokenSrc := range tokenBasic.Tokens {
+			tokenSrc.Standard = tokenBasic.Standard
+			tokenSrc.Property = tokenBasic.Property
 			for _, tokenDst := range tokenBasic.Tokens {
 				if tokenDst.ChainId != tokenSrc.ChainId {
 					tokenMaps = append(tokenMaps, &models.TokenMap{
@@ -187,7 +189,7 @@ func (dao *SwapDao) getTokenMapsFromToken(tokenBasics []*models.TokenBasic) []*m
 						SrcTokenHash: tokenSrc.Hash,
 						DstChainId:   tokenDst.ChainId,
 						DstTokenHash: tokenDst.Hash,
-						Property:     1,
+						Property:     tokenBasic.Property,
 						Standard: 	  tokenBasic.Standard,
 					})
 				}

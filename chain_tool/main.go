@@ -117,6 +117,7 @@ func setupApp() *cli.App {
 	}
 
 	app.Before = beforeCommands
+	app.After = afterCommond
 	return app
 }
 
@@ -163,6 +164,13 @@ func beforeCommands(ctx *cli.Context) (err error) {
 		return fmt.Errorf("load eth account for chain %d faild, err: %v", cc.SideChainID, err)
 	}
 
+	return nil
+}
+
+func afterCommond(ctx *cli.Context) error {
+	log.Info("\r\n" +
+		"\r\n" +
+		"\r\n")
 	return nil
 }
 
