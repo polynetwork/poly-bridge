@@ -30,12 +30,12 @@ type AssetItems struct {
 
 type Item struct {
 	AssetName string
-	TokenId string
-	Name string
-	Url string
-	Image string
-	Desc string
-	Meta string
+	TokenId   string
+	Name      string
+	Url       string
+	Image     string
+	Desc      string
+	Meta      string
 }
 
 func (i *Item) instance(tokenId *big.Int, profile *models.NFTProfile) *Item {
@@ -45,7 +45,7 @@ func (i *Item) instance(tokenId *big.Int, profile *models.NFTProfile) *Item {
 	}
 	i.AssetName = profile.TokenBasicName
 	i.Name = profile.Name
-	i.Url  = profile.Url
+	i.Url = profile.Url
 	i.Image = profile.Image
 	i.Desc = profile.Description
 	i.Meta = profile.Text
@@ -284,8 +284,8 @@ type TransactionRsp struct {
 	FeeToken         *models.TokenRsp
 	FeeAmount        string
 	State            uint64
-	SrcAsset            *AssetRsp
-	DstAsset *AssetRsp
+	SrcAsset         *AssetRsp
+	DstAsset         *AssetRsp
 	TransactionState []*TransactionStateRsp
 }
 
@@ -298,10 +298,10 @@ type SrcPolyDstRelation struct {
 	DstHash            string
 	DstTransaction     *models.DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
 	ChainId            uint64                 `gorm:"type:bigint(20);not null"`
-	SrcAssetHash          string                 `gorm:"type:varchar(66);not null"`
-	SrcAsset              *models.Token          `gorm:"foreignKey:SrcAssetHash,ChainId;references:Hash,ChainId"`
-	DstAssetHash          string                 `gorm:"type:varchar(66);not null"`
-	DstAsset              *models.Token          `gorm:"foreignKey:DstAssetHash,ChainId;references:Hash,ChainId"`
+	SrcAssetHash       string                 `gorm:"type:varchar(66);not null"`
+	SrcAsset           *models.Token          `gorm:"foreignKey:SrcAssetHash,ChainId;references:Hash,ChainId"`
+	DstAssetHash       string                 `gorm:"type:varchar(66);not null"`
+	DstAsset           *models.Token          `gorm:"foreignKey:DstAssetHash,ChainId;references:Hash,ChainId"`
 	FeeTokenHash       string                 `gorm:"size:66;not null"`
 	FeeToken           *models.Token          `gorm:"foreignKey:FeeTokenHash,ChainId;references:Hash,ChainId"`
 }
