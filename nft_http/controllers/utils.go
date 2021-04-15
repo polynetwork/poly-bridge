@@ -124,7 +124,7 @@ func Initialize(c *conf.Config) {
 		if asset.TokenBasic == nil {
 			continue
 		}
-		fetcherTyp := asset.TokenBasic.MetaFetcherType
+		fetcherTyp := meta.FetcherType(asset.TokenBasic.MetaFetcherType)
 		baseUri := asset.TokenBasic.Meta
 		assetName := asset.TokenBasic.Name
 		storeFetcher.Register(fetcherTyp, assetName, baseUri)
