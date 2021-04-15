@@ -37,7 +37,7 @@ func init() {
 		beego.NSRouter("/items/", &controllers.ItemController{}, "post:Items"),
 		beego.NSRouter("/getfee/", &controllers.FeeController{}, "post:GetFee"),
 
-		beego.NSRouter("/exp_rtransactions/", &controllers.ExplorerController{}, "post:Transactions"),
+		beego.NSRouter("/exp_transactions/", &controllers.ExplorerController{}, "post:Transactions"),
 		beego.NSRouter("/exp_transactionsofaddress/", &controllers.ExplorerController{}, "post:TransactionsOfAddress"),
 		beego.NSRouter("/exp_transactionofhash/", &controllers.ExplorerController{}, "post:TransactionDetail"),
 
