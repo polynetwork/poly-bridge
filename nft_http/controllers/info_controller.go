@@ -52,7 +52,7 @@ func (c *InfoController) Get() {
 	c.ServeJSON()
 }
 
-var homeCahe = make(map[uint64]*HomeRsp)
+var homeCache = make(map[uint64]*HomeRsp)
 
 func (c *InfoController) Home() {
 	var req HomeReq
@@ -66,7 +66,7 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	if cache, ok := homeCahe[req.ChainId]; ok {
+	if cache, ok := homeCache[req.ChainId]; ok {
 		output(&c.Controller, cache)
 		return
 	}
@@ -89,7 +89,7 @@ func (c *InfoController) Home() {
 		}
 	}
 	data := new(HomeRsp).instance(totalCnt, assetItems)
-	homeCahe[req.ChainId] = data
+	homeCache[req.ChainId] = data
 
 	output(&c.Controller, data)
 }
