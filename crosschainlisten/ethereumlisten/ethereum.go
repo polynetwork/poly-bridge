@@ -22,10 +22,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -37,6 +33,11 @@ import (
 	"poly-bridge/go_abi/wrapper_abi"
 	"poly-bridge/models"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 const (
@@ -93,13 +94,9 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	erc20WrapperTransactions, err1 := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, height, height)
-	if err1 == nil {
-		wrapperTransactions = append(wrapperTransactions, erc20WrapperTransactions...)
-	}
 	nftWrapperTransactions, err2 := this.getNFTWrapperEventByBlockNumber(this.ethCfg.NFTWrapperContract, height, height)
-	if err2 == nil {
-		wrapperTransactions = append(wrapperTransactions, nftWrapperTransactions...)
-	}
+	wrapperTransactions = append(wrapperTransactions, erc20WrapperTransactions...)
+	wrapperTransactions = append(wrapperTransactions, nftWrapperTransactions...)
 	if err := allErr(err1, err2); err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -115,17 +112,13 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		return nil, nil, nil, nil, err
 	}
 
-	proxyLockEvents,proxyUnlockEvents := make([]*models.ProxyLockEvent, 0),make([]*models.ProxyUnlockEvent, 0)
+	proxyLockEvents, proxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
 	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err3 := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, height, height)
-	if err3 == nil {
-		proxyLockEvents = append(proxyLockEvents, erc20ProxyLockEvents...)
-		proxyUnlockEvents = append(proxyUnlockEvents, erc20ProxyUnlockEvents...)
-	}
 	nftProxyLockEvents, nftProxyUnlockEvents, err4 := this.getNFTProxyEventByBlockNumber(this.ethCfg.NFTProxyContract, height, height)
-	if err4 == nil {
-		proxyLockEvents = append(proxyLockEvents, nftProxyLockEvents...)
-		proxyUnlockEvents = append(proxyUnlockEvents, nftProxyUnlockEvents...)
-	}
+	proxyLockEvents = append(proxyLockEvents, erc20ProxyLockEvents...)
+	proxyUnlockEvents = append(proxyUnlockEvents, erc20ProxyUnlockEvents...)
+	proxyLockEvents = append(proxyLockEvents, nftProxyLockEvents...)
+	proxyUnlockEvents = append(proxyUnlockEvents, nftProxyUnlockEvents...)
 	if err := allErr(err3, err4); err != nil {
 		return nil, nil, nil, nil, err
 	}
