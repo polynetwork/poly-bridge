@@ -89,6 +89,8 @@ func (c *InfoController) Home() {
 		}
 	}
 	data := new(HomeRsp).instance(totalCnt, assetItems)
+	homeCahe[req.ChainId] = data
+
 	output(&c.Controller, data)
 }
 
