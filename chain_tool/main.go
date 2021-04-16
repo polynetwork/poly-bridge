@@ -78,6 +78,7 @@ func setupApp() *cli.App {
 		AmountFlag,
 		TokenIdFlag,
 		MethodCodeFlag,
+		OwnerAccountFlag,
 	}
 	app.Commands = []cli.Command{
 		CmdSample,
@@ -866,7 +867,7 @@ func handleCmdEnv(ctx *cli.Context) error {
 
 	owner := flag2address(ctx, OwnerAccountFlag)
 	addr := owner.Hex()
-	log.Info("check your owner address %s", addr)
+	log.Info("check your owner address %s in dir %s", cc.Keystore, addr)
 	_, err := wallet.LoadEthAccount(storage, cc.Keystore, addr, defaultAccPwd)
 	if err != nil {
 		return err
