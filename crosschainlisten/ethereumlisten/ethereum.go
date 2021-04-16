@@ -167,9 +167,11 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						srcTransaction.Standard = models.TokenTypeErc721
 						srcTransaction.SrcTransfer.Standard = models.TokenTypeErc721
 					}
-					srcTransactions = append(srcTransactions, srcTransaction)
 					break
 				}
+			}
+			if srcTransaction.SrcTransfer != nil {
+				srcTransactions = append(srcTransactions, srcTransaction)
 			}
 		}
 	}
@@ -202,9 +204,11 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						dstTransaction.Standard = models.TokenTypeErc721
 						dstTransaction.DstTransfer.Standard = models.TokenTypeErc721
 					}
-					dstTransactions = append(dstTransactions, dstTransaction)
 					break
 				}
+			}
+			if dstTransaction.DstTransfer != nil {
+				dstTransactions = append(dstTransactions, dstTransaction)
 			}
 		}
 	}
