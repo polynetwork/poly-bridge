@@ -529,22 +529,27 @@ func (s *EthereumSdk) makeAuth(key *ecdsa.PrivateKey) (*bind.TransactOpts, error
 }
 
 func (s *EthereumSdk) waitTxConfirm(hash common.Hash) error {
-	for {
-		time.Sleep(time.Second * 1)
-		_, ispending, err := s.TransactionByHash(hash)
+	ticker := time.NewTicker(time.Second * 1)
+	end := time.Now().Add(30 * time.Second)
+	for now := range ticker.C {
+		_, pending, err := s.TransactionByHash(hash)
 		if err != nil {
 			log.Error("failed to call TransactionByHash: %v", err)
 			continue
 		}
-		if ispending == true {
-			continue
-		} else {
+		if !pending {
 			break
 		}
+		if now.Before(end) {
+			continue
+		}
+		log.Info("check your transaction %s on explorer, make sure it's confirmed.", hash.Hex())
+		return nil
 	}
-	log.Info("tx %s confirmed", hash.Hex())
 	if err := s.dumpTx(hash); err != nil {
-		return err
+		log.Error("dump tx %s err: %v", hash.Hex(), err)
+	} else {
+		log.Info("tx %s confirmed", hash.Hex())
 	}
 	return nil
 }

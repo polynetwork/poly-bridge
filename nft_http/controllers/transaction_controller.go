@@ -26,30 +26,6 @@ type TransactionController struct {
 	beego.Controller
 }
 
-func (c *TransactionController) Transactions() {
-	var req WrapperTransactionsReq
-	if !input(&c.Controller, &req) {
-		return
-	}
-
-	transactions := make([]*models.WrapperTransaction, 0)
-	db.Where("standard = ?", models.TokenTypeErc721).
-		Limit(req.PageSize).
-		Offset(req.PageSize * req.PageNo).
-		Order("time asc").
-		Find(&transactions)
-
-	var transactionNum int64
-	db.Model(&models.WrapperTransaction{}).
-		Where("standard = ?", models.TokenTypeErc721).
-		Count(&transactionNum)
-
-	totalPage := (int(transactionNum) + req.PageSize - 1) / req.PageSize
-	totalCnt := int(transactionNum)
-	data := new(WrapperTransactionsRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, transactions)
-	output(&c.Controller, data)
-}
-
 func (c *TransactionController) TransactionsOfAddress() {
 	var req models.TransactionsOfAddressReq
 

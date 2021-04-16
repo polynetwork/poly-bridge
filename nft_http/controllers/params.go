@@ -230,37 +230,198 @@ func (s *WrapperTransactionRsp) instance(transaction *models.WrapperTransaction)
 	return s
 }
 
-type WrapperTransactionsReq struct {
+type TransactionBriefsReq struct {
 	PageSize int
 	PageNo   int
 }
 
-type WrapperTransactionsRsp struct {
+type TransactionBriefsOfAddressReq struct {
+	PageSize  int
+	PageNo    int
+	Addresses []string
+}
+
+type TransactionBriefRelation struct {
+	models.WrapperTransaction
+	SrcAsset string
+	TokenId  string
+}
+
+type TransactionBriefRsp struct {
+	Hash        string
+	Status      uint64
+	BlockHeight uint64
+	SrcChainId  uint64
+	DstChainId  uint64
+	Time        uint64
+	TokenId     string
+	AssetName   string
+	From        string
+	To          string
+}
+
+func (s *TransactionBriefRsp) instance(assetName string, r *TransactionBriefRelation) *TransactionBriefRsp {
+	s.AssetName = assetName
+	s.Hash = r.Hash
+	s.Status = r.Status
+	s.BlockHeight = r.BlockHeight
+	s.SrcChainId = r.SrcChainId
+	s.DstChainId = r.DstChainId
+	s.Time = r.Time
+	s.TokenId = r.TokenId
+	s.From = r.User
+	s.To = r.DstUser
+	return s
+}
+
+type TransactionBriefsRsp struct {
 	PageSize     int
 	PageNo       int
 	TotalPage    int
 	TotalCount   int
-	Transactions []*WrapperTransactionRsp
+	Transactions []*TransactionBriefRsp
 }
 
-func (s *WrapperTransactionsRsp) instance(
+func (s *TransactionBriefsRsp) instance(
 	pageSize, pageNo, totalPage, totalCount int,
-	transactions []*models.WrapperTransaction,
-) *WrapperTransactionsRsp {
+	txs []*TransactionBriefRsp,
+) *TransactionBriefsRsp {
 
 	s.PageSize = pageSize
 	s.PageNo = pageNo
-	s.TotalCount = totalCount
 	s.TotalPage = totalPage
-	s.Transactions = make([]*WrapperTransactionRsp, 0)
+	s.TotalCount = totalCount
+	s.Transactions = txs
+	return s
+}
 
-	if transactions == nil {
-		return s
+type TransactionDetailRelation struct {
+	SrcHash            string
+	WrapperTransaction *models.WrapperTransaction `gorm:"foreignKey:SrcHash;references:Hash"`
+	SrcTransaction     *models.SrcTransaction     `gorm:"foreignKey:SrcHash;references:Hash"`
+	PolyHash           string
+	PolyTransaction    *models.PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
+	DstHash            string
+	DstTransaction     *models.DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
+}
+
+type SideChainRsp struct {
+	Hash        string
+	ChainId     uint64
+	Asset       string
+	AssetHash   string
+	BlockHeight uint64
+	Time        uint64
+	Fee         string
+	Status      uint64
+	From        string
+	To          string
+}
+
+type PolyChainRsp struct {
+	Hash        string
+	Time        uint64
+	BlockHeight uint64
+	Status      uint64
+	From        string
+	To          string
+}
+
+type TransactionDetailReq struct {
+	Hash string
+}
+
+type TransactionDetailRsp struct {
+	Transaction     *TransactionBriefRsp
+	SrcTransaction  *SideChainRsp
+	DstTransaction  *SideChainRsp
+	PolyTransaction *PolyChainRsp
+	Meta            *Item
+}
+
+func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *TransactionDetailRsp {
+	if r == nil {
+		return nil
 	}
 
-	for _, v := range transactions {
-		tx := new(WrapperTransactionRsp).instance(v)
-		s.Transactions = append(s.Transactions, tx)
+	s.Transaction = new(TransactionBriefRsp)
+	s.SrcTransaction = new(SideChainRsp)
+	s.DstTransaction = new(SideChainRsp)
+	s.PolyTransaction = new(PolyChainRsp)
+
+	s.Transaction.Hash = r.WrapperTransaction.Hash
+	s.Transaction.Status = r.WrapperTransaction.Status
+	s.Transaction.BlockHeight = r.WrapperTransaction.BlockHeight
+	s.Transaction.SrcChainId = r.WrapperTransaction.SrcChainId
+	s.Transaction.DstChainId = r.WrapperTransaction.DstChainId
+	s.Transaction.Time = r.WrapperTransaction.Time
+	s.Transaction.From = r.WrapperTransaction.User
+	s.Transaction.To = r.WrapperTransaction.DstUser
+
+
+	if r.SrcTransaction != nil {
+
+		if r.SrcTransaction.SrcTransfer != nil {
+			token := selectNFTAsset(r.SrcTransaction.SrcTransfer.Asset)
+
+			s.SrcTransaction.From = r.SrcTransaction.SrcTransfer.From
+			s.SrcTransaction.To = r.SrcTransaction.SrcTransfer.To
+			s.SrcTransaction.Asset = token.TokenBasicName
+			s.SrcTransaction.AssetHash = token.Hash
+			s.Transaction.AssetName = token.TokenBasicName
+			s.Transaction.TokenId = r.SrcTransaction.SrcTransfer.Amount.String()
+		}
+
+		s.SrcTransaction.Hash = r.SrcTransaction.Hash
+		s.SrcTransaction.BlockHeight = r.SrcTransaction.Height
+		s.SrcTransaction.Time = r.SrcTransaction.Time
+		s.SrcTransaction.Status = r.SrcTransaction.State
+		s.SrcTransaction.ChainId = r.SrcTransaction.ChainId
+
+		feeToken := feeTokens[s.SrcTransaction.ChainId]
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.TokenBasic.Precision)))
+		{
+			bbb := decimal.NewFromBigInt(&r.SrcTransaction.Fee.Int, 0)
+			feeAmount := bbb.Div(precision)
+			s.SrcTransaction.Fee = feeAmount.String()
+		}
+	}
+
+
+	if r.DstTransaction != nil {
+		if r.DstTransaction.DstTransfer != nil {
+			token := selectNFTAsset(r.DstTransaction.DstTransfer.Asset)
+
+			s.DstTransaction.From = r.DstTransaction.DstTransfer.From
+			s.DstTransaction.To = r.DstTransaction.DstTransfer.To
+			s.DstTransaction.Asset = token.TokenBasicName
+			s.DstTransaction.AssetHash = token.Hash
+
+			s.Transaction.AssetName = token.TokenBasicName
+		}
+
+		s.DstTransaction.Hash = r.DstTransaction.Hash
+		s.DstTransaction.BlockHeight = r.DstTransaction.Height
+		s.DstTransaction.Time = r.DstTransaction.Time
+		s.DstTransaction.Status = r.DstTransaction.State
+		s.DstTransaction.ChainId = r.DstTransaction.ChainId
+
+		feeToken := feeTokens[s.DstTransaction.ChainId]
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.TokenBasic.Precision)))
+		{
+			bbb := decimal.NewFromBigInt(&r.SrcTransaction.Fee.Int, 0)
+			feeAmount := bbb.Div(precision)
+			s.SrcTransaction.Fee = feeAmount.String()
+		}
+	}
+
+	if r.PolyTransaction != nil {
+		s.PolyTransaction.Hash = r.PolyTransaction.Hash
+		s.PolyTransaction.BlockHeight = r.PolyTransaction.Height
+		s.PolyTransaction.Time = r.PolyTransaction.Time
+		s.PolyTransaction.Status = r.PolyTransaction.State
+		s.PolyTransaction.From = s.Transaction.From
+		s.PolyTransaction.To = s.Transaction.To
 	}
 	return s
 }

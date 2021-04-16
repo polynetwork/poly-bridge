@@ -24,10 +24,11 @@ import (
 	"strings"
 	"time"
 
+	mcm "poly-bridge/nft_http/meta/common"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
-	mcm "poly-bridge/nft_http/meta/common"
 )
 
 type ItemController struct {
@@ -90,11 +91,11 @@ func (c *ItemController) Items() {
 			empty()
 			return
 		}
-		profile, err := fetcher.Fetch(nftAsset.TokenBasicName, &mcm.FetchRequestParams{
-			TokenId: models.NewBigInt(tokenId),
-			Url:     url,
-		})
-		item := new(Item).instance(nftAsset.TokenBasicName, tokenId, profile)
+		item, err := getProfileItemWithTokenId(nftAsset.TokenBasicName, tokenId, url)
+		if err != nil {
+			logs.Error("getProfileWithTokenId err: %v", err)
+			item = new(Item).instance(nftAsset.TokenBasicName, tokenId, nil)
+		}
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, []*Item{item})
 		output(&c.Controller, data)
 		return
@@ -118,6 +119,18 @@ func (c *ItemController) Items() {
 	items := getProfileItemsWithChainData(res, nftAsset)
 	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, items)
 	output(&c.Controller, data)
+}
+
+func getProfileItemWithTokenId(assetName string, tokenId *big.Int, url string) (*Item, error) {
+	profile, err := fetcher.Fetch(assetName, &mcm.FetchRequestParams{
+		TokenId: models.NewBigInt(tokenId),
+		Url:     url,
+	})
+	if err != nil {
+		return nil, err
+	}
+	item := new(Item).instance(assetName, tokenId, profile)
+	return item, nil
 }
 
 func getProfileItemsWithChainData(data map[*big.Int]string, nftAsset *models.Token) []*Item {

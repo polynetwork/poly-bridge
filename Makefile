@@ -9,6 +9,14 @@ BaseDir=build/$(env)
 
 .PHONY: all test clean
 
+bridge_http:
+	@mkdir -p $(BaseDir)/bridge_http
+	@$(GOBUILD) -o $(BaseDir)/bridge_http/http_service main.go
+
+bridge_server:
+	@mkdir -p $(BaseDir)/bridge_server
+	@$(GOBUILD) -o $(BaseDir)/bridge_server/bridge_server cmd/main.go
+
 nft_bridge_http:
 	@mkdir -p $(BaseDir)/nft_bridge_http/conf
 	@mkdir -p $(BaseDir)/nft_bridge_http/logs

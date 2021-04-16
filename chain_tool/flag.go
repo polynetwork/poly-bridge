@@ -78,6 +78,10 @@ var (
 		Usage: "set dest asset for cross chain",
 	}
 
+	OwnerAccountFlag = cli.StringFlag{
+		Name:  "owner",
+		Usage: "set `owner` account",
+	}
 	SrcAccountFlag = cli.StringFlag{
 		Name:  "from",
 		Usage: "set `from` account, or approve `sender` account",
@@ -458,6 +462,15 @@ var (
 		Action: handleCmdDecodeWrapLock,
 		Flags: []cli.Flag{
 			MethodCodeFlag,
+		},
+	}
+
+	CmdEnv = cli.Command{
+		Name:   "env",
+		Usage:  "ensure your environment is correct",
+		Action: handleCmdEnv,
+		Flags: []cli.Flag{
+			OwnerAccountFlag,
 		},
 	}
 )

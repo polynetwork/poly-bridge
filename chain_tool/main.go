@@ -78,6 +78,7 @@ func setupApp() *cli.App {
 		AmountFlag,
 		TokenIdFlag,
 		MethodCodeFlag,
+		OwnerAccountFlag,
 	}
 	app.Commands = []cli.Command{
 		CmdSample,
@@ -115,6 +116,7 @@ func setupApp() *cli.App {
 		CmdTokenUrls,
 		CmdNFTBalance,
 		CmdParseLockParams,
+		CmdEnv,
 	}
 
 	app.Before = beforeCommands
@@ -847,6 +849,31 @@ func handleCmdDecodeWrapLock(ctx *cli.Context) error {
 	log.Info("data: {\r\n toChainId %d\r\n tokenId %d\r\n fromAsset %s\r\n toAddress %s\r\n feeToken %s\r\n fee %s\r\n dataId %d\r\n}",
 		data.ToChainId, data.TokenId.Uint64(), data.FromAsset.Hex(), data.ToAddress.Hex(), data.FeeToken.Hex(), data.Fee.String(), data.Id)
 
+	return nil
+}
+
+func handleCmdEnv(ctx *cli.Context) error {
+	currentInfo := fmt.Sprintf("current env: side chain name %s, side chain id %d\r\n", cc.SideChainName, cc.SideChainID)
+
+	polyInfo := fmt.Sprintf("poly side chain id - %d\r\n", basedef.POLY_CROSSCHAIN_ID)
+	ethInfo := fmt.Sprintf("eth side chain id - %d\r\n", basedef.ETHEREUM_CROSSCHAIN_ID)
+	ontInfo := fmt.Sprintf("ont side chain id - %d\r\n", basedef.ONT_CROSSCHAIN_ID)
+	neoInfo := fmt.Sprintf("neo side chain id - %d\r\n", basedef.NEO_CROSSCHAIN_ID)
+	bscInfo := fmt.Sprintf("bsc side chain id - %d\r\n", basedef.BSC_CROSSCHAIN_ID)
+	hecoInfo := fmt.Sprintf("heco side chain id - %d\r\n", basedef.HECO_CROSSCHAIN_ID)
+	o3Info := fmt.Sprintf("o3 side chain id - %d\r\n", basedef.O3_CROSSCHAIN_ID)
+
+	log.Info(currentInfo, polyInfo, ethInfo, ontInfo, neoInfo, bscInfo, hecoInfo, o3Info)
+
+	owner := flag2address(ctx, OwnerAccountFlag)
+	addr := owner.Hex()
+	log.Info("check your owner address %s in dir %s", cc.Keystore, addr)
+	_, err := wallet.LoadEthAccount(storage, cc.Keystore, addr, defaultAccPwd)
+	if err != nil {
+		return err
+	}
+	//enc := crypto.FromECDSA(key)
+	//log.Info(hex.EncodeToString(enc))
 	return nil
 }
 
