@@ -52,6 +52,8 @@ func (c *InfoController) Get() {
 	c.ServeJSON()
 }
 
+var homeCahe = make(map[uint64]*HomeRsp)
+
 func (c *InfoController) Home() {
 	var req HomeReq
 	if !input(&c.Controller, &req) {
@@ -64,11 +66,10 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	//assets := make([]*models.Token, 0)
-	//db.Where("chain_id = ? and standard = ? and property=1", req.ChainId, models.TokenTypeErc721).
-	//	Preload("TokenBasic").
-	//	Find(&assets)
-	//totalCnt := len(assets)
+	if cache, ok := homeCahe[req.ChainId]; ok {
+		output(&c.Controller, cache)
+		return
+	}
 
 	chainAssets := selectAssetsByChainId(req.ChainId)
 	totalCnt := len(chainAssets)
