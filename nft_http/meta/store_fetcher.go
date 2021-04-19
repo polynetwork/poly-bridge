@@ -108,12 +108,12 @@ func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*
 	}
 
 	finalList := make([]*models.NFTProfile, 0)
-	unCacheList := make([]*models.BigInt, 0)
+	unCacheList := make([]string, 0)
 	needFetchMap := make(map[string]*FetchRequestParams, 0)
 
 	for _, v := range reqs {
 		unCacheList = append(unCacheList, v.TokenId)
-		needFetchMap[v.TokenId.String()] = v
+		needFetchMap[v.TokenId] = v
 	}
 
 	persisted := make([]*models.NFTProfile, 0)

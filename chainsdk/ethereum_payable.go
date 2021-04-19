@@ -329,7 +329,7 @@ func (s *EthereumSdk) GetAndCheckTokenUrl(wrapperAddr, asset, owner common.Addre
 	return wrapper.GetAndCheckTokenUrl(nil, asset, owner, tokenId)
 }
 
-func (s *EthereumSdk) GetTokensByIndex(wrapperAddr, asset common.Address, owner common.Address, start, length int) (map[*big.Int]string, error) {
+func (s *EthereumSdk) GetTokensByIndex(wrapperAddr, asset common.Address, owner common.Address, start, length int) (map[string]string, error) {
 	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return nil, err
@@ -344,7 +344,7 @@ func (s *EthereumSdk) GetTokensByIndex(wrapperAddr, asset common.Address, owner 
 	return res, nil
 }
 
-func (s *EthereumSdk) GetTokensById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[*big.Int]string, error) {
+func (s *EthereumSdk) GetTokensById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[string]string, error) {
 	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return nil, err
@@ -389,17 +389,17 @@ func (s *EthereumSdk) GetAssetNFTs(asset common.Address, indexStart, indexEnd in
 	return list, nil
 }
 
-func (s *EthereumSdk) GetOwnerNFTUrls(asset common.Address, tokenIds []*big.Int) (map[*big.Int]string, error) {
+func (s *EthereumSdk) GetOwnerNFTUrls(asset common.Address, tokenIds []*big.Int) (map[string]string, error) {
 	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
 	if err != nil {
 		return nil, err
 	}
 
-	res := make(map[*big.Int]string)
+	res := make(map[string]string)
 	for _, tokenId := range tokenIds {
 		url, err := cm.TokenURI(nil, tokenId)
 		if err == nil {
-			res[tokenId] = url
+			res[tokenId.String()] = url
 		}
 	}
 	return res, nil
@@ -499,14 +499,14 @@ func assembleSafeTransferCallData(toAddress common.Address, chainID uint64) []by
 	return sink.Bytes()
 }
 
-func filterTokenInfo(enc []byte) map[*big.Int]string {
+func filterTokenInfo(enc []byte) map[string]string {
 	source := polycm.NewZeroCopySource(enc)
 	var (
 		num     polycm.Uint256
 		url     string
 		tokenId *big.Int
 		eof     bool
-		res     = make(map[*big.Int]string)
+		res     = make(map[string]string)
 	)
 	for {
 		if num, eof = source.NextHash(); !eof {
@@ -516,7 +516,7 @@ func filterTokenInfo(enc []byte) map[*big.Int]string {
 			break
 		}
 		if url, eof = source.NextString(); !eof {
-			res[tokenId] = url
+			res[tokenId.String()] = url
 		} else {
 			break
 		}

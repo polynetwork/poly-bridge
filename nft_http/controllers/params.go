@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
@@ -38,9 +37,9 @@ type Item struct {
 	Meta      string
 }
 
-func (i *Item) instance(assetName string, tokenId *big.Int, profile *models.NFTProfile) *Item {
+func (i *Item) instance(assetName string, tokenId string, profile *models.NFTProfile) *Item {
 	i.AssetName = assetName
-	i.TokenId = tokenId.String()
+	i.TokenId = tokenId
 	if profile == nil {
 		return i
 	}
