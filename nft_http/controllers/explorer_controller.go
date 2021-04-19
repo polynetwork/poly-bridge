@@ -1,10 +1,7 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum/common"
-	"math/big"
 	"poly-bridge/models"
 
 	"github.com/astaxie/beego"
@@ -118,7 +115,6 @@ func (c *ExplorerController) TransactionDetail() {
 
 func fillMetaInfo(data *TransactionDetailRsp) {
 	if data.Transaction == nil {
-		fmt.Println("----------1")
 		return
 	}
 
@@ -132,23 +128,13 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 		return
 	}
 
-	nftAsset := selectNFTAsset(data.SrcTransaction.AssetHash)
+	asset := selectNFTAsset(data.SrcTransaction.AssetHash)
 	tokenId, ok := string2Big(data.Transaction.TokenId)
 	if !ok {
 		return
 	}
-	nftAddr := common.HexToAddress(nftAsset.Hash)
-	urlList, err := sdk.GetTokensById(wrapper, nftAddr, []*big.Int{tokenId})
-	if err != nil {
-		logs.Error("fillMetaInfo err: %v", err)
-		return
-	}
-	if len(urlList) == 0 {
-		return
-	}
-	url := urlList[tokenId]
 
-	item, err := getProfileItemWithTokenId(nftAsset.TokenBasicName, tokenId, url)
+	item, err := getSingleItem(sdk, wrapper, asset, tokenId, "")
 	if err != nil {
 		logs.Error("fillMetaInfo err: %v", err)
 		return

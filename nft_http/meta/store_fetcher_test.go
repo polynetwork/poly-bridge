@@ -35,13 +35,8 @@ func beforeTest() {
 	if err != nil {
 		panic(err)
 	}
-	//if err = db.AutoMigrate(&models.NFTProfile{}); err != nil {
-	//	panic(err)
-	//}
 
-	if sf, err = NewStoreFetcher(db, 1000); err != nil {
-		panic(err)
-	}
+	sf := NewStoreFetcher(db)
 	sf.Register(FetcherTypeMockSeascape, asset, baseUri)
 }
 

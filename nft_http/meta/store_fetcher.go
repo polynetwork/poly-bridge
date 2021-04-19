@@ -4,7 +4,6 @@ import (
 	"errors"
 	"math/big"
 	"poly-bridge/models"
-	"poly-bridge/nft_http/meta/cache"
 	. "poly-bridge/nft_http/meta/common"
 	"poly-bridge/nft_http/meta/seascape"
 
@@ -49,20 +48,14 @@ type StoreFetcher struct {
 	fetcher      map[FetcherType]MetaFetcher
 	assetFetcher map[string]FetcherType // mapping asset to fetcher type
 	db           *gorm.DB
-	cache        *cache.Cache
 }
 
-func NewStoreFetcher(orm *gorm.DB, cacheSize int) (*StoreFetcher, error) {
+func NewStoreFetcher(orm *gorm.DB) *StoreFetcher {
 	sf := new(StoreFetcher)
 	sf.db = orm
-	c, err := cache.NewLRU(cacheSize)
-	if err != nil {
-		return nil, err
-	}
-	sf.cache = c
 	sf.fetcher = make(map[FetcherType]MetaFetcher)
 	sf.assetFetcher = make(map[string]FetcherType)
-	return sf, nil
+	return sf
 }
 
 func (s *StoreFetcher) Register(ft FetcherType, asset string, baseUri string) {
@@ -92,16 +85,11 @@ func (s *StoreFetcher) Fetch(asset string, req *FetchRequestParams) (profile *mo
 		return nil, ErrFetcherNotExist
 	}
 
-	var ok bool
-	if profile, ok = s.cache.Get(asset, req.TokenId); ok {
-		return
-	}
-
 	profile = new(models.NFTProfile)
 	res := s.db.Model(&models.NFTProfile{}).
 		Where("token_basic_name = ? and nft_token_id = ?", asset, req.TokenId).
 		Find(profile)
-	if res.RowsAffected > 0 && profile.Name != "" {
+	if res.RowsAffected > 0 {
 		return profile, nil
 	}
 
@@ -110,7 +98,6 @@ func (s *StoreFetcher) Fetch(asset string, req *FetchRequestParams) (profile *mo
 	}
 
 	s.db.Save(profile)
-	s.cache.Set(asset, req.TokenId, profile)
 	return
 }
 
@@ -121,29 +108,19 @@ func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*
 	}
 
 	finalList := make([]*models.NFTProfile, 0)
-	uncacheList := make([]*models.BigInt, 0)
+	unCacheList := make([]*models.BigInt, 0)
 	needFetchMap := make(map[string]*FetchRequestParams, 0)
 
 	for _, v := range reqs {
-		tid := v.TokenId.String()
-		if cached, ok := s.cache.Get(asset, v.TokenId); ok {
-			finalList = append(finalList, cached)
-			continue
-		}
-		uncacheList = append(uncacheList, v.TokenId)
-		needFetchMap[tid] = v
-	}
-	if len(uncacheList) == 0 {
-		return finalList, nil
+		unCacheList = append(unCacheList, v.TokenId)
+		needFetchMap[v.TokenId.String()] = v
 	}
 
 	persisted := make([]*models.NFTProfile, 0)
-	s.db.Where("token_basic_name = ? and nft_token_id in (?)", asset, uncacheList).Find(&persisted)
+	s.db.Where("token_basic_name = ? and nft_token_id in (?)", asset, unCacheList).Find(&persisted)
 	for _, v := range persisted {
-		tid := v.NftTokenId.String()
 		finalList = append(finalList, v)
-		delete(needFetchMap, tid)
-		s.cache.Set(asset, v.NftTokenId, v)
+		delete(needFetchMap, v.NftTokenId.String())
 	}
 
 	needFetchList := make([]*FetchRequestParams, 0)
@@ -157,10 +134,6 @@ func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*
 	profiles, err := fetcher.BatchFetch(needFetchList)
 	if err != nil {
 		return nil, err
-	}
-
-	for _, v := range profiles {
-		s.cache.Set(asset, v.NftTokenId, v)
 	}
 	s.db.Save(profiles)
 
