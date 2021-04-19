@@ -366,7 +366,7 @@ func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (
 func (pro *EthereumSdkPro) GetTokensByIndex(
 	wrapperAddr, asset, owner common.Address,
 	start, length int,
-) (res map[*big.Int]string, err error) {
+) (res map[string]string, err error) {
 
 	info := pro.GetLatest()
 	if info == nil {
@@ -386,7 +386,7 @@ func (pro *EthereumSdkPro) GetTokensByIndex(
 func (pro *EthereumSdkPro) GetTokensById(
 	wrapperAddr, asset common.Address,
 	tokenIdList []*big.Int,
-) (res map[*big.Int]string, err error) {
+) (res map[string]string, err error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
@@ -437,7 +437,7 @@ func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) (l
 	return
 }
 
-func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (res map[*big.Int]string, err error) {
+func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (res map[string]string, err error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")

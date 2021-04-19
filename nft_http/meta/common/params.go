@@ -1,11 +1,7 @@
 package params
 
-import (
-	"poly-bridge/models"
-)
-
 type FetchRequestParams struct {
-	TokenId *models.BigInt
+	TokenId string//*models.BigInt
 	Url     string
 }
 

@@ -71,22 +71,25 @@ func (c *InfoController) Home() {
 
 	chainAssets := selectAssetsByChainId(req.ChainId)
 	totalCnt := len(chainAssets)
-	assetItems := make([]*AssetItems, 0)
+	list := make([]*AssetItems, 0)
 	for _, v := range chainAssets {
 		if v.TokenBasic.MetaFetcherType != meta.FetcherTypeUnknown {
 			addr := common.HexToAddress(v.Hash)
 			tokenIds, _ := sdk.GetAssetNFTs(addr, 0, req.Size)
+			if len(tokenIds) == 0 {
+				continue
+			}
 			chainData, _ := sdk.GetNFTURLs(addr, tokenIds)
 			items := getItemsWithChainData(v.TokenBasicName, v.Hash, v.ChainId, chainData)
-			assetItem := &AssetItems{
+			assets := &AssetItems{
 				Asset: new(AssetRsp).instance(v),
 				Items: items,
 			}
-			assetItems = append(assetItems, assetItem)
+			list = append(list, assets)
 			break
 		}
 	}
-	data := new(HomeRsp).instance(totalCnt, assetItems)
+	data := new(HomeRsp).instance(totalCnt, list)
 	SetHomePageCache(req.ChainId, data)
 
 	output(&c.Controller, data)
