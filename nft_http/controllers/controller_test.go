@@ -37,12 +37,12 @@ func TestInfoController_Home(t *testing.T) {
 
 func TestItemController_Items(t *testing.T) {
 	req := ItemsOfAddressReq{
-		ChainId:  79,
-		Asset:    "66638F4970C2ae63773946906922c07a583b6069",
-		Address:  "5Fb03EB21303D39967a1a119B32DD744a0fA8986",
+		ChainId:  2,
+		Asset:    "a85c9fc8f2c9060d674e0ca97f703a0a30619305",
+		Address:  "f1c7203ef81fb9663babd8516ebd30d33ee84ee8",
 		TokenId:  "",
-		PageSize: 0,
-		PageNo:   10,
+		PageSize: 12,
+		PageNo:   0,
 	}
 
 	c := new(ItemController)

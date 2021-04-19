@@ -126,12 +126,16 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	}
 	start := req.PageNo * req.PageSize
 	if start >= totalCnt {
-		response(nil)
+		customInput(&c.Controller, ErrCodeRequest, "start out of range")
 		return
+	}
+	length := req.PageSize
+	if start + length > totalCnt {
+		length = totalCnt - start
 	}
 
 	// get token id list from contract, order by index
-	tokenIdUrlMap, err := sdk.GetTokensByIndex(wrapper, asset, owner, start, req.PageSize)
+	tokenIdUrlMap, err := sdk.GetTokensByIndex(wrapper, asset, owner, start, length)
 	if err != nil {
 		logs.Error("GetTokensByIndex err: %v", err)
 		response(nil)
