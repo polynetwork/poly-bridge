@@ -108,12 +108,24 @@ func (eff *BridgeEffect) updateHash() error {
 }
 
 func (eff *BridgeEffect) checkStatus() error {
-	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	now := time.Now().Unix() - eff.cfg.HowOld
-	eff.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ?", basedef.STATE_FINISHED, now).Find(&wrapperTransactions)
-	if len(wrapperTransactions) > 0 {
-		wrapperTransactionsJson, _ := json.Marshal(wrapperTransactions)
-		logs.Error("There is unfinished transactions %s", string(wrapperTransactionsJson))
+	{
+		wrapperTransactions := make([]*models.WrapperTransaction, 0)
+		now := time.Now().Unix() - eff.cfg.HowOld2
+		eff.db.Model(models.WrapperTransaction{}).Where("(status != ? and time < ?) and ((src_chain_id = ? and dst_chain_id = ?) or (src_chain_id = ? and dst_chain_id = ?))",
+			basedef.STATE_FINISHED, now, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).Find(&wrapperTransactions)
+		if len(wrapperTransactions) > 0 {
+			wrapperTransactionsJson, _ := json.Marshal(wrapperTransactions)
+			logs.Error("There is unfinished transactions(%d) %s", now, string(wrapperTransactionsJson))
+		}
+	}
+	{
+		wrapperTransactions := make([]*models.WrapperTransaction, 0)
+		now := time.Now().Unix() - eff.cfg.HowOld
+		eff.db.Model(models.WrapperTransaction{}).Where("status != ? and time < ?", basedef.STATE_FINISHED, now).Find(&wrapperTransactions)
+		if len(wrapperTransactions) > 0 {
+			wrapperTransactionsJson, _ := json.Marshal(wrapperTransactions)
+			logs.Error("There is unfinished transactions(%d) %s", now, string(wrapperTransactionsJson))
+		}
 	}
 	return nil
 }
@@ -185,7 +197,7 @@ func (eff *BridgeEffect) checkChainListening() error {
 		if !ok {
 			continue
 		}
-		if chain.Height == old.Height {
+		if chain.Height == old.Height && chain.HeightSwap == old.HeightSwap {
 			logs.Error("Chain %d is not listening!", *chain.ChainId)
 		}
 	}
