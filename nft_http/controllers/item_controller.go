@@ -182,27 +182,25 @@ func getSingleItem(sdk *chainsdk.EthereumSdkPro, wrapper common.Address, asset *
 		url = checkedUrl
 	}
 
-	profile, err := fetcher.Fetch(asset.TokenBasicName, &mcm.FetchRequestParams{
+	profile, _ := fetcher.Fetch(asset.TokenBasicName, &mcm.FetchRequestParams{
 		TokenId: models.NewBigInt(tokenId),
 		Url:     url,
 	})
-	if err != nil {
-		return nil, err
-	}
 	item := new(Item).instance(asset.TokenBasicName, tokenId, profile)
 	SetItemCache(asset.ChainId, asset.Hash, tokenId.String(), item)
 	return item, nil
 }
 
-func getItemsWithChainData(name string, hash string, chainId uint64, tokenIdUrlMap map[*big.Int]string) []*Item {
+func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrlMap map[*big.Int]string) []*Item {
 	list := make([]*Item, 0)
 
 	// get cache if exist
 	profileReqs := make([]*mcm.FetchRequestParams, 0)
 	for tokenId, url := range tokenIdUrlMap {
-		cache, ok := GetItemCache(chainId, hash, tokenId.String())
+		cache, ok := GetItemCache(chainId, asset, tokenId.String())
 		if ok {
 			list = append(list, cache)
+			delete(tokenIdUrlMap, tokenId)
 			continue
 		}
 
@@ -215,17 +213,28 @@ func getItemsWithChainData(name string, hash string, chainId uint64, tokenIdUrlM
 
 	// fetch meta data list and show rpc time
 	tBeforeBatchFetch := time.Now().UnixNano()
-	profiles, _ := fetcher.BatchFetch(name, profileReqs)
+	profiles, err := fetcher.BatchFetch(name, profileReqs)
+	if err != nil {
+		logs.Error("batch fetch NFT profiles err: %v", err)
+	}
 	tAfterBatchFetch := time.Now().UnixNano()
 	debugBatchFetchTime := (tAfterBatchFetch - tBeforeBatchFetch) / int64(time.Microsecond)
-	logs.Info("batchFetchNFTItems - batchFetchTime: %d microsecond", debugBatchFetchTime)
+	logs.Info("batchFetchNFTItems - batchFetchTime: %d microsecond， profiles %d", debugBatchFetchTime, len(profiles))
 
 	// convert to items
 	for _, v := range profiles {
 		tokenId := &v.NftTokenId.Int
 		item := new(Item).instance(name, tokenId, v)
 		list = append(list, item)
-		SetItemCache(chainId, hash, tokenId.String(), item)
+		SetItemCache(chainId, asset, tokenId.String(), item)
+		delete(tokenIdUrlMap, tokenId)
+	}
+	for tokenId, _ := range tokenIdUrlMap {
+		item := new(Item).instance(name, tokenId, nil)
+		list = append(list, item)
+	}
+	if len(list) < 2 {
+		return list
 	}
 
 	// sort items with token id
