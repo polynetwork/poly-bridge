@@ -120,7 +120,7 @@ func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*
 	s.db.Where("token_basic_name = ? and nft_token_id in (?)", asset, unCacheList).Find(&persisted)
 	for _, v := range persisted {
 		finalList = append(finalList, v)
-		delete(needFetchMap, v.NftTokenId.String())
+		delete(needFetchMap, v.NftTokenId)
 	}
 
 	needFetchList := make([]*FetchRequestParams, 0)

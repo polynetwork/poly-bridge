@@ -50,12 +50,6 @@ func (c *ItemController) Items() {
 
 func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 
-	// check params
-	//tokenId, ok := string2Big(req.TokenId)
-	//if !ok {
-	//	input(&c.Controller, req)
-	//	return
-	//}
 	sdk := selectNode(req.ChainId)
 	if sdk == nil {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
@@ -113,8 +107,7 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	owner := common.HexToAddress(req.Address)
 	bigTotalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
-		logs.Error("get nft balance err: %v", err)
-		nodeInvalid(&c.Controller)
+		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
 	}
 	totalCnt := int(bigTotalCnt.Uint64())
@@ -192,7 +185,7 @@ func getSingleItem(sdk *chainsdk.EthereumSdkPro, wrapper common.Address, asset *
 		Url:     url,
 	})
 	item := new(Item).instance(asset.TokenBasicName, tokenIdStr, profile)
-	SetItemCache(asset.ChainId, asset.Hash, tokenId.String(), item)
+	SetItemCache(asset.ChainId, asset.Hash, tokenIdStr, item)
 	return item, nil
 }
 
@@ -228,11 +221,11 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 
 	// convert to items
 	for _, v := range profiles {
-		tokenId := &v.NftTokenId.Int
-		item := new(Item).instance(name, tokenId.String(), v)
+		tokenId := v.NftTokenId
+		item := new(Item).instance(name, tokenId, v)
 		list = append(list, item)
-		SetItemCache(chainId, asset, tokenId.String(), item)
-		delete(tokenIdUrlMap, tokenId.String())
+		SetItemCache(chainId, asset, tokenId, item)
+		delete(tokenIdUrlMap, tokenId)
 	}
 
 	for tokenId, _ := range tokenIdUrlMap {
