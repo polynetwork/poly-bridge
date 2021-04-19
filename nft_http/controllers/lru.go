@@ -1,19 +1,27 @@
 package controllers
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
-func SetHomePageCache(chainId uint64, rsp *HomeRsp) {
+type CacheHomeRsp struct {
+	Rsp *HomeRsp
+	Time time.Time
+}
+
+func SetHomePageCache(chainId uint64, rsp *CacheHomeRsp) {
 	key := formatHomePageCacheKey(chainId)
 	lruDB.Add(key, rsp)
 }
 
-func GetHomePageCache(chainId uint64) (*HomeRsp, bool) {
+func GetHomePageCache(chainId uint64) (*CacheHomeRsp, bool) {
 	key := formatHomePageCacheKey(chainId)
 	data, ok := lruDB.Get(key)
 	if !ok {
 		return nil, false
 	}
-	rsp, ok := data.(*HomeRsp)
+	rsp, ok := data.(*CacheHomeRsp)
 	if !ok {
 		return nil, false
 	}

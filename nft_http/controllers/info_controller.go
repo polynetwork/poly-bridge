@@ -19,12 +19,13 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
+	"poly-bridge/models"
 	"poly-bridge/nft_http/meta"
+	"poly-bridge/utils/net"
+	"time"
 
 	"github.com/astaxie/beego"
-	"poly-bridge/models"
-	"poly-bridge/utils/net"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -58,14 +59,15 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	sdk := selectNode(req.ChainId)
-	if sdk == nil {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	cache, ok := GetHomePageCache(req.ChainId)
+	if ok && cache != nil && cache.Time.Add(600 * time.Second).After(time.Now()) {
+		output(&c.Controller, cache.Rsp)
 		return
 	}
 
-	if cache, ok := GetHomePageCache(req.ChainId); ok {
-		output(&c.Controller, cache)
+	sdk := selectNode(req.ChainId)
+	if sdk == nil {
+		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}
 
@@ -89,9 +91,12 @@ func (c *InfoController) Home() {
 			break
 		}
 	}
-	data := new(HomeRsp).instance(totalCnt, list)
-	SetHomePageCache(req.ChainId, data)
 
+	data := new(HomeRsp).instance(totalCnt, list)
+	SetHomePageCache(req.ChainId, &CacheHomeRsp{
+		Rsp:  data,
+		Time: time.Now(),
+	})
 	output(&c.Controller, data)
 }
 
