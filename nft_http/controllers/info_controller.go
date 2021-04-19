@@ -52,8 +52,6 @@ func (c *InfoController) Get() {
 	c.ServeJSON()
 }
 
-var homeCache = make(map[uint64]*HomeRsp)
-
 func (c *InfoController) Home() {
 	var req HomeReq
 	if !input(&c.Controller, &req) {
@@ -66,7 +64,7 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	if cache, ok := homeCache[req.ChainId]; ok {
+	if cache, ok := GetHomePageCache(req.ChainId); ok {
 		output(&c.Controller, cache)
 		return
 	}
@@ -79,7 +77,7 @@ func (c *InfoController) Home() {
 			addr := common.HexToAddress(v.Hash)
 			tokenIds, _ := sdk.GetAssetNFTs(addr, 0, req.Size)
 			chainData, _ := sdk.GetNFTURLs(addr, tokenIds)
-			items := getProfileItemsWithChainData(chainData, v)
+			items := getItemsWithChainData(v.TokenBasicName, v.Hash, v.ChainId, chainData)
 			assetItem := &AssetItems{
 				Asset: new(AssetRsp).instance(v),
 				Items: items,
@@ -89,7 +87,7 @@ func (c *InfoController) Home() {
 		}
 	}
 	data := new(HomeRsp).instance(totalCnt, assetItems)
-	homeCache[req.ChainId] = data
+	SetHomePageCache(req.ChainId, data)
 
 	output(&c.Controller, data)
 }

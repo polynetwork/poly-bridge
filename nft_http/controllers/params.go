@@ -185,13 +185,11 @@ func (s *ItemsOfAddressRsp) instance(pageSize, pageNo, totalPage, totalCnt int, 
 	s.PageNo = pageNo
 	s.TotalCount = totalCnt
 	s.TotalPage = totalPage
-	s.Items = make([]*Item, 0)
 	if items == nil {
+		s.Items = make([]*Item, 0)
 		return s
 	}
-	for _, v := range items {
-		s.Items = append(s.Items, v)
-	}
+	s.Items = items
 	return s
 }
 
@@ -358,7 +356,6 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	s.Transaction.From = r.WrapperTransaction.User
 	s.Transaction.To = r.WrapperTransaction.DstUser
 
-
 	if r.SrcTransaction != nil {
 
 		if r.SrcTransaction.SrcTransfer != nil {
@@ -386,7 +383,6 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			s.SrcTransaction.Fee = feeAmount.String()
 		}
 	}
-
 
 	if r.DstTransaction != nil {
 		if r.DstTransaction.DstTransfer != nil {

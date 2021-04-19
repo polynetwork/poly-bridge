@@ -30,6 +30,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
+	lru "github.com/hashicorp/golang-lru"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -43,6 +44,7 @@ var (
 	wrapperAddrs = make(map[uint64]common.Address)
 	fetcher      *meta.StoreFetcher
 	feeTokens    = make(map[uint64]*models.Token)
+	lruDB        *lru.ARCCache
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -93,11 +95,13 @@ func Initialize(c *conf.Config) {
 		}
 	}
 
-	storeFetcher, err := meta.NewStoreFetcher(db, 1000)
+	arcLRU, err := lru.NewARC(5000)
 	if err != nil {
 		panic(err)
 	}
+	lruDB = arcLRU
 
+	fetcher = meta.NewStoreFetcher(db)
 	for _, asset := range assets {
 		if asset.TokenBasic == nil {
 			continue
@@ -105,9 +109,8 @@ func Initialize(c *conf.Config) {
 		fetcherTyp := meta.FetcherType(asset.TokenBasic.MetaFetcherType)
 		baseUri := asset.TokenBasic.Meta
 		assetName := asset.TokenBasic.Name
-		storeFetcher.Register(fetcherTyp, assetName, baseUri)
+		fetcher.Register(fetcherTyp, assetName, baseUri)
 	}
-	fetcher = storeFetcher
 
 	txCounter = NewTransactionCounter()
 }
