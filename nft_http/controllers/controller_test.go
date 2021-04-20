@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 func TestInfoController_Home(t *testing.T) {
 	req := &HomeReq{
 		ChainId: 79,
-		Size: 10,
+		Size:    10,
 	}
 
 	c := new(InfoController)

@@ -28,4 +28,3 @@ func ReverseRune(s []byte) []byte {
 	copy(res[0:], s[prevPos:])
 	return res
 }
-

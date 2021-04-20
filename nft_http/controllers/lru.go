@@ -6,7 +6,7 @@ import (
 )
 
 type CacheHomeRsp struct {
-	Rsp *HomeRsp
+	Rsp  *HomeRsp
 	Time time.Time
 }
 

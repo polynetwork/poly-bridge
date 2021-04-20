@@ -6444,4 +6444,3 @@ func (_Strings *StringsTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.
 func (_Strings *StringsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	return _Strings.Contract.contract.Transact(opts, method, params...)
 }
-

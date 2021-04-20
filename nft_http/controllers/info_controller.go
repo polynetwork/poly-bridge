@@ -60,7 +60,7 @@ func (c *InfoController) Home() {
 	}
 
 	cache, ok := GetHomePageCache(req.ChainId)
-	if ok && cache != nil && cache.Time.Add(600 * time.Second).After(time.Now()) {
+	if ok && cache != nil && cache.Time.Add(600*time.Second).After(time.Now()) {
 		output(&c.Controller, cache.Rsp)
 		return
 	}

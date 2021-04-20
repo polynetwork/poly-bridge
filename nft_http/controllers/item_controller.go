@@ -130,7 +130,7 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 		return
 	}
 	length := req.PageSize
-	if start + length > totalCnt {
+	if start+length > totalCnt {
 		length = totalCnt - start
 	}
 

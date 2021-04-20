@@ -7,7 +7,7 @@ import (
 )
 
 type SeascapeFetcher struct {
-	Asset string
+	Asset   string
 	BaseUri string
 }
 

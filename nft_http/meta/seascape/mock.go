@@ -9,13 +9,13 @@ import (
 )
 
 type MockSeascapeFetcher struct {
-	Asset string // asset name, e.g: seascape
+	Asset   string // asset name, e.g: seascape
 	BaseUri string // oss base uri of agency storage, e.g: https://api.seascape.network/nft/metadata/
 }
 
-func NewMockFetcher(assetName,baseUri string) *MockSeascapeFetcher {
+func NewMockFetcher(assetName, baseUri string) *MockSeascapeFetcher {
 	return &MockSeascapeFetcher{
-		Asset:assetName,
+		Asset:   assetName,
 		BaseUri: baseUri,
 	}
 }
