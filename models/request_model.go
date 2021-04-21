@@ -67,7 +67,9 @@ func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 	}
 	if tokenBasic.Tokens != nil {
 		for _, token := range tokenBasic.Tokens {
-			tokenBasicRsp.Tokens = append(tokenBasicRsp.Tokens, MakeTokenRsp(token))
+			if token.Property == 1 {
+				tokenBasicRsp.Tokens = append(tokenBasicRsp.Tokens, MakeTokenRsp(token))
+			}
 		}
 	}
 	if tokenBasic.PriceMarkets != nil {
@@ -126,7 +128,9 @@ func MakeTokenRsp(token *Token) *TokenRsp {
 	}
 	if token.TokenMaps != nil {
 		for _, tokenmap := range token.TokenMaps {
-			tokenRsp.TokenMaps = append(tokenRsp.TokenMaps, MakeTokenMapRsp(tokenmap))
+			if tokenmap.Property == 1 {
+				tokenRsp.TokenMaps = append(tokenRsp.TokenMaps, MakeTokenMapRsp(tokenmap))
+			}
 		}
 	}
 	return tokenRsp
@@ -220,7 +224,9 @@ func MakeTokenMapsRsp(tokenMaps []*TokenMap) *TokenMapsRsp {
 		TotalCount: uint64(len(tokenMaps)),
 	}
 	for _, tokenMap := range tokenMaps {
-		tokenMapsRsp.TokenMaps = append(tokenMapsRsp.TokenMaps, MakeTokenMapRsp(tokenMap))
+		if tokenMap.Property == 1 {
+			tokenMapsRsp.TokenMaps = append(tokenMapsRsp.TokenMaps, MakeTokenMapRsp(tokenMap))
+		}
 	}
 	return tokenMapsRsp
 }
