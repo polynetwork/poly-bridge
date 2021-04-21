@@ -41,7 +41,7 @@ import (
 var (
 	EmptyAddress    = common.Address{}
 	EmptyHash       = common.Hash{}
-	DefaultGasLimit = 7000000
+	DefaultGasLimit = 5000000
 )
 
 func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address, error) {

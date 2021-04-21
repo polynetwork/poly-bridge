@@ -70,6 +70,11 @@ func (c *InfoController) Home() {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}
+	wrapper := selectWrapper(req.ChainId)
+	if wrapper == emptyAddr {
+		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+		return
+	}
 
 	chainAssets := selectAssetsByChainId(req.ChainId)
 	totalCnt := len(chainAssets)
@@ -77,12 +82,11 @@ func (c *InfoController) Home() {
 	for _, v := range chainAssets {
 		if v.TokenBasic.MetaFetcherType != meta.FetcherTypeUnknown {
 			addr := common.HexToAddress(v.Hash)
-			tokenIds, _ := sdk.GetAssetNFTs(addr, 0, req.Size)
-			if len(tokenIds) == 0 {
+			tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(wrapper, addr, 0, req.Size)
+			if len(tokenUrls) == 0 {
 				continue
 			}
-			chainData, _ := sdk.GetNFTURLs(addr, tokenIds)
-			items := getItemsWithChainData(v.TokenBasicName, v.Hash, v.ChainId, chainData)
+			items := getItemsWithChainData(v.TokenBasicName, v.Hash, v.ChainId, tokenUrls)
 			assets := &AssetItems{
 				Asset: new(AssetRsp).instance(v),
 				Items: items,
