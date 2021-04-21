@@ -175,7 +175,7 @@ func startServer(ctx *cli.Context) {
 					logs.Error("HandleNewBlock %d err: %v", start, err)
 					break
 				}
-				chainInfo.Height += end
+				chainInfo.Height = end
 				err = db.UpdateEvents(chainInfo, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 				if err != nil {
 					logs.Error("UpdateEvents on block %d err: %v", chainInfo.Height, err)
