@@ -134,7 +134,10 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 	}
 
 	asset := selectNFTAsset(data.SrcTransaction.AssetHash)
-	tokenId := data.Transaction.TokenId
+	tokenId, ok := string2Big(data.Transaction.TokenId)
+	if !ok {
+		return
+	}
 	item, err := getSingleItem(sdk, wrapper, asset, tokenId, "")
 	if err != nil {
 		logs.Error("fillMetaInfo err: %v", err)
