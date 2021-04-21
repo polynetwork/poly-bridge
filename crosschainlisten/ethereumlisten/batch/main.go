@@ -125,7 +125,7 @@ func startServer(ctx *cli.Context) {
 		logs.Info("%s\n", string(conf))
 	}
 	chain := ctx.GlobalUint64(getFlagName(chainFlag))
-	//height := ctx.GlobalUint64(getFlagName(heightFlag))
+	height := ctx.GlobalUint64(getFlagName(heightFlag))
 
 	db := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if db == nil {
@@ -144,6 +144,7 @@ func startServer(ctx *cli.Context) {
 	if err != nil {
 		panic(err)
 	}
+	chainInfo.Height = height
 	chainHeight, err := chainHandler.GetLatestHeight()
 	if err != nil || chainHeight == 0 {
 		panic(err)
