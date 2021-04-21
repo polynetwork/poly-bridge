@@ -22,6 +22,7 @@ package chainsdk
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -288,6 +289,14 @@ func (s *EthereumSdk) NFTApprove(key *ecdsa.PrivateKey, asset, to common.Address
 	return tx.Hash(), nil
 }
 
+func (s *EthereumSdk) GetNFTTotalSupply(asset common.Address) (*big.Int, error) {
+	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
+	if err != nil {
+		return nil, err
+	}
+	return cm.TotalSupply(nil)
+}
+
 func (s *EthereumSdk) GetNFTBalance(asset, owner common.Address) (*big.Int, error) {
 	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
 	if err != nil {
@@ -320,31 +329,53 @@ func (s *EthereumSdk) GetNFTOwner(asset common.Address, tokenID *big.Int) (commo
 	return cm.OwnerOf(nil, tokenID)
 }
 
-func (s *EthereumSdk) GetAndCheckTokenUrl(wrapperAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
+func (s *EthereumSdk) GetAndCheckNFTUrl(wrapperAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
 	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return "", err
 	}
 
-	return wrapper.GetAndCheckTokenUrl(nil, asset, owner, tokenId)
+	ok, url, err := wrapper.GetAndCheckTokenUrl(nil, asset, owner, tokenId)
+	if err != nil {
+		return "", err
+	}
+	if !ok {
+		return "", nil
+	}
+	return url, nil
 }
 
-func (s *EthereumSdk) GetTokensByIndex(wrapperAddr, asset common.Address, owner common.Address, start, length int) (map[string]string, error) {
+func (s *EthereumSdk) GetOwnerNFTByIndex(asset, owner common.Address, index int) (*big.Int, error) {
+	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
+	if err != nil {
+		return nil, err
+	}
+
+	return cm.TokenOfOwnerByIndex(nil, owner, big.NewInt(int64(index)))
+}
+
+func (s *EthereumSdk) GetOwnerNFTsByIndex(wrapperAddr, asset common.Address, owner common.Address, start, length int) (map[string]string, error) {
 	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return nil, err
 	}
 
-	enc, err := wrapper.GetTokensByIndex(nil, asset, owner, big.NewInt(int64(start)), big.NewInt(int64(length)))
+	ok, enc, err := wrapper.GetOwnerTokensByIndex(nil, asset, owner, big.NewInt(int64(start)), big.NewInt(int64(length)))
 	if err != nil {
 		return nil, err
 	}
-
+	if !ok {
+		return nil, nil
+	}
 	res := filterTokenInfo(enc)
 	return res, nil
 }
 
-func (s *EthereumSdk) GetTokensById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[string]string, error) {
+func (s *EthereumSdk) GetNFTsById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[string]string, error) {
+	if len(tokenIdList) == 0 {
+		return nil, fmt.Errorf("empty id list")
+	}
+
 	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return nil, err
@@ -363,30 +394,36 @@ func (s *EthereumSdk) GetTokensById(wrapperAddr, asset common.Address, tokenIdLi
 		sink.WriteHash(data)
 	}
 
-	enc, err := wrapper.GetTokensByIds(nil, asset, sink.Bytes())
+	ok, enc, err := wrapper.GetTokensByIds(nil, asset, sink.Bytes())
 	if err != nil {
 		return nil, err
 	}
-
+	if !ok {
+		return nil, nil
+	}
 	res := filterTokenInfo(enc)
 	return res, nil
 }
 
-func (s *EthereumSdk) GetAssetNFTs(asset common.Address, indexStart, indexEnd int) ([]*big.Int, error) {
-	list := make([]*big.Int, 0)
-	cm, err := nftmapping.NewCrossChainNFTMapping(asset, s.backend())
+func (s *EthereumSdk) GetUnCrossChainNFTsByIndex(
+	wrapperAddr, asset common.Address,
+	start, length int,
+) (map[string]string, error) {
+
+	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
 	if err != nil {
 		return nil, err
 	}
-	for i := indexStart; i < indexEnd; i++ {
-		idx := new(big.Int).SetInt64(int64(i))
-		tokenId, err := cm.TokenByIndex(nil, idx)
-		if err != nil {
-			break
-		}
-		list = append(list, tokenId)
+
+	ok, enc, err := wrapper.GetUnCrossChainTokensByIndex(nil, asset, big.NewInt(int64(start)), big.NewInt(int64(length)))
+	if err != nil {
+		return nil, err
 	}
-	return list, nil
+	if !ok {
+		return nil, nil
+	}
+	res := filterTokenInfo(enc)
+	return res, nil
 }
 
 func (s *EthereumSdk) GetOwnerNFTUrls(asset common.Address, tokenIds []*big.Int) (map[string]string, error) {

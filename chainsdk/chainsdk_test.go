@@ -24,13 +24,13 @@ const (
 )
 
 var (
-	testmode = C_BSC_SEASCAPE_TEST
+	testmode = C_ETH_SEASCAPE_TEST
 	ctx      *TestConfig
 
 	cs = map[string]*TestConfig{
 		C_ETH_DEV: &TestConfig{
 			EthUrl:      "http://127.0.0.1:8545",
-			WrapAddress: common.HexToAddress("0xE7Db150e4095Cbb35914b5dC980906C77B5990d2"),
+			WrapAddress: common.HexToAddress("0xBb0e8D6CFd87C6A07e312f1F31fd1F1cC9949F2C"),
 			Asset:       common.HexToAddress("0x03d84da9432F7Cb5364A8b99286f97c59f738001"),
 			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
 		},
@@ -42,27 +42,27 @@ var (
 		},
 		C_ETH_TEST: &TestConfig{
 			EthUrl:      "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea",
-			WrapAddress: common.HexToAddress("0xbaBaAF5CF7f63437755aAAFE7a4106463c5cD540"),
+			WrapAddress: common.HexToAddress("0x155213E71Bc3Fd28D6882aa06a58E6b8b763814b"),
 			Asset:       common.HexToAddress("0xa85c9FC8F2c9060d674E0CA97F703a0A30619305"),
-			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
+			Owner:       common.HexToAddress("0xf1c7203ef81fb9663babd8516ebd30d33ee84ee8"),
 		},
 		C_BSC_TEST: &TestConfig{
-			EthUrl:      "https://data-seed-prebsc-2-s2.binance.org:8545",
-			WrapAddress: common.HexToAddress("0x2E830E0cf3dc8643B497F88C07c8A72EFE24B11f"),
+			EthUrl:      "http://43.128.231.211:8575", //"https://data-seed-prebsc-2-s2.binance.org:8545",
+			WrapAddress: common.HexToAddress("0x85C3e8300Ec8EbB5D6Bbf6176c398FFe9a4eC6E2"),
 			Asset:       common.HexToAddress("0x455B51D882571E244d03668f1a458ca74E70d196"),
 			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
 		},
 		C_ETH_SEASCAPE_TEST: &TestConfig{
 			EthUrl:      "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea",
-			WrapAddress: common.HexToAddress("0xbaBaAF5CF7f63437755aAAFE7a4106463c5cD540"),
-			Asset:       common.HexToAddress("0xa85c9FC8F2c9060d674E0CA97F703a0A30619305"),
-			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
+			WrapAddress: common.HexToAddress("0x155213E71Bc3Fd28D6882aa06a58E6b8b763814b"),
+			Asset:       common.HexToAddress("0x3680fb34f55030326659cd9aaec522b6e355bdb6"),
+			Owner:       common.HexToAddress("0xc12E333cdD2843c7719aFfca036cDe023579F192"),
 		},
 		C_BSC_SEASCAPE_TEST: &TestConfig{
 			EthUrl:      "https://data-seed-prebsc-2-s2.binance.org:8545",
-			WrapAddress: common.HexToAddress("0x2E830E0cf3dc8643B497F88C07c8A72EFE24B11f"),
+			WrapAddress: common.HexToAddress("0x85C3e8300Ec8EbB5D6Bbf6176c398FFe9a4eC6E2"),
 			Asset:       common.HexToAddress("0x66638f4970c2ae63773946906922c07a583b6069"),
-			Owner:       common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
+			Owner:       common.HexToAddress("0xc12E333cdD2843c7719aFfca036cDe023579F192"),
 		},
 	}
 )

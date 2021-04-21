@@ -775,13 +775,13 @@ func handleCmdBatchGetTokenUrls(ctx *cli.Context) error {
 	length := flag2Uint64(ctx, LengthFlag)
 	wrapper := common.HexToAddress(cc.NFTWrap)
 
-	data, err := sdk.GetTokensByIndex(wrapper, asset, owner, int(start), int(length))
+	data, err := sdk.GetOwnerNFTsByIndex(wrapper, asset, owner, int(start), int(length))
 	if err != nil {
 		return err
 	}
 
 	for tokenId, url := range data {
-		log.Info("user NFT token %d url is %s", tokenId.Uint64(), url)
+		log.Info("user NFT token %d url is %s", tokenId, url)
 	}
 
 	return nil

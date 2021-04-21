@@ -144,6 +144,18 @@ func (s *TransactionCounter) Number() int64 {
 	return s.Count
 }
 
+func selectNodeAndWrapper(chainId uint64) (*chainsdk.EthereumSdkPro, common.Address, error) {
+	pro, ok := sdks[chainId]
+	if !ok {
+		return nil, emptyAddr, fmt.Errorf("chainId %d not exist", chainId)
+	}
+	wrapper, ok := wrapperAddrs[chainId]
+	if !ok {
+		return nil, emptyAddr, fmt.Errorf("chainId %d not exist", chainId)
+	}
+	return pro, wrapper, nil
+}
+
 func selectNode(chainID uint64) *chainsdk.EthereumSdkPro {
 	pro, ok := sdks[chainID]
 	if !ok {
@@ -216,6 +228,17 @@ func notExist(c *beego.Controller) {
 	c.Data["json"] = models.MakeErrorRsp(errMap[code])
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
+}
+
+func checkPageSize(c *beego.Controller, size int) bool {
+	if size <= 10 {
+		return true
+	}
+	code := ErrCodeRequest
+	c.Data["json"] = models.MakeErrorRsp("page size too big, should be smaller than 10")
+	c.Ctx.ResponseWriter.WriteHeader(code)
+	c.ServeJSON()
+	return false
 }
 
 func nodeInvalid(c *beego.Controller) {

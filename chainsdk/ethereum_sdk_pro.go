@@ -374,7 +374,7 @@ func (pro *EthereumSdkPro) GetTokensByIndex(
 	}
 
 	for info != nil {
-		if res, err = info.sdk.GetTokensByIndex(wrapperAddr, asset, owner, start, length); err != nil {
+		if res, err = info.sdk.GetOwnerNFTsByIndex(wrapperAddr, asset, owner, start, length); err != nil {
 			info = pro.reset(info)
 		} else {
 			return
@@ -393,7 +393,7 @@ func (pro *EthereumSdkPro) GetTokensById(
 	}
 
 	for info != nil {
-		if res, err = info.sdk.GetTokensById(wrapperAddr, asset, tokenIdList); err != nil {
+		if res, err = info.sdk.GetNFTsById(wrapperAddr, asset, tokenIdList); err != nil {
 			info = pro.reset(info)
 		} else {
 			return
@@ -413,7 +413,7 @@ func (pro *EthereumSdkPro) GetAndCheckTokenUrl(
 	}
 
 	for info != nil {
-		if url, err = info.sdk.GetAndCheckTokenUrl(wrapperAddr, asset, owner, tokenId); err != nil {
+		if url, err = info.sdk.GetAndCheckNFTUrl(wrapperAddr, asset, owner, tokenId); err != nil {
 			info = pro.reset(info)
 		} else {
 			return
@@ -422,13 +422,17 @@ func (pro *EthereumSdkPro) GetAndCheckTokenUrl(
 	return
 }
 
-func (pro *EthereumSdkPro) GetAssetNFTs(asset common.Address, start, end int) (list []*big.Int, err error) {
+func (pro *EthereumSdkPro) GetUnCrossChainNFTsByIndex(
+	wrapper, asset common.Address,
+	start, length int,
+) (mp map[string]string, err error) {
+
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		if list, err = info.sdk.GetAssetNFTs(asset, start, end); err != nil {
+		if mp, err = info.sdk.GetUnCrossChainNFTsByIndex(wrapper, asset, start, length); err != nil {
 			info = pro.reset(info)
 		} else {
 			return

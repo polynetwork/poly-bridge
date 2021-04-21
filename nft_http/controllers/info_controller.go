@@ -58,6 +58,9 @@ func (c *InfoController) Home() {
 	if !input(&c.Controller, &req) {
 		return
 	}
+	if !checkPageSize(&c.Controller, req.Size) {
+		return
+	}
 
 	cache, ok := GetHomePageCache(req.ChainId)
 	if ok && cache != nil && cache.Time.Add(600*time.Second).After(time.Now()) {
@@ -65,8 +68,8 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	sdk := selectNode(req.ChainId)
-	if sdk == nil {
+	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}
@@ -77,12 +80,11 @@ func (c *InfoController) Home() {
 	for _, v := range chainAssets {
 		if v.TokenBasic.MetaFetcherType != meta.FetcherTypeUnknown {
 			addr := common.HexToAddress(v.Hash)
-			tokenIds, _ := sdk.GetAssetNFTs(addr, 0, req.Size)
-			if len(tokenIds) == 0 {
+			tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(wrapper, addr, 0, req.Size)
+			if len(tokenUrls) == 0 {
 				continue
 			}
-			chainData, _ := sdk.GetNFTURLs(addr, tokenIds)
-			items := getItemsWithChainData(v.TokenBasicName, v.Hash, v.ChainId, chainData)
+			items := getItemsWithChainData(v.TokenBasicName, v.Hash, v.ChainId, tokenUrls)
 			assets := &AssetItems{
 				Asset: new(AssetRsp).instance(v),
 				Items: items,

@@ -49,15 +49,10 @@ func (c *ItemController) Items() {
 }
 
 func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
-
-	sdk := selectNode(req.ChainId)
-	if sdk == nil {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
-		return
-	}
-	wrapper := selectWrapper(req.ChainId)
-	if wrapper == emptyAddr {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	// check params
+	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	if err != nil {
+		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
 	}
 	token := selectNFTAsset(req.Asset)
@@ -71,29 +66,22 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 		logs.Error("get single item err: %v", err)
 	}
 
-	var (
-		items    = make([]*Item, 0)
-		totalCnt = 0
-	)
+	items := make([]*Item, 0)
 	if item != nil {
 		items = append(items, item)
-		totalCnt = 1
 	}
-	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, 0, totalCnt, items)
+	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, 0, len(items), items)
 	output(&c.Controller, data)
 }
 
 func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
-
 	// check params
-	sdk := selectNode(req.ChainId)
-	if sdk == nil {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
-	wrapper := selectWrapper(req.ChainId)
-	if wrapper == emptyAddr {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	if err != nil {
+		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
 	}
 	token := selectNFTAsset(req.Asset)
@@ -137,7 +125,7 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	// get token id list from contract, order by index
 	tokenIdUrlMap, err := sdk.GetTokensByIndex(wrapper, asset, owner, start, length)
 	if err != nil {
-		logs.Error("GetTokensByIndex err: %v", err)
+		logs.Error("GetOwnerNFTsByIndex err: %v", err)
 		response(nil)
 		return
 	}
@@ -150,11 +138,13 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	response(items)
 }
 
-func getSingleItem(sdk *chainsdk.EthereumSdkPro, wrapper common.Address, asset *models.Token, tokenIdStr string, ownerHash string) (*Item, error) {
-	tokenId, ok := string2Big(tokenIdStr)
-	if !ok {
-		return nil, fmt.Errorf("invalid token id")
-	}
+func getSingleItem(
+	sdk *chainsdk.EthereumSdkPro,
+	wrapper common.Address,
+	asset *models.Token,
+	tokenIdStr string,
+	ownerHash string,
+) (*Item, error) {
 
 	// get and output cache if exist
 	cache, ok := GetItemCache(asset.ChainId, asset.Hash, tokenIdStr)
@@ -166,6 +156,10 @@ func getSingleItem(sdk *chainsdk.EthereumSdkPro, wrapper common.Address, asset *
 	// do not need to check user address if ownerHash is empty
 	var url string
 	assetAddr := common.HexToAddress(asset.Hash)
+	tokenId, ok := string2Big(tokenIdStr)
+	if !ok {
+		return nil, fmt.Errorf("invalid token id")
+	}
 	if ownerHash == "" {
 		urlList, err := sdk.GetTokensById(wrapper, assetAddr, []*big.Int{tokenId})
 		if err != nil {
