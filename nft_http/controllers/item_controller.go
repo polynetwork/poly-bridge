@@ -49,15 +49,10 @@ func (c *ItemController) Items() {
 }
 
 func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
-
-	sdk := selectNode(req.ChainId)
-	if sdk == nil {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
-		return
-	}
-	wrapper := selectWrapper(req.ChainId)
-	if wrapper == emptyAddr {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	// check params
+	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	if err != nil {
+		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
 	}
 	token := selectNFTAsset(req.Asset)
@@ -80,16 +75,13 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 }
 
 func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
-
 	// check params
-	sdk := selectNode(req.ChainId)
-	if sdk == nil {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
-	wrapper := selectWrapper(req.ChainId)
-	if wrapper == emptyAddr {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	if err != nil {
+		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
 	}
 	token := selectNFTAsset(req.Asset)

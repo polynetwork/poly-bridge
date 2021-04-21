@@ -58,6 +58,9 @@ func (c *InfoController) Home() {
 	if !input(&c.Controller, &req) {
 		return
 	}
+	if !checkPageSize(&c.Controller, req.Size) {
+		return
+	}
 
 	cache, ok := GetHomePageCache(req.ChainId)
 	if ok && cache != nil && cache.Time.Add(600*time.Second).After(time.Now()) {
@@ -65,13 +68,8 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	sdk := selectNode(req.ChainId)
-	if sdk == nil {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
-		return
-	}
-	wrapper := selectWrapper(req.ChainId)
-	if wrapper == emptyAddr {
+	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
 	}

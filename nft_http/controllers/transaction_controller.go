@@ -28,8 +28,10 @@ type TransactionController struct {
 
 func (c *TransactionController) TransactionsOfAddress() {
 	var req models.TransactionsOfAddressReq
-
 	if !input(&c.Controller, &req) {
+		return
+	}
+	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
 
@@ -74,7 +76,6 @@ func (c *TransactionController) TransactionsOfAddress() {
 
 func (c *TransactionController) TransactionOfHash() {
 	var req models.TransactionOfHashReq
-
 	if !input(&c.Controller, &req) {
 		return
 	}
@@ -110,6 +111,9 @@ func (c *TransactionController) TransactionOfHash() {
 func (c *TransactionController) TransactionsOfState() {
 	var req models.TransactionsOfStateReq
 	if !input(&c.Controller, &req) {
+		return
+	}
+	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
 

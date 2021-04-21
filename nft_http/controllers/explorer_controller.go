@@ -16,6 +16,9 @@ func (c *ExplorerController) Transactions() {
 	if !input(&c.Controller, &req) {
 		return
 	}
+	if !checkPageSize(&c.Controller, req.PageSize) {
+		return
+	}
 
 	relations := make([]*TransactionBriefRelation, 0)
 	limit := req.PageSize
@@ -46,6 +49,9 @@ func (c *ExplorerController) Transactions() {
 func (c *ExplorerController) TransactionsOfAddress() {
 	var req TransactionBriefsOfAddressReq
 	if !input(&c.Controller, &req) {
+		return
+	}
+	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
 
@@ -119,9 +125,8 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 	}
 
 	chainId := data.Transaction.SrcChainId
-	sdk := selectNode(chainId)
-	wrapper := selectWrapper(chainId)
-	if wrapper == emptyAddr {
+	sdk, wrapper, err := selectNodeAndWrapper(chainId)
+	if err != nil {
 		return
 	}
 	if data.SrcTransaction == nil {
