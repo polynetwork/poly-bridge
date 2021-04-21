@@ -383,6 +383,22 @@ func (pro *EthereumSdkPro) GetTokensByIndex(
 	return
 }
 
+func (pro *EthereumSdkPro) GetNFTUrl(asset common.Address, tokenId *big.Int) (url string, err error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return "", fmt.Errorf("all node is not working")
+	}
+
+	for info != nil {
+		if url, err = info.sdk.GetNFTTokenUri(asset, tokenId); err != nil {
+			info = pro.reset(info)
+		} else {
+			return
+		}
+	}
+	return
+}
+
 func (pro *EthereumSdkPro) GetTokensById(
 	wrapperAddr, asset common.Address,
 	tokenIdList []*big.Int,

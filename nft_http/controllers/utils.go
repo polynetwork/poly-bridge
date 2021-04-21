@@ -21,10 +21,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"poly-bridge/nft_http/meta"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -38,6 +41,7 @@ import (
 
 var (
 	db           *gorm.DB
+	chainConfig  = make(map[uint64]*conf.ChainListenConfig)
 	txCounter    *TransactionCounter
 	sdks         = make(map[uint64]*chainsdk.EthereumSdkPro)
 	assets       = make([]*models.Token, 0)
@@ -81,19 +85,11 @@ func NewDB(cfg *conf.DBConfig) *gorm.DB {
 }
 
 func Initialize(c *conf.Config) {
-	db = NewDB(c.DBConfig)
-
 	for _, v := range c.ChainListenConfig {
-		urls := v.GetNodesUrl()
-		if len(urls) > 0 {
-			pro := chainsdk.NewEthereumSdkPro(v.GetNodesUrl(), v.ListenSlot, v.ChainId)
-			sdks[v.ChainId] = pro
-			wrapperAddrs[v.ChainId] = common.HexToAddress(v.NFTWrapperContract)
-			logs.Info("load chain id %d, contract %s", v.ChainId, v.NFTWrapperContract)
-		} else {
-			logs.Warn("chain %s node is empty", v.ChainName)
-		}
+		chainConfig[v.ChainId] = v
 	}
+
+	db = NewDB(c.DBConfig)
 
 	arcLRU, err := lru.NewARC(5000)
 	if err != nil {
@@ -145,34 +141,30 @@ func (s *TransactionCounter) Number() int64 {
 }
 
 func selectNodeAndWrapper(chainId uint64) (*chainsdk.EthereumSdkPro, common.Address, error) {
+	cfg, ok := chainConfig[chainId]
+	if !ok {
+		return nil, emptyAddr, fmt.Errorf("chain id %d invalid", chainId)
+	}
+
 	pro, ok := sdks[chainId]
 	if !ok {
-		return nil, emptyAddr, fmt.Errorf("chainId %d not exist", chainId)
+		urls := cfg.GetNodesUrl()
+		if len(urls) == 0 {
+			return nil, emptyAddr, fmt.Errorf("chainId %d not exist", chainId)
+		}
+		pro = chainsdk.NewEthereumSdkPro(urls, cfg.ListenSlot, chainId)
+		sdks[chainId] = pro
 	}
+
 	wrapper, ok := wrapperAddrs[chainId]
 	if !ok {
-		return nil, emptyAddr, fmt.Errorf("chainId %d not exist", chainId)
+		wrapper = common.HexToAddress(cfg.NFTWrapperContract)
+		wrapperAddrs[chainId] = wrapper
 	}
 	return pro, wrapper, nil
 }
 
-func selectNode(chainID uint64) *chainsdk.EthereumSdkPro {
-	pro, ok := sdks[chainID]
-	if !ok {
-		return nil
-	}
-	return pro
-}
-
 var emptyAddr = common.Address{}
-
-func selectWrapper(chainID uint64) common.Address {
-	addr, ok := wrapperAddrs[chainID]
-	if !ok {
-		return emptyAddr
-	}
-	return addr
-}
 
 func selectNFTAsset(addr string) *models.Token {
 	for _, v := range assets {
@@ -239,6 +231,26 @@ func checkPageSize(c *beego.Controller, size int) bool {
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 	return false
+}
+
+func checkNumString(numStr string) (*big.Int, error) {
+	numStr = strings.Trim(numStr, " ")
+	if numStr == "" {
+		return nil, fmt.Errorf("number string is empty")
+	}
+
+	ok, err := regexp.Match(`^\d+$`, []byte(numStr))
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, fmt.Errorf("invalid number string")
+	}
+	data, ok := new(big.Int).SetString(numStr, 10)
+	if !ok {
+		return nil, fmt.Errorf("convert string to big int err")
+	}
+	return data, nil
 }
 
 func nodeInvalid(c *beego.Controller) {
