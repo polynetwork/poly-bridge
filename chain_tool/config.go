@@ -43,6 +43,7 @@ type ChainConfig struct {
 
 	NFTLockProxy string
 	NFTWrap      string
+	NFTQuery     string
 	FeeToken     string
 	FeeCollector string
 }

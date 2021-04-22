@@ -167,7 +167,7 @@ func startServer(ctx *cli.Context) {
 				start := chainInfo.Height + 1
 				end := start + 2000
 				if end > height-chainHandler.GetDefer() {
-					end = height-chainHandler.GetDefer()
+					end = height - chainHandler.GetDefer()
 				}
 				logs.Info("start handle block: %d, %d", start, end)
 				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := chainHandler.HandleNewBlockBatch(start, end)

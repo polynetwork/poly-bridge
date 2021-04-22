@@ -48,6 +48,7 @@ type ChainListenConfig struct {
 	ProxyContract      string
 	NFTWrapperContract string
 	NFTProxyContract   string
+	NFTQueryContract   string
 }
 
 func (cfg *ChainListenConfig) GetNodesUrl() []string {

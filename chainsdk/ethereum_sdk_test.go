@@ -39,7 +39,8 @@ func TestNewEthereumSdk_GetTokens(t *testing.T) {
 	assert.NoError(t, err)
 	t.Logf("total supply %d", totalSupply.Uint64())
 
-	data, err := ctx.SDK.GetUnCrossChainNFTsByIndex(ctx.WrapAddress, ctx.Asset, start, length)
+	ignore := EmptyAddress
+	data, err := ctx.SDK.GetUnCrossChainNFTsByIndex(ctx.WrapAddress, ctx.Asset, ignore, start, length)
 	assert.NoError(t, err)
 	for tokenId, url := range data {
 		t.Logf("getUnCrossChainNFTsByIndex: token %s url is %s", tokenId, url)
