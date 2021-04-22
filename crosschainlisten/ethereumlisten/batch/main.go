@@ -144,7 +144,9 @@ func startServer(ctx *cli.Context) {
 	if err != nil {
 		panic(err)
 	}
-	chainInfo.Height = height
+	if height != 0 {
+		chainInfo.Height = height
+	}
 	chainHeight, err := chainHandler.GetLatestHeight()
 	if err != nil || chainHeight == 0 {
 		panic(err)

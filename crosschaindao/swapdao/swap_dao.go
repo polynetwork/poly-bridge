@@ -53,37 +53,74 @@ func NewSwapDao(dbCfg *conf.DBConfig, backup bool) *SwapDao {
 }
 
 func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
-	if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
-		res := dao.db.Save(wrapperTransactions)
-		if res.Error != nil {
-			return res.Error
+	if !dao.backup {
+		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
+			res := dao.db.Save(wrapperTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
 		}
-	}
-	if srcTransactions != nil && len(srcTransactions) > 0 {
-		res := dao.db.Save(srcTransactions)
-		if res.Error != nil {
-			return res.Error
+		if srcTransactions != nil && len(srcTransactions) > 0 {
+			res := dao.db.Save(srcTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
 		}
-	}
-	if polyTransactions != nil && len(polyTransactions) > 0 {
-		res := dao.db.Save(polyTransactions)
-		if res.Error != nil {
-			return res.Error
+		if polyTransactions != nil && len(polyTransactions) > 0 {
+			res := dao.db.Save(polyTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
 		}
-	}
-	if dstTransactions != nil && len(dstTransactions) > 0 {
-		res := dao.db.Save(dstTransactions)
-		if res.Error != nil {
-			return res.Error
+		if dstTransactions != nil && len(dstTransactions) > 0 {
+			res := dao.db.Save(dstTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
 		}
-	}
-	if chain != nil && !dao.backup {
-		res := dao.db.Updates(chain)
-		if res.Error != nil {
-			return res.Error
+		if chain != nil {
+			res := dao.db.Updates(chain)
+			if res.Error != nil {
+				return res.Error
+			}
 		}
+		return nil
+	} else {
+		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
+			for _, wrapperTransaction := range wrapperTransactions {
+				wrapperTransaction.Status = 0
+			}
+			res := dao.db.Updates(wrapperTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
+		}
+		if srcTransactions != nil && len(srcTransactions) > 0 {
+			res := dao.db.Save(srcTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
+		}
+		if polyTransactions != nil && len(polyTransactions) > 0 {
+			res := dao.db.Save(polyTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
+		}
+		if dstTransactions != nil && len(dstTransactions) > 0 {
+			res := dao.db.Save(dstTransactions)
+			if res.Error != nil {
+				return res.Error
+			}
+		}
+		if chain != nil {
+			res := dao.db.Updates(chain)
+			if res.Error != nil {
+				return res.Error
+			}
+		}
+		return nil
 	}
-	return nil
 }
 
 func (dao *SwapDao) RemoveEvents(srcHashes []string, polyHashes []string, dstHashes []string) error {
