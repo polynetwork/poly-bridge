@@ -89,10 +89,10 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
 			for _, wrapperTransaction := range wrapperTransactions {
 				wrapperTransaction.Status = 0
-			}
-			res := dao.db.Updates(wrapperTransactions)
-			if res.Error != nil {
-				return res.Error
+				res := dao.db.Updates(wrapperTransaction)
+				if res.Error != nil {
+					return res.Error
+				}
 			}
 		}
 		if srcTransactions != nil && len(srcTransactions) > 0 {
