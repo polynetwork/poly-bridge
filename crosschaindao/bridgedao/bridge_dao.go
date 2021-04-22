@@ -113,12 +113,6 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 				return res.Error
 			}
 		}
-		if chain != nil {
-			res := dao.db.Updates(chain)
-			if res.Error != nil {
-				return res.Error
-			}
-		}
 		return nil
 	}
 }
