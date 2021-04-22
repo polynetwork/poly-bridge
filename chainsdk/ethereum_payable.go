@@ -341,7 +341,7 @@ func (s *EthereumSdk) GetAndCheckNFTUrl(queryAddr, asset, owner common.Address, 
 		return "", err
 	}
 	if !ok {
-		return "", nil
+		return "", fmt.Errorf("owner token not exist")
 	}
 	return url, nil
 }

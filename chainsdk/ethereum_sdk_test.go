@@ -14,7 +14,7 @@ import (
 func TestNewEthereumSdk_GetAndCheckOwnerNFT(t *testing.T) {
 	t.Logf("current context: %s", ctx.EthUrl)
 
-	tokenId := big.NewInt(12)
+	tokenId := big.NewInt(201)
 	url, err := ctx.SDK.GetAndCheckNFTUrl(ctx.WrapAddress, ctx.Asset, ctx.Owner, tokenId)
 	assert.NoError(t, err)
 	t.Logf("token %d url %s", tokenId.Uint64(), url)
