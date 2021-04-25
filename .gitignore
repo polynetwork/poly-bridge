@@ -1,4 +1,5 @@
 .idea
+go.sum
 build/*
 build_mainnet
 build_testnet
