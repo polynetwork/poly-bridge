@@ -172,7 +172,7 @@ func startServer(ctx *cli.Context) {
 					end = height-chainHandler.GetDefer()
 				}
 				logs.Info("start handle block: %d, %d", start, end)
-				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := chainHandler.HandleNewBlockBatch(start, end)
+				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := chainHandler.HandleNewBlock(start, end)
 				if err != nil {
 					logs.Error("HandleNewBlock %d err: %v", start, err)
 					break
