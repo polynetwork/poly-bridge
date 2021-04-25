@@ -639,10 +639,12 @@ func MakeCurveTransactionRsp(transaction1 *SrcPolyDstRelation, transaction2 *Src
 			Time:    0,
 		})
 	}
-	for _, state := range transactionRsp.TransactionState {
+	for i, state := range transactionRsp.TransactionState {
 		chain, ok := chainsMap[state.ChainId]
 		if ok {
-			if state.ChainId == basedef.O3_CROSSCHAIN_ID || state.ChainId == transaction1.WrapperTransaction.DstChainId {
+			if i == 0 {
+				state.NeedBlocks = chain.BackwardBlockNumber
+			} else if state.ChainId == basedef.O3_CROSSCHAIN_ID || state.ChainId == transaction1.WrapperTransaction.DstChainId {
 				state.NeedBlocks = 1
 			} else {
 				state.NeedBlocks = chain.BackwardBlockNumber
