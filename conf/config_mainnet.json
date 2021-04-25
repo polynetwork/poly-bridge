@@ -35,9 +35,6 @@
           "Url": "http://onto-eth.ont.io:10331"
         },
         {
-          "Url": "https://mainnet.infura.io/v3/67c37a240ed64ed68d076f900f05761b"
-        },
-        {
           "Url": "http://119.28.106.68:10331"
         }
       ],
@@ -83,7 +80,7 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url": "https://bsc-dataseed.binance.org/"
+          "Url": "http://54.151.65.160:8545"
         }
       ],
       "ExtendNodes": [

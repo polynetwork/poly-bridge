@@ -4,7 +4,7 @@
     "URL":"localhost:3306",
     "User":"root",
     "Password":"",
-    "Scheme":"polyswap",
+    "Scheme":"polyswap_v2",
     "Debug": true
   },
   "Chains":[
