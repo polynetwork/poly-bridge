@@ -137,6 +137,7 @@ func (c *TransactionController) getTransactionByDstHash(hash string) (*models.Sr
 		Where("dst_transactions.standard = ?", 0).
 		Joins("inner join poly_transactions on dst_transactions.poly_hash = poly_transactions.hash").
 		Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.hash").
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Preload("WrapperTransaction").
 		Preload("SrcTransaction").
 		Preload("SrcTransaction.SrcTransfer").
