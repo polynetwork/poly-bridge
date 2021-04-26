@@ -42,7 +42,7 @@ import (
 var (
 	EmptyAddress    = common.Address{}
 	EmptyHash       = common.Hash{}
-	DefaultGasLimit = 5000000
+	DefaultGasLimit = 3000000
 )
 
 func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address, error) {
@@ -553,7 +553,7 @@ func (s *EthereumSdk) waitTxConfirm(hash common.Hash) error {
 	for now := range ticker.C {
 		_, pending, err := s.TransactionByHash(hash)
 		if err != nil {
-			log.Error("failed to call TransactionByHash: %v", err)
+			log.Debug("failed to call TransactionByHash: %v", err)
 			continue
 		}
 		if !pending {
