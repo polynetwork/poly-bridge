@@ -13,6 +13,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/howeyc/gopass"
 )
 
 func LoadEthAccount(storage *leveldb.LevelDBImpl, keystore string, address string, pwd string) (*ecdsa.PrivateKey, error) {
@@ -50,14 +51,18 @@ func repeatDecrypt(storage *leveldb.LevelDBImpl, enc []byte, address string, pwd
 
 	fmt.Printf("please input password for ethereum account %s \r\n", address)
 
-	reader := bufio.NewReader(os.Stdin)
-	var curPwd string
+	//reader := bufio.NewReader(os.Stdin)
+	var (
+		curPwd   string
+		curPwdBz []byte
+	)
 	for i := 0; i < 10; i++ {
-		curPwd, err = reader.ReadString('\n')
-		if err != nil {
+		//curPwd, err = reader.ReadString('\n')
+		if curPwdBz, err = gopass.GetPasswd(); err != nil {
 			fmt.Println("input error, try it again......")
 			continue
 		}
+		curPwd = string(curPwdBz)
 		curPwd = strings.Trim(curPwd, " ")
 		curPwd = strings.Trim(curPwd, "\r")
 		curPwd = strings.Trim(curPwd, "\n")

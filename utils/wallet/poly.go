@@ -1,10 +1,9 @@
 package wallet
 
 import (
-	"bufio"
 	"fmt"
+	"github.com/howeyc/gopass"
 	"io/ioutil"
-	"os"
 	"path"
 	"strings"
 	"sync"
@@ -64,13 +63,14 @@ func getPolyAccountByPassword(path string, pwd []byte) (*polysdk.Account, error)
 		return acc, nil
 	}
 
-	reader := bufio.NewReader(os.Stdin)
+	//reader := bufio.NewReader(os.Stdin)
 	for i := 0; i < 10; i++ {
-		curPwd, err := reader.ReadString('\n')
+		curPwdBz, err := gopass.GetPasswd()
 		if err != nil {
 			fmt.Println("input error, try it again......")
 			continue
 		}
+		curPwd := string(curPwdBz)
 		curPwd = strings.Trim(curPwd, " ")
 		curPwd = strings.Trim(curPwd, "\r")
 		curPwd = strings.Trim(curPwd, "\n")
