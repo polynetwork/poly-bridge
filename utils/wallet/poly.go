@@ -2,12 +2,12 @@ package wallet
 
 import (
 	"fmt"
-	"github.com/howeyc/gopass"
 	"io/ioutil"
 	"path"
 	"strings"
 	"sync"
 
+	"github.com/howeyc/gopass"
 	polysdk "github.com/polynetwork/poly-go-sdk"
 )
 

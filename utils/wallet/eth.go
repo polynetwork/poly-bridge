@@ -1,12 +1,10 @@
 package wallet
 
 import (
-	"bufio"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path"
 	"poly-bridge/utils/leveldb"
 	"strings"
