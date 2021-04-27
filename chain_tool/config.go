@@ -37,9 +37,10 @@ type ChainConfig struct {
 	Admin         string
 	Keystore      string
 
-	ECCD string
-	ECCM string
-	CCMP string
+	ECCD      string
+	ECCM      string
+	CCMP      string
+	LockProxy string
 
 	NFTLockProxy string
 	NFTWrap      string

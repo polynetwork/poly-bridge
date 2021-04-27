@@ -94,6 +94,7 @@ func setupApp() *cli.App {
 		CmdBindLockProxy,
 		CmdGetBoundLockProxy,
 		CmdBindNFTAsset,
+		CmdBindERC20Asset,
 		CmdTransferECCDOwnership,
 		CmdTransferECCMOwnership,
 		CmdRegisterSideChain,
@@ -365,6 +366,41 @@ func handleCmdBindNFTAsset(ctx *cli.Context) error {
 	}
 
 	log.Info("bind nft asset (src chain id %d, src asset %s, src proxy %s) - "+
+		"(dst chain id %d, dst asset %s, dst proxy %s)"+
+		" for user %s success! txhash %s",
+		cc.SideChainID, srcAsset.Hex(), cc.NFTLockProxy,
+		dstChainId, dstAsset.Hex(), dstChainCfg.NFTLockProxy,
+		owner.Hex(), hash.Hex())
+	return nil
+}
+
+func handleCmdBindERC20Asset(ctx *cli.Context) error {
+	log.Info("start to bind nft asset...")
+
+	srcAsset := flag2address(ctx, AssetFlag)
+	dstAsset := flag2address(ctx, DstAssetFlag)
+	dstChainId := flag2Uint64(ctx, DstChainFlag)
+	dstChainCfg := customSelectChainConfig(dstChainId)
+	owner := xecdsa.Key2address(adm)
+	proxy := common.HexToAddress(cc.LockProxy)
+
+	hash, err := sdk.BindERC20Asset(
+		adm,
+		proxy,
+		srcAsset,
+		dstAsset,
+		dstChainId,
+	)
+	if err != nil {
+		return fmt.Errorf("bind erc20 asset (src chain id %d, src asset %s, src proxy %s) - "+
+			"(dst chain id %d, dst asset %s, dst proxy %s)"+
+			" for user %s failed, err: %v",
+			cc.SideChainID, srcAsset.Hex(), cc.NFTLockProxy,
+			dstChainId, dstAsset.Hex(), dstChainCfg.NFTLockProxy,
+			owner.Hex(), err)
+	}
+
+	log.Info("bind erc20 asset (src chain id %d, src asset %s, src proxy %s) - "+
 		"(dst chain id %d, dst asset %s, dst proxy %s)"+
 		" for user %s success! txhash %s",
 		cc.SideChainID, srcAsset.Hex(), cc.NFTLockProxy,

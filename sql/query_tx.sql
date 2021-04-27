@@ -24,9 +24,10 @@ FROM `src_transactions`
 left join src_transfers on src_transactions.hash = src_transfers.tx_hash 
 left join poly_transactions on src_transactions.hash = poly_transactions.src_hash 
 left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash 
-WHERE (src_transactions.hash = '1adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c') 
-or (poly_transactions.hash = '1adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c') 
+WHERE 
+-- (src_transactions.hash = '1adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c') 
+(poly_transactions.hash = '1adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c') 
 or (dst_transactions.hash = '1adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c') 
 ORDER BY src_transactions.time desc;
 
--- explain select * from src_transactions where hash='1adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c';
+-- explain select * from src_transactions where hash in ('1adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c', 'adf9495d2b677dde48ee9749e60d0c038b34e865cee7fb003e43cdabfab742c');

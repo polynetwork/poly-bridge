@@ -251,6 +251,17 @@ var (
 		},
 	}
 
+	CmdBindERC20Asset = cli.Command{
+		Name:   "bindToken",
+		Usage:  "admin account bind erc20 asset to side chain.",
+		Action: handleCmdBindERC20Asset,
+		Flags: []cli.Flag{
+			AssetFlag,
+			DstChainFlag,
+			DstAssetFlag,
+		},
+	}
+
 	CmdTransferECCDOwnership = cli.Command{
 		Name:   "transferECCDOwnership",
 		Usage:  "admin account transfer ethereum cross chain data contract ownership eccm contract.",
