@@ -7,7 +7,10 @@ use polyswap;
 -- select * from src_transfers where amount=@amount and standard=0;
 -- select * from dst_transfers where amount=@amount and standard=0;
 
-set @txhash='1c7de65638b671b8c26443434497a3eb05891a4d379f97f760382adeacf0a057';
+-- select * from poly_transactions where hash='a9bedadc5a99e0e6112bff8108a7997c487b9797b212c32aa48809e8b7783db1';
+-- select * from dst_transactions where hash='a9bedadc5a99e0e6112bff8108a7997c487b9797b212c32aa48809e8b7783db1';
+
+set @txhash='c767b2004fcc0f9d8f21af81f84a84b425a997c3a2d6a8882e5ba997e656c7f8';
 select * from wrapper_transactions where hash=@txhash;
 select * from src_transactions where hash=@txhash;
 select * from src_transfers where tx_hash=@txhash;

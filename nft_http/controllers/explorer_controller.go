@@ -92,10 +92,10 @@ func (c *ExplorerController) TransactionDetail() {
 		return
 	}
 
-	relation := new(TransactionDetailRelation)
+	relations := make([]*TransactionDetailRelation, 0)
 	res := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
-		Where("src_transactions.hash = ?", req.Hash).
+		Where("(src_transactions.hash = ?) or (poly_transactions.hash = ?) or (dst_transactions.hash = ?)", req.Hash, req.Hash, req.Hash).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
@@ -106,14 +106,14 @@ func (c *ExplorerController) TransactionDetail() {
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
 		Order("src_transactions.time desc").
-		Find(relation)
+		Find(&relations)
 
 	if res.RowsAffected == 0 {
 		output(&c.Controller, nil)
 		return
 	}
 
-	data := new(TransactionDetailRsp).instance(relation)
+	data := new(TransactionDetailRsp).instance(relations[0])
 	fillMetaInfo(data)
 
 	output(&c.Controller, data)
