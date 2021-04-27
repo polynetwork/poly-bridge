@@ -12,6 +12,18 @@ import (
 	"testing"
 )
 
+func TestNewEthereumSdk_TestABI(t *testing.T) {
+	nftabi := nftwrap.PolyNFTWrapperABI
+	parsed, err := abi.JSON(strings.NewReader(nftabi))
+	assert.NoError(t, err)
+
+	owner := common.HexToAddress("0xf66D4C8f79178918c7aAf3E6A34e714c240F9e50")
+	chainId := big.NewInt(2)
+	bz, err := parsed.Pack("", owner, chainId)
+	assert.NoError(t, err)
+	t.Logf(common.Bytes2Hex(bz))
+}
+
 func TestNewEthereumSdk_GetAndCheckOwnerNFT(t *testing.T) {
 	t.Logf("current context: %s", ctx.EthUrl)
 
