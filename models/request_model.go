@@ -524,6 +524,143 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 	return transactionRsp
 }
 
+func MakeCurveTransactionRsp(transaction1 *SrcPolyDstRelation, transaction2 *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
+	amount := new(big.Int).Set(&transaction1.WrapperTransaction.FeeAmount.Int)
+	transferAmount := new(big.Int).SetInt64(0)
+	if transaction1.SrcTransaction.SrcTransfer != nil {
+		transferAmount = new(big.Int).Set(&transaction1.SrcTransaction.SrcTransfer.Amount.Int)
+		amount = new(big.Int).Add(amount, transferAmount)
+	}
+	transactionRsp := &TransactionRsp{
+		Hash:           transaction1.WrapperTransaction.Hash,
+		User:           transaction1.WrapperTransaction.User,
+		SrcChainId:     transaction1.WrapperTransaction.SrcChainId,
+		BlockHeight:    transaction1.WrapperTransaction.BlockHeight,
+		Time:           transaction1.WrapperTransaction.Time,
+		DstChainId:     transaction1.WrapperTransaction.DstChainId,
+		ServerId:       transaction1.WrapperTransaction.ServerId,
+		FeeAmount:      transaction1.WrapperTransaction.FeeAmount.String(),
+		TransferAmount: transferAmount.String(),
+		Amount:         amount.String(),
+		DstUser:        transaction1.SrcTransaction.SrcTransfer.DstUser,
+		State:          transaction1.WrapperTransaction.Status,
+	}
+	if transaction1.Token != nil {
+		transactionRsp.Token = MakeTokenRsp(transaction1.Token)
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction1.Token.TokenBasic.Precision)))
+		{
+			bbb := decimal.NewFromBigInt(&transaction1.WrapperTransaction.FeeAmount.Int, 0)
+			feeAmount := bbb.Div(precision)
+			transactionRsp.FeeAmount = feeAmount.String()
+		}
+		{
+			bbb := decimal.NewFromBigInt(&transaction1.SrcTransaction.SrcTransfer.Amount.Int, 0)
+			transferAmount := bbb.Div(precision)
+			transactionRsp.TransferAmount = transferAmount.String()
+		}
+		{
+			bbb := decimal.NewFromBigInt(amount, 0)
+			allAmount := bbb.Div(precision)
+			transactionRsp.Amount = allAmount.String()
+		}
+	}
+	if transaction1.SrcTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    transaction1.SrcTransaction.Hash,
+			ChainId: transaction1.SrcTransaction.ChainId,
+			Blocks:  transaction1.SrcTransaction.Height,
+			Time:    transaction1.SrcTransaction.Time,
+		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: transaction1.WrapperTransaction.SrcChainId,
+			Blocks:  0,
+			Time:    0,
+		})
+	}
+	if transaction1.PolyTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    transaction1.PolyTransaction.Hash,
+			ChainId: transaction1.PolyTransaction.ChainId,
+			Blocks:  transaction1.PolyTransaction.Height,
+			Time:    transaction1.PolyTransaction.Time,
+		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: 0,
+			Blocks:  0,
+			Time:    0,
+		})
+	}
+	if transaction1.DstTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    transaction1.DstTransaction.Hash,
+			ChainId: transaction1.DstTransaction.ChainId,
+			Blocks:  transaction1.DstTransaction.Height,
+			Time:    transaction1.DstTransaction.Time,
+		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: basedef.O3_CROSSCHAIN_ID,
+			Blocks:  0,
+			Time:    0,
+		})
+	}
+	if transaction2.PolyTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    transaction2.PolyTransaction.Hash,
+			ChainId: transaction2.PolyTransaction.ChainId,
+			Blocks:  transaction2.PolyTransaction.Height,
+			Time:    transaction2.PolyTransaction.Time,
+		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: 0,
+			Blocks:  0,
+			Time:    0,
+		})
+	}
+	if transaction2.DstTransaction != nil {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    transaction2.DstTransaction.Hash,
+			ChainId: transaction2.DstTransaction.ChainId,
+			Blocks:  transaction2.DstTransaction.Height,
+			Time:    transaction2.DstTransaction.Time,
+		})
+	} else {
+		transactionRsp.TransactionState = append(transactionRsp.TransactionState, &TransactionStateRsp{
+			Hash:    "",
+			ChainId: transaction1.WrapperTransaction.DstChainId,
+			Blocks:  0,
+			Time:    0,
+		})
+	}
+	for i, state := range transactionRsp.TransactionState {
+		chain, ok := chainsMap[state.ChainId]
+		if ok {
+			if i == 0 {
+				state.NeedBlocks = chain.BackwardBlockNumber
+			} else if state.ChainId == basedef.O3_CROSSCHAIN_ID || state.ChainId == transaction1.WrapperTransaction.DstChainId {
+				state.NeedBlocks = 1
+			} else {
+				state.NeedBlocks = chain.BackwardBlockNumber
+			}
+			if state.Blocks <= 1 {
+				continue
+			}
+			state.Blocks = chain.Height - state.Blocks
+			if state.Blocks > state.NeedBlocks {
+				state.Blocks = state.NeedBlocks
+			}
+		}
+	}
+	return transactionRsp
+}
+
 type TransactionsOfAddressReq struct {
 	State     int // -1 表示查全部
 	Addresses []string
