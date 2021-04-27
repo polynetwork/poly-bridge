@@ -62,7 +62,7 @@ type PolyTransaction struct {
 	Fee        *BigInt `gorm:"type:varchar(64);not null"`
 	Height     uint64  `gorm:"type:bigint(20);not null"`
 	SrcChainId uint64  `gorm:"type:bigint(20);not null"`
-	SrcHash    string  `gorm:"size:66;not null"`
+	SrcHash    string  `gorm:"index;size:66;not null"`
 	DstChainId uint64  `gorm:"type:bigint(20);not null"`
 	Key        string  `gorm:"type:varchar(8192);not null"`
 }
@@ -84,7 +84,7 @@ type DstTransaction struct {
 	Height      uint64       `gorm:"type:bigint(20);not null"`
 	SrcChainId  uint64       `gorm:"type:bigint(20);not null"`
 	Contract    string       `gorm:"type:varchar(66);not null"`
-	PolyHash    string       `gorm:"size:66;not null"`
+	PolyHash    string       `gorm:"index;size:66;not null"`
 	DstTransfer *DstTransfer `gorm:"foreignKey:TxHash;references:Hash"`
 }
 
