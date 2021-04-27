@@ -18,7 +18,7 @@ func TestNewEthereumSdk_TestABI(t *testing.T) {
 	assert.NoError(t, err)
 
 	owner := common.HexToAddress("0xf66D4C8f79178918c7aAf3E6A34e714c240F9e50")
-	chainId := big.NewInt(2)
+	chainId := big.NewInt(7)
 	bz, err := parsed.Pack("", owner, chainId)
 	assert.NoError(t, err)
 	t.Logf(common.Bytes2Hex(bz))
