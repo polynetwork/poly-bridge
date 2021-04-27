@@ -33,6 +33,7 @@ import (
 	"poly-bridge/go_abi/eccmp_abi"
 	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
 	nftlp "poly-bridge/go_abi/nft_lock_proxy_abi"
+	erc20lp "poly-bridge/go_abi/lock_proxy_abi"
 	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
 	nftquery "poly-bridge/go_abi/nft_query_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
@@ -173,6 +174,34 @@ func (s *EthereumSdk) BindNFTAsset(
 ) (common.Hash, error) {
 
 	proxy, err := nftlp.NewPolyNFTLockProxy(lockProxyAddr, s.backend())
+	if err != nil {
+		return EmptyHash, err
+	}
+
+	auth, err := s.makeAuth(key)
+	if err != nil {
+		return EmptyHash, err
+	}
+	tx, err := proxy.BindAssetHash(auth, fromAssetHash, targetSideChainId, toAssetHash[:])
+	if err != nil {
+		return EmptyHash, err
+	}
+	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+		return EmptyHash, err
+	}
+	return tx.Hash(), nil
+}
+
+
+func (s *EthereumSdk) BindERC20Asset(
+	key *ecdsa.PrivateKey,
+	lockProxyAddr,
+	fromAssetHash,
+	toAssetHash common.Address,
+	targetSideChainId uint64,
+) (common.Hash, error) {
+
+	proxy, err := erc20lp.NewLockProxy(lockProxyAddr, s.backend())
 	if err != nil {
 		return EmptyHash, err
 	}
