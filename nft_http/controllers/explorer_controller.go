@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego/logs"
 	"poly-bridge/models"
+	"time"
 
 	"github.com/astaxie/beego"
 )
@@ -92,6 +93,7 @@ func (c *ExplorerController) TransactionDetail() {
 		return
 	}
 
+	startTime := time.Now().UnixNano()
 	relations := make([]*TransactionDetailRelation, 0)
 	res := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
@@ -107,6 +109,9 @@ func (c *ExplorerController) TransactionDetail() {
 		Preload("DstTransaction.DstTransfer").
 		Order("src_transactions.time desc").
 		Find(&relations)
+
+	endTime := time.Now().UnixNano()
+	logs.Info("mysql spent time %d", (endTime - startTime) / int64(time.Millisecond))
 
 	if res.RowsAffected == 0 {
 		output(&c.Controller, nil)
