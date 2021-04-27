@@ -34,6 +34,7 @@ import (
 	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
 	nftlp "poly-bridge/go_abi/nft_lock_proxy_abi"
 	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
+	nftquery "poly-bridge/go_abi/nft_query_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
 	xecdsa "poly-bridge/utils/ecdsa"
 )
@@ -41,7 +42,7 @@ import (
 var (
 	EmptyAddress    = common.Address{}
 	EmptyHash       = common.Hash{}
-	DefaultGasLimit = 5000000
+	DefaultGasLimit = 3000000
 )
 
 func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address, error) {
@@ -485,6 +486,24 @@ func (s *EthereumSdk) DeployERC20(key *ecdsa.PrivateKey) (common.Address, error)
 	return addr, nil
 }
 
+func (s *EthereumSdk) DeployNFTQueryContract(key *ecdsa.PrivateKey) (common.Address, error) {
+	auth, err := s.makeAuth(key)
+	if err != nil {
+		return EmptyAddress, err
+	}
+
+	addr, tx, _, err := nftquery.DeployPolyNFTQuery(auth, s.backend())
+	if err != nil {
+		return EmptyAddress, err
+	}
+
+	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+		return EmptyAddress, err
+	}
+
+	return addr, nil
+}
+
 func (s *EthereumSdk) dumpTx(hash common.Hash) error {
 	tx, err := s.GetTransactionReceipt(hash)
 	if err != nil {
@@ -534,7 +553,7 @@ func (s *EthereumSdk) waitTxConfirm(hash common.Hash) error {
 	for now := range ticker.C {
 		_, pending, err := s.TransactionByHash(hash)
 		if err != nil {
-			log.Error("failed to call TransactionByHash: %v", err)
+			log.Debug("failed to call TransactionByHash: %v", err)
 			continue
 		}
 		if !pending {

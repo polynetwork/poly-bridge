@@ -89,6 +89,7 @@ func setupApp() *cli.App {
 		CmdDeployFeeContract,
 		CmdDeployLockProxyContract,
 		CmdDeployNFTWrapContract,
+		CmdDeployNFTQueryContract,
 		CmdLockProxySetCCMP,
 		CmdBindLockProxy,
 		CmdGetBoundLockProxy,
@@ -274,6 +275,19 @@ func handleCmdDeployNFTWrapContract(ctx *cli.Context) error {
 
 	cc.NFTWrap = addr.Hex()
 	log.Info("deploy wrap contract %s success!", addr.Hex())
+	return updateConfig()
+}
+
+func handleCmdDeployNFTQueryContract(ctx *cli.Context) error {
+	log.Info("start to deploy nft query contract...")
+
+	addr, err := sdk.DeployNFTQueryContract(adm)
+	if err != nil {
+		return err
+	}
+
+	cc.NFTQuery = addr.Hex()
+	log.Info("deploy query contract %s success!", addr.Hex())
 	return updateConfig()
 }
 

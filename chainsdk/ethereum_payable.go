@@ -28,6 +28,7 @@ import (
 
 	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
 	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
+	nftquery "poly-bridge/go_abi/nft_query_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
 	xecdsa "poly-bridge/utils/ecdsa"
 
@@ -329,18 +330,18 @@ func (s *EthereumSdk) GetNFTOwner(asset common.Address, tokenID *big.Int) (commo
 	return cm.OwnerOf(nil, tokenID)
 }
 
-func (s *EthereumSdk) GetAndCheckNFTUrl(wrapperAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
-	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
+func (s *EthereumSdk) GetAndCheckNFTUrl(queryAddr, asset, owner common.Address, tokenId *big.Int) (string, error) {
+	inquirer, err := nftquery.NewPolyNFTQuery(queryAddr, s.backend())
 	if err != nil {
 		return "", err
 	}
 
-	ok, url, err := wrapper.GetAndCheckTokenUrl(nil, asset, owner, tokenId)
+	ok, url, err := inquirer.GetAndCheckTokenUrl(nil, asset, owner, tokenId)
 	if err != nil {
 		return "", err
 	}
 	if !ok {
-		return "", nil
+		return "", fmt.Errorf("owner token not exist")
 	}
 	return url, nil
 }
@@ -354,13 +355,14 @@ func (s *EthereumSdk) GetOwnerNFTByIndex(asset, owner common.Address, index int)
 	return cm.TokenOfOwnerByIndex(nil, owner, big.NewInt(int64(index)))
 }
 
-func (s *EthereumSdk) GetOwnerNFTsByIndex(wrapperAddr, asset common.Address, owner common.Address, start, length int) (map[string]string, error) {
-	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
+func (s *EthereumSdk) GetOwnerNFTsByIndex(queryAddr, asset common.Address, owner common.Address, start, length int) (map[string]string, error) {
+	inquirer, err := nftquery.NewPolyNFTQuery(queryAddr, s.backend())
 	if err != nil {
 		return nil, err
 	}
 
-	ok, enc, err := wrapper.GetOwnerTokensByIndex(nil, asset, owner, big.NewInt(int64(start)), big.NewInt(int64(length)))
+	st, ln := big.NewInt(int64(start)), big.NewInt(int64(length))
+	ok, enc, err := inquirer.GetOwnerTokensByIndex(nil, asset, owner, st, ln)
 	if err != nil {
 		return nil, err
 	}
@@ -371,12 +373,12 @@ func (s *EthereumSdk) GetOwnerNFTsByIndex(wrapperAddr, asset common.Address, own
 	return res, nil
 }
 
-func (s *EthereumSdk) GetNFTsById(wrapperAddr, asset common.Address, tokenIdList []*big.Int) (map[string]string, error) {
+func (s *EthereumSdk) GetNFTsById(queryAddr, asset common.Address, tokenIdList []*big.Int) (map[string]string, error) {
 	if len(tokenIdList) == 0 {
 		return nil, fmt.Errorf("empty id list")
 	}
 
-	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
+	inquirer, err := nftquery.NewPolyNFTQuery(queryAddr, s.backend())
 	if err != nil {
 		return nil, err
 	}
@@ -394,7 +396,7 @@ func (s *EthereumSdk) GetNFTsById(wrapperAddr, asset common.Address, tokenIdList
 		sink.WriteHash(data)
 	}
 
-	ok, enc, err := wrapper.GetTokensByIds(nil, asset, sink.Bytes())
+	ok, enc, err := inquirer.GetTokensByIds(nil, asset, sink.Bytes())
 	if err != nil {
 		return nil, err
 	}
@@ -406,16 +408,19 @@ func (s *EthereumSdk) GetNFTsById(wrapperAddr, asset common.Address, tokenIdList
 }
 
 func (s *EthereumSdk) GetUnCrossChainNFTsByIndex(
-	wrapperAddr, asset common.Address,
+	queryAddr,
+	asset,
+	lockProxy common.Address,
 	start, length int,
 ) (map[string]string, error) {
 
-	wrapper, err := nftwrap.NewPolyNFTWrapper(wrapperAddr, s.backend())
+	inquirer, err := nftquery.NewPolyNFTQuery(queryAddr, s.backend())
 	if err != nil {
 		return nil, err
 	}
 
-	ok, enc, err := wrapper.GetUnCrossChainTokensByIndex(nil, asset, big.NewInt(int64(start)), big.NewInt(int64(length)))
+	st, ln := big.NewInt(int64(start)), big.NewInt(int64(length))
+	ok, enc, err := inquirer.GetFilterTokensByIndex(nil, asset, lockProxy, st, ln)
 	if err != nil {
 		return nil, err
 	}

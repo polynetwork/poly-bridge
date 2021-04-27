@@ -125,7 +125,7 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 	}
 
 	chainId := data.Transaction.SrcChainId
-	sdk, wrapper, err := selectNodeAndWrapper(chainId)
+	sdk, inquirer, _, err := selectNodeAndWrapper(chainId)
 	if err != nil {
 		return
 	}
@@ -138,7 +138,7 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 	if !ok {
 		return
 	}
-	item, err := getSingleItem(sdk, wrapper, asset, tokenId, "")
+	item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
 	if err != nil {
 		logs.Error("fillMetaInfo err: %v", err)
 		return

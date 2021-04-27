@@ -55,7 +55,7 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
 	}
-	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	sdk, wrapper, _, err := selectNodeAndWrapper(req.ChainId)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
@@ -84,7 +84,7 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
-	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	sdk, wrapper, _, err := selectNodeAndWrapper(req.ChainId)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return

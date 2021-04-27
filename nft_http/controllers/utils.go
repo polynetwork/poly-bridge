@@ -40,15 +40,15 @@ import (
 )
 
 var (
-	db           *gorm.DB
-	chainConfig  = make(map[uint64]*conf.ChainListenConfig)
-	txCounter    *TransactionCounter
-	sdks         = make(map[uint64]*chainsdk.EthereumSdkPro)
-	assets       = make([]*models.Token, 0)
-	wrapperAddrs = make(map[uint64]common.Address)
-	fetcher      *meta.StoreFetcher
-	feeTokens    = make(map[uint64]*models.Token)
-	lruDB        *lru.ARCCache
+	db            *gorm.DB
+	chainConfig   = make(map[uint64]*conf.ChainListenConfig)
+	txCounter     *TransactionCounter
+	sdks          = make(map[uint64]*chainsdk.EthereumSdkPro)
+	assets        = make([]*models.Token, 0)
+	inquirerAddrs = make(map[uint64]common.Address)
+	fetcher       *meta.StoreFetcher
+	feeTokens     = make(map[uint64]*models.Token)
+	lruDB         *lru.ARCCache
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -140,28 +140,36 @@ func (s *TransactionCounter) Number() int64 {
 	return s.Count
 }
 
-func selectNodeAndWrapper(chainId uint64) (*chainsdk.EthereumSdkPro, common.Address, error) {
+func selectNodeAndWrapper(chainId uint64) (
+	pro *chainsdk.EthereumSdkPro,
+	inquirer, lockProxy common.Address,
+	err error,
+) {
+
+	chainIdErr := fmt.Errorf("chain id %d invalid", chainId)
 	cfg, ok := chainConfig[chainId]
 	if !ok {
-		return nil, emptyAddr, fmt.Errorf("chain id %d invalid", chainId)
+		err = chainIdErr
+		return
 	}
 
-	pro, ok := sdks[chainId]
-	if !ok {
+	if pro, ok = sdks[chainId]; !ok {
 		urls := cfg.GetNodesUrl()
 		if len(urls) == 0 {
-			return nil, emptyAddr, fmt.Errorf("chainId %d not exist", chainId)
+			err = chainIdErr
+			return
 		}
 		pro = chainsdk.NewEthereumSdkPro(urls, cfg.ListenSlot, chainId)
 		sdks[chainId] = pro
 	}
 
-	wrapper, ok := wrapperAddrs[chainId]
-	if !ok {
-		wrapper = common.HexToAddress(cfg.NFTWrapperContract)
-		wrapperAddrs[chainId] = wrapper
+	if inquirer, ok = inquirerAddrs[chainId]; !ok {
+		inquirer = common.HexToAddress(cfg.NFTQueryContract)
+		inquirerAddrs[chainId] = inquirer
 	}
-	return pro, wrapper, nil
+
+	lockProxy = common.HexToAddress(cfg.NFTProxyContract)
+	return
 }
 
 var emptyAddr = common.Address{}

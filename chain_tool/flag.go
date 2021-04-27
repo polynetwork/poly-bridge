@@ -210,6 +210,12 @@ var (
 		Action: handleCmdDeployNFTWrapContract,
 	}
 
+	CmdDeployNFTQueryContract = cli.Command{
+		Name:   "deployNFTQuery",
+		Usage:  "admin account deploy nft query contract.",
+		Action: handleCmdDeployNFTQueryContract,
+	}
+
 	CmdLockProxySetCCMP = cli.Command{
 		Name:   "proxySetCCMP",
 		Usage:  "admin account set cross chain manager proxy address for lock proxy contract.",
