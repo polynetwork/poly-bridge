@@ -35,7 +35,7 @@ type TokenBasic struct {
 	Property        int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
 	Standard        uint8          `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
 	Meta            string         `gorm:"type:varchar(128)"`
-	MetaFetcherType int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: seascape: 1,
+	MetaFetcherType int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: unknown 0, opensea: 1, standard: 2,
 	PriceMarkets    []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
 	Tokens          []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }

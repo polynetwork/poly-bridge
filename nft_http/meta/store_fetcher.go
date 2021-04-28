@@ -2,12 +2,10 @@ package meta
 
 import (
 	"errors"
-	"math/big"
+	"gorm.io/gorm"
 	"poly-bridge/models"
 	. "poly-bridge/nft_http/meta/common"
-	"poly-bridge/nft_http/meta/seascape"
-
-	"gorm.io/gorm"
+	"poly-bridge/nft_http/meta/standard"
 )
 
 type MetaFetcher interface {
@@ -17,27 +15,22 @@ type MetaFetcher interface {
 
 	// batch fetch nft profiles by params of asset and url list
 	BatchFetch(list []*FetchRequestParams) ([]*models.NFTProfile, error)
-
-	// full url format should be personality, e.g: fmt.Sprintf("%s%d", baseUri, tokenId)
-	FullUrl(tokenId *big.Int) string
 }
 
 type FetcherType int
 
 const (
-	FetcherTypeUnknown = iota
-	FetcherTypeSeascape
-	FetcherTypeMockSeascape
+	FetcherTypeUnknown  = 0
+	FetcherTypeOpensea  = 1
+	FetcherTypeStandard = 2
 )
 
 var ErrFetcherNotExist = errors.New("fetcher not exist")
 
 func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (fetcher MetaFetcher) {
 	switch fetcherTyp {
-	case FetcherTypeMockSeascape:
-		fetcher = seascape.NewMockFetcher(assetName, baseUri)
-	case FetcherTypeSeascape:
-		fetcher = seascape.NewFetcher(assetName, baseUri)
+	case FetcherTypeStandard, FetcherTypeOpensea:
+		fetcher = standard.NewFetcher(assetName, baseUri)
 	default:
 		fetcher = nil
 	}
