@@ -1,0 +1,41 @@
+{
+  "Server":"polyswap",
+  "Backup": false,
+  "DBConfig":{
+    "URL":"127.0.0.1:3306",
+    "User":"root",
+    "Password":"",
+    "Scheme":"polyswap",
+    "Debug": true
+  },
+  "TokenBasics":[
+    {
+      "Name": "SCAPES",
+      "Meta": "https://api.seascape.network/nft/metadata/",
+      "Standard": 1,
+      "Ind": 1,
+      "Property": 1,
+      "MetaFetcherType": 2,
+      "Tokens":[
+        {
+          "ChainId":2,
+          "Hash":"3680fb34F55030326659cd9AaEc522B6E355bdB6",
+          "Name":"SCAPES"
+        },
+        {
+          "ChainId":6,
+          "Hash":"66638F4970C2ae63773946906922c07a583b6069",
+          "Name":"SCAPES"
+        },
+        {
+          "ChainId":7,
+          "Hash":"F9Dd424e64E9264632a564FBDcC87Ba8eA40B5Ba",
+          "Name":"SCAPES"
+        }
+      ]
+    }
+  ],
+  "RemoveTokens": [],
+  "TokenMaps": [],
+  "RemoveTokenMaps": []
+}

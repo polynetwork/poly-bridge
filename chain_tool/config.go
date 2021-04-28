@@ -18,6 +18,9 @@
 package main
 
 type Config struct {
+	AdminAccountList []string
+	Keystore         string
+
 	Ethereum *ChainConfig
 	Bsc      *ChainConfig
 	Heco     *ChainConfig
@@ -34,8 +37,6 @@ type ChainConfig struct {
 	SideChainID   uint64 // 注册在poly上的侧链ID，这个id同时也必须是genesis.json中的chainId，尤其是bsc，会根据这个校验header.
 	SideChainName string
 	RPC           string
-	Admin         string
-	Keystore      string
 
 	ECCD      string
 	ECCM      string

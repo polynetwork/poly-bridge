@@ -136,6 +136,12 @@ var (
 		Name:  "code",
 		Usage: "decode method code to params, and code format MUST be hex string",
 	}
+
+	AdminIndexFlag = cli.IntFlag{
+		Name:  "admin",
+		Usage: "admin index in keystore, default value is 0",
+		Value: 0,
+	}
 )
 
 var (

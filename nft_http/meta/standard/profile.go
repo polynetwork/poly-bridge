@@ -1,4 +1,4 @@
-package seascape
+package standard
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 type Profile struct {
 	Image       string        `json:"image"`
 	ExternalUrl string        `json:"external_url"`
-	Description string        `json:"description"`
+	Description string        `json:"description,omitempty"`
 	Name        string        `json:"name"`
 	Attributes  []interface{} `json:"attributes,omitempty"`
 }
