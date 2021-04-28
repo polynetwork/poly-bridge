@@ -39,7 +39,7 @@ func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (fetcher Meta
 
 type StoreFetcher struct {
 	fetcher      map[FetcherType]MetaFetcher
-	assetFetcher map[string]FetcherType // mapping asset to fetcher type
+	assetFetcher map[uint64]map[string]FetcherType // mapping asset to fetcher type
 	db           *gorm.DB
 }
 
@@ -47,24 +47,32 @@ func NewStoreFetcher(orm *gorm.DB) *StoreFetcher {
 	sf := new(StoreFetcher)
 	sf.db = orm
 	sf.fetcher = make(map[FetcherType]MetaFetcher)
-	sf.assetFetcher = make(map[string]FetcherType)
+	sf.assetFetcher = make(map[uint64]map[string]FetcherType)
 	return sf
 }
 
-func (s *StoreFetcher) Register(ft FetcherType, asset string, baseUri string) {
+func (s *StoreFetcher) Register(ft FetcherType, chainId uint64, asset string, baseUri string) {
 	fetcher := NewFetcher(ft, asset, baseUri)
 	if fetcher == nil {
 		return
 	}
 	s.fetcher[ft] = fetcher
-	s.assetFetcher[asset] = ft
+	if _, ok := s.assetFetcher[chainId]; !ok {
+		s.assetFetcher[chainId] = make(map[string]FetcherType)
+	}
+	s.assetFetcher[chainId][asset] = ft
 }
 
-func (s *StoreFetcher) selectFetcher(asset string) MetaFetcher {
-	typ, ok := s.assetFetcher[asset]
+func (s *StoreFetcher) selectFetcher(chainId uint64, asset string) MetaFetcher {
+	if _, ok := s.assetFetcher[chainId]; !ok {
+		return nil
+	}
+
+	typ, ok := s.assetFetcher[chainId][asset]
 	if !ok {
 		return nil
 	}
+
 	fetcher, ok := s.fetcher[typ]
 	if !ok {
 		return nil
@@ -72,8 +80,8 @@ func (s *StoreFetcher) selectFetcher(asset string) MetaFetcher {
 	return fetcher
 }
 
-func (s *StoreFetcher) Fetch(asset string, req *FetchRequestParams) (profile *models.NFTProfile, err error) {
-	fetcher := s.selectFetcher(asset)
+func (s *StoreFetcher) Fetch(chainId uint64, asset string, req *FetchRequestParams) (profile *models.NFTProfile, err error) {
+	fetcher := s.selectFetcher(chainId, asset)
 	if fetcher == nil {
 		return nil, ErrFetcherNotExist
 	}
@@ -94,8 +102,8 @@ func (s *StoreFetcher) Fetch(asset string, req *FetchRequestParams) (profile *mo
 	return
 }
 
-func (s *StoreFetcher) BatchFetch(asset string, reqs []*FetchRequestParams) ([]*models.NFTProfile, error) {
-	fetcher := s.selectFetcher(asset)
+func (s *StoreFetcher) BatchFetch(chainId uint64, asset string, reqs []*FetchRequestParams) ([]*models.NFTProfile, error) {
+	fetcher := s.selectFetcher(chainId, asset)
 	if fetcher == nil {
 		return nil, ErrFetcherNotExist
 	}

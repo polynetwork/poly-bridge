@@ -105,7 +105,7 @@ func Initialize(c *conf.Config) {
 		fetcherTyp := meta.FetcherType(asset.TokenBasic.MetaFetcherType)
 		baseUri := asset.TokenBasic.Meta
 		assetName := asset.TokenBasic.Name
-		fetcher.Register(fetcherTyp, assetName, baseUri)
+		fetcher.Register(fetcherTyp, asset.ChainId, assetName, baseUri)
 	}
 
 	txCounter = NewTransactionCounter()

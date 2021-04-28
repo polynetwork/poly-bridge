@@ -17,8 +17,9 @@ var (
 	configFile = "./../../conf/config_devnet.json"
 	sf         *StoreFetcher
 
-	asset   = "seascape"
-	baseUri = "https://api.seascape.network/nft/metadata/"
+	testChainId uint64 = 2
+	testAsset          = "seascape"
+	testBaseUri        = "https://api.seascape.network/nft/metadata/"
 )
 
 func beforeTest() {
@@ -36,15 +37,15 @@ func beforeTest() {
 		panic(err)
 	}
 
-	sf := NewStoreFetcher(db)
-	sf.Register(FetcherTypeStandard, asset, baseUri)
+	sf = NewStoreFetcher(db)
+	sf.Register(FetcherTypeStandard, testChainId, testAsset, testBaseUri)
 }
 
 func TestStoreFetcher_FetchSeascape(t *testing.T) {
 	beforeTest()
 
 	tokenId := "141"
-	profile, err := sf.Fetch(asset, &FetchRequestParams{
+	profile, err := sf.Fetch(testChainId, testAsset, &FetchRequestParams{
 		TokenId: tokenId,
 		Url:     "https://api.seascape.network/nft/metadata/141",
 	})
@@ -52,7 +53,7 @@ func TestStoreFetcher_FetchSeascape(t *testing.T) {
 	t.Log(profile)
 
 	persist := new(models.NFTProfile)
-	res := sf.db.Where("token_basic_name = ? and nft_token_id = ?", asset, tokenId).Find(persist)
+	res := sf.db.Where("token_basic_name = ? and nft_token_id = ?", testAsset, tokenId).Find(persist)
 	assert.True(t, res.RowsAffected > 0)
 	assert.Equal(t, persist.Name, profile.Name)
 }
@@ -63,18 +64,17 @@ func TestStoreFetcher_BatchFetchSeascape(t *testing.T) {
 	ids := []string{"137", "138", "140", "141"}
 	reqs := make([]*FetchRequestParams, 0)
 	for _, id := range ids {
-		tid := fmt.Sprintf("%d", id)
 		req := &FetchRequestParams{
-			TokenId: tid,
-			Url:     fmt.Sprintf("%s%d", baseUri, id)}
+			TokenId: id,
+			Url:     fmt.Sprintf("%s%s", testBaseUri, id)}
 		reqs = append(reqs, req)
 	}
 
-	profile, err := sf.BatchFetch(asset, reqs)
+	profile, err := sf.BatchFetch(testChainId, testAsset, reqs)
 	assert.NoError(t, err)
 	t.Log(profile)
 
 	persist := make([]*models.NFTProfile, 0)
-	res := sf.db.Where("token_basic_name = ? and nft_token_id in (?)", asset, ids).Find(&persist)
+	res := sf.db.Where("token_basic_name = ? and nft_token_id in (?)", testAsset, ids).Find(&persist)
 	assert.True(t, res.RowsAffected == int64(len(ids)))
 }

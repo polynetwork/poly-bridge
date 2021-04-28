@@ -406,16 +406,16 @@ func handleCmdBindERC20Asset(ctx *cli.Context) error {
 		return fmt.Errorf("bind erc20 asset (src chain id %d, src asset %s, src proxy %s) - "+
 			"(dst chain id %d, dst asset %s, dst proxy %s)"+
 			" for user %s failed, err: %v",
-			cc.SideChainID, srcAsset.Hex(), cc.NFTLockProxy,
-			dstChainId, dstAsset.Hex(), dstChainCfg.NFTLockProxy,
+			cc.SideChainID, srcAsset.Hex(), cc.LockProxy,
+			dstChainId, dstAsset.Hex(), dstChainCfg.LockProxy,
 			owner.Hex(), err)
 	}
 
 	log.Info("bind erc20 asset (src chain id %d, src asset %s, src proxy %s) - "+
 		"(dst chain id %d, dst asset %s, dst proxy %s)"+
 		" for user %s success! txhash %s",
-		cc.SideChainID, srcAsset.Hex(), cc.NFTLockProxy,
-		dstChainId, dstAsset.Hex(), dstChainCfg.NFTLockProxy,
+		cc.SideChainID, srcAsset.Hex(), cc.LockProxy,
+		dstChainId, dstAsset.Hex(), dstChainCfg.LockProxy,
 		owner.Hex(), hash.Hex())
 	return nil
 }

@@ -171,7 +171,7 @@ func getSingleItem(
 		return
 	}
 
-	profile, _ := fetcher.Fetch(asset.TokenBasicName, &mcm.FetchRequestParams{
+	profile, _ := fetcher.Fetch(asset.ChainId, asset.TokenBasicName, &mcm.FetchRequestParams{
 		TokenId: tokenId.String(),
 		Url:     url,
 	})
@@ -202,7 +202,7 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 
 	// fetch meta data list and show rpc time
 	tBeforeBatchFetch := time.Now().UnixNano()
-	profiles, err := fetcher.BatchFetch(name, profileReqs)
+	profiles, err := fetcher.BatchFetch(chainId, name, profileReqs)
 	if err != nil {
 		logs.Error("batch fetch NFT profiles err: %v", err)
 	}
