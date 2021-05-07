@@ -8,6 +8,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/explorerdao"
 	"poly-bridge/models"
+	"time"
 )
 
 func merge() {
@@ -56,6 +57,7 @@ func merge() {
 				panic(err)
 			}
 			newswapdb.Save(newSrcTransactions)
+			time.Sleep(time.Second * 1)
 			i = j
 		}
 	}
@@ -78,6 +80,7 @@ func merge() {
 				panic(err)
 			}
 			newswapdb.Save(newPolyTransactions)
+			time.Sleep(time.Second * 1)
 			i = j
 		}
 	}
@@ -100,6 +103,7 @@ func merge() {
 				panic(err)
 			}
 			newswapdb.Save(newDstTransactions)
+			time.Sleep(time.Second * 1)
 			i = j
 		}
 	}
