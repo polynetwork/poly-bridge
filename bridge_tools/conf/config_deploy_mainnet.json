@@ -4,7 +4,7 @@
     "URL":"10.203.0.11:3306",
     "User":"root",
     "Password":"PAIGWICQFKDNzdL5aTw0pIPrBeoYinXu4A==",
-    "Scheme":"polyswap_v2",
+    "Scheme":"polybridge_v2",
     "Debug": true
   },
   "Chains":[

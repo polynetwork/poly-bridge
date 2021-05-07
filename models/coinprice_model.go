@@ -81,8 +81,10 @@ type TokenMap struct {
 	Id int64  `gorm:"primaryKey;autoIncrement"`
 	SrcChainId   uint64 `gorm:"type:bigint(20);not null"`
 	SrcTokenHash string `gorm:"size:66;not null"`
+	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
 	DstChainId   uint64 `gorm:"type:bigint(20);not null"`
 	DstTokenHash string `gorm:"size:66;not null"`
+	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
 	Standard     uint8  `gorm:"type:int(8);not null"`
 	Property     int64  `gorm:"type:bigint(20);not null"`
 }

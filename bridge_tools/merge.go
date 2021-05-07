@@ -29,7 +29,7 @@ func merge() {
 	newswapdbCfg := new(conf.DBConfig)
 	newswapdbCfg.User = "root"
 	newswapdbCfg.Debug = true
-	newswapdbCfg.Scheme = "polyswap_v2"
+	newswapdbCfg.Scheme = "polybridge_v2"
 	newswapdbCfg.URL = "10.203.0.11:3306"
 	newswapdbCfg.Password = "PAIGWICQFKDNzdL5aTw0pIPrBeoYinXu4A=="
 	newswapdb, err := gorm.Open(mysql.Open(newswapdbCfg.User+":"+newswapdbCfg.Password+"@tcp("+newswapdbCfg.URL+")/"+
