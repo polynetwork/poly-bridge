@@ -36,6 +36,7 @@ func init() {
 		beego.NSRouter("/transactions/", &controllers.TransactionController{}, "post:Transactions"),
 		beego.NSRouter("/transactionsofaddress/", &controllers.TransactionController{}, "post:TransactionsOfAddress"),
 		beego.NSRouter("/transactionofhash/", &controllers.TransactionController{}, "post:TransactionOfHash"),
+		beego.NSRouter("/transactionofcurve/", &controllers.TransactionController{}, "post:TransactionOfCurve"),
 		beego.NSRouter("/transactionsofstate/", &controllers.TransactionController{}, "post:TransactionsOfState"),
 	)
 	beego.AddNamespace(ns)

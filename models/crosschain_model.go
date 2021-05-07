@@ -40,6 +40,7 @@ type SrcTransaction struct {
 	Key         string       `gorm:"type:varchar(8192);not null"`
 	Param       string       `gorm:"type:varchar(8192);not null"`
 	SrcTransfer *SrcTransfer `gorm:"foreignKey:TxHash;references:Hash"`
+	SrcSwap     *SrcSwap     `gorm:"foreignKey:TxHash;references:Hash"`
 }
 
 type SrcTransfer struct {
@@ -107,6 +108,7 @@ type DstTransaction struct {
 	Contract    string       `gorm:"type:varchar(66);not null"`
 	PolyHash    string       `gorm:"size:66;not null"`
 	DstTransfer *DstTransfer `gorm:"foreignKey:TxHash;references:Hash"`
+	DstSwap     *DstSwap     `gorm:"foreignKey:TxHash;references:Hash"`
 }
 
 type DstTransfer struct {

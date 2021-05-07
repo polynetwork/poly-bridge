@@ -129,6 +129,31 @@ func (c *TransactionController) getTransactionByHash(hash string) (*models.SrcPo
 	return srcPolyDstRelation, nil
 }
 
+func (c *TransactionController) getTransactionByDstHash(hash string) (*models.SrcPolyDstRelation, error) {
+	srcPolyDstRelation := new(models.SrcPolyDstRelation)
+	res := db.Table("dst_transactions").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
+		Where("dst_transactions.hash = ?", hash).
+		Where("dst_transactions.standard = ?", 0).
+		Joins("inner join poly_transactions on dst_transactions.poly_hash = poly_transactions.hash").
+		Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.hash").
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+		Preload("WrapperTransaction").
+		Preload("SrcTransaction").
+		Preload("SrcTransaction.SrcTransfer").
+		Preload("PolyTransaction").
+		Preload("DstTransaction").
+		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
+		Preload("Token.TokenBasic").
+		Order("src_transactions.time desc").
+		Find(&srcPolyDstRelation)
+	if res.RowsAffected == 0 {
+		return nil, fmt.Errorf("transacion: %s does not exist", hash)
+	}
+	return srcPolyDstRelation, nil
+}
+
 func (c *TransactionController) TransactionOfHash() {
 	var transactionOfHashReq models.TransactionOfHashReq
 	var err error
@@ -171,6 +196,45 @@ func (c *TransactionController) TransactionOfHash() {
 		chainsMap[*chain.ChainId] = chain
 	}
 	c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
+	c.ServeJSON()
+}
+
+func (c *TransactionController) TransactionOfCurve() {
+	var transactionOfHashReq models.TransactionOfHashReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionOfHashReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	srcPolyDstRelation1, err := c.getTransactionByDstHash(transactionOfHashReq.Hash)
+	if err != nil {
+		c.Data["json"] = err.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	if srcPolyDstRelation1.SrcTransaction.DstChainId != basedef.O3_CROSSCHAIN_ID || srcPolyDstRelation1.DstTransaction == nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	srcPolyDstRelation2, err := c.getTransactionByHash(srcPolyDstRelation1.DstHash)
+	if err != nil {
+		c.Data["json"] = err.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	chains := make([]*models.Chain, 0)
+	db.Model(&models.Chain{}).Find(&chains)
+	chainsMap := make(map[uint64]*models.Chain)
+	for _, chain := range chains {
+		chainsMap[*chain.ChainId] = chain
+	}
+	c.Data["json"] = models.MakeCurveTransactionRsp(srcPolyDstRelation1, srcPolyDstRelation2, chainsMap)
 	c.ServeJSON()
 }
 

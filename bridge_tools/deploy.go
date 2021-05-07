@@ -22,9 +22,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"poly-bridge/bridge_tools/conf"
-	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
-	"strings"
 )
 
 func startDeploy(cfg *conf.DeployConfig) {
@@ -44,16 +42,4 @@ func startDeploy(cfg *conf.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	//
-	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.Backup, cfg.DBConfig)
-	if dao == nil {
-		panic("server is invalid")
-	}
-	for _, tokenBasic := range cfg.TokenBasics {
-		for _, token := range tokenBasic.Tokens {
-			token.Hash = strings.ToLower(token.Hash)
-		}
-	}
-	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps)
-	dao.AddChains(cfg.Chains, cfg.ChainFees)
 }
