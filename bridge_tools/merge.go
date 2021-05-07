@@ -40,43 +40,67 @@ func merge() {
 	{
 		srcTransactions := make([]*explorerdao.SrcTransaction, 0)
 		csdb.Preload("SrcTransfer").Order("tt asc").Find(&srcTransactions)
-		srcTransactionsJson, err := json.Marshal(srcTransactions)
-		if err != nil {
-			panic(err)
+		for i := 0;i < len(srcTransactions); {
+			j := i + 1000
+			if j > len(srcTransactions) {
+				j = len(srcTransactions)
+			}
+			xx := srcTransactions[i:j]
+			srcTransactionsJson, err := json.Marshal(xx)
+			if err != nil {
+				panic(err)
+			}
+			newSrcTransactions := make([]*models.SrcTransaction, 0)
+			err = json.Unmarshal(srcTransactionsJson, &newSrcTransactions)
+			if err != nil {
+				panic(err)
+			}
+			newswapdb.Save(newSrcTransactions)
+			i = j
 		}
-		newSrcTransactions := make([]*models.SrcTransaction, 0)
-		err = json.Unmarshal(srcTransactionsJson, &newSrcTransactions)
-		if err != nil {
-			panic(err)
-		}
-		newswapdb.Save(newSrcTransactions)
 	}
 	{
 		polyTransactions := make([]*explorerdao.PolyTransaction, 0)
 		csdb.Order("tt asc").Find(&polyTransactions)
-		polyTransactionsJson, err := json.Marshal(polyTransactions)
-		if err != nil {
-			panic(err)
+		for i := 0;i < len(polyTransactions); {
+			j := i + 1000
+			if j > len(polyTransactions) {
+				j = len(polyTransactions)
+			}
+			xx := polyTransactions[i:j]
+			polyTransactionsJson, err := json.Marshal(xx)
+			if err != nil {
+				panic(err)
+			}
+			newPolyTransactions := make([]*models.PolyTransaction, 0)
+			err = json.Unmarshal(polyTransactionsJson, &newPolyTransactions)
+			if err != nil {
+				panic(err)
+			}
+			newswapdb.Save(newPolyTransactions)
+			i = j
 		}
-		newPolyTransactions := make([]*models.PolyTransaction, 0)
-		err = json.Unmarshal(polyTransactionsJson, &newPolyTransactions)
-		if err != nil {
-			panic(err)
-		}
-		newswapdb.Save(newPolyTransactions)
 	}
 	{
 		dstTransactions := make([]*explorerdao.DstTransaction, 0)
 		csdb.Preload("DstTransfer").Order("tt asc").Find(&dstTransactions)
-		dstTransactionsJson, err := json.Marshal(dstTransactions)
-		if err != nil {
-			panic(err)
+		for i := 0;i < len(dstTransactions); {
+			j := i + 1000
+			if j > len(dstTransactions) {
+				j = len(dstTransactions)
+			}
+			xx := dstTransactions[i:j]
+			dstTransactionsJson, err := json.Marshal(xx)
+			if err != nil {
+				panic(err)
+			}
+			newDstTransactions := make([]*models.DstTransaction, 0)
+			err = json.Unmarshal(dstTransactionsJson, &newDstTransactions)
+			if err != nil {
+				panic(err)
+			}
+			newswapdb.Save(newDstTransactions)
+			i = j
 		}
-		newDstTransactions := make([]*models.DstTransaction, 0)
-		err = json.Unmarshal(dstTransactionsJson, &newDstTransactions)
-		if err != nil {
-			panic(err)
-		}
-		newswapdb.Save(newDstTransactions)
 	}
 }
