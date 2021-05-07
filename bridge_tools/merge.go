@@ -39,7 +39,7 @@ func merge() {
 	}
 	{
 		srcTransactions := make([]*explorerdao.SrcTransaction, 0)
-		csdb.Preload("SrcTransfer").Order("time asc").Find(&srcTransactions)
+		csdb.Preload("SrcTransfer").Order("tt asc").Find(&srcTransactions)
 		srcTransactionsJson, err := json.Marshal(srcTransactions)
 		if err != nil {
 			panic(err)
@@ -53,7 +53,7 @@ func merge() {
 	}
 	{
 		polyTransactions := make([]*explorerdao.PolyTransaction, 0)
-		csdb.Order("time asc").Find(&polyTransactions)
+		csdb.Order("tt asc").Find(&polyTransactions)
 		polyTransactionsJson, err := json.Marshal(polyTransactions)
 		if err != nil {
 			panic(err)
@@ -67,7 +67,7 @@ func merge() {
 	}
 	{
 		dstTransactions := make([]*explorerdao.DstTransaction, 0)
-		csdb.Preload("DstTransfer").Order("time asc").Find(&dstTransactions)
+		csdb.Preload("DstTransfer").Order("tt asc").Find(&dstTransactions)
 		dstTransactionsJson, err := json.Marshal(dstTransactions)
 		if err != nil {
 			panic(err)
