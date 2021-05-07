@@ -126,6 +126,8 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		startTransactions(config)
+	} else if cmd == 6 {
+		merge()
 	}
 }
 
