@@ -696,6 +696,182 @@ type TransactionsOfStateReq struct {
 	PageNo   int
 }
 
+type TransactionsOfUnfinishedReq struct {
+	PageSize int
+	PageNo   int
+}
+
+type TransactionsOfAssetReq struct {
+	Asset string
+	Chain int
+	PageSize int
+	PageNo   int
+}
+
+type CrossChainTransactionRsp struct {
+	WrapperTransaction *WrapperTransactionRsp
+	SrcTransaction     *SrcTransactionRsp
+	PolyTransaction    *PolyTransactionRsp
+	DstTransaction     *DstTransactionRsp
+	Token              *TokenRsp
+}
+
+type TransactionOfUnfinishedRsp struct {
+	PageSize     int
+	PageNo       int
+	TotalPage    int
+	TotalCount   int
+	Transactions []*CrossChainTransactionRsp
+}
+
+type SrcTransactionRsp struct {
+	Hash        string
+	ChainId     uint64
+	Standard    uint8
+	State       uint64
+	Time        uint64
+	Height      uint64
+	DstChainId  uint64
+	SrcTransfer *SrcTransferRsp
+}
+
+type SrcTransferRsp struct {
+	TxHash     string
+	ChainId    uint64
+	Standard   uint8
+	Time       uint64
+	Asset      string
+	Amount     string
+	DstChainId uint64
+	DstAsset   string
+}
+
+func MakeSrcTransferRsp(transaction *SrcTransfer) *SrcTransferRsp {
+	transactionRsp := &SrcTransferRsp{
+		TxHash:         transaction.TxHash,
+		ChainId:         transaction.ChainId,
+		Standard:   transaction.Standard,
+		Time:         transaction.Time,
+		DstChainId:   transaction.DstChainId,
+		Asset:      transaction.Asset,
+		DstAsset: transaction.DstAsset,
+	}
+	return transactionRsp
+}
+
+func MakeSrcTransactionRsp(transaction *SrcTransaction) *SrcTransactionRsp {
+	transactionRsp := &SrcTransactionRsp{
+		Hash:         transaction.Hash,
+		ChainId:         transaction.ChainId,
+		Standard:   transaction.Standard,
+		State:  transaction.State,
+		Time:         transaction.Time,
+		DstChainId:   transaction.DstChainId,
+		Height:      transaction.Height,
+	}
+	if transaction.SrcTransfer != nil {
+		transactionRsp.SrcTransfer = MakeSrcTransferRsp(transaction.SrcTransfer)
+	}
+	return transactionRsp
+}
+
+type DstTransactionRsp struct {
+	Hash        string
+	ChainId     uint64
+	Standard    uint8
+	State       uint64
+	Time        uint64
+	Height      uint64
+	SrcChainId  uint64
+	DstTransfer *DstTransferRsp
+}
+
+type DstTransferRsp struct {
+	TxHash   string
+	ChainId  uint64
+	Standard uint8
+	Time     uint64
+	Asset    string
+	Amount   string
+}
+
+func MakeDstTransferRsp(transaction *DstTransfer) *DstTransferRsp {
+	transactionRsp := &DstTransferRsp{
+		TxHash:         transaction.TxHash,
+		ChainId:         transaction.ChainId,
+		Standard:   transaction.Standard,
+		Time:         transaction.Time,
+		Asset:      transaction.Asset,
+	}
+	return transactionRsp
+}
+
+
+func MakeDstTransactionRsp(transaction *DstTransaction) *DstTransactionRsp {
+	transactionRsp := &DstTransactionRsp{
+		Hash:         transaction.Hash,
+		ChainId:         transaction.ChainId,
+		Standard:   transaction.Standard,
+		State:  transaction.State,
+		Time:         transaction.Time,
+		SrcChainId:   transaction.SrcChainId,
+		Height:      transaction.Height,
+	}
+	if transaction.DstTransfer != nil {
+		transactionRsp.DstTransfer = MakeDstTransferRsp(transaction.DstTransfer)
+	}
+	return transactionRsp
+}
+
+func MakeCrossChainTransactionRsp(transaction *SrcPolyDstRelation) *CrossChainTransactionRsp {
+	crossChainTransactionRsp := new(CrossChainTransactionRsp)
+	if transaction.WrapperTransaction != nil {
+		crossChainTransactionRsp.WrapperTransaction = MakeWrapperTransactionRsp(transaction.WrapperTransaction)
+		if transaction.Token != nil {
+			precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.Precision)))
+			{
+				bbb := decimal.NewFromBigInt(&transaction.WrapperTransaction.FeeAmount.Int, 0)
+				feeAmount := bbb.Div(precision)
+				crossChainTransactionRsp.WrapperTransaction.FeeAmount = feeAmount.String()
+			}
+		}
+	}
+	if transaction.SrcTransaction != nil {
+		crossChainTransactionRsp.SrcTransaction = MakeSrcTransactionRsp(transaction.SrcTransaction)
+		if transaction.Token != nil && transaction.SrcTransaction.SrcTransfer != nil {
+			precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.Precision)))
+			{
+				bbb := decimal.NewFromBigInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int, 0)
+				transferAmount := bbb.Div(precision)
+				crossChainTransactionRsp.SrcTransaction.SrcTransfer.Amount = transferAmount.String()
+			}
+		}
+	}
+	if transaction.PolyTransaction != nil {
+		crossChainTransactionRsp.PolyTransaction = MakePolyTransactionRsp(transaction.PolyTransaction)
+	}
+	if transaction.DstTransaction != nil {
+		crossChainTransactionRsp.DstTransaction = MakeDstTransactionRsp(transaction.DstTransaction)
+	}
+	if transaction.Token != nil {
+		crossChainTransactionRsp.Token = MakeTokenRsp(transaction.Token)
+	}
+	return crossChainTransactionRsp
+}
+
+func MakeTransactionOfUnfinishedRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*SrcPolyDstRelation) *TransactionOfUnfinishedRsp {
+	transactionOfUnfinishedRsp := &TransactionOfUnfinishedRsp{
+		PageSize:   pageSize,
+		PageNo:     pageNo,
+		TotalPage:  totalPage,
+		TotalCount: totalCount,
+	}
+	for _, transaction := range transactions {
+		transactionOfUnfinishedRsp.Transactions = append(transactionOfUnfinishedRsp.Transactions, MakeCrossChainTransactionRsp(transaction))
+	}
+	return transactionOfUnfinishedRsp
+}
+
 type TransactionsOfStateRsp struct {
 	PageSize     int
 	PageNo       int
