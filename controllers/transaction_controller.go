@@ -279,6 +279,7 @@ func (c *TransactionController) TransactionsOfUnfinished() {
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
+		Limit(transactionsOfUnfinishedReq.PageSize).Offset(transactionsOfUnfinishedReq.PageSize * transactionsOfUnfinishedReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	if res.Error != nil {
@@ -293,7 +294,7 @@ func (c *TransactionController) TransactionsOfUnfinished() {
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Limit(transactionsOfUnfinishedReq.PageSize).Offset(transactionsOfUnfinishedReq.PageSize * transactionsOfUnfinishedReq.PageNo).Find(&transactionNum)
+		Count(&transactionNum)
 	c.Data["json"] = models.MakeTransactionOfUnfinishedRsp(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo,
 		(int(transactionNum)+transactionsOfUnfinishedReq.PageSize-1)/transactionsOfUnfinishedReq.PageSize, int(transactionNum), srcPolyDstRelations)
 	c.ServeJSON()
@@ -324,6 +325,7 @@ func (c *TransactionController) TransactionsOfAsset() {
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
+		Limit(transactionsOfAssetReq.PageSize).Offset(transactionsOfAssetReq.PageSize * transactionsOfAssetReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	if res.Error != nil {
@@ -340,7 +342,7 @@ func (c *TransactionController) TransactionsOfAsset() {
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Limit(transactionsOfAssetReq.PageSize).Offset(transactionsOfAssetReq.PageSize * transactionsOfAssetReq.PageNo).Find(&transactionNum)
+		Count(&transactionNum)
 	c.Data["json"] = models.MakeTransactionOfUnfinishedRsp(transactionsOfAssetReq.PageSize, transactionsOfAssetReq.PageNo,
 		(int(transactionNum)+transactionsOfAssetReq.PageSize-1)/transactionsOfAssetReq.PageSize, int(transactionNum), srcPolyDstRelations)
 	c.ServeJSON()
