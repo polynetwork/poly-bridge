@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego/logs"
 	"poly-bridge/models"
+	"time"
 
 	"github.com/astaxie/beego"
 )
@@ -92,10 +93,11 @@ func (c *ExplorerController) TransactionDetail() {
 		return
 	}
 
-	relation := new(TransactionDetailRelation)
+	startTime := time.Now().UnixNano()
+	relations := make([]*TransactionDetailRelation, 0)
 	res := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
-		Where("src_transactions.hash = ?", req.Hash).
+		Where("(src_transactions.hash = ?) or (poly_transactions.hash = ?) or (dst_transactions.hash = ?)", req.Hash, req.Hash, req.Hash).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
@@ -106,14 +108,17 @@ func (c *ExplorerController) TransactionDetail() {
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
 		Order("src_transactions.time desc").
-		Find(relation)
+		Find(&relations)
+
+	endTime := time.Now().UnixNano()
+	logs.Info("mysql spent time %d", (endTime - startTime) / int64(time.Millisecond))
 
 	if res.RowsAffected == 0 {
 		output(&c.Controller, nil)
 		return
 	}
 
-	data := new(TransactionDetailRsp).instance(relation)
+	data := new(TransactionDetailRsp).instance(relations[0])
 	fillMetaInfo(data)
 
 	output(&c.Controller, data)
@@ -125,7 +130,7 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 	}
 
 	chainId := data.Transaction.SrcChainId
-	sdk, wrapper, err := selectNodeAndWrapper(chainId)
+	sdk, inquirer, _, err := selectNodeAndWrapper(chainId)
 	if err != nil {
 		return
 	}
@@ -138,7 +143,7 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 	if !ok {
 		return
 	}
-	item, err := getSingleItem(sdk, wrapper, asset, tokenId, "")
+	item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
 	if err != nil {
 		logs.Error("fillMetaInfo err: %v", err)
 		return

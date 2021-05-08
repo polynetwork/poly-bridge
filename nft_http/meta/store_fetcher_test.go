@@ -17,8 +17,9 @@ var (
 	configFile = "./../../conf/config_devnet.json"
 	sf         *StoreFetcher
 
-	asset   = "seascape"
-	baseUri = "https://api.seascape.network/nft/metadata/"
+	testChainId uint64 = 2
+	testAsset          = "seascape"
+	testBaseUri        = "https://api.seascape.network/nft/metadata/"
 )
 
 func beforeTest() {
@@ -36,57 +37,44 @@ func beforeTest() {
 		panic(err)
 	}
 
-	sf := NewStoreFetcher(db)
-	sf.Register(FetcherTypeMockSeascape, asset, baseUri)
+	sf = NewStoreFetcher(db)
+	sf.Register(FetcherTypeStandard, testChainId, testAsset, testBaseUri)
 }
 
-func TestStoreFetcher_Fetch(t *testing.T) {
+func TestStoreFetcher_FetchSeascape(t *testing.T) {
 	beforeTest()
 
-	tokenId := models.NewBigIntFromInt(141)
-	profile, err := sf.Fetch(asset, &FetchRequestParams{
+	tokenId := "141"
+	profile, err := sf.Fetch(testChainId, testAsset, &FetchRequestParams{
 		TokenId: tokenId,
 		Url:     "https://api.seascape.network/nft/metadata/141",
 	})
 	assert.NoError(t, err)
 	t.Log(profile)
 
-	data, ok := sf.cache.Get(asset, tokenId)
-	assert.True(t, ok)
-	assert.Equal(t, profile.Name, data.Name)
-
 	persist := new(models.NFTProfile)
-	res := sf.db.Where("token_basic_name = ? and nft_token_id = ?", asset, tokenId).Find(persist)
+	res := sf.db.Where("token_basic_name = ? and nft_token_id = ?", testAsset, tokenId).Find(persist)
 	assert.True(t, res.RowsAffected > 0)
 	assert.Equal(t, persist.Name, profile.Name)
 }
 
-func TestStoreFetcher_BatchFetch(t *testing.T) {
+func TestStoreFetcher_BatchFetchSeascape(t *testing.T) {
 	beforeTest()
 
-	ids := []int64{137, 138, 140, 141}
-	tids := make([]*models.BigInt, 0)
+	ids := []string{"137", "138", "140", "141"}
 	reqs := make([]*FetchRequestParams, 0)
 	for _, id := range ids {
-		tid := models.NewBigIntFromInt(id)
 		req := &FetchRequestParams{
-			TokenId: tid,
-			Url:     fmt.Sprintf("%s%d", baseUri, id)}
+			TokenId: id,
+			Url:     fmt.Sprintf("%s%s", testBaseUri, id)}
 		reqs = append(reqs, req)
-		tids = append(tids, tid)
 	}
 
-	profile, err := sf.BatchFetch(asset, reqs)
+	profile, err := sf.BatchFetch(testChainId, testAsset, reqs)
 	assert.NoError(t, err)
 	t.Log(profile)
 
-	for _, v := range reqs {
-		data, ok := sf.cache.Get(asset, v.TokenId)
-		assert.True(t, ok)
-		t.Logf("cached token %d %s", data.NftTokenId.Uint64(), data.Name)
-	}
-
 	persist := make([]*models.NFTProfile, 0)
-	res := sf.db.Where("token_basic_name = ? and nft_token_id in (?)", asset, tids).Find(&persist)
+	res := sf.db.Where("token_basic_name = ? and nft_token_id in (?)", testAsset, ids).Find(&persist)
 	assert.True(t, res.RowsAffected == int64(len(ids)))
 }

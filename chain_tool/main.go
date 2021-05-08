@@ -51,6 +51,7 @@ var (
 	storage *leveldb.LevelDBImpl
 	sdk     *chainsdk.EthereumSdk
 	adm     *ecdsa.PrivateKey
+	keystore string
 )
 
 const defaultAccPwd = "111111"
@@ -79,6 +80,7 @@ func setupApp() *cli.App {
 		TokenIdFlag,
 		MethodCodeFlag,
 		OwnerAccountFlag,
+		AdminIndexFlag,
 	}
 	app.Commands = []cli.Command{
 		CmdSample,
@@ -89,10 +91,12 @@ func setupApp() *cli.App {
 		CmdDeployFeeContract,
 		CmdDeployLockProxyContract,
 		CmdDeployNFTWrapContract,
+		CmdDeployNFTQueryContract,
 		CmdLockProxySetCCMP,
 		CmdBindLockProxy,
 		CmdGetBoundLockProxy,
 		CmdBindNFTAsset,
+		CmdBindERC20Asset,
 		CmdTransferECCDOwnership,
 		CmdTransferECCMOwnership,
 		CmdRegisterSideChain,
@@ -159,12 +163,21 @@ func beforeCommands(ctx *cli.Context) (err error) {
 	chainID := ctx.GlobalUint64(getFlagName(ChainIDFlag))
 	selectChainConfig(chainID)
 
-	if sdk, err = chainsdk.NewEthereumSdk(cc.RPC); err != nil {
-		return fmt.Errorf("generate sdk for chain %d faild, err: %v", cc.SideChainID, err)
+	if _, err := os.Stat(cfg.Keystore); os.IsNotExist(err) {
+		return fmt.Errorf("keystore dir %s is not exist", cfg.Keystore)
+	}
+	keystore = cfg.Keystore
+	admIndex := ctx.GlobalInt(getFlagName(AdminIndexFlag))
+	if admIndex < 0 || admIndex >= len(cfg.AdminAccountList) {
+		return fmt.Errorf("admin index out of range")
+	}
+	admAddr := cfg.AdminAccountList[admIndex]
+	if adm, err = wallet.LoadEthAccount(storage, keystore, admAddr, defaultAccPwd); err != nil {
+		return fmt.Errorf("load eth account for chain %d faild, err: %v", cc.SideChainID, err)
 	}
 
-	if adm, err = wallet.LoadEthAccount(storage, cc.Keystore, cc.Admin, defaultAccPwd); err != nil {
-		return fmt.Errorf("load eth account for chain %d faild, err: %v", cc.SideChainID, err)
+	if sdk, err = chainsdk.NewEthereumSdk(cc.RPC); err != nil {
+		return fmt.Errorf("generate sdk for chain %d faild, err: %v", cc.SideChainID, err)
 	}
 
 	return nil
@@ -277,6 +290,19 @@ func handleCmdDeployNFTWrapContract(ctx *cli.Context) error {
 	return updateConfig()
 }
 
+func handleCmdDeployNFTQueryContract(ctx *cli.Context) error {
+	log.Info("start to deploy nft query contract...")
+
+	addr, err := sdk.DeployNFTQueryContract(adm)
+	if err != nil {
+		return err
+	}
+
+	cc.NFTQuery = addr.Hex()
+	log.Info("deploy query contract %s success!", addr.Hex())
+	return updateConfig()
+}
+
 func handleCmdLockProxySetCCMP(ctx *cli.Context) error {
 	log.Info("start to set ccmp for lock proxy contract...")
 
@@ -355,6 +381,41 @@ func handleCmdBindNFTAsset(ctx *cli.Context) error {
 		" for user %s success! txhash %s",
 		cc.SideChainID, srcAsset.Hex(), cc.NFTLockProxy,
 		dstChainId, dstAsset.Hex(), dstChainCfg.NFTLockProxy,
+		owner.Hex(), hash.Hex())
+	return nil
+}
+
+func handleCmdBindERC20Asset(ctx *cli.Context) error {
+	log.Info("start to bind nft asset...")
+
+	srcAsset := flag2address(ctx, AssetFlag)
+	dstAsset := flag2address(ctx, DstAssetFlag)
+	dstChainId := flag2Uint64(ctx, DstChainFlag)
+	dstChainCfg := customSelectChainConfig(dstChainId)
+	owner := xecdsa.Key2address(adm)
+	proxy := common.HexToAddress(cc.LockProxy)
+
+	hash, err := sdk.BindERC20Asset(
+		adm,
+		proxy,
+		srcAsset,
+		dstAsset,
+		dstChainId,
+	)
+	if err != nil {
+		return fmt.Errorf("bind erc20 asset (src chain id %d, src asset %s, src proxy %s) - "+
+			"(dst chain id %d, dst asset %s, dst proxy %s)"+
+			" for user %s failed, err: %v",
+			cc.SideChainID, srcAsset.Hex(), cc.LockProxy,
+			dstChainId, dstAsset.Hex(), dstChainCfg.LockProxy,
+			owner.Hex(), err)
+	}
+
+	log.Info("bind erc20 asset (src chain id %d, src asset %s, src proxy %s) - "+
+		"(dst chain id %d, dst asset %s, dst proxy %s)"+
+		" for user %s success! txhash %s",
+		cc.SideChainID, srcAsset.Hex(), cc.LockProxy,
+		dstChainId, dstAsset.Hex(), dstChainCfg.LockProxy,
 		owner.Hex(), hash.Hex())
 	return nil
 }
@@ -551,7 +612,7 @@ func handleCmdNFTApprove(ctx *cli.Context) error {
 	asset := flag2address(ctx, AssetFlag)
 	tokenID := flag2big(ctx, TokenIdFlag)
 	owner := flag2address(ctx, SrcAccountFlag)
-	key, err := wallet.LoadEthAccount(storage, cc.Keystore, owner.Hex(), defaultAccPwd)
+	key, err := wallet.LoadEthAccount(storage, keystore, owner.Hex(), defaultAccPwd)
 	if err != nil {
 		return err
 	}
@@ -594,7 +655,7 @@ func handleCmdNFTWrapLock(ctx *cli.Context) error {
 	log.Info("start to lock nft...")
 
 	from := flag2address(ctx, SrcAccountFlag)
-	key, err := wallet.LoadEthAccount(storage, cc.Keystore, from.Hex(), defaultAccPwd)
+	key, err := wallet.LoadEthAccount(storage, keystore, from.Hex(), defaultAccPwd)
 	if err != nil {
 		return err
 	}
@@ -678,7 +739,7 @@ func handleCmdTransferFee(ctx *cli.Context) error {
 
 	asset := common.HexToAddress(cc.FeeToken) //getFeeTokenOrERC20Asset(ctx)
 	from := flag2address(ctx, SrcAccountFlag)
-	key, err := wallet.LoadEthAccount(storage, cc.Keystore, from.Hex(), defaultAccPwd)
+	key, err := wallet.LoadEthAccount(storage, keystore, from.Hex(), defaultAccPwd)
 	if err != nil {
 		return err
 	}
@@ -719,7 +780,7 @@ func handleGetNativeBalance(ctx *cli.Context) error {
 func handleCmdApprove(ctx *cli.Context) error {
 	asset := common.HexToAddress(cc.FeeToken) //getFeeTokenOrERC20Asset(ctx)
 	sender := flag2address(ctx, SrcAccountFlag)
-	key, err := wallet.LoadEthAccount(storage, cc.Keystore, sender.Hex(), defaultAccPwd)
+	key, err := wallet.LoadEthAccount(storage, keystore, sender.Hex(), defaultAccPwd)
 	if err != nil {
 		return err
 	}
@@ -751,7 +812,7 @@ func handleCmdNativeTransfer(ctx *cli.Context) error {
 	log.Info("start to transfer native token on chain %s...", cc.SideChainName)
 
 	from := flag2address(ctx, SrcAccountFlag)
-	key, err := wallet.LoadEthAccount(storage, cc.Keystore, from.Hex(), defaultAccPwd)
+	key, err := wallet.LoadEthAccount(storage, keystore, from.Hex(), defaultAccPwd)
 	if err != nil {
 		return err
 	}
@@ -809,7 +870,7 @@ func handleCmdTransferNFT(ctx *cli.Context) error {
 	from := flag2address(ctx, SrcAccountFlag)
 	to := flag2address(ctx, DstAccountFlag)
 	tokenId := flag2big(ctx, TokenIdFlag)
-	key, err := wallet.LoadEthAccount(storage, cc.Keystore, from.Hex(), defaultAccPwd)
+	key, err := wallet.LoadEthAccount(storage, keystore, from.Hex(), defaultAccPwd)
 	if err != nil {
 		return err
 	}
@@ -867,8 +928,8 @@ func handleCmdEnv(ctx *cli.Context) error {
 
 	owner := flag2address(ctx, OwnerAccountFlag)
 	addr := owner.Hex()
-	log.Info("check your owner address %s in dir %s", cc.Keystore, addr)
-	_, err := wallet.LoadEthAccount(storage, cc.Keystore, addr, defaultAccPwd)
+	log.Info("check your owner address %s in dir %s", keystore, addr)
+	_, err := wallet.LoadEthAccount(storage, keystore, addr, defaultAccPwd)
 	if err != nil {
 		return err
 	}

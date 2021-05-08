@@ -1,6 +1,6 @@
 use polyswap;
 
-set @tname='SCAPES';
+set @tname='cat1';
 select * from token_basics where name=@tname;
 select * from tokens where name=@tname;
 select * from token_maps 

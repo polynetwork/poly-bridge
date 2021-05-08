@@ -49,6 +49,14 @@ func (c *InfoController) Get() {
 		Version: "v1",
 		URL:     url,
 	}
+	explorer.Entrance = make([]*ContractEntrance, 0)
+	for _, v := range chainConfig {
+		explorer.Entrance = append(explorer.Entrance, &ContractEntrance{
+			ChainId:         v.ChainId,
+			ChainName:       v.ChainName,
+			WrapperContract: v.NFTWrapperContract,
+		})
+	}
 	c.Data["json"] = explorer
 	c.ServeJSON()
 }
@@ -68,7 +76,7 @@ func (c *InfoController) Home() {
 		return
 	}
 
-	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	sdk, inquirer, lockProxy, err := selectNodeAndWrapper(req.ChainId)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
 		return
@@ -79,8 +87,8 @@ func (c *InfoController) Home() {
 	list := make([]*AssetItems, 0)
 	for _, v := range chainAssets {
 		if v.TokenBasic.MetaFetcherType != meta.FetcherTypeUnknown {
-			addr := common.HexToAddress(v.Hash)
-			tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(wrapper, addr, 0, req.Size)
+			assetAddr := common.HexToAddress(v.Hash)
+			tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(inquirer, assetAddr, lockProxy, 0, req.Size)
 			if len(tokenUrls) == 0 {
 				continue
 			}

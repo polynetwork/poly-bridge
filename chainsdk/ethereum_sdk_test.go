@@ -3,6 +3,7 @@ package chainsdk
 import (
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
@@ -11,11 +12,23 @@ import (
 	"testing"
 )
 
+func TestNewEthereumSdk_TestABI(t *testing.T) {
+	nftabi := nftwrap.PolyNFTWrapperABI
+	parsed, err := abi.JSON(strings.NewReader(nftabi))
+	assert.NoError(t, err)
+
+	owner := common.HexToAddress("0xf66D4C8f79178918c7aAf3E6A34e714c240F9e50")
+	chainId := big.NewInt(7)
+	bz, err := parsed.Pack("", owner, chainId)
+	assert.NoError(t, err)
+	t.Logf(common.Bytes2Hex(bz))
+}
+
 func TestNewEthereumSdk_GetAndCheckOwnerNFT(t *testing.T) {
 	t.Logf("current context: %s", ctx.EthUrl)
 
-	tokenId := big.NewInt(12)
-	url, err := ctx.SDK.GetAndCheckNFTUrl(ctx.WrapAddress, ctx.Asset, ctx.Owner, tokenId)
+	tokenId := big.NewInt(201)
+	url, err := ctx.SDK.GetAndCheckNFTUrl(ctx.QueryAddress, ctx.Asset, ctx.Owner, tokenId)
 	assert.NoError(t, err)
 	t.Logf("token %d url %s", tokenId.Uint64(), url)
 }
@@ -39,7 +52,8 @@ func TestNewEthereumSdk_GetTokens(t *testing.T) {
 	assert.NoError(t, err)
 	t.Logf("total supply %d", totalSupply.Uint64())
 
-	data, err := ctx.SDK.GetUnCrossChainNFTsByIndex(ctx.WrapAddress, ctx.Asset, start, length)
+	lockProxy := common.HexToAddress("0x9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03")
+	data, err := ctx.SDK.GetUnCrossChainNFTsByIndex(ctx.QueryAddress, ctx.Asset, lockProxy, start, length)
 	assert.NoError(t, err)
 	for tokenId, url := range data {
 		t.Logf("getUnCrossChainNFTsByIndex: token %s url is %s", tokenId, url)
@@ -53,7 +67,7 @@ func TestNewEthereumSdk_GetTokens(t *testing.T) {
 		return
 	}
 
-	tokensByIndex, err := ctx.SDK.GetOwnerNFTsByIndex(ctx.WrapAddress, ctx.Asset, ctx.Owner, start, length)
+	tokensByIndex, err := ctx.SDK.GetOwnerNFTsByIndex(ctx.QueryAddress, ctx.Asset, ctx.Owner, start, length)
 	assert.NoError(t, err)
 
 	tokenIds := make([]*big.Int, 0)
@@ -63,14 +77,14 @@ func TestNewEthereumSdk_GetTokens(t *testing.T) {
 		tokenIds = append(tokenIds, tid)
 	}
 
-	tokensWithId, err := ctx.SDK.GetNFTsById(ctx.WrapAddress, ctx.Asset, tokenIds)
+	tokensWithId, err := ctx.SDK.GetNFTsById(ctx.QueryAddress, ctx.Asset, tokenIds)
 	assert.NoError(t, err)
 	for tokenId, url := range tokensWithId {
 		t.Logf("getTokensById: token %s url %s", tokenId, url)
 	}
 
 	for _, tokenId := range tokenIds {
-		url, err := ctx.SDK.GetAndCheckNFTUrl(ctx.WrapAddress, ctx.Asset, ctx.Owner, tokenId)
+		url, err := ctx.SDK.GetAndCheckNFTUrl(ctx.QueryAddress, ctx.Asset, ctx.Owner, tokenId)
 		assert.NoError(t, err)
 		t.Logf("getAndCheckTokenUrl: token %d url is %s", tokenId.Uint64(), url)
 	}

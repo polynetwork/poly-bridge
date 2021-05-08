@@ -55,7 +55,7 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
 	}
-	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	sdk, wrapper, _, err := selectNodeAndWrapper(req.ChainId)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
@@ -84,7 +84,7 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
-	sdk, wrapper, err := selectNodeAndWrapper(req.ChainId)
+	sdk, wrapper, _, err := selectNodeAndWrapper(req.ChainId)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
 		return
@@ -171,7 +171,7 @@ func getSingleItem(
 		return
 	}
 
-	profile, _ := fetcher.Fetch(asset.TokenBasicName, &mcm.FetchRequestParams{
+	profile, _ := fetcher.Fetch(asset.ChainId, asset.TokenBasicName, &mcm.FetchRequestParams{
 		TokenId: tokenId.String(),
 		Url:     url,
 	})
@@ -202,7 +202,7 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 
 	// fetch meta data list and show rpc time
 	tBeforeBatchFetch := time.Now().UnixNano()
-	profiles, err := fetcher.BatchFetch(name, profileReqs)
+	profiles, err := fetcher.BatchFetch(chainId, name, profileReqs)
 	if err != nil {
 		logs.Error("batch fetch NFT profiles err: %v", err)
 	}

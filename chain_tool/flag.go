@@ -136,6 +136,12 @@ var (
 		Name:  "code",
 		Usage: "decode method code to params, and code format MUST be hex string",
 	}
+
+	AdminIndexFlag = cli.IntFlag{
+		Name:  "admin",
+		Usage: "admin index in keystore, default value is 0",
+		Value: 0,
+	}
 )
 
 var (
@@ -210,6 +216,12 @@ var (
 		Action: handleCmdDeployNFTWrapContract,
 	}
 
+	CmdDeployNFTQueryContract = cli.Command{
+		Name:   "deployNFTQuery",
+		Usage:  "admin account deploy nft query contract.",
+		Action: handleCmdDeployNFTQueryContract,
+	}
+
 	CmdLockProxySetCCMP = cli.Command{
 		Name:   "proxySetCCMP",
 		Usage:  "admin account set cross chain manager proxy address for lock proxy contract.",
@@ -238,6 +250,17 @@ var (
 		Name:   "bindNFT",
 		Usage:  "admin account bind nft asset to side chain.",
 		Action: handleCmdBindNFTAsset,
+		Flags: []cli.Flag{
+			AssetFlag,
+			DstChainFlag,
+			DstAssetFlag,
+		},
+	}
+
+	CmdBindERC20Asset = cli.Command{
+		Name:   "bindToken",
+		Usage:  "admin account bind erc20 asset to side chain.",
+		Action: handleCmdBindERC20Asset,
 		Flags: []cli.Flag{
 			AssetFlag,
 			DstChainFlag,
