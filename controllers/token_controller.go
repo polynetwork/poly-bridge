@@ -37,7 +37,7 @@ func (c *TokenController) Tokens() {
 		c.ServeJSON()
 	}
 	tokens := make([]*models.Token, 0)
-	db.Where("chain_id = ?", tokensReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").Find(&tokens)
+	db.Where("chain_id = ? and standard = 0", tokensReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").Find(&tokens)
 	c.Data["json"] = models.MakeTokensRsp(tokens)
 	c.ServeJSON()
 }
@@ -51,7 +51,7 @@ func (c *TokenController) Token() {
 		c.ServeJSON()
 	}
 	token := new(models.Token)
-	res := db.Where("hash = ? and chain_id = ?", tokenReq.Hash, tokenReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").First(token)
+	res := db.Where("hash = ? and chain_id = ? and standard = 0", tokenReq.Hash, tokenReq.ChainId).Preload("TokenBasic").Preload("TokenMaps").Preload("TokenMaps.DstToken").First(token)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("token: (%s,%d) does not exist", tokenReq.Hash, tokenReq.ChainId))
 		c.Ctx.ResponseWriter.WriteHeader(400)
@@ -71,7 +71,7 @@ func (c *TokenController) TokenBasics() {
 		c.ServeJSON()
 	}
 	tokenBasics := make([]*models.TokenBasic, 0)
-	db.Model(&models.TokenBasic{}).Preload("Tokens").Find(&tokenBasics)
+	db.Model(&models.TokenBasic{}).Where("standard = 0").Preload("Tokens").Find(&tokenBasics)
 	c.Data["json"] = models.MakeTokenBasicsRsp(tokenBasics)
 	c.ServeJSON()
 }
