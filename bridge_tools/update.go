@@ -20,6 +20,8 @@ package main
 import (
 	"poly-bridge/bridge_tools/conf"
 	"poly-bridge/crosschaindao"
+	"poly-bridge/crosschaindao/swapdao"
+	"poly-bridge/models"
 	"strings"
 )
 
@@ -38,4 +40,18 @@ func startUpdate(cfg *conf.UpdateConfig) {
 	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps)
 	dao.AddChains(cfg.Chains, cfg.ChainFees)
 	dao.RemoveTokenMaps(cfg.RemoveTokenMaps)
+
+	if len(cfg.RemoveTokens) > 0 && len(cfg.RemoveTokens) == len(cfg.TokenBasics) {
+		spdao, ok := dao.(*swapdao.SwapDao)
+		if ok {
+			for idx, asset := range cfg.TokenBasics {
+				if asset.Standard != models.TokenTypeErc721 {
+					continue
+				}
+				oldName := cfg.RemoveTokens[idx]
+				newName := asset.Name
+				spdao.UpdateNFTProfileTokenName(oldName, newName)
+			}
+		}
+	}
 }

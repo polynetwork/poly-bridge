@@ -7,14 +7,14 @@ import (
 )
 
 type PolyBridgeInfoResp struct {
-	Version string
-	URL     string
+	Version  string
+	URL      string
 	Entrance []*ContractEntrance
 }
 
 type ContractEntrance struct {
-	ChainId uint64
-	ChainName string
+	ChainId         uint64
+	ChainName       string
 	WrapperContract string
 }
 

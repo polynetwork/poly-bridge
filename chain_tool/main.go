@@ -45,12 +45,12 @@ import (
 )
 
 var (
-	cfgPath string
-	cfg     = new(Config)
-	cc      *ChainConfig
-	storage *leveldb.LevelDBImpl
-	sdk     *chainsdk.EthereumSdk
-	adm     *ecdsa.PrivateKey
+	cfgPath  string
+	cfg      = new(Config)
+	cc       *ChainConfig
+	storage  *leveldb.LevelDBImpl
+	sdk      *chainsdk.EthereumSdk
+	adm      *ecdsa.PrivateKey
 	keystore string
 )
 

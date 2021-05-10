@@ -31,9 +31,9 @@ import (
 	"poly-bridge/go_abi/eccd_abi"
 	"poly-bridge/go_abi/eccm_abi"
 	"poly-bridge/go_abi/eccmp_abi"
+	erc20lp "poly-bridge/go_abi/lock_proxy_abi"
 	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
 	nftlp "poly-bridge/go_abi/nft_lock_proxy_abi"
-	erc20lp "poly-bridge/go_abi/lock_proxy_abi"
 	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
 	nftquery "poly-bridge/go_abi/nft_query_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
@@ -191,7 +191,6 @@ func (s *EthereumSdk) BindNFTAsset(
 	}
 	return tx.Hash(), nil
 }
-
 
 func (s *EthereumSdk) BindERC20Asset(
 	key *ecdsa.PrivateKey,
