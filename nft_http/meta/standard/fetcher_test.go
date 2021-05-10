@@ -11,7 +11,7 @@ func TestFetcher_Fetch(t *testing.T) {
 	url := "https://digicol.io/ipfs/QmVG1FYVDKJk9X5cvahoswANis1TDBKUMagvEV9tX6ssB6"
 	fetcher := NewFetcher("digicol", "https://digicol.io/ipfs/")
 	profile, err := fetcher.Fetch(&FetchRequestParams{
-		Url: url,
+		Url:     url,
 		TokenId: tokenId,
 	})
 	assert.NoError(t, err)

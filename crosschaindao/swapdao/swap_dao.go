@@ -189,6 +189,9 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.T
 			for _, token := range basic.Tokens {
 				token.Standard = basic.Standard
 				token.Property = basic.Property
+				if basic.Standard == models.TokenTypeErc721 {
+					token.Name = basic.Name
+				}
 			}
 		}
 		res := dao.db.Save(tokens)

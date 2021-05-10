@@ -111,7 +111,7 @@ func (c *ExplorerController) TransactionDetail() {
 		Find(&relations)
 
 	endTime := time.Now().UnixNano()
-	logs.Info("mysql spent time %d", (endTime - startTime) / int64(time.Millisecond))
+	logs.Info("mysql spent time %d", (endTime-startTime)/int64(time.Millisecond))
 
 	if res.RowsAffected == 0 {
 		output(&c.Controller, nil)
