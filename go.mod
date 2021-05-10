@@ -17,6 +17,8 @@ require (
 	github.com/polynetwork/poly-io-test v0.0.0-20200819093740-8cf514b07750 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
 	github.com/shopspring/decimal v1.2.0
+	github.com/tendermint/tendermint v0.33.7
+	github.com/polynetwork/cosmos-poly-module v0.0.0-20200827085015-12374709b707
 	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli v1.22.4
 	gorm.io/driver/mysql v1.0.3

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -39,6 +40,14 @@ func merge() {
 	if err != nil {
 		panic(err)
 	}
+
+	{
+		config := types.GetConfig()
+		config.SetBech32PrefixForAccount("swth", "swthpub")
+		config.SetBech32PrefixForValidator("swthvaloper", "swthvaloperpub")
+		config.SetBech32PrefixForConsensusNode("swthvalcons", "swthvalconspub")
+	}
+
 	selectNum := 1000
 	count := 0
 	for true {
