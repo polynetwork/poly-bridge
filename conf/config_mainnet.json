@@ -2,10 +2,10 @@
   "Server":"polybridge",
   "Backup": false,
   "DBConfig":{
-    "URL":"localhost:3306",
+    "URL":"10.203.0.11:3306",
     "User":"root",
-    "Password":"123456",
-    "Scheme":"polyswap",
+    "Password":"PAIGWICQFKDNzdL5aTw0pIPrBeoYinXu4A==",
+    "Scheme":"polybridge_v2",
     "Debug": false
   },
   "ChainListenConfig":[
@@ -46,7 +46,10 @@
       ],
       "WrapperContract":"2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac",
       "CCMContract":"838bf9e95cb12dd76a54c9f9d2e3082eaf928270",
-      "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906"
+      "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
+      "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "SwapContract": "02e20ca05e38cbdf1a6235a7acdd34efc0434caa"
     },
     {
       "ChainName":"NEO",
@@ -87,7 +90,10 @@
       ],
       "WrapperContract":"E3D0FB6E3cB5DA61EB18b06D035052441009d1E6",
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
-      "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03"
+      "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
+      "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "SwapContract": "3ec481143d688442E581aD7116Bf1ECC76669cfa"
     },
     {
       "ChainName":"HECO",
@@ -103,7 +109,10 @@
       ],
       "WrapperContract":"4fE451186c0D69205ACc1fA00FD75fc6d71e47eE",
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
-      "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6"
+      "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
+      "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "SwapContract": "70f4d1176f9276ab4B31658f58F7473858F2b550"
     },
     {
       "ChainName":"Ontology",
@@ -126,7 +135,8 @@
     }
   ],
   "EventEffectConfig": {
-    "HowOld": 3600,
+    "HowOld": 1800,
+    "HowOld2": 300,
     "ChainListening": 300,
     "EffectSlot": 1
   },

@@ -22,17 +22,14 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"github.com/urfave/cli"
-	"math"
 	"os"
 	"os/signal"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
-	"poly-bridge/crosschainlisten/ethereumlisten"
 	"runtime"
 	"strings"
 	"syscall"
-	"time"
 )
 
 var chainListen *crosschainlisten.CrossChainListen
@@ -65,7 +62,7 @@ var (
 	heightFlag = cli.UintFlag{
 		Name:  "height",
 		Usage: "Set chain. 2:Ethereum 8:Bsc",
-		Value: 0,
+		Value: 100000,
 	}
 )
 
@@ -135,58 +132,13 @@ func startServer(ctx *cli.Context) {
 	if chainListenConfig == nil {
 		panic("chain is invalid")
 	}
-
-	chainHandler := ethereumlisten.NewEthereumChainListenBatch(chainListenConfig)
+	chainHandler := crosschainlisten.NewChainHandle(chainListenConfig)
 	if chainHandler == nil {
 		panic("chain handler is invalid")
 	}
-	chainInfo, err := db.GetChain(chainHandler.GetChainId())
-	if err != nil {
-		panic(err)
-	}
-	if height != 0 {
-		chainInfo.Height = height
-	}
-	chainHeight, err := chainHandler.GetLatestHeight()
-	if err != nil || chainHeight == 0 {
-		panic(err)
-	}
-	logs.Info("cross chain listen, chain: %s, dao: %s......", chainHandler.GetChainName(), db.Name())
-	ticker := time.NewTicker(time.Second * time.Duration(chainHandler.GetChainListenSlot()))
-	for {
-		select {
-		case <-ticker.C:
-			var height, err = chainHandler.GetLatestHeight()
-			if err != nil || height == 0 || height == math.MaxUint64 {
-				logs.Error("listenChain - cannot get chain %s height, err: %s", chainHandler.GetChainName(), err)
-				continue
-			}
-			if chainInfo.Height >= height-chainHandler.GetDefer() {
-				continue
-			}
-			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", chainHandler.GetChainName(), height, chainInfo.Height)
-			for chainInfo.Height < height-chainHandler.GetDefer() {
-				start := chainInfo.Height + 1
-				end := start + 2000
-				if end > height-chainHandler.GetDefer() {
-					end = height-chainHandler.GetDefer()
-				}
-				logs.Info("start handle block: %d, %d", start, end)
-				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := chainHandler.HandleNewBlock(start, end)
-				if err != nil {
-					logs.Error("HandleNewBlock %d err: %v", start, err)
-					break
-				}
-				chainInfo.Height = end
-				err = db.UpdateEvents(chainInfo, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
-				if err != nil {
-					logs.Error("UpdateEvents on block %d err: %v", chainInfo.Height, err)
-					chainInfo.Height -= end
-					break
-				}
-			}
-		}
-	}
+	chainListen = crosschainlisten.NewCrossChainListen(chainHandler, db)
+	chainListen.SetHeight(height)
+	chainListen.Start()
 }
 
 func waitSignal() os.Signal {
