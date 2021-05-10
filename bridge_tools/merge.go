@@ -38,11 +38,12 @@ func merge() {
 	if err != nil {
 		panic(err)
 	}
-	selectNum := 10
-	insertNum := 1
+	//selectNum := 10
+	insertNum := 1000
 	{
 		srcTransactions := make([]*explorerdao.SrcTransaction, 0)
-		csdb.Preload("SrcTransfer").Order("tt asc").Limit(selectNum).Find(&srcTransactions)
+		//csdb.Preload("SrcTransfer").Order("tt asc").Limit(selectNum).Find(&srcTransactions)
+		csdb.Preload("SrcTransfer").Order("tt asc").Find(&srcTransactions)
 		for i := 0;i < len(srcTransactions); {
 			j := i + insertNum
 			if j > len(srcTransactions) {
@@ -65,7 +66,8 @@ func merge() {
 	}
 	{
 		polyTransactions := make([]*explorerdao.PolyTransaction, 0)
-		csdb.Order("tt asc").Limit(selectNum).Find(&polyTransactions)
+		//csdb.Order("tt asc").Limit(selectNum).Find(&polyTransactions)
+		csdb.Order("tt asc").Find(&polyTransactions)
 		for i := 0;i < len(polyTransactions); {
 			j := i + insertNum
 			if j > len(polyTransactions) {
@@ -88,7 +90,8 @@ func merge() {
 	}
 	{
 		dstTransactions := make([]*explorerdao.DstTransaction, 0)
-		csdb.Preload("DstTransfer").Order("tt asc").Limit(selectNum).Find(&dstTransactions)
+		//csdb.Preload("DstTransfer").Order("tt asc").Limit(selectNum).Find(&dstTransactions)
+		csdb.Preload("DstTransfer").Order("tt asc").Find(&dstTransactions)
 		for i := 0;i < len(dstTransactions); {
 			j := i + insertNum
 			if j > len(dstTransactions) {
