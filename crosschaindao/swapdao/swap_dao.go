@@ -282,3 +282,9 @@ func (dao *SwapDao) RemoveToken(token string) error {
 func (dao *SwapDao) Name() string {
 	return basedef.SERVER_POLY_SWAP
 }
+
+func (dao *SwapDao) UpdateNFTProfileTokenName(oldName, newName string) {
+	dao.db.Table("nft_profiles").
+		Where("token_basic_name = ?", oldName).
+		Update("token_basic_name", newName)
+}

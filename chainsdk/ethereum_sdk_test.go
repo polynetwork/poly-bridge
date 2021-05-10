@@ -2,26 +2,42 @@ package chainsdk
 
 import (
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/stretchr/testify/assert"
 	"math/big"
+	nftmp "poly-bridge/go_abi/nft_mapping_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
 	pabi "poly-bridge/utils/abi"
 	"strings"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEthereumSdk_TestABI(t *testing.T) {
-	nftabi := nftwrap.PolyNFTWrapperABI
-	parsed, err := abi.JSON(strings.NewReader(nftabi))
-	assert.NoError(t, err)
+	{
+		nftabi := nftwrap.PolyNFTWrapperABI
+		parsed, err := abi.JSON(strings.NewReader(nftabi))
+		assert.NoError(t, err)
 
-	owner := common.HexToAddress("0xf66D4C8f79178918c7aAf3E6A34e714c240F9e50")
-	chainId := big.NewInt(7)
-	bz, err := parsed.Pack("", owner, chainId)
-	assert.NoError(t, err)
-	t.Logf(common.Bytes2Hex(bz))
+		owner := common.HexToAddress("0xf66D4C8f79178918c7aAf3E6A34e714c240F9e50")
+		chainId := big.NewInt(7)
+		bz, err := parsed.Pack("", owner, chainId)
+		assert.NoError(t, err)
+		t.Logf(common.Bytes2Hex(bz))
+	}
+
+	{
+		mappingABI := nftmp.CrossChainNFTMappingABI
+		parsed, err := abi.JSON(strings.NewReader(mappingABI))
+		assert.NoError(t, err)
+
+		name := "DigiCol"
+		symbol := "DIGINFT"
+		bz, err := parsed.Pack("", name, symbol)
+		assert.NoError(t, err)
+		t.Logf(common.Bytes2Hex(bz))
+	}
 }
 
 func TestNewEthereumSdk_GetAndCheckOwnerNFT(t *testing.T) {
