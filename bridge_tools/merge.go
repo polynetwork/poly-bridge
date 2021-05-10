@@ -53,7 +53,10 @@ func merge() {
 	for true {
 		srcTransactions := make([]*explorerdao.SrcTransaction, 0)
 		//csdb.Preload("SrcTransfer").Order("tt asc").Limit(selectNum).Find(&srcTransactions)
-		csdb.Preload("SrcTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Find(&srcTransactions)
+		result := csdb.Preload("SrcTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Find(&srcTransactions)
+		if result.Error != nil {
+			panic(err)
+		}
 		if len(srcTransactions) > 0 {
 			srcTransactionsJson, err := json.Marshal(srcTransactions)
 			if err != nil {
@@ -67,7 +70,9 @@ func merge() {
 			for _, transaction := range newSrcTransactions {
 				transaction.User = basedef.Address2Hash(transaction.ChainId, transaction.User)
 				if transaction.SrcTransfer != nil {
-					transaction.SrcTransfer.From = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
+					if transaction.SrcTransfer.ChainId != basedef.COSMOS_CROSSCHAIN_ID {
+						transaction.SrcTransfer.From = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
+					}
 					transaction.SrcTransfer.To = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
 					transaction.SrcTransfer.DstUser = basedef.Address2Hash(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
 				}
@@ -75,7 +80,7 @@ func merge() {
 					transaction.Hash, transaction.Key = transaction.Key, transaction.Hash
 				}
 			}
-			result := newswapdb.Save(newSrcTransactions)
+			result = newswapdb.Save(newSrcTransactions)
 			if result.Error != nil {
 				panic(err)
 			}
@@ -89,7 +94,10 @@ func merge() {
 	for true {
 		polyTransactions := make([]*explorerdao.PolyTransaction, 0)
 		//csdb.Order("tt asc").Limit(selectNum).Find(&polyTransactions)
-		csdb.Order("tt asc").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Find(&polyTransactions)
+		result := csdb.Order("tt asc").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Find(&polyTransactions)
+		if result.Error != nil {
+			panic(err)
+		}
 		if len(polyTransactions) > 0 {
 			polyTransactionsJson, err := json.Marshal(polyTransactions)
 			if err != nil {
@@ -100,7 +108,7 @@ func merge() {
 			if err != nil {
 				panic(err)
 			}
-			result := newswapdb.Save(newPolyTransactions)
+			result = newswapdb.Save(newPolyTransactions)
 			if result.Error != nil {
 				panic(err)
 			}
@@ -114,7 +122,10 @@ func merge() {
 	for true {
 		dstTransactions := make([]*explorerdao.DstTransaction, 0)
 		//csdb.Preload("DstTransfer").Order("tt asc").Limit(selectNum).Find(&dstTransactions)
-		csdb.Preload("DstTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Order("tt asc").Find(&dstTransactions)
+		result := csdb.Preload("DstTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Order("tt asc").Find(&dstTransactions)
+		if result.Error != nil {
+			panic(err)
+		}
 		if len(dstTransactions) > 0 {
 			dstTransactionsJson, err := json.Marshal(dstTransactions)
 			if err != nil {
@@ -131,7 +142,7 @@ func merge() {
 					transaction.DstTransfer.To = basedef.Address2Hash(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
 				}
 			}
-			result := newswapdb.Save(newDstTransactions)
+			result = newswapdb.Save(newDstTransactions)
 			if result.Error != nil {
 				panic(err)
 			}
