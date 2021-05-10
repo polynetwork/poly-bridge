@@ -23,6 +23,7 @@ import (
 	"github.com/astaxie/beego"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
+	"time"
 )
 
 type TransactionController struct {
@@ -254,3 +255,102 @@ func (c *TransactionController) TransactionsOfState() {
 		(int(transactionNum)+transactionsOfStateReq.PageSize-1)/transactionsOfStateReq.PageSize, int(transactionNum), transactions)
 	c.ServeJSON()
 }
+
+func (c *TransactionController) TransactionsOfUnfinished() {
+	var transactionsOfUnfinishedReq models.TransactionsOfUnfinishedReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfUnfinishedReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
+	tt := time.Now().Unix()
+	res := db.Table("src_transactions").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
+		Where("dst_transactions.hash is null").
+		Where("src_transactions.standard = ?", 0).
+		Where("src_transactions.time > ?", tt - 24 * 60 * 60 * 28).
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+		Preload("WrapperTransaction").
+		Preload("SrcTransaction").
+		Preload("SrcTransaction.SrcTransfer").
+		Preload("PolyTransaction").
+		Preload("DstTransaction").
+		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
+		Preload("Token.TokenBasic").
+		Limit(transactionsOfUnfinishedReq.PageSize).Offset(transactionsOfUnfinishedReq.PageSize * transactionsOfUnfinishedReq.PageNo).
+		Order("src_transactions.time desc").
+		Find(&srcPolyDstRelations)
+	if res.Error != nil {
+		c.Data["json"] = res.Error.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	var transactionNum int64
+	db.Table("src_transactions").
+		Where("dst_transactions.hash is null").
+		Where("src_transactions.standard = ?", 0).
+		Where("src_transactions.time > ?", tt - 24 * 60 * 60 * 28).
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+		Count(&transactionNum)
+	c.Data["json"] = models.MakeTransactionOfUnfinishedRsp(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo,
+		(int(transactionNum)+transactionsOfUnfinishedReq.PageSize-1)/transactionsOfUnfinishedReq.PageSize, int(transactionNum), srcPolyDstRelations)
+	c.ServeJSON()
+}
+
+func (c *TransactionController) TransactionsOfAsset() {
+	var transactionsOfAssetReq models.TransactionsOfAssetReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsOfAssetReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
+	res := db.Table("src_transactions").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
+		Where("src_transfers.asset = ?", transactionsOfAssetReq.Asset).
+		Where("src_transfers.chain_id = ?", transactionsOfAssetReq.Chain).
+		Where("src_transactions.standard = ?", 0).
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Preload("WrapperTransaction").
+		Preload("SrcTransaction").
+		Preload("SrcTransaction.SrcTransfer").
+		Preload("PolyTransaction").
+		Preload("DstTransaction").
+		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
+		Preload("Token.TokenBasic").
+		Limit(transactionsOfAssetReq.PageSize).Offset(transactionsOfAssetReq.PageSize * transactionsOfAssetReq.PageNo).
+		Order("src_transactions.time desc").
+		Find(&srcPolyDstRelations)
+	if res.Error != nil {
+		c.Data["json"] = res.Error.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	var transactionNum int64
+	db.Table("src_transactions").
+		Where("src_transfers.asset = ?", transactionsOfAssetReq.Asset).
+		Where("src_transfers.chain_id = ?", transactionsOfAssetReq.Chain).
+		Where("src_transactions.standard = ?", 0).
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Count(&transactionNum)
+	c.Data["json"] = models.MakeTransactionOfUnfinishedRsp(transactionsOfAssetReq.PageSize, transactionsOfAssetReq.PageNo,
+		(int(transactionNum)+transactionsOfAssetReq.PageSize-1)/transactionsOfAssetReq.PageSize, int(transactionNum), srcPolyDstRelations)
+	c.ServeJSON()
+}
+
