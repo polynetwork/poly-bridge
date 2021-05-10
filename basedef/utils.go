@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/astaxie/beego/logs"
+	cosmos_types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
 	ontcommon "github.com/ontio/ontology/common"
@@ -66,6 +67,44 @@ func Hash2Address(chainId uint64, value string) string {
 		value = HexStringReverse(value)
 		addr, _ := ontcommon.AddressFromHexString(value)
 		return addr.ToBase58()
+	}
+	return value
+}
+
+func Address2Hash(chainId uint64, value string) string {
+	if chainId == ETHEREUM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
+	} else if chainId == NEO_CROSSCHAIN_ID {
+		scripHash, err := helper.AddressToScriptHash(value)
+		if err != nil {
+			panic(err)
+		}
+		addrBytes := scripHash.Bytes()
+		addrHex := hex.EncodeToString(addrBytes)
+		return addrHex
+	} else if chainId == BSC_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
+	} else if chainId == HECO_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
+	} else if chainId == ONT_CROSSCHAIN_ID {
+		addr, err := ontcommon.AddressFromBase58(value)
+		if err != nil {
+			panic(err)
+		}
+		addrHex := addr.ToHexString()
+		return HexStringReverse(addrHex)
+	} else if chainId == COSMOS_CROSSCHAIN_ID {
+		//cosmos_types.
+		addr, err := cosmos_types.AccAddressFromBech32(value)
+		if err != nil {
+			panic(err)
+		}
+		addrBytes := addr.Bytes()
+		addrHex := hex.EncodeToString(addrBytes)
+		return addrHex
 	}
 	return value
 }

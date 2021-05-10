@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/explorerdao"
 	"poly-bridge/models"
@@ -54,7 +55,19 @@ func merge() {
 			if err != nil {
 				panic(err)
 			}
+			for _, transaction := range newSrcTransactions {
+				transaction.User = basedef.Address2Hash(transaction.ChainId, transaction.User)
+				if transaction.SrcTransfer != nil {
+					transaction.SrcTransfer.From = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
+					transaction.SrcTransfer.To = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
+					transaction.SrcTransfer.DstUser = basedef.Address2Hash(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
+				}
+				if transaction.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+					transaction.Hash, transaction.Key = transaction.Key, transaction.Hash
+				}
+			}
 			newswapdb.Save(newSrcTransactions)
+			count ++
 			time.Sleep(time.Second * 1)
 		} else {
 			break
@@ -76,6 +89,7 @@ func merge() {
 				panic(err)
 			}
 			newswapdb.Save(newPolyTransactions)
+			count ++
 			time.Sleep(time.Second * 1)
 		} else {
 			break
@@ -96,7 +110,14 @@ func merge() {
 			if err != nil {
 				panic(err)
 			}
+			for _, transaction := range newDstTransactions {
+				if transaction.DstTransfer != nil {
+					transaction.DstTransfer.From = basedef.Address2Hash(transaction.DstTransfer.ChainId, transaction.DstTransfer.From)
+					transaction.DstTransfer.To = basedef.Address2Hash(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
+				}
+			}
 			newswapdb.Save(newDstTransactions)
+			count ++
 			time.Sleep(time.Second * 1)
 		} else {
 			break
