@@ -21,6 +21,7 @@ import (
 	"poly-bridge/bridge_tools/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschaindao/swapdao"
+	"poly-bridge/models"
 	"strings"
 )
 
@@ -44,6 +45,9 @@ func startUpdate(cfg *conf.UpdateConfig) {
 		spdao, ok := dao.(*swapdao.SwapDao)
 		if ok {
 			for idx, asset := range cfg.TokenBasics {
+				if asset.Standard != models.TokenTypeErc721 {
+					continue
+				}
 				oldName := cfg.RemoveTokens[idx]
 				newName := asset.Name
 				spdao.UpdateNFTProfileTokenName(oldName, newName)

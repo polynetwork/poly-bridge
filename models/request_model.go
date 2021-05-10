@@ -702,8 +702,8 @@ type TransactionsOfUnfinishedReq struct {
 }
 
 type TransactionsOfAssetReq struct {
-	Asset string
-	Chain int
+	Asset    string
+	Chain    int
 	PageSize int
 	PageNo   int
 }
@@ -748,26 +748,26 @@ type SrcTransferRsp struct {
 
 func MakeSrcTransferRsp(transaction *SrcTransfer) *SrcTransferRsp {
 	transactionRsp := &SrcTransferRsp{
-		TxHash:         transaction.TxHash,
-		ChainId:         transaction.ChainId,
+		TxHash:     transaction.TxHash,
+		ChainId:    transaction.ChainId,
 		Standard:   transaction.Standard,
-		Time:         transaction.Time,
-		DstChainId:   transaction.DstChainId,
+		Time:       transaction.Time,
+		DstChainId: transaction.DstChainId,
 		Asset:      transaction.Asset,
-		DstAsset: transaction.DstAsset,
+		DstAsset:   transaction.DstAsset,
 	}
 	return transactionRsp
 }
 
 func MakeSrcTransactionRsp(transaction *SrcTransaction) *SrcTransactionRsp {
 	transactionRsp := &SrcTransactionRsp{
-		Hash:         transaction.Hash,
-		ChainId:         transaction.ChainId,
+		Hash:       transaction.Hash,
+		ChainId:    transaction.ChainId,
 		Standard:   transaction.Standard,
-		State:  transaction.State,
-		Time:         transaction.Time,
-		DstChainId:   transaction.DstChainId,
-		Height:      transaction.Height,
+		State:      transaction.State,
+		Time:       transaction.Time,
+		DstChainId: transaction.DstChainId,
+		Height:     transaction.Height,
 	}
 	if transaction.SrcTransfer != nil {
 		transactionRsp.SrcTransfer = MakeSrcTransferRsp(transaction.SrcTransfer)
@@ -797,25 +797,24 @@ type DstTransferRsp struct {
 
 func MakeDstTransferRsp(transaction *DstTransfer) *DstTransferRsp {
 	transactionRsp := &DstTransferRsp{
-		TxHash:         transaction.TxHash,
-		ChainId:         transaction.ChainId,
-		Standard:   transaction.Standard,
-		Time:         transaction.Time,
-		Asset:      transaction.Asset,
+		TxHash:   transaction.TxHash,
+		ChainId:  transaction.ChainId,
+		Standard: transaction.Standard,
+		Time:     transaction.Time,
+		Asset:    transaction.Asset,
 	}
 	return transactionRsp
 }
 
-
 func MakeDstTransactionRsp(transaction *DstTransaction) *DstTransactionRsp {
 	transactionRsp := &DstTransactionRsp{
-		Hash:         transaction.Hash,
-		ChainId:         transaction.ChainId,
+		Hash:       transaction.Hash,
+		ChainId:    transaction.ChainId,
 		Standard:   transaction.Standard,
-		State:  transaction.State,
-		Time:         transaction.Time,
-		SrcChainId:   transaction.SrcChainId,
-		Height:      transaction.Height,
+		State:      transaction.State,
+		Time:       transaction.Time,
+		SrcChainId: transaction.SrcChainId,
+		Height:     transaction.Height,
 	}
 	if transaction.DstTransfer != nil {
 		transactionRsp.DstTransfer = MakeDstTransferRsp(transaction.DstTransfer)
