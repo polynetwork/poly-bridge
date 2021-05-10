@@ -75,9 +75,12 @@ func merge() {
 					transaction.Hash, transaction.Key = transaction.Key, transaction.Hash
 				}
 			}
-			newswapdb.Save(newSrcTransactions)
+			result := newswapdb.Save(newSrcTransactions)
+			if result.Error != nil {
+				panic(err)
+			}
 			count ++
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Second * 5)
 		} else {
 			break
 		}
@@ -97,9 +100,12 @@ func merge() {
 			if err != nil {
 				panic(err)
 			}
-			newswapdb.Save(newPolyTransactions)
+			result := newswapdb.Save(newPolyTransactions)
+			if result.Error != nil {
+				panic(err)
+			}
 			count ++
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Second * 5)
 		} else {
 			break
 		}
@@ -125,9 +131,12 @@ func merge() {
 					transaction.DstTransfer.To = basedef.Address2Hash(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
 				}
 			}
-			newswapdb.Save(newDstTransactions)
+			result := newswapdb.Save(newDstTransactions)
+			if result.Error != nil {
+				panic(err)
+			}
 			count ++
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Second * 5)
 		} else {
 			break
 		}
