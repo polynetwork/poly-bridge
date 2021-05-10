@@ -38,19 +38,14 @@ func merge() {
 	if err != nil {
 		panic(err)
 	}
-	//selectNum := 10
-	insertNum := 1000
-	{
+	selectNum := 1000
+	count := 0
+	for true {
 		srcTransactions := make([]*explorerdao.SrcTransaction, 0)
 		//csdb.Preload("SrcTransfer").Order("tt asc").Limit(selectNum).Find(&srcTransactions)
-		csdb.Preload("SrcTransfer").Order("tt asc").Find(&srcTransactions)
-		for i := 0;i < len(srcTransactions); {
-			j := i + insertNum
-			if j > len(srcTransactions) {
-				j = len(srcTransactions)
-			}
-			xx := srcTransactions[i:j]
-			srcTransactionsJson, err := json.Marshal(xx)
+		csdb.Preload("SrcTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Find(&srcTransactions)
+		if len(srcTransactions) > 0 {
+			srcTransactionsJson, err := json.Marshal(srcTransactions)
 			if err != nil {
 				panic(err)
 			}
@@ -61,20 +56,17 @@ func merge() {
 			}
 			newswapdb.Save(newSrcTransactions)
 			time.Sleep(time.Second * 1)
-			i = j
+		} else {
+			break
 		}
 	}
-	{
+	count = 0
+	for true {
 		polyTransactions := make([]*explorerdao.PolyTransaction, 0)
 		//csdb.Order("tt asc").Limit(selectNum).Find(&polyTransactions)
-		csdb.Order("tt asc").Find(&polyTransactions)
-		for i := 0;i < len(polyTransactions); {
-			j := i + insertNum
-			if j > len(polyTransactions) {
-				j = len(polyTransactions)
-			}
-			xx := polyTransactions[i:j]
-			polyTransactionsJson, err := json.Marshal(xx)
+		csdb.Order("tt asc").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Find(&polyTransactions)
+		if len(polyTransactions) > 0 {
+			polyTransactionsJson, err := json.Marshal(polyTransactions)
 			if err != nil {
 				panic(err)
 			}
@@ -85,20 +77,17 @@ func merge() {
 			}
 			newswapdb.Save(newPolyTransactions)
 			time.Sleep(time.Second * 1)
-			i = j
+		} else {
+			break
 		}
 	}
-	{
+	count = 0
+	for true {
 		dstTransactions := make([]*explorerdao.DstTransaction, 0)
 		//csdb.Preload("DstTransfer").Order("tt asc").Limit(selectNum).Find(&dstTransactions)
-		csdb.Preload("DstTransfer").Order("tt asc").Find(&dstTransactions)
-		for i := 0;i < len(dstTransactions); {
-			j := i + insertNum
-			if j > len(dstTransactions) {
-				j = len(dstTransactions)
-			}
-			xx := dstTransactions[i:j]
-			dstTransactionsJson, err := json.Marshal(xx)
+		csdb.Preload("DstTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Order("tt asc").Find(&dstTransactions)
+		if len(dstTransactions) > 0 {
+			dstTransactionsJson, err := json.Marshal(dstTransactions)
 			if err != nil {
 				panic(err)
 			}
@@ -109,7 +98,8 @@ func merge() {
 			}
 			newswapdb.Save(newDstTransactions)
 			time.Sleep(time.Second * 1)
-			i = j
+		} else {
+			break
 		}
 	}
 }
