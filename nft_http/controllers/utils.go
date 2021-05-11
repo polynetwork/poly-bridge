@@ -49,6 +49,7 @@ var (
 	fetcher       *meta.StoreFetcher
 	feeTokens     = make(map[uint64]*models.Token)
 	lruDB         *lru.ARCCache
+	homePageTicker    = time.NewTimer(600 * time.Second)
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -109,6 +110,29 @@ func Initialize(c *conf.Config) {
 	}
 
 	txCounter = NewTransactionCounter()
+
+	// only fetcher one kind of NFT asset for each chain
+	homePageItemsExists := make(map[uint64]bool)
+	maxNum := 200
+	cachingHomePageItems := func() {
+		for _, v := range assets {
+			if _, exist := homePageItemsExists[v.ChainId]; exist {
+				continue
+			}
+			if ok, _ := prepareHomepageItems(v, maxNum); ok {
+				homePageItemsExists[v.ChainId] = true
+			}
+		}
+	}
+	cachingHomePageItems()
+	go func() {
+		for {
+			select {
+			case <- homePageTicker.C:
+				cachingHomePageItems()
+			}
+		}
+	}()
 }
 
 type TransactionCounter struct {

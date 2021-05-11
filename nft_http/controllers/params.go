@@ -32,6 +32,7 @@ func MakeErrorRsp(messgae string) *ErrorRsp {
 type AssetItems struct {
 	Asset *AssetRsp
 	Items []*Item
+	HasMore bool
 }
 
 type Item struct {
@@ -78,8 +79,9 @@ func (s *AssetRsp) instance(t *models.Token) *AssetRsp {
 }
 
 type HomeReq struct {
-	ChainId uint64
-	Size    int
+	ChainId  uint64
+	PageSize int
+	PageNo   int
 }
 
 type HomeRsp struct {
