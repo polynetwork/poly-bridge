@@ -76,19 +76,23 @@ func (c *InfoController) Home() {
 	start := req.PageSize * req.PageNo
 	end := start + req.PageSize
 
-	cache, exist := GetHomePageItemsCache(req.ChainId)
-	if exist  {
-		total := len(cache.Items)
-		if total > start {
-			if end > total && end > start {
-				end = total
+	for _, asset := range chainAssets {
+		items := &AssetItems{
+			Asset:   new(AssetRsp).instance(asset),
+			Items:   nil,
+			HasMore: false,
+		}
+		if cache, exist := GetHomePageItemsCache(req.ChainId, asset.TokenBasicName); exist {
+			if total := len(cache); total > start {
+				if end > total && end > start {
+					end = total
+				}
+				items.Items = cache[start:end]
+				if len(cache) > end {
+					items.HasMore = true
+				}
+				list = append(list, items)
 			}
-			items := &AssetItems{
-				Asset:   cache.Asset,
-				Items:   cache.Items[start:end],
-				HasMore: len(cache.Items) > end,
-			}
-			list = append(list, items)
 		}
 	}
 
@@ -106,6 +110,8 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 		return false, fmt.Errorf("invalid fetcher type")
 	}
 
+	chainId := asset.ChainId
+	assetName := asset.TokenBasicName
 	assetAddr := common.HexToAddress(asset.Hash)
 	pageSize := 10
 
@@ -115,7 +121,7 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 		if len(tokenUrls) == 0 {
 			break
 		}
-		items := getItemsWithChainData(asset.TokenBasicName, asset.Hash, asset.ChainId, tokenUrls)
+		items := getItemsWithChainData(assetName, asset.Hash, chainId, tokenUrls)
 		list = append(list, items...)
 	}
 
@@ -123,13 +129,9 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 		return false, nil
 	}
 
-	items := &AssetItems{
-		Asset: new(AssetRsp).instance(asset),
-		Items: list,
-	}
-	SetHomePageItemsCache(asset.ChainId, items)
-	cache, _ := GetHomePageItemsCache(asset.ChainId)
-	logs.Info("prepare chain %d asset %s home page items, total %d ", cache.Asset.ChainId, cache.Asset.Name, len(cache.Items))
+	SetHomePageItemsCache(asset.ChainId, assetName, list)
+	cache, _ := GetHomePageItemsCache(asset.ChainId, asset.TokenBasicName)
+	logs.Info("prepare chain %d asset %s home page items, total %d ", chainId, assetName, len(cache))
 	return true, nil
 }
 
