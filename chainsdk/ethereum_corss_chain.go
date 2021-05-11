@@ -41,13 +41,14 @@ import (
 )
 
 var (
-	EmptyAddress    = common.Address{}
-	EmptyHash       = common.Hash{}
-	DefaultGasLimit = 3000000
+	EmptyAddress          = common.Address{}
+	EmptyHash             = common.Hash{}
+	DefaultDeployGasLimit uint64 = 3000000
+	DefaultGasLimit       uint64 = 50000
 )
 
 func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address, error) {
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, fmt.Errorf("make auth failed")
 	}
@@ -67,7 +68,7 @@ func (s *EthereumSdk) DeployECCMContract(
 	chainID uint64,
 ) (common.Address, error) {
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -82,7 +83,7 @@ func (s *EthereumSdk) DeployECCMContract(
 }
 
 func (s *EthereumSdk) DeployECCMPContract(key *ecdsa.PrivateKey, eccmAddress common.Address) (common.Address, error) {
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -97,7 +98,7 @@ func (s *EthereumSdk) DeployECCMPContract(key *ecdsa.PrivateKey, eccmAddress com
 }
 
 func (s *EthereumSdk) DeployNFTLockProxy(key *ecdsa.PrivateKey) (common.Address, error) {
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -116,7 +117,7 @@ func (s *EthereumSdk) NFTLockProxySetCCMP(key *ecdsa.PrivateKey, proxyAddr, ccmp
 	if err != nil {
 		return EmptyHash, err
 	}
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -144,7 +145,7 @@ func (s *EthereumSdk) DeployNFT(
 	name, symbol string,
 ) (common.Address, error) {
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -178,7 +179,7 @@ func (s *EthereumSdk) BindNFTAsset(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -205,7 +206,7 @@ func (s *EthereumSdk) BindERC20Asset(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -249,7 +250,7 @@ func (s *EthereumSdk) BindLockProxy(
 	if err != nil {
 		return EmptyHash, err
 	}
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -288,7 +289,7 @@ func (s *EthereumSdk) TransferECCDOwnership(key *ecdsa.PrivateKey, eccd, eccm co
 	if err != nil {
 		return EmptyHash, err
 	}
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -317,7 +318,7 @@ func (s *EthereumSdk) TransferECCMOwnership(key *ecdsa.PrivateKey, eccm, ccmp co
 	if err != nil {
 		return EmptyHash, err
 	}
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -349,7 +350,7 @@ func (s *EthereumSdk) TransferCCMPOwnership(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -381,7 +382,7 @@ func (s *EthereumSdk) TransferNFTProxyOwnership(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -409,7 +410,7 @@ func (s *EthereumSdk) InitGenesisBlock(key *ecdsa.PrivateKey, eccmAddr common.Ad
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -425,7 +426,7 @@ func (s *EthereumSdk) InitGenesisBlock(key *ecdsa.PrivateKey, eccmAddr common.Ad
 }
 
 func (s *EthereumSdk) DeployWrapContract(key *ecdsa.PrivateKey, chainId uint64) (common.Address, error) {
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -452,7 +453,7 @@ func (s *EthereumSdk) SetWrapFeeCollector(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(ownerKey)
+	auth, err := s.makeAuth(ownerKey, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -479,7 +480,7 @@ func (s *EthereumSdk) SetWrapLockProxy(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(ownerKey)
+	auth, err := s.makeAuth(ownerKey, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -497,7 +498,7 @@ func (s *EthereumSdk) SetWrapLockProxy(
 }
 
 func (s *EthereumSdk) DeployERC20(key *ecdsa.PrivateKey) (common.Address, error) {
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -515,7 +516,7 @@ func (s *EthereumSdk) DeployERC20(key *ecdsa.PrivateKey) (common.Address, error)
 }
 
 func (s *EthereumSdk) DeployNFTQueryContract(key *ecdsa.PrivateKey) (common.Address, error) {
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -553,7 +554,7 @@ func (s *EthereumSdk) dumpTx(hash common.Hash) error {
 	return nil
 }
 
-func (s *EthereumSdk) makeAuth(key *ecdsa.PrivateKey) (*bind.TransactOpts, error) {
+func (s *EthereumSdk) makeAuth(key *ecdsa.PrivateKey, gasLimit uint64) (*bind.TransactOpts, error) {
 	authAddress := xecdsa.Key2address(key)
 	nonce, err := s.NonceAt(authAddress)
 	if err != nil {
@@ -568,8 +569,8 @@ func (s *EthereumSdk) makeAuth(key *ecdsa.PrivateKey) (*bind.TransactOpts, error
 	auth := bind.NewKeyedTransactor(key)
 	auth.From = authAddress
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(int64(0))       // in wei
-	auth.GasLimit = uint64(DefaultGasLimit) // in units
+	auth.Value = big.NewInt(int64(0)) // in wei
+	auth.GasLimit = gasLimit
 	auth.GasPrice = gasPrice
 
 	return auth, nil

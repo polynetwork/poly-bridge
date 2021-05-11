@@ -95,7 +95,7 @@ func (s *EthereumSdk) MintERC20Token(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -123,7 +123,7 @@ func (s *EthereumSdk) TransferERC20Token(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -158,7 +158,7 @@ func (s *EthereumSdk) ApproveERC20Token(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -195,7 +195,7 @@ func (s *EthereumSdk) MintNFT(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(ownerKey)
+	auth, err := s.makeAuth(ownerKey, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -224,7 +224,7 @@ func (s *EthereumSdk) NFTSafeTransferTo(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(nftOwnerKey)
+	auth, err := s.makeAuth(nftOwnerKey, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -255,7 +255,7 @@ func (s *EthereumSdk) NFTSafeTransferFrom(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(nftOwnerKey)
+	auth, err := s.makeAuth(nftOwnerKey, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -276,7 +276,7 @@ func (s *EthereumSdk) NFTApprove(key *ecdsa.PrivateKey, asset, to common.Address
 	if err != nil {
 		return EmptyHash, err
 	}
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -464,7 +464,7 @@ func (s *EthereumSdk) WrapLockWithErc20FeeToken(
 		return EmptyHash, err
 	}
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -491,7 +491,7 @@ func (s *EthereumSdk) WrapLockWithNativeFeeToken(
 	id *big.Int,
 ) (common.Hash, error) {
 
-	auth, err := s.makeAuth(key)
+	auth, err := s.makeAuth(key, DefaultGasLimit)
 	if err != nil {
 		return EmptyHash, err
 	}
