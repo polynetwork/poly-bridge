@@ -10,22 +10,22 @@ type CacheHomeRsp struct {
 	Time time.Time
 }
 
-func SetHomePageItemsCache(chainId uint64, items *AssetItems) {
-	key := formatHomePageItemsCache(chainId)
-	lruDB.Add(key, items)
+func SetHomePageItemsCache(chainId uint64, assetName string, list []*Item) {
+	key := formatHomePageItemsCache(chainId, assetName)
+	lruDB.Add(key, list)
 }
 
-func GetHomePageItemsCache(chainId uint64) (*AssetItems, bool) {
-	key := formatHomePageItemsCache(chainId)
+func GetHomePageItemsCache(chainId uint64, assetName string) ([]*Item, bool) {
+	key := formatHomePageItemsCache(chainId, assetName)
 	data, ok := lruDB.Get(key)
 	if !ok {
 		return nil, false
 	}
-	res, ok := data.(*AssetItems)
+	list, ok := data.([]*Item)
 	if !ok {
 		return nil, false
 	}
-	return res, true
+	return list, true
 }
 
 //func SetHomePageCache(chainId uint64, start, length int, rsp *CacheHomeRsp) {
@@ -64,8 +64,8 @@ func GetItemCache(chainId uint64, asset string, tokenId string) (*Item, bool) {
 	return item, true
 }
 
-func formatHomePageItemsCache(chainId uint64)  string {
-	return fmt.Sprintf("homepage_%d", chainId)
+func formatHomePageItemsCache(chainId uint64, assetName string)  string {
+	return fmt.Sprintf("homepage_%d_%s", chainId, assetName)
 }
 
 //func formatHomePageCacheKey(chainId uint64, start, len int) string {
