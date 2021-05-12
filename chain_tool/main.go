@@ -81,6 +81,7 @@ func setupApp() *cli.App {
 		MethodCodeFlag,
 		OwnerAccountFlag,
 		AdminIndexFlag,
+		AddGasFlag,
 	}
 	app.Commands = []cli.Command{
 		CmdSample,
@@ -174,6 +175,11 @@ func beforeCommands(ctx *cli.Context) (err error) {
 	admAddr := cfg.AdminAccountList[admIndex]
 	if adm, err = wallet.LoadEthAccount(storage, keystore, admAddr, defaultAccPwd); err != nil {
 		return fmt.Errorf("load eth account for chain %d faild, err: %v", cc.SideChainID, err)
+	}
+
+	uAddGas := ctx.GlobalUint64(getFlagName(AddGasFlag))
+	if uAddGas > 0 {
+		chainsdk.DefaultAddGasPrice = new(big.Int).SetUint64(uAddGas * 1000000000)
 	}
 
 	if sdk, err = chainsdk.NewEthereumSdk(cc.RPC); err != nil {

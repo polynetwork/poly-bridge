@@ -142,6 +142,12 @@ var (
 		Usage: "admin index in keystore, default value is 0",
 		Value: 0,
 	}
+
+	AddGasFlag = cli.Uint64Flag{
+		Name: "addGas",
+		Usage: "set gas price if the estimated gas price is not enough, the value should be nGwei, e.g: 4 denotes add 4000000000wei",
+		Value: 0,
+	}
 )
 
 var (

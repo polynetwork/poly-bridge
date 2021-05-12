@@ -44,7 +44,8 @@ var (
 	EmptyAddress          = common.Address{}
 	EmptyHash             = common.Hash{}
 	DefaultDeployGasLimit uint64 = 3000000
-	DefaultGasLimit       uint64 = 50000
+	DefaultGasLimit       uint64 = 65000
+	DefaultAddGasPrice    *big.Int
 )
 
 func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address, error) {
@@ -571,7 +572,11 @@ func (s *EthereumSdk) makeAuth(key *ecdsa.PrivateKey, gasLimit uint64) (*bind.Tr
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(int64(0)) // in wei
 	auth.GasLimit = gasLimit
-	auth.GasPrice = gasPrice
+	if DefaultAddGasPrice.Cmp(gasPrice) > 0 {
+		auth.GasPrice = DefaultAddGasPrice
+	} else {
+		auth.GasPrice = gasPrice
+	}
 
 	return auth, nil
 }
