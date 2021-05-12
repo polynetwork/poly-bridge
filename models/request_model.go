@@ -970,3 +970,24 @@ func MakePolyTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount
 	}
 	return transactionsRsp
 }
+
+
+type ExpectTimeReq struct {
+	SrcChainId uint64
+	DstChainId uint64
+}
+
+type ExpectTimeRsp struct {
+	SrcChainId        uint64
+	DstChainId        uint64
+	Time uint64
+}
+
+func MakeExpectTimeRsp(srcchainId uint64, dstchainid uint64, time uint64) *ExpectTimeRsp {
+	expectTimeRsp := &ExpectTimeRsp{
+		Time:           time,
+		SrcChainId:        srcchainId,
+		DstChainId: dstchainid,
+	}
+	return expectTimeRsp
+}

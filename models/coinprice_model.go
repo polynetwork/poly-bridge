@@ -106,3 +106,9 @@ type CheckFee struct {
 	Amount      *big.Float
 	MinProxyFee *big.Float
 }
+
+type TimeStatistic struct {
+	SrcChainId   uint64 `gorm:"primaryKey;type:bigint(20);not null"`
+	DstChainId uint64`gorm:"primaryKey;type:bigint(20);not null"`
+	Time  uint64
+}

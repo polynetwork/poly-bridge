@@ -134,6 +134,7 @@ type EventEffectConfig struct {
 	HowOld2        int64
 	ChainListening int64
 	EffectSlot     int64
+	TimeStatisticSlot int64
 }
 
 type Config struct {

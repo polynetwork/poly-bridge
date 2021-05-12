@@ -77,6 +77,10 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("update status- err: %s", err)
 	}
+	err = eff.doStatistic()
+	if err != nil {
+		logs.Error("update status- err: %s", err)
+	}
 	err = eff.checkChainListening()
 	if err != nil {
 		logs.Error("check chain listening- err: %s", err)
@@ -203,5 +207,21 @@ func (eff *BridgeEffect) checkChainListening() error {
 	}
 	eff.chains = chains
 	eff.time = now
+	return nil
+}
+
+func (eff *BridgeEffect) doStatistic() error {
+	timeStatistics := make([]*models.TimeStatistic, 0)
+	start := time.Now().Unix() - eff.cfg.TimeStatisticSlot
+	res := eff.db.Raw("select avg(c.time - a.time) as time, a.chain_id as src_chain_id, c.chain_id as dst_chain_id from src_transactions a inner join poly_transactions b on a.hash = b.src_hash inner join dst_transactions c on b.hash = c.poly_hash inner join wrapper_transactions d on a.hash = d.hash where c.time > ? group by a.chain_id,c.chain_id;", start).Scan(&timeStatistics)
+	if res.Error != nil {
+		logs.Error("do avg time statistic err: %v", res.Error.Error())
+	}
+	if len(timeStatistics) > 0 {
+		res = eff.db.Save(timeStatistics)
+		if res.Error != nil {
+			logs.Error("save avg time statistic err: %v", res.Error.Error())
+		}
+	}
 	return nil
 }
