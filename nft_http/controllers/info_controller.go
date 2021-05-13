@@ -22,9 +22,9 @@ import (
 	"poly-bridge/models"
 	"poly-bridge/nft_http/meta"
 	"poly-bridge/utils/net"
-	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -66,48 +66,73 @@ func (c *InfoController) Home() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.Size) {
-		return
-	}
-
-	cache, ok := GetHomePageCache(req.ChainId)
-	if ok && cache != nil && cache.Time.Add(600*time.Second).After(time.Now()) {
-		output(&c.Controller, cache.Rsp)
-		return
-	}
-
-	sdk, inquirer, lockProxy, err := selectNodeAndWrapper(req.ChainId)
-	if err != nil {
-		customInput(&c.Controller, ErrCodeRequest, "chain id not exist")
+	if !checkPageSize(&c.Controller, req.PageSize) {
 		return
 	}
 
 	chainAssets := selectAssetsByChainId(req.ChainId)
 	totalCnt := len(chainAssets)
 	list := make([]*AssetItems, 0)
-	for _, v := range chainAssets {
-		if v.TokenBasic.MetaFetcherType != meta.FetcherTypeUnknown {
-			assetAddr := common.HexToAddress(v.Hash)
-			tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(inquirer, assetAddr, lockProxy, 0, req.Size)
-			if len(tokenUrls) == 0 {
-				continue
+	start := req.PageSize * req.PageNo
+	end := start + req.PageSize
+
+	for _, asset := range chainAssets {
+		items := &AssetItems{
+			Asset:   new(AssetRsp).instance(asset),
+			Items:   nil,
+			HasMore: false,
+		}
+		if cache, exist := GetHomePageItemsCache(req.ChainId, asset.TokenBasicName); exist {
+			if total := len(cache); total > start {
+				if end > total && end > start {
+					end = total
+				}
+				items.Items = cache[start:end]
+				if len(cache) > end {
+					items.HasMore = true
+				}
+				list = append(list, items)
 			}
-			items := getItemsWithChainData(v.TokenBasicName, v.Hash, v.ChainId, tokenUrls)
-			assets := &AssetItems{
-				Asset: new(AssetRsp).instance(v),
-				Items: items,
-			}
-			list = append(list, assets)
-			break
 		}
 	}
 
 	data := new(HomeRsp).instance(totalCnt, list)
-	SetHomePageCache(req.ChainId, &CacheHomeRsp{
-		Rsp:  data,
-		Time: time.Now(),
-	})
 	output(&c.Controller, data)
+}
+
+func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
+	sdk, inquirer, lockProxy, err := selectNodeAndWrapper(asset.ChainId)
+	if err != nil {
+		return false, err
+	}
+
+	if asset.TokenBasic.MetaFetcherType == meta.FetcherTypeUnknown {
+		return false, fmt.Errorf("invalid fetcher type")
+	}
+
+	chainId := asset.ChainId
+	assetName := asset.TokenBasicName
+	assetAddr := common.HexToAddress(asset.Hash)
+	pageSize := 10
+
+	list := make([]*Item, 0)
+	for start := 0; start < maxNum; start += pageSize {
+		tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(inquirer, assetAddr, lockProxy, start, pageSize)
+		if len(tokenUrls) == 0 {
+			break
+		}
+		items := getItemsWithChainData(assetName, asset.Hash, chainId, tokenUrls)
+		list = append(list, items...)
+	}
+
+	if len(list) == 0 {
+		return false, nil
+	}
+
+	SetHomePageItemsCache(asset.ChainId, assetName, list)
+	cache, _ := GetHomePageItemsCache(asset.ChainId, asset.TokenBasicName)
+	logs.Info("prepare chain %d asset %s home page items, total %d ", chainId, assetName, len(cache))
+	return true, nil
 }
 
 func SetBaseInfo(_mode string, _port int) {

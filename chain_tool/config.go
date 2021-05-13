@@ -24,6 +24,7 @@ type Config struct {
 	Ethereum *ChainConfig
 	Bsc      *ChainConfig
 	Heco     *ChainConfig
+	Ok 	     *ChainConfig
 	Poly     *PolyConfig
 
 	// leveldb direction

@@ -142,6 +142,18 @@ var (
 		Usage: "admin index in keystore, default value is 0",
 		Value: 0,
 	}
+
+	AddGasFlag = cli.Uint64Flag{
+		Name: "addGas",
+		Usage: "set gas price if the estimated gas price is not enough, the value should be nGwei, e.g: 4 denotes add 4000000000wei",
+		Value: 0,
+	}
+
+	EpochFlag = cli.Uint64Flag{
+		Name: "epoch",
+		Usage: "set okex epoch",
+		Value: 0,
+	}
 )
 
 var (
@@ -296,6 +308,9 @@ var (
 		Name:   "syncSideGenesis",
 		Usage:  "sync side chain genesis header to poly chain.",
 		Action: handleCmdSyncSideChainGenesis2Poly,
+		Flags: []cli.Flag{
+			EpochFlag,
+		},
 	}
 
 	CmdSyncPolyGenesis2SideChain = cli.Command{
