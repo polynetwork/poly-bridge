@@ -2,7 +2,7 @@
   "Server":"polybridge",
   "Backup": false,
   "DBConfig":{
-    "URL":"124.156.237.147:3306",
+    "URL":"localhost:3306",
     "User":"root",
     "Password":"wKd5sstfSsY3/Q==",
     "Scheme":"polyswap",
@@ -119,12 +119,29 @@
       "WrapperContract":"a5c101afa9e04e9dd2c912983795005a49e02efa",
       "CCMContract":"0900000000000000000000000000000000000000",
       "ProxyContract":"33c439c502cb4b6ac5a1e8057a65fe1fa7c300e2"
+    },
+    {
+      "ChainName":"Ok",
+      "ChainId":2002,
+      "ListenSlot":1,
+      "Nodes": [
+        {
+          "Url": "https://exchaintestrpc.okex.org"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5",
+      "CCMContract":"cf21d94a0aa5c7a953a08244af91b0a9d3c1576e",
+      "ProxyContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5"
     }
   ],
   "EventEffectConfig": {
     "HowOld": 3600,
+    "HowOld2": 3600,
     "ChainListening": 300,
-    "EffectSlot": 1
+    "EffectSlot": 1,
+    "TimeStatisticSlot": 3600
   },
   "CoinPriceUpdateSlot":720,
   "CoinPriceListenConfig":[
