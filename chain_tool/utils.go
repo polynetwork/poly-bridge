@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-
 	"poly-bridge/chainsdk"
 
 	"github.com/ethereum/go-ethereum/common"

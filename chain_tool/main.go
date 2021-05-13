@@ -81,6 +81,7 @@ func setupApp() *cli.App {
 		MethodCodeFlag,
 		OwnerAccountFlag,
 		AdminIndexFlag,
+		AddGasFlag,
 	}
 	app.Commands = []cli.Command{
 		CmdSample,
@@ -174,6 +175,11 @@ func beforeCommands(ctx *cli.Context) (err error) {
 	admAddr := cfg.AdminAccountList[admIndex]
 	if adm, err = wallet.LoadEthAccount(storage, keystore, admAddr, defaultAccPwd); err != nil {
 		return fmt.Errorf("load eth account for chain %d faild, err: %v", cc.SideChainID, err)
+	}
+
+	uAddGas := ctx.GlobalUint64(getFlagName(AddGasFlag))
+	if uAddGas > 0 {
+		chainsdk.DefaultAddGasPrice = new(big.Int).SetUint64(uAddGas * 1000000000)
 	}
 
 	if sdk, err = chainsdk.NewEthereumSdk(cc.RPC); err != nil {
@@ -469,7 +475,7 @@ func handleCmdRegisterSideChain(ctx *cli.Context) error {
 	switch chainID {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		router := polyutils.ETH_ROUTER
-		err = polySdk.RegisterSideChain(validators[0], chainID, router, eccd, cc.SideChainName)
+		err = polySdk.RegisterSideChain(validators[0], chainID, 1, router, eccd, cc.SideChainName)
 
 	case basedef.BSC_CROSSCHAIN_ID:
 		router := polyutils.BSC_ROUTER
@@ -477,11 +483,11 @@ func handleCmdRegisterSideChain(ctx *cli.Context) error {
 			ChainID: new(big.Int).SetUint64(chainID),
 		}
 		extEnc, _ := json.Marshal(ext)
-		err = polySdk.RegisterSideChainExt(validators[0], chainID, router, eccd, cc.SideChainName, extEnc)
+		err = polySdk.RegisterSideChainExt(validators[0], chainID, 1, router, eccd, cc.SideChainName, extEnc)
 
 	case basedef.HECO_CROSSCHAIN_ID:
 		router := polyutils.HECO_ROUTER
-		err = polySdk.RegisterSideChain(validators[0], chainID, router, eccd, cc.SideChainName)
+		err = polySdk.RegisterSideChain(validators[0], chainID, 1, router, eccd, cc.SideChainName)
 
 	default:
 		err = fmt.Errorf("chain id %d invalid", chainID)
