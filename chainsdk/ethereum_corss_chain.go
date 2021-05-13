@@ -45,7 +45,7 @@ var (
 	EmptyHash             = common.Hash{}
 	DefaultDeployGasLimit uint64 = 3000000
 	DefaultGasLimit       uint64 = 65000
-	DefaultAddGasPrice    *big.Int
+	DefaultAddGasPrice    = big.NewInt(0)
 )
 
 func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address, error) {
