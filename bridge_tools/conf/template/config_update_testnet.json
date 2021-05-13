@@ -1,5 +1,5 @@
 {
-  "Server":"polyswap",
+  "Server":"polybridge",
   "Backup": false,
   "DBConfig":{
     "URL":"localhost:3306",
@@ -10,13 +10,13 @@
   },
   "Chains":[
     {
-      "ChainId": 3,
-      "BackwardBlockNumber": 1
+      "ChainId": 2002,
+      "BackwardBlockNumber": 12
     }
   ],
   "ChainFees":[
     {
-      "ChainId": 3,
+      "ChainId": 2002,
       "TokenBasic": {
         "Name": "ONG"
       }
