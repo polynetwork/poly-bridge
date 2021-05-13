@@ -15,7 +15,7 @@
 
 ### update
 
-配置升级文件 [config_update_testenet.json](https://github.com/polynetwork/poly-bridge/blob/master/bridge_tools/conf/config_update_testnet.json)
+配置升级文件 [config_update_testenet.json](https://github.com/polynetwork/poly-bridge/blob/master/bridge_tools/conf/template/config_update_testnet.json)
 
 ```
 cd build_testnet
@@ -31,8 +31,9 @@ cd bridge_server
 vi ./config_testnet.json
 ```
 重启bridge_server。
+重启bridge_http。
 
-## 升级主网
+## 升级主网[undo]
 
 ### build
 

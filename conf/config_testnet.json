@@ -123,7 +123,7 @@
     {
       "ChainName":"Ok",
       "ChainId":2002,
-      "ListenSlot":1,
+      "ListenSlot":6,
       "Nodes": [
         {
           "Url": "https://exchaintestrpc.okex.org"
@@ -218,6 +218,18 @@
       "Nodes": [
         {
           "Url": "https://http-testnet.hecochain.com"
+        }
+      ],
+      "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":2002,
+      "ChainName":"OK",
+      "Nodes": [
+        {
+          "Url": "https://exchaintestrpc.okex.org"
         }
       ],
       "GasLimit":120000,

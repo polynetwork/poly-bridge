@@ -18,72 +18,52 @@
     {
       "ChainId": 2002,
       "TokenBasic": {
-        "Name": "ONG"
+        "Name": "OKB"
       }
     }
   ],
   "TokenBasics":[
     {
-      "Name":"ONG",
-      "Precision":9,
+      "Name":"OKB",
+      "Precision":18,
       "Ind": 1,
-      "Property":1,
+      "Property":0,
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
-          "Name":"Ontology Gas"
-        },
-        {
-          "MarketName":"binance",
-          "Name":"ONGUSDT"
+          "Name":"OKB"
         }
       ],
       "Tokens":[
         {
-          "ChainId":3,
-          "Hash":"0200000000000000000000000000000000000000",
-          "Name":"ONG",
-          "Property":1,
-          "Precision":9
-        },
-        {
-          "ChainId":2,
-          "Hash":"42d9feF0Cbd9c3000CECe9764d99A4a6fE9E1B34",
-          "Name":"ONG",
-          "Property":1,
-          "Precision":9
+          "ChainId":2002,
+          "Hash":"0000000000000000000000000000000000000000",
+          "Name":"OKB",
+          "Property":0,
+          "Precision":18
         }
       ]
     },
     {
-      "Name":"ONTD",
-      "Precision":9,
-      "Ind": 1,
+      "Name":"ERC20Test",
+      "Precision":18,
       "Property":1,
-      "PriceMarkets":[
-        {
-          "MarketName":"coinmarketcap",
-          "Name":"Ontology"
-        },
-        {
-          "MarketName":"binance",
-          "Name":"ONTUSDT"
-        }
-      ],
+      "Ind": 1,
+      "Price": 1000000,
       "Tokens":[
         {
-          "ChainId":3,
-          "Hash":"869951e3397550e800d5faf579857cdb637a0051",
-          "Name":"ONTD",
+          "ChainId":79,
+          "Hash":"C500885d5B7d31347955aA5fCa6DE84CbAfd261a",
+          "Name":"ERC20",
           "Property":1,
-          "Precision":9
+          "Precision":18
         },
         {
-          "ChainId":2,
-          "Hash":"76130c293AA35bf7B3e5fED1E9aE1E5DF12C6A92",
-          "Name":"ONTD",
+          "ChainId":2002,
+          "Hash":"aC8aA8Abb8B99059f56dE9AD024c226B807a420E",
+          "Name":"ERC20",
           "Property":1,
-          "Precision":9
+          "Precision":18
         }
       ]
     }
