@@ -21,9 +21,9 @@ import (
 	"github.com/polynetwork/poly/core/types"
 )
 
-const (
-	block2wait uint64 = 1
-)
+//const (
+//	block2wait uint64 = 1
+//)
 
 func NewPolySdkAndSetChainID(url string) (*PolySDK, error) {
 	s := NewPolySDK(url)
@@ -77,6 +77,7 @@ func (s *PolySDK) SyncGenesisBlock(
 func (s *PolySDK) RegisterSideChain(
 	owner *polysdk.Account,
 	chainID,
+	blockToWait,
 	router uint64,
 	eccdAddr ecm.Address,
 	sideChainName string,
@@ -92,7 +93,7 @@ func (s *PolySDK) RegisterSideChain(
 		chainID,
 		router,
 		sideChainName,
-		block2wait,
+		blockToWait,
 		eccd,
 		owner,
 	); err != nil {
@@ -113,6 +114,7 @@ func (s *PolySDK) RegisterSideChain(
 func (s *PolySDK) RegisterSideChainExt(
 	owner *polysdk.Account,
 	chainID,
+	blockToWait,
 	router uint64,
 	eccdAddr ecm.Address,
 	sideChainName string,
@@ -129,7 +131,7 @@ func (s *PolySDK) RegisterSideChainExt(
 		chainID,
 		router,
 		sideChainName,
-		block2wait,
+		blockToWait,
 		eccd,
 		extra,
 		owner,

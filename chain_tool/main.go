@@ -475,7 +475,7 @@ func handleCmdRegisterSideChain(ctx *cli.Context) error {
 	switch chainID {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		router := polyutils.ETH_ROUTER
-		err = polySdk.RegisterSideChain(validators[0], chainID, router, eccd, cc.SideChainName)
+		err = polySdk.RegisterSideChain(validators[0], chainID, 1, router, eccd, cc.SideChainName)
 
 	case basedef.BSC_CROSSCHAIN_ID:
 		router := polyutils.BSC_ROUTER
@@ -483,11 +483,11 @@ func handleCmdRegisterSideChain(ctx *cli.Context) error {
 			ChainID: new(big.Int).SetUint64(chainID),
 		}
 		extEnc, _ := json.Marshal(ext)
-		err = polySdk.RegisterSideChainExt(validators[0], chainID, router, eccd, cc.SideChainName, extEnc)
+		err = polySdk.RegisterSideChainExt(validators[0], chainID, 1, router, eccd, cc.SideChainName, extEnc)
 
 	case basedef.HECO_CROSSCHAIN_ID:
 		router := polyutils.HECO_ROUTER
-		err = polySdk.RegisterSideChain(validators[0], chainID, router, eccd, cc.SideChainName)
+		err = polySdk.RegisterSideChain(validators[0], chainID, 1, router, eccd, cc.SideChainName)
 
 	default:
 		err = fmt.Errorf("chain id %d invalid", chainID)
