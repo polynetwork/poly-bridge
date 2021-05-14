@@ -10,13 +10,13 @@
   },
   "Chains":[
     {
-      "ChainId": 2002,
+      "ChainId": 200,
       "BackwardBlockNumber": 12
     }
   ],
   "ChainFees":[
     {
-      "ChainId": 2002,
+      "ChainId": 200,
       "TokenBasic": {
         "Name": "OKB"
       }
@@ -36,7 +36,7 @@
       ],
       "Tokens":[
         {
-          "ChainId":2002,
+          "ChainId":200,
           "Hash":"0000000000000000000000000000000000000000",
           "Name":"OKB",
           "Property":0,
@@ -59,7 +59,7 @@
           "Precision":18
         },
         {
-          "ChainId":2002,
+          "ChainId":200,
           "Hash":"aC8aA8Abb8B99059f56dE9AD024c226B807a420E",
           "Name":"ERC20",
           "Property":1,

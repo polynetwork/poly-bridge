@@ -122,7 +122,7 @@
     },
     {
       "ChainName":"Ok",
-      "ChainId":2002,
+      "ChainId":200,
       "ListenSlot":6,
       "Nodes": [
         {
@@ -131,7 +131,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5",
+      "WrapperContract":"5598226aD2E8991deEFD03203739C87BdF6e6D03",
       "CCMContract":"cf21d94a0aa5c7a953a08244af91b0a9d3c1576e",
       "ProxyContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5"
     }
@@ -225,7 +225,7 @@
       "MinFee": 20
     },
     {
-      "ChainId":2002,
+      "ChainId":200,
       "ChainName":"OK",
       "Nodes": [
         {

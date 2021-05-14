@@ -27,5 +27,5 @@ var (
 	BSC_CROSSCHAIN_ID      = uint64(79)
 	HECO_CROSSCHAIN_ID     = uint64(7)
 	O3_CROSSCHAIN_ID       = uint64(82)
-	OK_CROSSCHAIN_ID 	   = uint64(2002)
+	OK_CROSSCHAIN_ID 	   = uint64(200)
 )
