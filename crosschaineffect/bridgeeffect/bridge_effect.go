@@ -210,6 +210,7 @@ func (eff *BridgeEffect) checkChainListening() error {
 	return nil
 }
 
+
 func (eff *BridgeEffect) doStatistic() error {
 	timeStatistics := make([]*models.TimeStatistic, 0)
 	start := time.Now().Unix() - eff.cfg.TimeStatisticSlot
