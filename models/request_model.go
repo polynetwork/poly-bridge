@@ -50,6 +50,7 @@ type TokenBasicRsp struct {
 	Ind          uint64
 	Time         int64
 	Property     int64
+	Meta         string
 	PriceMarkets []*PriceMarketRsp
 	Tokens       []*TokenRsp
 }
@@ -60,6 +61,7 @@ func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 		Name:      tokenBasic.Name,
 		Time:      tokenBasic.Time,
 		Precision: tokenBasic.Precision,
+		Meta: tokenBasic.Meta,
 		Price:     price.String(),
 		Ind:       tokenBasic.Ind,
 		Property:  tokenBasic.Property,
