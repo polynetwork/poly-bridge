@@ -9,13 +9,13 @@
   },
   "Chains":[
     {
-      "ChainId": 200,
+      "ChainId": 12,
       "BackwardBlockNumber": 1
     }
   ],
   "ChainFees":[
     {
-      "ChainId": 200,
+      "ChainId": 12,
       "TokenBasic": {
         "Name": "OKB"
       }
@@ -35,7 +35,7 @@
       ],
       "Tokens":[
         {
-          "ChainId":200,
+          "ChainId":12,
           "Hash":"0000000000000000000000000000000000000000",
           "Name":"OKB",
           "Property":0,
