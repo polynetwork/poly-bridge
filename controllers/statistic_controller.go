@@ -38,6 +38,6 @@ func (c *StatisticController) ExpectTime() {
 	}
 	var expectTime models.TimeStatistic
 	db.Where("src_chain_id = ? and dst_chain_id = ?", expectTimeReq.SrcChainId, expectTimeReq.DstChainId).First(&expectTime)
-	c.Data["json"] = models.MakeExpectTimeRsp(expectTime.SrcChainId, expectTime.DstChainId, expectTime.Time)
+	c.Data["json"] = models.MakeExpectTimeRsp(expectTime.SrcChainId, expectTime.DstChainId, (expectTime.Time) / 100000000)
 	c.ServeJSON()
 }
