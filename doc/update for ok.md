@@ -33,7 +33,7 @@ vi ./config_testnet.json
 重启bridge_server。
 重启bridge_http。
 
-## 升级主网[undo]
+## 升级主网主机
 
 ### build
 
@@ -48,7 +48,7 @@ vi ./config_testnet.json
 
 ### update
 
-配置升级文件 [config_update_ontology_mainnet.json](https://github.com/polynetwork/poly-bridge/blob/master/bridge_tools/conf/template/config_update_ontology_mainnet.json)
+配置升级文件 [config_update_mainnet.json](https://github.com/polynetwork/poly-bridge/blob/master/bridge_tools/conf/config_update_mainnet.json)
 
 ```
 cd build_mainnet
@@ -65,10 +65,22 @@ vi ./config_mainnet.json
 ``` 
 
 重启bridge_server。
+重启bridge_http。
 
-### add backup
+## 升级主网备机
 
-选择另一台机器进行bridge_server的备份。
+### build
+
+进入到项目目录。
+
+编译主网版本：
+```
+./build.sh mainnet
+```
+
+生成build_mainnet为主网执行文件以及配置。
+
+### update
 
 更新配置文件 [config_mainnet_backup.json](https://github.com/polynetwork/poly-bridge/blob/master/conf/config_mainnet_backup.json)
 
@@ -76,11 +88,9 @@ vi ./config_mainnet.json
 cd build_mainnet
 cd bridge_server
 vi ./config_mainnet_backup.json
-./bridge_server --cliconfig config_mainnet_backup.json
 ``` 
 
-启动bridge_server备份
-```
-./bridge_server --cliconfig config_mainnet_backup.json
-```
+重启bridge_server。
+重启bridge_http。
+
 

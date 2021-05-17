@@ -2,7 +2,7 @@
   "Server":"polybridge",
   "Backup": false,
   "DBConfig":{
-    "URL":"localhost:3306",
+    "URL":"10.203.0.11:3306",
     "User":"root",
     "Password":"123456",
     "Scheme":"polyswap",
@@ -35,9 +35,6 @@
           "Url": "http://onto-eth.ont.io:10331"
         },
         {
-          "Url": "https://mainnet.infura.io/v3/67c37a240ed64ed68d076f900f05761b"
-        },
-        {
           "Url": "http://119.28.106.68:10331"
         }
       ],
@@ -49,7 +46,9 @@
       ],
       "WrapperContract":"2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac",
       "CCMContract":"838bf9e95cb12dd76a54c9f9d2e3082eaf928270",
-      "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906"
+      "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
+      "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
     },
     {
       "ChainName":"NEO",
@@ -83,14 +82,34 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url": "https://bsc-dataseed.binance.org/"
+          "Url":"http://50.18.242.42:8545"
+        },
+        {
+          "Url":"https://bsc-dataseed1.defibit.io/"
+        },
+        {
+          "Url":"https://bsc-dataseed1.ninicoin.io/"
+        },
+        {
+          "Url":"https://bsc-dataseed2.defibit.io/"
+        },
+        {
+          "Url":"https://bsc-dataseed3.defibit.io/"
+        },
+        {
+          "Url":"https://bsc-dataseed4.defibit.io/"
+        },
+        {
+          "Url":"https://bsc-dataseed2.ninicoin.io/"
         }
       ],
       "ExtendNodes": [
       ],
       "WrapperContract":"E3D0FB6E3cB5DA61EB18b06D035052441009d1E6",
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
-      "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03"
+      "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
+      "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
     },
     {
       "ChainName":"HECO",
@@ -106,7 +125,9 @@
       ],
       "WrapperContract":"4fE451186c0D69205ACc1fA00FD75fc6d71e47eE",
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
-      "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6"
+      "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
+      "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
     },
     {
       "ChainName":"Ontology",
@@ -126,11 +147,27 @@
       "WrapperContract":"c93837e82178d406af8c84e1841c6960af251cb5",
       "CCMContract":"0900000000000000000000000000000000000000",
       "ProxyContract":"86b4ab5d99037113867247a1e68f70e348c07597"
+    },
+    {
+      "ChainName":"Ok",
+      "ChainId":200,
+      "ListenSlot":2,
+      "Defer": 2,
+      "Nodes": [
+        {
+          "Url": "https://exchainrpc.okex.org"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":"5598226aD2E8991deEFD03203739C87BdF6e6D03",
+      "CCMContract":"cf21d94a0aa5c7a953a08244af91b0a9d3c1576e",
+      "ProxyContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5"
     }
   ],
   "EventEffectConfig": {
-    "HowOld": 3600,
-    "HowOld2": 3600,
+    "HowOld": 1800,
+    "HowOld2": 300,
     "ChainListening": 300,
     "EffectSlot": 1,
     "TimeStatisticSlot": 3600
@@ -218,6 +255,18 @@
       "Nodes": [
       ],
       "GasLimit":200000000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":200,
+      "ChainName":"OK",
+      "Nodes": [
+        {
+          "Url": "https://exchainrpc.okex.org"
+        }
+      ],
+      "GasLimit":120000,
       "ProxyFee":120,
       "MinFee": 20
     }

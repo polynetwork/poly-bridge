@@ -73,6 +73,7 @@ mv bridge_server ./../$base/bridge_server
 if [ "$tag"x = "mainnet"x ]
 then
   cp ./../conf/config_mainnet.json ./../$base/bridge_server
+  cp ./../conf/config_mainnet_backup.json ./../$base/bridge_server
 else
   cp ./../conf/config_testnet.json ./../$base/bridge_server
 fi
