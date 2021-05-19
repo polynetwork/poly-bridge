@@ -41,7 +41,7 @@
           "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
         }
       ],
-      "WrapperContract":"e498fb7D00468a67A79dE5D4Ca264d3350165280",
+      "WrapperContract":"45bE17B8350A21715F66D2bD4E80Ba64F786F6F0",
       "CCMContract":"726532586c50ec9f4080b71f906a3d9779bbd64f",
       "ProxyContract":"D8aE73e06552E270340b63A8bcAbf9277a1aac99",
       "NFTWrapperContract":"baBaAF5CF7f63437755aAAFE7a4106463c5cD540",
@@ -81,7 +81,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5",
+      "WrapperContract":"64675F22f3342Ef8E4c7132637A12871979037aB",
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c",
       "NFTWrapperContract":"2E830E0cf3dc8643B497F88C07c8A72EFE24B11f",
@@ -99,7 +99,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"3c92F1E31aACA43Eb4fF8aE498C7E85618680F45",
+      "WrapperContract":"EE10F54834F77967a2D51BE2fC8BD74327108eC2",
       "CCMContract":"D9A3d265a1127051F620e700B5a461af4991EaAE",
       "ProxyContract":"4a76E52600C6285029c8f7c52183cf86282cA5b8",
       "NFTWrapperContract": "94aa42C5dAB9b1006f59FF5E311344CC460A2335",
@@ -131,7 +131,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"5598226aD2E8991deEFD03203739C87BdF6e6D03",
+      "WrapperContract":"9f9F15CC407F7b26f55D71D43f993580a9107007",
       "CCMContract":"cf21d94a0aa5c7a953a08244af91b0a9d3c1576e",
       "ProxyContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5"
     }
