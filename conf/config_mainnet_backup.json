@@ -161,8 +161,8 @@
       "ExtendNodes": [
       ],
       "WrapperContract":"11e2A718d46EBe97645b87F2363AFE1BF28c2672",
-      "CCMContract":"eEF082E368F7E51EA49A243f769E1aDE7aF836fd",
-      "ProxyContract":"93013a1179469b1941f6b7d4629759e57d6EBD38"
+      "CCMContract":"F35844C21A0Ca574D0e52697Bbd5ceDda5798A07",
+      "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
     }
   ],
   "EventEffectConfig": {

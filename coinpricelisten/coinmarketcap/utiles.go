@@ -75,14 +75,29 @@ func (sdk *CoinMarketCapSdk) ListingsLatest() ([]*Listing, error) {
 }
 
 func (sdk *CoinMarketCapSdk) listingsLatest(node int) ([]*Listing, error) {
+	allListing := make([]*Listing, 0)
+	aa , err := sdk.listingsLatest1(node, 1, 5000)
+	if err != nil {
+		return nil, err
+	}
+	allListing = append(allListing, aa...)
+	bb , err := sdk.listingsLatest1(node, 5000, 5000)
+	if err != nil {
+		return nil, err
+	}
+	allListing = append(allListing, bb...)
+	return allListing, nil
+}
+
+func (sdk *CoinMarketCapSdk) listingsLatest1(node int, start int, limit int) ([]*Listing, error) {
 	req, err := http.NewRequest("GET", sdk.nodes[node].Url+"listings/latest", nil)
 	if err != nil {
 		return nil, err
 	}
 
 	q := url.Values{}
-	q.Add("start", "1")
-	q.Add("limit", "5000")
+	q.Add("start", fmt.Sprintf("%d", start))
+	q.Add("limit", fmt.Sprintf("%d", limit))
 	q.Add("convert", "USD")
 
 	req.Header.Set("Accepts", "application/json")

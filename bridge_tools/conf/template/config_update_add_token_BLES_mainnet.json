@@ -12,6 +12,7 @@
       "Precision":18,
       "Property":1,
       "Ind": 1,
+      "Meta": "",
       "PriceMarkets":[
         {
           "MarketName":"coinmarketcap",
