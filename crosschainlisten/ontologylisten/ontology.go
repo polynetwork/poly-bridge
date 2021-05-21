@@ -74,6 +74,15 @@ func (this *OntologyChainListen) GetDefer() uint64 {
 	return this.ontCfg.Defer
 }
 
+func (this *OntologyChainListen) isListeningContract(contract string, contracts []string) bool {
+	for _, item := range contracts {
+		if contract == item  {
+			return true
+		}
+	}
+	return false
+}
+
 func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
 	block, err := this.ontSdk.GetBlockByHeight(uint32(height))
 	if err != nil {
@@ -89,7 +98,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	dstTransactions := make([]*models.DstTransaction, 0)
 	for _, event := range events {
 		for _, notify := range event.Notify {
-			if notify.ContractAddress == this.ontCfg.WrapperContract {
+			if this.isListeningContract(notify.ContractAddress, this.ontCfg.WrapperContract) {
 				states := notify.States.([]interface{})
 				contractMethod, ok := states[0].(string)
 				if !ok {

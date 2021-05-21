@@ -21,7 +21,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"",
+      "WrapperContract":[""],
       "CCMContract":"0300000000000000000000000000000000000000",
       "ProxyContract":""
     },
@@ -44,7 +44,7 @@
           "Key": "W4SW61XNZAVGYFRUYNIBV1C8TBIXJDQCS9"
         }
       ],
-      "WrapperContract":"2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac",
+      "WrapperContract":["2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac"],
       "CCMContract":"838bf9e95cb12dd76a54c9f9d2e3082eaf928270",
       "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
       "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
@@ -71,7 +71,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"125c83403763670c215f9c7c815ef759b258a41b",
+      "WrapperContract":["125c83403763670c215f9c7c815ef759b258a41b"],
       "CCMContract":"82a3401fb9a60db42c6fa2ea2b6d62e872d6257f",
       "ProxyContract":"e7fb2e1d937e71dbbb512e6375746181127282e7"
     },
@@ -105,7 +105,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"E3D0FB6E3cB5DA61EB18b06D035052441009d1E6",
+      "WrapperContract":["E3D0FB6E3cB5DA61EB18b06D035052441009d1E6"],
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
@@ -123,7 +123,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"4fE451186c0D69205ACc1fA00FD75fc6d71e47eE",
+      "WrapperContract":["4fE451186c0D69205ACc1fA00FD75fc6d71e47eE"],
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
@@ -144,7 +144,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"c93837e82178d406af8c84e1841c6960af251cb5",
+      "WrapperContract":["c93837e82178d406af8c84e1841c6960af251cb5"],
       "CCMContract":"0900000000000000000000000000000000000000",
       "ProxyContract":"86b4ab5d99037113867247a1e68f70e348c07597"
     },
@@ -160,7 +160,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"11e2A718d46EBe97645b87F2363AFE1BF28c2672",
+      "WrapperContract":["11e2A718d46EBe97645b87F2363AFE1BF28c2672"],
       "CCMContract":"F35844C21A0Ca574D0e52697Bbd5ceDda5798A07",
       "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
     }

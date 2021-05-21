@@ -81,6 +81,15 @@ func (this *NeoChainListen) GetDefer() uint64 {
 	return this.neoCfg.Defer
 }
 
+func (this *NeoChainListen) isListeningContract(contract string, contracts []string) bool {
+	for _, item := range contracts {
+		if contract == item  {
+			return true
+		}
+	}
+	return false
+}
+
 func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
@@ -103,7 +112,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 		}
 		for _, exeitem := range appLog.Executions {
 			for _, notify := range exeitem.Notifications {
-				if notify.Contract[2:] == this.neoCfg.WrapperContract {
+				if this.isListeningContract(notify.Contract[2:], this.neoCfg.WrapperContract) {
 					if len(notify.State.Value) < 0 {
 						continue
 					}

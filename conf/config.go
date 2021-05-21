@@ -43,7 +43,7 @@ type ChainListenConfig struct {
 	Defer              uint64
 	Nodes              []*Restful
 	ExtendNodes        []*Restful
-	WrapperContract    string
+	WrapperContract    []string
 	CCMContract        string
 	ProxyContract      string
 	NFTWrapperContract string
