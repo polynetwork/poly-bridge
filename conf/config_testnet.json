@@ -76,7 +76,7 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url": "http://app-82026c54-a336-4ce4-bcae-352824351322.cls-593f3f46-316e-4f00-8ebd-9a45cfde390d.ankr.com"
+          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/" 
         }
       ],
       "ExtendNodes": [
@@ -123,17 +123,18 @@
     {
       "ChainName":"Ok",
       "ChainId":200,
-      "ListenSlot":6,
+      "ListenSlot":2,
+      "Defer": 2,
       "Nodes": [
         {
-          "Url": "https://exchaintestrpc.okex.org"
+          "Url": "http://18.167.136.23:26659"
         }
       ],
       "ExtendNodes": [
       ],
       "WrapperContract":["5598226aD2E8991deEFD03203739C87BdF6e6D03", "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"],
-      "CCMContract":"cf21d94a0aa5c7a953a08244af91b0a9d3c1576e",
-      "ProxyContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5"
+      "CCMContract":"2A4cF474Aef33F0046434E4916Ac6b2fef4e5B78",
+      "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
     }
   ],
   "EventEffectConfig": {
