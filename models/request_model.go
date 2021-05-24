@@ -413,22 +413,27 @@ type TransactionRsp struct {
 	BlockHeight      uint64
 	Time             uint64
 	DstChainId       uint64
-	Amount           string
+	//Amount           string
 	FeeAmount        string
 	TransferAmount   string
 	DstUser          string
 	ServerId         uint64
 	State            uint64
 	Token            *TokenRsp
+	FeeToken            *TokenRsp
 	TransactionState []*TransactionStateRsp
 }
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
-	amount := new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int)
-	transferAmount := new(big.Int).SetInt64(0)
+	feeAmount := ""
+	if transaction.WrapperTransaction != nil {
+		aaa := new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int)
+		feeAmount = aaa.String()
+	}
+	transferAmount := ""
 	if transaction.SrcTransaction.SrcTransfer != nil {
-		transferAmount = new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int)
-		amount = new(big.Int).Add(amount, transferAmount)
+		aaa := new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int)
+		transferAmount = aaa.String()
 	}
 	transactionRsp := &TransactionRsp{
 		Hash:           transaction.WrapperTransaction.Hash,
@@ -438,29 +443,27 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		Time:           transaction.WrapperTransaction.Time,
 		DstChainId:     transaction.WrapperTransaction.DstChainId,
 		ServerId:       transaction.WrapperTransaction.ServerId,
-		FeeAmount:      transaction.WrapperTransaction.FeeAmount.String(),
-		TransferAmount: transferAmount.String(),
-		Amount:         amount.String(),
+		FeeAmount:      feeAmount,
+		TransferAmount: transferAmount,
 		DstUser:        transaction.SrcTransaction.SrcTransfer.DstUser,
 		State:          transaction.WrapperTransaction.Status,
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
-		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.TokenBasic.Precision)))
-		{
-			bbb := decimal.NewFromBigInt(&transaction.WrapperTransaction.FeeAmount.Int, 0)
-			feeAmount := bbb.Div(precision)
-			transactionRsp.FeeAmount = feeAmount.String()
-		}
-		{
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.Precision)))
+		if transaction.SrcTransaction.SrcTransfer != nil {
 			bbb := decimal.NewFromBigInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int, 0)
 			transferAmount := bbb.Div(precision)
 			transactionRsp.TransferAmount = transferAmount.String()
 		}
-		{
-			bbb := decimal.NewFromBigInt(amount, 0)
-			allAmount := bbb.Div(precision)
-			transactionRsp.Amount = allAmount.String()
+	}
+	if transaction.FeeToken != nil {
+		transactionRsp.FeeToken = MakeTokenRsp(transaction.FeeToken)
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.FeeToken.Precision)))
+		if transaction.WrapperTransaction != nil {
+			bbb := decimal.NewFromBigInt(&transaction.WrapperTransaction.FeeAmount.Int, 0)
+			feeAmount := bbb.Div(precision)
+			transactionRsp.FeeAmount = feeAmount.String()
 		}
 	}
 	if transaction.SrcTransaction != nil {
@@ -529,11 +532,15 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 }
 
 func MakeCurveTransactionRsp(transaction1 *SrcPolyDstRelation, transaction2 *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
-	amount := new(big.Int).Set(&transaction1.WrapperTransaction.FeeAmount.Int)
-	transferAmount := new(big.Int).SetInt64(0)
+	feeAmount := ""
+	if transaction1.WrapperTransaction != nil {
+		aaa := new(big.Int).Set(&transaction1.WrapperTransaction.FeeAmount.Int)
+		feeAmount = aaa.String()
+	}
+	transferAmount := ""
 	if transaction1.SrcTransaction.SrcTransfer != nil {
-		transferAmount = new(big.Int).Set(&transaction1.SrcTransaction.SrcTransfer.Amount.Int)
-		amount = new(big.Int).Add(amount, transferAmount)
+		aaa := new(big.Int).Set(&transaction1.SrcTransaction.SrcTransfer.Amount.Int)
+		transferAmount = aaa.String()
 	}
 	transactionRsp := &TransactionRsp{
 		Hash:           transaction1.WrapperTransaction.Hash,
@@ -543,29 +550,28 @@ func MakeCurveTransactionRsp(transaction1 *SrcPolyDstRelation, transaction2 *Src
 		Time:           transaction1.WrapperTransaction.Time,
 		DstChainId:     transaction1.WrapperTransaction.DstChainId,
 		ServerId:       transaction1.WrapperTransaction.ServerId,
-		FeeAmount:      transaction1.WrapperTransaction.FeeAmount.String(),
-		TransferAmount: transferAmount.String(),
-		Amount:         amount.String(),
+		FeeAmount:      feeAmount,
+		TransferAmount: transferAmount,
+		//Amount:         amount.String(),
 		DstUser:        transaction1.SrcTransaction.SrcTransfer.DstUser,
 		State:          transaction1.WrapperTransaction.Status,
 	}
 	if transaction1.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction1.Token)
-		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction1.Token.TokenBasic.Precision)))
-		{
-			bbb := decimal.NewFromBigInt(&transaction1.WrapperTransaction.FeeAmount.Int, 0)
-			feeAmount := bbb.Div(precision)
-			transactionRsp.FeeAmount = feeAmount.String()
-		}
-		{
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction1.Token.Precision)))
+		if transaction1.SrcTransaction.SrcTransfer != nil {
 			bbb := decimal.NewFromBigInt(&transaction1.SrcTransaction.SrcTransfer.Amount.Int, 0)
 			transferAmount := bbb.Div(precision)
 			transactionRsp.TransferAmount = transferAmount.String()
 		}
-		{
-			bbb := decimal.NewFromBigInt(amount, 0)
-			allAmount := bbb.Div(precision)
-			transactionRsp.Amount = allAmount.String()
+	}
+	if transaction1.FeeToken != nil {
+		transactionRsp.FeeToken = MakeTokenRsp(transaction1.FeeToken)
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction1.FeeToken.Precision)))
+		if transaction1.WrapperTransaction != nil {
+			bbb := decimal.NewFromBigInt(&transaction1.WrapperTransaction.FeeAmount.Int, 0)
+			feeAmount := bbb.Div(precision)
+			transactionRsp.FeeAmount = feeAmount.String()
 		}
 	}
 	if transaction1.SrcTransaction != nil {
