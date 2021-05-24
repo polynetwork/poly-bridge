@@ -2,6 +2,7 @@ package chainsdk
 
 import (
 	"encoding/hex"
+	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	nftmp "poly-bridge/go_abi/nft_mapping_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
@@ -121,4 +122,18 @@ func TestABIUnpackWrapperLockParameters(t *testing.T) {
 
 	t.Logf("data: {\r\n toChainId %d\r\n tokenId %d\r\n fromAsset %s\r\n toAddress %s\r\n feeToken %s\r\n fee %s\r\n dataId %d\r\n}",
 		data.ToChainId, data.TokenId.Uint64(), data.FromAsset.Hex(), data.ToAddress.Hex(), data.FeeToken.Hex(), data.Fee.String(), data.Id)
+}
+
+func TestTransactionHash(t *testing.T) {
+	var nonce uint64 = 10
+	to := common.HexToAddress("0xBb0e8D6CFd87C6A07e312f1F31fd1F1cC9949F2C")
+	amount := big.NewInt(0)
+	var gasLimit uint64 = 210000
+	gasPrice := big.NewInt(1000000000)
+	tx := types.NewTransaction(nonce, to, amount, gasLimit, gasPrice, nil)
+	t.Logf(tx.Hash().Hex())
+
+	gasPrice = big.NewInt(2000000000)
+	tx1 := types.NewTransaction(nonce, to, amount, gasLimit, gasPrice, nil)
+	t.Logf(tx1.Hash().Hex())
 }

@@ -81,7 +81,8 @@ func setupApp() *cli.App {
 		MethodCodeFlag,
 		OwnerAccountFlag,
 		AdminIndexFlag,
-		AddGasFlag,
+		TxHashFlag,
+		GasValueFlag,
 	}
 	app.Commands = []cli.Command{
 		CmdSample,
@@ -122,6 +123,7 @@ func setupApp() *cli.App {
 		CmdNFTBalance,
 		CmdParseLockParams,
 		CmdEnv,
+		CmdAddGas,
 	}
 
 	app.Before = beforeCommands
@@ -175,11 +177,6 @@ func beforeCommands(ctx *cli.Context) (err error) {
 	admAddr := cfg.AdminAccountList[admIndex]
 	if adm, err = wallet.LoadEthAccount(storage, keystore, admAddr, defaultAccPwd); err != nil {
 		return fmt.Errorf("load eth account for chain %d faild, err: %v", cc.SideChainID, err)
-	}
-
-	uAddGas := ctx.GlobalUint64(getFlagName(AddGasFlag))
-	if uAddGas > 0 {
-		chainsdk.DefaultAddGasPrice = new(big.Int).SetUint64(uAddGas * 1000000000)
 	}
 
 	if sdk, err = chainsdk.NewEthereumSdk(cc.RPC); err != nil {
@@ -916,6 +913,23 @@ func handleCmdDecodeWrapLock(ctx *cli.Context) error {
 	log.Info("data: {\r\n toChainId %d\r\n tokenId %d\r\n fromAsset %s\r\n toAddress %s\r\n feeToken %s\r\n fee %s\r\n dataId %d\r\n}",
 		data.ToChainId, data.TokenId.Uint64(), data.FromAsset.Hex(), data.ToAddress.Hex(), data.FeeToken.Hex(), data.Fee.String(), data.Id)
 
+	return nil
+}
+
+func handleCmdAddGas(ctx *cli.Context) error {
+	log.Info("add gas price for transaction")
+
+	uAddGas := new(big.Int).SetUint64(ctx.GlobalUint64(getFlagName(GasValueFlag)))
+	addGasValue := new(big.Int).Mul(uAddGas, big.NewInt(1000000000))
+	hashstr := flag2string(ctx, TxHashFlag)
+	hash := common.HexToHash(hashstr)
+
+	newhash, err := sdk.AddGas(adm, hash, addGasValue)
+	if err != nil {
+		return err
+	}
+
+	log.Info("add gas for %s --> %s", hashstr, newhash.Hex())
 	return nil
 }
 

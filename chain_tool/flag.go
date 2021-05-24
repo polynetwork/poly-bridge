@@ -143,9 +143,9 @@ var (
 		Value: 0,
 	}
 
-	AddGasFlag = cli.Uint64Flag{
-		Name: "gas",
-		Usage: "set gas price if the estimated gas price is not enough, the value should be nGwei, e.g: 4 denotes add 4000000000wei",
+	GasValueFlag = cli.Uint64Flag{
+		Name: "gasValue",
+		Usage: "add gas price if the estimated gas price is not enough, the value should be nGwei, e.g: 4 denotes add 4000000000wei",
 		Value: 0,
 	}
 
@@ -153,6 +153,11 @@ var (
 		Name: "epoch",
 		Usage: "set okex epoch",
 		Value: 0,
+	}
+
+	TxHashFlag = cli.StringFlag{
+		Name: "hash",
+		Usage: "set tx hash",
 	}
 )
 
@@ -509,6 +514,16 @@ var (
 		Action: handleCmdEnv,
 		Flags: []cli.Flag{
 			OwnerAccountFlag,
+		},
+	}
+
+	CmdAddGas = cli.Command{
+		Name: "addGas",
+		Usage: "add gas price",
+		Action: handleCmdAddGas,
+		Flags: []cli.Flag{
+			TxHashFlag,
+			GasValueFlag,
 		},
 	}
 )
