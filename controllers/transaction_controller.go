@@ -73,10 +73,10 @@ func (c *TransactionController) TransactionsOfAddress() {
 		c.ServeJSON()
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
 		Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses)).
 		Where("src_transactions.standard = ?", 0).
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
 		Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
 		Joins("left join src_transactions on u.hash = src_transactions.hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
@@ -89,6 +89,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
+		Preload("FeeToken").
 		Limit(transactionsOfAddressReq.PageSize).Offset(transactionsOfAddressReq.PageSize * transactionsOfAddressReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
@@ -108,9 +109,10 @@ func (c *TransactionController) TransactionsOfAddress() {
 func (c *TransactionController) getTransactionByHash(hash string) (*models.SrcPolyDstRelation, error) {
 	srcPolyDstRelation := new(models.SrcPolyDstRelation)
 	res := db.Table("src_transactions").
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("src_transactions.hash = ?", hash).
 		Where("src_transactions.standard = ?", 0).
+		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
@@ -122,6 +124,7 @@ func (c *TransactionController) getTransactionByHash(hash string) (*models.SrcPo
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
+		Preload("FeeToken").
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelation)
 	if res.RowsAffected == 0 {
@@ -133,11 +136,12 @@ func (c *TransactionController) getTransactionByHash(hash string) (*models.SrcPo
 func (c *TransactionController) getTransactionByDstHash(hash string) (*models.SrcPolyDstRelation, error) {
 	srcPolyDstRelation := new(models.SrcPolyDstRelation)
 	res := db.Table("dst_transactions").
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("dst_transactions.hash = ?", hash).
 		Where("dst_transactions.standard = ?", 0).
 		Joins("inner join poly_transactions on dst_transactions.poly_hash = poly_transactions.hash").
 		Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.hash").
+		Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Preload("WrapperTransaction").
 		Preload("SrcTransaction").
@@ -147,6 +151,7 @@ func (c *TransactionController) getTransactionByDstHash(hash string) (*models.Sr
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
+		Preload("FeeToken").
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelation)
 	if res.RowsAffected == 0 {
@@ -267,7 +272,7 @@ func (c *TransactionController) TransactionsOfUnfinished() {
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
 	res := db.Table("src_transactions").
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("dst_transactions.hash is null").
 		Where("src_transactions.standard = ?", 0).
 		Where("src_transactions.time > ?", tt-24*60*60*28).
@@ -283,6 +288,7 @@ func (c *TransactionController) TransactionsOfUnfinished() {
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
+		Preload("FeeToken").
 		Limit(transactionsOfUnfinishedReq.PageSize).Offset(transactionsOfUnfinishedReq.PageSize * transactionsOfUnfinishedReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
@@ -316,13 +322,14 @@ func (c *TransactionController) TransactionsOfAsset() {
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Table("src_transactions").
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("src_transfers.asset = ?", transactionsOfAssetReq.Asset).
 		Where("src_transfers.chain_id = ?", transactionsOfAssetReq.Chain).
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
 		Preload("WrapperTransaction").
 		Preload("SrcTransaction").
 		Preload("SrcTransaction.SrcTransfer").
@@ -331,6 +338,7 @@ func (c *TransactionController) TransactionsOfAsset() {
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
+		Preload("FeeToken").
 		Limit(transactionsOfAssetReq.PageSize).Offset(transactionsOfAssetReq.PageSize * transactionsOfAssetReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)

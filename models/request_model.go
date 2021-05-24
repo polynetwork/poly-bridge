@@ -113,6 +113,7 @@ type TokenRsp struct {
 	Name           string
 	Property       int64
 	TokenBasicName string
+	Precision uint64
 	TokenBasic     *TokenBasicRsp
 	TokenMaps      []*TokenMapRsp
 }
@@ -124,6 +125,7 @@ func MakeTokenRsp(token *Token) *TokenRsp {
 		Name:           token.Name,
 		TokenBasicName: token.TokenBasicName,
 		Property:       token.Property,
+		Precision: token.Precision,
 	}
 	if token.TokenBasic != nil {
 		tokenRsp.TokenBasic = MakeTokenBasicRsp(token.TokenBasic)
