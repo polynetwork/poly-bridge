@@ -210,8 +210,8 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddrs []string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
 	txs := make([]*models.WrapperTransaction, 0)
-	for _, contract := range contractAddrs {
-		aaa, err := this.getWrapperEventByBlockNumber1(contract, startHeight, endHeight)
+	for i, contract := range contractAddrs {
+		aaa, err := this.getWrapperEventByBlockNumber1(contract, startHeight, endHeight, i)
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +220,7 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddrs []st
 	return txs, nil
 }
 
-func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
+func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr string, startHeight uint64, endHeight uint64, index int) ([]*models.WrapperTransaction, error) {
 	if len(contractAddr) == 0 {
 		return nil, nil
 	}
@@ -266,6 +266,11 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 			FeeTokenHash: evt.FromAsset.String(),
 			FeeAmount:    models.NewBigInt(evt.Efee),
 		})
+	}
+	if index == 1 {
+		for _, tx := range wrapperTransactions {
+			tx.FeeTokenHash = "0000000000000000000000000000000000000000"
+		}
 	}
 	return wrapperTransactions, nil
 }
