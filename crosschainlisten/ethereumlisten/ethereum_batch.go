@@ -193,7 +193,19 @@ func (this *EthereumChainListenBatch) HandleNewBlock(heightStart uint64, heightE
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
 }
 
-func (this *EthereumChainListenBatch) getWrapperEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
+func (this *EthereumChainListenBatch) getWrapperEventByBlockNumber(contractAddrs []string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
+	txs := make([]*models.WrapperTransaction, 0)
+	for _, contract := range contractAddrs {
+		aaa, err := this.getWrapperEventByBlockNumber1(contract, startHeight, endHeight)
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, aaa...)
+	}
+	return txs, nil
+}
+
+func (this *EthereumChainListenBatch) getWrapperEventByBlockNumber1(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
 	if len(contractAddr) == 0 {
 		return nil, nil
 	}

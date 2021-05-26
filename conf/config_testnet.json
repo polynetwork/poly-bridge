@@ -21,7 +21,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"",
+      "WrapperContract":[""],
       "CCMContract":"0300000000000000000000000000000000000000",
       "ProxyContract":""
     },
@@ -41,7 +41,7 @@
           "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
         }
       ],
-      "WrapperContract":"e498fb7D00468a67A79dE5D4Ca264d3350165280",
+      "WrapperContract":["e498fb7D00468a67A79dE5D4Ca264d3350165280", "Dc37471Af6a8aB7f45F444c5a3Ef4758281bE32C"],
       "CCMContract":"726532586c50ec9f4080b71f906a3d9779bbd64f",
       "ProxyContract":"D8aE73e06552E270340b63A8bcAbf9277a1aac99",
       "NFTWrapperContract":"baBaAF5CF7f63437755aAAFE7a4106463c5cD540",
@@ -65,7 +65,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"cd074cd290acc3d73c030784101afbcf40fd86a1",
+      "WrapperContract":["cd074cd290acc3d73c030784101afbcf40fd86a1"],
       "CCMContract":"e1695b1314a1331e3935481620417ed835669407",
       "ProxyContract":"edd2862dceb90b945210372d229f453f2b705f4f"
     },
@@ -76,12 +76,12 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url": "http://app-82026c54-a336-4ce4-bcae-352824351322.cls-593f3f46-316e-4f00-8ebd-9a45cfde390d.ankr.com"
+          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/" 
         }
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5",
+      "WrapperContract":["Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5", "9f9F15CC407F7b26f55D71D43f993580a9107007"],
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c",
       "NFTWrapperContract":"2E830E0cf3dc8643B497F88C07c8A72EFE24B11f",
@@ -99,7 +99,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"3c92F1E31aACA43Eb4fF8aE498C7E85618680F45",
+      "WrapperContract":["3c92F1E31aACA43Eb4fF8aE498C7E85618680F45", "CC8407Ee04AaC2AdC0E6A55E7E97176C701146cd"],
       "CCMContract":"D9A3d265a1127051F620e700B5a461af4991EaAE",
       "ProxyContract":"4a76E52600C6285029c8f7c52183cf86282cA5b8",
       "NFTWrapperContract": "94aa42C5dAB9b1006f59FF5E311344CC460A2335",
@@ -116,14 +116,15 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"a5c101afa9e04e9dd2c912983795005a49e02efa",
+      "WrapperContract":["a5c101afa9e04e9dd2c912983795005a49e02efa"],
       "CCMContract":"0900000000000000000000000000000000000000",
       "ProxyContract":"33c439c502cb4b6ac5a1e8057a65fe1fa7c300e2"
     },
     {
       "ChainName":"Ok",
       "ChainId":200,
-      "ListenSlot":6,
+      "ListenSlot":2,
+      "Defer": 2,
       "Nodes": [
         {
           "Url": "https://exchaintestrpc.okex.org"
@@ -131,9 +132,9 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":"5598226aD2E8991deEFD03203739C87BdF6e6D03",
-      "CCMContract":"cf21d94a0aa5c7a953a08244af91b0a9d3c1576e",
-      "ProxyContract":"8847365B3F6C54d9B7c475A5b67e8Ac3FCa04aE5"
+      "WrapperContract":["5598226aD2E8991deEFD03203739C87BdF6e6D03", "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"],
+      "CCMContract":"2A4cF474Aef33F0046434E4916Ac6b2fef4e5B78",
+      "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
     }
   ],
   "EventEffectConfig": {
@@ -232,7 +233,7 @@
           "Url": "https://exchaintestrpc.okex.org"
         }
       ],
-      "GasLimit":120000,
+      "GasLimit":220000,
       "ProxyFee":120,
       "MinFee": 20
     }

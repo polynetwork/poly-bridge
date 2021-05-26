@@ -19,6 +19,7 @@ PolyBridge的API。
 * [POST transactionofcurve](#post-transactionofcurve)
 * [POST transactionsofunfinished](#post-transactionsofunfinished)
 * [POST transactionsofasset](#post-transactionsofasset)
+* [POST expecttime](#post-expecttime)
 
 ## Test Node
 [testnet](https://bridge.poly.network/testnet/v1/)
@@ -2557,5 +2558,41 @@ Example Response
             }
         }
     ]
+}
+```
+
+
+### POST expecttime
+
+查询两条链之间跨链的预期时间。
+
+Request 
+```
+http://localhost:8080/v1/expecttime/
+```
+
+BODY raw
+```
+{
+    "SrcChainId":7,
+    "DstChainId":2
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/expecttime/' \
+--data-raw '{
+                "SrcChainId":7,
+                "DstChainId":2
+            }'
+```
+
+Example Response
+```
+{
+    "SrcChainId": 7,
+    "DstChainId": 2,
+    "Time": 90
 }
 ```
