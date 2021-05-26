@@ -44,7 +44,7 @@
           "Key": "W4SW61XNZAVGYFRUYNIBV1C8TBIXJDQCS9"
         }
       ],
-      "WrapperContract":["2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac"],
+      "WrapperContract":["2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac", "d380450e9e373bDC389951C54616edb2EE653524"],
       "CCMContract":"838bf9e95cb12dd76a54c9f9d2e3082eaf928270",
       "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
       "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
@@ -105,7 +105,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["E3D0FB6E3cB5DA61EB18b06D035052441009d1E6"],
+      "WrapperContract":["E3D0FB6E3cB5DA61EB18b06D035052441009d1E6", "4b0CFdb5e1Ca898a225F9E14AfF9e4eF178a10d2"],
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
@@ -123,7 +123,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["4fE451186c0D69205ACc1fA00FD75fc6d71e47eE"],
+      "WrapperContract":["4fE451186c0D69205ACc1fA00FD75fc6d71e47eE", "1B0C55be400e2a7D924032B257Fbc75Bbfd256E7"],
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
