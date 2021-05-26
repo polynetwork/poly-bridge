@@ -145,7 +145,7 @@ var (
 
 	GasValueFlag = cli.Uint64Flag{
 		Name: "gasValue",
-		Usage: "add gas price if the estimated gas price is not enough, the value should be nGwei, e.g: 4 denotes add 4000000000wei",
+		Usage: "new gas price if the estimated gas price is not enough, the value should be nGwei, e.g: 4 denotes add 4000000000wei",
 		Value: 0,
 	}
 

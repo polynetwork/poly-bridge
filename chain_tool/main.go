@@ -919,12 +919,17 @@ func handleCmdDecodeWrapLock(ctx *cli.Context) error {
 func handleCmdAddGas(ctx *cli.Context) error {
 	log.Info("add gas price for transaction")
 
-	uAddGas := new(big.Int).SetUint64(ctx.GlobalUint64(getFlagName(GasValueFlag)))
-	addGasValue := new(big.Int).Mul(uAddGas, big.NewInt(1000000000))
+	num := flag2Uint64(ctx, GasValueFlag)
+	if num == 0 {
+		return fmt.Errorf("added gasValue is 0")
+	}
+	unit := new(big.Int).SetUint64(num)
+	gw := big.NewInt(1000000000)
+	newGasPrice := new(big.Int).Mul(unit, gw)
+
 	hashstr := flag2string(ctx, TxHashFlag)
 	hash := common.HexToHash(hashstr)
-
-	newhash, err := sdk.AddGas(adm, hash, addGasValue)
+	newhash, err := sdk.AddGas(adm, hash, newGasPrice)
 	if err != nil {
 		return err
 	}

@@ -535,7 +535,7 @@ func (s *EthereumSdk) DeployNFTQueryContract(key *ecdsa.PrivateKey) (common.Addr
 	return addr, nil
 }
 
-func (s *EthereumSdk) AddGas(key *ecdsa.PrivateKey, txhash common.Hash, addGas *big.Int) (common.Hash, error) {
+func (s *EthereumSdk) AddGas(key *ecdsa.PrivateKey, txhash common.Hash, newGasPrice *big.Int) (common.Hash, error) {
 	tx, err := s.GetTransactionByHash(txhash)
 	if err != nil {
 		return EmptyHash, err
@@ -545,7 +545,10 @@ func (s *EthereumSdk) AddGas(key *ecdsa.PrivateKey, txhash common.Hash, addGas *
 	to := tx.To()
 	amount := tx.Value()
 	gasLimit := tx.Gas()
-	gasPrice := new(big.Int).Add(tx.GasPrice(), addGas)
+	if newGasPrice.Cmp(tx.GasPrice()) <= 0 {
+		return EmptyHash, fmt.Errorf("gas price should be greater than %s", tx.GasPrice().String())
+	}
+	gasPrice := newGasPrice
 
 	newTx := types.NewTransaction(nonce, *to, amount, gasLimit, gasPrice, payload)
 	signedTx, err := types.SignTx(newTx, types.HomesteadSigner{}, key)
