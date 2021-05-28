@@ -19,6 +19,7 @@ package chainsdk
 
 import (
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/joeqian10/neo-gogogo/helper"
 	"github.com/joeqian10/neo-gogogo/nep5"
 	"github.com/joeqian10/neo-gogogo/rpc"
@@ -99,6 +100,7 @@ func (sdk *NeoSdk) Nep5Balance(hash string, addr string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
+	logs.Error("hash: %s, addr: %s", hash, addr)
 	nep5 := nep5.NewNep5Helper(scriptHash, sdk.url)
 	addrHash, err := helper.UInt160FromString(addr)
 	if err != nil {

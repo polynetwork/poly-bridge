@@ -153,9 +153,13 @@ func (pro *OntologySdkPro) Oep4Balance(hash string, addr string) (*big.Int, erro
 	if err != nil {
 		return new(big.Int).SetUint64(0), err
 	}
-
+	logs.Error("%s, %s", hash, addr)
+	address, err := common1.AddressFromHexString(addr)
+	if err != nil {
+		return new(big.Int).SetUint64(0), err
+	}
 	preResult, err := info.sdk.NeoVM.PreExecInvokeNeoVMContract(contractAddr,
-		[]interface{}{"balanceOf", []interface{}{}})
+		[]interface{}{"balanceOf", []interface{}{address[:]}})
 	balance, err := preResult.Result.ToInteger()
 	if err != nil {
 		return new(big.Int).SetUint64(0), err
