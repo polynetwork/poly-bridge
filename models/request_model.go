@@ -239,6 +239,7 @@ type GetFeeReq struct {
 	SrcChainId uint64
 	Hash       string
 	DstChainId uint64
+	SwapTokenHash string
 }
 
 type GetFeeRsp struct {
@@ -248,9 +249,13 @@ type GetFeeRsp struct {
 	UsdtAmount               string
 	TokenAmount              string
 	TokenAmountWithPrecision string
+	SwapTokenHash string
+	Balance string
+	BalanceWithPrecision string
 }
 
-func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float) *GetFeeRsp {
+func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float,
+	swapTokenHash string, balance *big.Float, balanceWithoutPrecision *big.Float) *GetFeeRsp {
 	getFeeRsp := &GetFeeRsp{
 		SrcChainId:               srcChainId,
 		Hash:                     hash,
@@ -258,6 +263,9 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		UsdtAmount:               usdtAmount.String(),
 		TokenAmount:              tokenAmount.String(),
 		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
+		SwapTokenHash: swapTokenHash,
+		Balance: balanceWithoutPrecision.String(),
+		BalanceWithPrecision: balance.String(),
 	}
 	{
 		aaa, _ := usdtAmount.Float64()
@@ -276,6 +284,16 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		aaa, _ := tokenAmountWithPrecision.Float64()
 		tokenAmountWithPrecision := decimal.NewFromFloat(aaa)
 		getFeeRsp.TokenAmountWithPrecision = tokenAmountWithPrecision.String()
+	}
+	{
+		aaa, _ := balanceWithoutPrecision.Float64()
+		balanceWithoutPrecision := decimal.NewFromFloat(aaa)
+		getFeeRsp.Balance = balanceWithoutPrecision.String()
+	}
+	{
+		aaa, _ := balance.Float64()
+		balance := decimal.NewFromFloat(aaa)
+		getFeeRsp.BalanceWithPrecision = balance.String()
 	}
 	return getFeeRsp
 }

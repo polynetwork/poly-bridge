@@ -312,6 +312,25 @@ func (pro *EthereumSdkPro) Erc20Info(hash string) (string, string, int64, string
 	return "", "", 0, "", fmt.Errorf("all node is not working")
 }
 
+func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (uint64, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return 0, fmt.Errorf("all node is not working")
+	}
+	erc20Address := common.HexToAddress(erc20)
+	userAddress := common.HexToAddress(addr)
+	for info != nil {
+		balance, err := info.sdk.GetERC20Balance(erc20Address, userAddress)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return balance.Uint64(), nil
+		}
+	}
+	return 0, fmt.Errorf("all node is not working")
+}
+
 func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) bool {
 	num := 0
 	for num < 300 {

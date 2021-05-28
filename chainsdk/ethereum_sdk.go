@@ -28,6 +28,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/polynetwork/eth-contracts/go_abi/erc20_abi"
 	"math/big"
 	"poly-bridge/chainsdk/usdt_abi"
 )
@@ -176,4 +177,18 @@ func (ec *EthereumSdk) Erc20Info(hash string) (string, string, int64, string, er
 		return "", "", 0, "", err
 	}
 	return hash, name, decimal.Int64(), symbol, nil
+}
+
+func (ec *EthereumSdk) Erc20Balance(erc20 string, addr string) (uint64, error) {
+	erc20Address := common.HexToAddress(erc20)
+	erc20Contract, err := erc20_abi.NewERC20(erc20Address, ec.rawClient)
+	if err != nil {
+		return 0, fmt.Errorf("erc20 address is not right")
+	}
+	userAddress := common.HexToAddress(addr)
+	balance, err := erc20Contract.BalanceOf(&bind.CallOpts{}, userAddress)
+	if err != nil {
+		return 0, err
+	}
+	return balance.Uint64(), nil
 }

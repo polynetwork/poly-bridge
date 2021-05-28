@@ -63,8 +63,38 @@ func (c *FeeController) GetFee() {
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
-	c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision)
-	c.ServeJSON()
+
+	if getFeeReq.SwapTokenHash != "" {
+		tokenMap := new(models.TokenMap)
+		res := db.Where("src_token_hash = ? and src_chain_id = ? and dst_chain_id = ?", getFeeReq.SwapTokenHash, getFeeReq.SrcChainId, getFeeReq.DstChainId).Preload("DstToken").First(tokenMap)
+		if res.RowsAffected == 0 {
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+			c.ServeJSON()
+			return
+		}
+		if tokenMap.DstChainId != getFeeReq.DstChainId || tokenMap.DstToken == nil {
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+			c.ServeJSON()
+			return
+		}
+		tokenBalance, err := getBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+		if err != nil {
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+			c.ServeJSON()
+			return
+		}
+		tokenBalanceWithoutPrecision := new(big.Float).Quo(new(big.Float).SetUint64(tokenBalance), new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
+		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+			getFeeReq.SwapTokenHash, new(big.Float).SetUint64(tokenBalance), tokenBalanceWithoutPrecision)
+		c.ServeJSON()
+	} else {
+		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+			getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+		c.ServeJSON()
+	}
 }
 
 func (c *FeeController) CheckFee() {

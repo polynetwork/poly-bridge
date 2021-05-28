@@ -167,6 +167,23 @@ func (pro *NeoSdkPro) Nep5Info(hash string) (string, string, int64, error) {
 	return "", "", 0, fmt.Errorf("all node is not working")
 }
 
+func (pro *NeoSdkPro) Nep5Balance(hash string, addr string) (uint64, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return 0, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		balance, err := info.sdk.Nep5Balance(hash, addr)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return balance, nil
+		}
+	}
+	return 0, fmt.Errorf("all node is not working")
+}
+
 func (pro *NeoSdkPro) GetTransactionHeight(hash string) (uint64, error) {
 	info := pro.GetLatest()
 	if info == nil {
