@@ -23,6 +23,7 @@ import (
 	"github.com/ontio/ontology-go-sdk"
 	"github.com/ontio/ontology-go-sdk/common"
 	"github.com/ontio/ontology/core/types"
+	"math/big"
 	"runtime/debug"
 	common1 "github.com/ontio/ontology/common"
 	"sync"
@@ -143,21 +144,21 @@ func (pro *OntologySdkPro) GetSdk() (*ontology_go_sdk.OntologySdk, error) {
 	return info.sdk, nil
 }
 
-func (pro *OntologySdkPro) Oep4Balance(hash string, addr string) (uint64, error) {
+func (pro *OntologySdkPro) Oep4Balance(hash string, addr string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return 0, fmt.Errorf("all node is not working")
+		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 	}
 	contractAddr, err := common1.AddressFromHexString(hash)
 	if err != nil {
-		return 0, err
+		return new(big.Int).SetUint64(0), err
 	}
 
 	preResult, err := info.sdk.NeoVM.PreExecInvokeNeoVMContract(contractAddr,
 		[]interface{}{"balanceOf", []interface{}{}})
 	balance, err := preResult.Result.ToInteger()
 	if err != nil {
-		return 0, err
+		return new(big.Int).SetUint64(0), err
 	}
-	return balance.Uint64(), nil
+	return balance, nil
 }

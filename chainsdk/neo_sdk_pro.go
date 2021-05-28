@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"github.com/joeqian10/neo-gogogo/rpc/models"
+	"math/big"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -167,10 +168,10 @@ func (pro *NeoSdkPro) Nep5Info(hash string) (string, string, int64, error) {
 	return "", "", 0, fmt.Errorf("all node is not working")
 }
 
-func (pro *NeoSdkPro) Nep5Balance(hash string, addr string) (uint64, error) {
+func (pro *NeoSdkPro) Nep5Balance(hash string, addr string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return 0, fmt.Errorf("all node is not working")
+		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 	}
 	for info != nil {
 		balance, err := info.sdk.Nep5Balance(hash, addr)
@@ -178,10 +179,10 @@ func (pro *NeoSdkPro) Nep5Balance(hash string, addr string) (uint64, error) {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			return balance, nil
+			return new(big.Int).SetUint64(balance), nil
 		}
 	}
-	return 0, fmt.Errorf("all node is not working")
+	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
 
 func (pro *NeoSdkPro) GetTransactionHeight(hash string) (uint64, error) {

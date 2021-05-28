@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
+	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -77,7 +78,7 @@ func newChainSdks() {
 	}
 }
 
-func getBalance(chainId uint64, hash string) (uint64, error) {
+func getBalance(chainId uint64, hash string) (*big.Int, error) {
 	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {

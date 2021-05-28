@@ -86,9 +86,16 @@ func (c *FeeController) GetFee() {
 			c.ServeJSON()
 			return
 		}
-		tokenBalanceWithoutPrecision := new(big.Float).Quo(new(big.Float).SetUint64(tokenBalance), new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
+		balance, result := new(big.Float).SetString(tokenBalance.String())
+		if !result {
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+			c.ServeJSON()
+			return
+		}
+		tokenBalanceWithoutPrecision := new(big.Float).Quo(balance, new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
 		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-			getFeeReq.SwapTokenHash, new(big.Float).SetUint64(tokenBalance), tokenBalanceWithoutPrecision)
+			getFeeReq.SwapTokenHash, balance, tokenBalanceWithoutPrecision)
 		c.ServeJSON()
 	} else {
 		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
