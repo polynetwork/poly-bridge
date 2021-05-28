@@ -121,5 +121,5 @@ func getBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return ontologySdk.Oep4Balance(hash, ontConfig.ProxyContract)
 	}
-	return 0, nil
+	return new(big.Int).SetUint64(0), nil
 }
