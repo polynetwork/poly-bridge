@@ -764,6 +764,7 @@ Example Response
 
 获取到一个指定链的跨链需要收取的源链上资产金额。
 用户在做一次跨链操作时，在源链交易上收取了用户的费用。
+如果指定了SwapTokenHash，那么回返回可用余额。
 
 Request 
 ```
@@ -773,9 +774,10 @@ http://localhost:8080/v1/getfee/
 BODY raw
 ```
 {
-    "SrcChainId": 2,
-    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
-    "DstChainId":79
+    "SrcChainId": 7, 
+    "Hash": "0000000000000000000000000000000000000000", 
+    "SwapTokenHash": "6ef070cb10fc9f66d04a4c387928b268f55b9198", 
+    "DstChainId": 5
 }
 ```
 
@@ -783,21 +785,25 @@ Example Request
 ```
 curl --location --request POST 'http://localhost:8080/v1/getfee/' \
 --data-raw '{
-    "SrcChainId": 2,
-    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
-    "DstChainId":79
+    "SrcChainId": 7, 
+    "Hash": "0000000000000000000000000000000000000000", 
+    "SwapTokenHash": "6ef070cb10fc9f66d04a4c387928b268f55b9198", 
+    "DstChainId": 5
 }'
 ```
 
 Example Response
 ```
 {
-    "SrcChainId": 2,
-    "Hash": "ad3f96ae966ad60347f31845b7e4b333104c52fb",
-    "DstChainId": 79,
-    "UsdtAmount": "0.1205013368",
-    "TokenAmount": "0.1206262755",
-    "TokenAmountWithPrecision": "120626.2755"
+    "SrcChainId": 7,
+    "Hash": "0000000000000000000000000000000000000000",
+    "DstChainId": 5,
+    "UsdtAmount": "3.7505409912",
+    "TokenAmount": "0.23261657",
+    "TokenAmountWithPrecision": "232616561965745400",
+    "SwapTokenHash": "6ef070cb10fc9f66d04a4c387928b268f55b9198",
+    "Balance": "12.45323704",
+    "BalanceWithPrecision": "1245323704"
 }
 ```
 
