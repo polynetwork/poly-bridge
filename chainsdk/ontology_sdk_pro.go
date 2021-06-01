@@ -144,25 +144,40 @@ func (pro *OntologySdkPro) GetSdk() (*ontology_go_sdk.OntologySdk, error) {
 	return info.sdk, nil
 }
 
+func (pro *OntologySdkPro) IsOngAddress(hash string) bool {
+	return true
+}
+
 func (pro *OntologySdkPro) Oep4Balance(hash string, addr string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 	}
-	contractAddr, err := common1.AddressFromHexString(hash)
-	if err != nil {
-		return new(big.Int).SetUint64(0), err
+	if pro.IsOngAddress(hash) {
+		address, err := common1.AddressFromHexString(addr)
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		balance, err := info.sdk.Native.Ong.BalanceOf(address)
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		return new(big.Int).SetUint64(balance), nil
+	} else {
+		contractAddr, err := common1.AddressFromHexString(hash)
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		address, err := common1.AddressFromHexString(addr)
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		preResult, err := info.sdk.NeoVM.PreExecInvokeNeoVMContract(contractAddr,
+			[]interface{}{"balanceOf", []interface{}{address[:]}})
+		balance, err := preResult.Result.ToInteger()
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		return balance, nil
 	}
-	logs.Error("%s, %s", hash, addr)
-	address, err := common1.AddressFromHexString(addr)
-	if err != nil {
-		return new(big.Int).SetUint64(0), err
-	}
-	preResult, err := info.sdk.NeoVM.PreExecInvokeNeoVMContract(contractAddr,
-		[]interface{}{"balanceOf", []interface{}{address[:]}})
-	balance, err := preResult.Result.ToInteger()
-	if err != nil {
-		return new(big.Int).SetUint64(0), err
-	}
-	return balance, nil
 }

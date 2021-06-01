@@ -192,3 +192,10 @@ func (ec *EthereumSdk) Erc20Balance(erc20 string, addr string) (uint64, error) {
 	}
 	return balance.Uint64(), nil
 }
+
+func (ec *EthereumSdk) EthBalance(addr string) (*big.Int, error) {
+	var result hexutil.Big
+	ctx := context.Background()
+	err := ec.rpcClient.CallContext(ctx, &result, "eth_getBalance", addr, "latest")
+	return (*big.Int)(&result), err
+}

@@ -312,6 +312,14 @@ func (pro *EthereumSdkPro) Erc20Info(hash string) (string, string, int64, string
 	return "", "", 0, "", fmt.Errorf("all node is not working")
 }
 
+func (pro *EthereumSdkPro) IsEthAddress(addr string) bool {
+	if addr == "0000000000000000000000000000000000000000" {
+		return true
+	} else {
+		return false
+	}
+}
+
 func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
@@ -320,7 +328,13 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 	erc20Address := common.HexToAddress(erc20)
 	userAddress := common.HexToAddress(addr)
 	for info != nil {
-		balance, err := info.sdk.GetERC20Balance(erc20Address, userAddress)
+		balance := new(big.Int).SetUint64(0)
+		var err error
+		if pro.IsEthAddress(erc20) {
+			balance, err = info.sdk.EthBalance(addr)
+		} else {
+			balance, err = info.sdk.GetERC20Balance(erc20Address, userAddress)
+		}
 		if err != nil {
 			info.latestHeight = 0
 			info = pro.GetLatest()
