@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	nftmp "poly-bridge/go_abi/nft_mapping_abi"
+	nftquery "poly-bridge/go_abi/nft_query_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
 	pabi "poly-bridge/utils/abi"
 	"strings"
@@ -25,7 +26,7 @@ func TestNewEthereumSdk_TestABI(t *testing.T) {
 		chainId := big.NewInt(7)
 		bz, err := parsed.Pack("", owner, chainId)
 		assert.NoError(t, err)
-		t.Logf(common.Bytes2Hex(bz))
+		t.Logf("deploy nft wrapper construct params: %s", common.Bytes2Hex(bz))
 	}
 
 	{
@@ -37,7 +38,18 @@ func TestNewEthereumSdk_TestABI(t *testing.T) {
 		symbol := "DIGINFT"
 		bz, err := parsed.Pack("", name, symbol)
 		assert.NoError(t, err)
-		t.Logf(common.Bytes2Hex(bz))
+		t.Logf("deploy nft construct params: %s", common.Bytes2Hex(bz))
+	}
+
+	{
+		queryABI := nftquery.PolyNFTQueryABI
+		parsed, err := abi.JSON(strings.NewReader(queryABI))
+		assert.NoError(t, err)
+		owner := common.HexToAddress("0x31c0dd87B33Dcd66f9a255Cf4CF39287F8AE593C")
+		queryLimit := big.NewInt(24)
+		bz, err := parsed.Pack("", owner, queryLimit)
+		assert.NoError(t, err)
+		t.Logf("deploy nft query construct params: %s", common.Bytes2Hex(bz))
 	}
 }
 

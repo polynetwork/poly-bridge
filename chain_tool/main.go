@@ -296,7 +296,8 @@ func handleCmdDeployNFTWrapContract(ctx *cli.Context) error {
 func handleCmdDeployNFTQueryContract(ctx *cli.Context) error {
 	log.Info("start to deploy nft query contract...")
 
-	addr, err := sdk.DeployNFTQueryContract(adm)
+	var queryLimit uint64 = 24
+	addr, err := sdk.DeployNFTQueryContract(adm, queryLimit)
 	if err != nil {
 		return err
 	}

@@ -517,13 +517,15 @@ func (s *EthereumSdk) DeployERC20(key *ecdsa.PrivateKey) (common.Address, error)
 	return addr, nil
 }
 
-func (s *EthereumSdk) DeployNFTQueryContract(key *ecdsa.PrivateKey) (common.Address, error) {
+func (s *EthereumSdk) DeployNFTQueryContract(key *ecdsa.PrivateKey, queryLimit uint64) (common.Address, error) {
 	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
 	if err != nil {
 		return EmptyAddress, err
 	}
 
-	addr, tx, _, err := nftquery.DeployPolyNFTQuery(auth, s.backend())
+	owner := auth.From
+	limit := new(big.Int).SetUint64(queryLimit)
+	addr, tx, _, err := nftquery.DeployPolyNFTQuery(auth, s.backend(), owner, limit)
 	if err != nil {
 		return EmptyAddress, err
 	}
