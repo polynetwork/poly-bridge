@@ -66,9 +66,9 @@ func (c *InfoController) Home() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
-		return
-	}
+	//if !checkPageSize(&c.Controller, req.PageSize) {
+	//	return
+	//}
 
 	chainAssets := selectAssetsByChainId(req.ChainId)
 	totalCnt := len(chainAssets)
