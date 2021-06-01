@@ -332,8 +332,10 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 		var err error
 		if pro.IsEthAddress(erc20) {
 			balance, err = info.sdk.EthBalance(addr)
+			//logs.Error("eth, addr: %s, balance: %s", addr, balance.String())
 		} else {
 			balance, err = info.sdk.GetERC20Balance(erc20Address, userAddress)
+			//logs.Error("erc20, addr: %s, balance: %s", addr, balance.String())
 		}
 		if err != nil {
 			info.latestHeight = 0
