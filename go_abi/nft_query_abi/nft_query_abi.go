@@ -26,6 +26,151 @@ var (
 	_ = event.NewSubscription
 )
 
+// ContextABI is the input ABI used to generate the binding from.
+const ContextABI = "[]"
+
+// Context is an auto generated Go binding around an Ethereum contract.
+type Context struct {
+	ContextCaller     // Read-only binding to the contract
+	ContextTransactor // Write-only binding to the contract
+	ContextFilterer   // Log filterer for contract events
+}
+
+// ContextCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ContextCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ContextTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ContextTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ContextFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ContextFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ContextSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ContextSession struct {
+	Contract     *Context          // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// ContextCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ContextCallerSession struct {
+	Contract *ContextCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts  // Call options to use throughout this session
+}
+
+// ContextTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ContextTransactorSession struct {
+	Contract     *ContextTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
+}
+
+// ContextRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ContextRaw struct {
+	Contract *Context // Generic contract binding to access the raw methods on
+}
+
+// ContextCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ContextCallerRaw struct {
+	Contract *ContextCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ContextTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ContextTransactorRaw struct {
+	Contract *ContextTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewContext creates a new instance of Context, bound to a specific deployed contract.
+func NewContext(address common.Address, backend bind.ContractBackend) (*Context, error) {
+	contract, err := bindContext(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &Context{ContextCaller: ContextCaller{contract: contract}, ContextTransactor: ContextTransactor{contract: contract}, ContextFilterer: ContextFilterer{contract: contract}}, nil
+}
+
+// NewContextCaller creates a new read-only instance of Context, bound to a specific deployed contract.
+func NewContextCaller(address common.Address, caller bind.ContractCaller) (*ContextCaller, error) {
+	contract, err := bindContext(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ContextCaller{contract: contract}, nil
+}
+
+// NewContextTransactor creates a new write-only instance of Context, bound to a specific deployed contract.
+func NewContextTransactor(address common.Address, transactor bind.ContractTransactor) (*ContextTransactor, error) {
+	contract, err := bindContext(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ContextTransactor{contract: contract}, nil
+}
+
+// NewContextFilterer creates a new log filterer instance of Context, bound to a specific deployed contract.
+func NewContextFilterer(address common.Address, filterer bind.ContractFilterer) (*ContextFilterer, error) {
+	contract, err := bindContext(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ContextFilterer{contract: contract}, nil
+}
+
+// bindContext binds a generic wrapper to an already deployed contract.
+func bindContext(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(ContextABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Context *ContextRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _Context.Contract.ContextCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Context *ContextRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Context.Contract.ContextTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Context *ContextRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Context.Contract.ContextTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Context *ContextCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _Context.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Context *ContextTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Context.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Context *ContextTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Context.Contract.contract.Transact(opts, method, params...)
+}
+
 // IERC165ABI is the input ABI used to generate the binding from.
 const IERC165ABI = "[{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
@@ -3267,8 +3412,407 @@ func (_IPolyNFTLockProxy *IPolyNFTLockProxyTransactorSession) SetManagerProxy(ec
 	return _IPolyNFTLockProxy.Contract.SetManagerProxy(&_IPolyNFTLockProxy.TransactOpts, eccmpAddr)
 }
 
+// OwnableABI is the input ABI used to generate the binding from.
+const OwnableABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+
+// OwnableFuncSigs maps the 4-byte function signature to its string representation.
+var OwnableFuncSigs = map[string]string{
+	"8f32d59b": "isOwner()",
+	"8da5cb5b": "owner()",
+	"715018a6": "renounceOwnership()",
+	"f2fde38b": "transferOwnership(address)",
+}
+
+// Ownable is an auto generated Go binding around an Ethereum contract.
+type Ownable struct {
+	OwnableCaller     // Read-only binding to the contract
+	OwnableTransactor // Write-only binding to the contract
+	OwnableFilterer   // Log filterer for contract events
+}
+
+// OwnableCaller is an auto generated read-only Go binding around an Ethereum contract.
+type OwnableCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// OwnableTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type OwnableTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// OwnableFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type OwnableFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// OwnableSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type OwnableSession struct {
+	Contract     *Ownable          // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// OwnableCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type OwnableCallerSession struct {
+	Contract *OwnableCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts  // Call options to use throughout this session
+}
+
+// OwnableTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type OwnableTransactorSession struct {
+	Contract     *OwnableTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
+}
+
+// OwnableRaw is an auto generated low-level Go binding around an Ethereum contract.
+type OwnableRaw struct {
+	Contract *Ownable // Generic contract binding to access the raw methods on
+}
+
+// OwnableCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type OwnableCallerRaw struct {
+	Contract *OwnableCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// OwnableTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type OwnableTransactorRaw struct {
+	Contract *OwnableTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewOwnable creates a new instance of Ownable, bound to a specific deployed contract.
+func NewOwnable(address common.Address, backend bind.ContractBackend) (*Ownable, error) {
+	contract, err := bindOwnable(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &Ownable{OwnableCaller: OwnableCaller{contract: contract}, OwnableTransactor: OwnableTransactor{contract: contract}, OwnableFilterer: OwnableFilterer{contract: contract}}, nil
+}
+
+// NewOwnableCaller creates a new read-only instance of Ownable, bound to a specific deployed contract.
+func NewOwnableCaller(address common.Address, caller bind.ContractCaller) (*OwnableCaller, error) {
+	contract, err := bindOwnable(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &OwnableCaller{contract: contract}, nil
+}
+
+// NewOwnableTransactor creates a new write-only instance of Ownable, bound to a specific deployed contract.
+func NewOwnableTransactor(address common.Address, transactor bind.ContractTransactor) (*OwnableTransactor, error) {
+	contract, err := bindOwnable(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &OwnableTransactor{contract: contract}, nil
+}
+
+// NewOwnableFilterer creates a new log filterer instance of Ownable, bound to a specific deployed contract.
+func NewOwnableFilterer(address common.Address, filterer bind.ContractFilterer) (*OwnableFilterer, error) {
+	contract, err := bindOwnable(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &OwnableFilterer{contract: contract}, nil
+}
+
+// bindOwnable binds a generic wrapper to an already deployed contract.
+func bindOwnable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(OwnableABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Ownable *OwnableRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _Ownable.Contract.OwnableCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Ownable *OwnableRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Ownable.Contract.OwnableTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Ownable *OwnableRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Ownable.Contract.OwnableTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Ownable *OwnableCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _Ownable.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Ownable *OwnableTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Ownable.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Ownable *OwnableTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Ownable.Contract.contract.Transact(opts, method, params...)
+}
+
+// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
+//
+// Solidity: function isOwner() view returns(bool)
+func (_Ownable *OwnableCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
+	var (
+		ret0 = new(bool)
+	)
+	out := ret0
+	err := _Ownable.contract.Call(opts, out, "isOwner")
+	return *ret0, err
+}
+
+// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
+//
+// Solidity: function isOwner() view returns(bool)
+func (_Ownable *OwnableSession) IsOwner() (bool, error) {
+	return _Ownable.Contract.IsOwner(&_Ownable.CallOpts)
+}
+
+// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
+//
+// Solidity: function isOwner() view returns(bool)
+func (_Ownable *OwnableCallerSession) IsOwner() (bool, error) {
+	return _Ownable.Contract.IsOwner(&_Ownable.CallOpts)
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_Ownable *OwnableCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _Ownable.contract.Call(opts, out, "owner")
+	return *ret0, err
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_Ownable *OwnableSession) Owner() (common.Address, error) {
+	return _Ownable.Contract.Owner(&_Ownable.CallOpts)
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_Ownable *OwnableCallerSession) Owner() (common.Address, error) {
+	return _Ownable.Contract.Owner(&_Ownable.CallOpts)
+}
+
+// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+//
+// Solidity: function renounceOwnership() returns()
+func (_Ownable *OwnableTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Ownable.contract.Transact(opts, "renounceOwnership")
+}
+
+// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+//
+// Solidity: function renounceOwnership() returns()
+func (_Ownable *OwnableSession) RenounceOwnership() (*types.Transaction, error) {
+	return _Ownable.Contract.RenounceOwnership(&_Ownable.TransactOpts)
+}
+
+// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+//
+// Solidity: function renounceOwnership() returns()
+func (_Ownable *OwnableTransactorSession) RenounceOwnership() (*types.Transaction, error) {
+	return _Ownable.Contract.RenounceOwnership(&_Ownable.TransactOpts)
+}
+
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
+//
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_Ownable *OwnableTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
+	return _Ownable.contract.Transact(opts, "transferOwnership", newOwner)
+}
+
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
+//
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_Ownable *OwnableSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _Ownable.Contract.TransferOwnership(&_Ownable.TransactOpts, newOwner)
+}
+
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
+//
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_Ownable *OwnableTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _Ownable.Contract.TransferOwnership(&_Ownable.TransactOpts, newOwner)
+}
+
+// OwnableOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the Ownable contract.
+type OwnableOwnershipTransferredIterator struct {
+	Event *OwnableOwnershipTransferred // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *OwnableOwnershipTransferredIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(OwnableOwnershipTransferred)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(OwnableOwnershipTransferred)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *OwnableOwnershipTransferredIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *OwnableOwnershipTransferredIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// OwnableOwnershipTransferred represents a OwnershipTransferred event raised by the Ownable contract.
+type OwnableOwnershipTransferred struct {
+	PreviousOwner common.Address
+	NewOwner      common.Address
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_Ownable *OwnableFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*OwnableOwnershipTransferredIterator, error) {
+
+	var previousOwnerRule []interface{}
+	for _, previousOwnerItem := range previousOwner {
+		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
+	}
+	var newOwnerRule []interface{}
+	for _, newOwnerItem := range newOwner {
+		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	}
+
+	logs, sub, err := _Ownable.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	if err != nil {
+		return nil, err
+	}
+	return &OwnableOwnershipTransferredIterator{contract: _Ownable.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
+}
+
+// WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_Ownable *OwnableFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *OwnableOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+
+	var previousOwnerRule []interface{}
+	for _, previousOwnerItem := range previousOwner {
+		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
+	}
+	var newOwnerRule []interface{}
+	for _, newOwnerItem := range newOwner {
+		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	}
+
+	logs, sub, err := _Ownable.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(OwnableOwnershipTransferred)
+				if err := _Ownable.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_Ownable *OwnableFilterer) ParseOwnershipTransferred(log types.Log) (*OwnableOwnershipTransferred, error) {
+	event := new(OwnableOwnershipTransferred)
+	if err := _Ownable.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
 // PolyNFTQueryABI is the input ABI used to generate the binding from.
-const PolyNFTQueryABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getAndCheckTokenUrl\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"ignore\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"getFilterTokensByIndex\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"getOwnerTokensByIndex\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"args\",\"type\":\"bytes\"}],\"name\":\"getTokensByIds\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const PolyNFTQueryABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_limit\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getAndCheckTokenUrl\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"ignore\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"getFilterTokensByIndex\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"getOwnerTokensByIndex\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"asset\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"args\",\"type\":\"bytes\"}],\"name\":\"getTokensByIds\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_limit\",\"type\":\"uint256\"}],\"name\":\"setQueryLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // PolyNFTQueryFuncSigs maps the 4-byte function signature to its string representation.
 var PolyNFTQueryFuncSigs = map[string]string{
@@ -3276,19 +3820,24 @@ var PolyNFTQueryFuncSigs = map[string]string{
 	"c5cc029a": "getFilterTokensByIndex(address,address,uint256,uint256)",
 	"bbc8e446": "getOwnerTokensByIndex(address,address,uint256,uint256)",
 	"c792f10f": "getTokensByIds(address,bytes)",
+	"8f32d59b": "isOwner()",
+	"8da5cb5b": "owner()",
+	"715018a6": "renounceOwnership()",
+	"574ded3b": "setQueryLimit(uint256)",
+	"f2fde38b": "transferOwnership(address)",
 }
 
 // PolyNFTQueryBin is the compiled bytecode used for deploying new contracts.
-var PolyNFTQueryBin = "0x608060405234801561001057600080fd5b50611196806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c806312d459ab14610051578063bbc8e44614610108578063c5cc029a14610144578063c792f10f14610180575b600080fd5b6100876004803603606081101561006757600080fd5b506001600160a01b038135811691602081013590911690604001356101fe565b60405180831515815260200180602001828103825283818151815260200191508051906020019080838360005b838110156100cc5781810151838201526020016100b4565b50505050905090810190601f1680156100f95780820380516001836020036101000a031916815260200191505b50935050505060405180910390f35b6100876004803603608081101561011e57600080fd5b506001600160a01b038135811691602081013590911690604081013590606001356103fd565b6100876004803603608081101561015a57600080fd5b506001600160a01b038135811691602081013590911690604081013590606001356106be565b6100876004803603604081101561019657600080fd5b6001600160a01b038235169190810190604081016020820135600160201b8111156101c057600080fd5b8201836020820111156101d257600080fd5b803590602001918460018302840111600160201b831117156101f357600080fd5b5090925090506109f8565b60006060806040518060200160405280600081525090506000866001600160a01b0316636352211e866040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b15801561025b57600080fd5b505afa15801561026f573d6000803e3d6000fd5b505050506040513d602081101561028557600080fd5b505190506001600160a01b038681169082161415806102ab57506001600160a01b038616155b156102bc57506000925090506103f5565b866001600160a01b031663c87b56dd866040518263ffffffff1660e01b81526004018082815260200191505060006040518083038186803b15801561030057600080fd5b505afa158015610314573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f19168201604052602081101561033d57600080fd5b8101908080516040519392919084600160201b82111561035c57600080fd5b90830190602082018581111561037157600080fd5b8251600160201b81118282018810171561038a57600080fd5b82525081516020918201929091019080838360005b838110156103b757818101518382015260200161039f565b50505050905090810190601f1680156103e45780820380516001836020036101000a031916815260200191505b506040525060019650919450505050505b935093915050565b600060608083158061040f5750600a84115b1561041f576000925090506106b5565b6000876001600160a01b03166370a08231886040518263ffffffff1660e01b815260040180826001600160a01b0316815260200191505060206040518083038186803b15801561046e57600080fd5b505afa158015610482573d6000803e3d6000fd5b505050506040513d602081101561049857600080fd5b505190508015806104a95750808610155b156104ba57506000925090506106b5565b60006104c7878784610c1a565b90508880885b8381116106a8576000826001600160a01b0316632f745c598d846040518363ffffffff1660e01b815260040180836001600160a01b031681526020018281526020019250505060206040518083038186803b15801561052b57600080fd5b505afa15801561053f573d6000803e3d6000fd5b505050506040513d602081101561055557600080fd5b50516040805163c87b56dd60e01b81526004810183905290519192506060916001600160a01b0387169163c87b56dd916024808301926000929190829003018186803b1580156105a457600080fd5b505afa1580156105b8573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405260208110156105e157600080fd5b8101908080516040519392919084600160201b82111561060057600080fd5b90830190602082018581111561061557600080fd5b8251600160201b81118282018810171561062e57600080fd5b82525081516020918201929091019080838360005b8381101561065b578181015183820152602001610643565b50505050905090810190601f1680156106885780820380516001836020036101000a031916815260200191505b50604052505050905061069c888383610c39565b975050506001016104cd565b5060019650939450505050505b94509492505050565b60006060808315806106d05750600a84115b156106e0576000925090506106b5565b6000879050600088905060008990506000826001600160a01b03166318160ddd6040518163ffffffff1660e01b815260040160206040518083038186803b15801561072a57600080fd5b505afa15801561073e573d6000803e3d6000fd5b505050506040513d602081101561075457600080fd5b505190508015806107655750808910155b1561077b576000859650965050505050506106b5565b60006107888a8a84610c1a565b90505b808a1115801561079a57508181105b156106a8576000846001600160a01b0316634f6ccce78c6040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b1580156107e557600080fd5b505afa1580156107f9573d6000803e3d6000fd5b505050506040513d602081101561080f57600080fd5b5051604080516331a9108f60e11b81526004810183905290516001909d019c9192506000916001600160a01b03871691636352211e916024808301926020929190829003018186803b15801561086457600080fd5b505afa158015610878573d6000803e3d6000fd5b505050506040513d602081101561088e57600080fd5b505190506001600160a01b03808216908e1614156108b057505060010161078b565b6060876001600160a01b031663c87b56dd846040518263ffffffff1660e01b81526004018082815260200191505060006040518083038186803b1580156108f657600080fd5b505afa15801561090a573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f19168201604052602081101561093357600080fd5b8101908080516040519392919084600160201b82111561095257600080fd5b90830190602082018581111561096757600080fd5b8251600160201b81118282018810171561098057600080fd5b82525081516020918201929091019080838360005b838110156109ad578181015183820152602001610995565b50505050905090810190601f1680156109da5780820380516001836020036101000a031916815260200191505b5060405250505090506109ee898483610c39565b985050505061078b565b6000606060008060006060610a4488888080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250889250610d52915050565b94509150811580610a555750600a82115b15610a69576000955093506103f592505050565b8860005b83811015610c0757610ab68a8a8080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152508a9250610d52915050565b80975081965050506060826001600160a01b031663c87b56dd876040518263ffffffff1660e01b81526004018082815260200191505060006040518083038186803b158015610b0457600080fd5b505afa158015610b18573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f191682016040526020811015610b4157600080fd5b8101908080516040519392919084600160201b821115610b6057600080fd5b908301906020820185811115610b7557600080fd5b8251600160201b811182820188101715610b8e57600080fd5b82525081516020918201929091019080838360005b83811015610bbb578181015183820152602001610ba3565b50505050905090810190601f168015610be85780820380516001836020036101000a031916815260200191505b506040525050509050610bfc848783610c39565b935050600101610a6d565b5060019a91995090975050505050505050565b600060001984840101828110610c31575060001982015b949350505050565b606083610c4584610df2565b610c4e84610e35565b6040516020018084805190602001908083835b60208310610c805780518252601f199092019160209182019101610c61565b51815160209384036101000a600019018019909216911617905286519190930192860191508083835b60208310610cc85780518252601f199092019160209182019101610ca9565b51815160209384036101000a600019018019909216911617905285519190930192850191508083835b60208310610d105780518252601f199092019160209182019101610cf1565b6001836020036101000a038019825116818451168082178552505050505050905001935050505060405160208183030381529060405293508390509392505050565b60008083518360200111158015610d6b57508260200183105b610da65760405162461bcd60e51b815260040180806020018281038252602381526020018061113e6023913960400191505060405180910390fd5b600060405160206000600182038760208a0101515b83831015610ddb5780821a83860153600183019250600182039150610dbb565b505050810160405251956020949094019450505050565b606060405160208082526000601f5b82821015610e235785811a826020860101536001919091019060001901610e01565b5050506040818101905290505b919050565b8051606090610e4381610efb565b836040516020018083805190602001908083835b60208310610e765780518252601f199092019160209182019101610e57565b51815160209384036101000a600019018019909216911617905285519190930192850191508083835b60208310610ebe5780518252601f199092019160209182019101610e9f565b6001836020036101000a03801982511681845116808217855250505050505090500192505050604051602081830303815290604052915050919050565b606060fd8267ffffffffffffffff161015610f2057610f1982611044565b9050610e30565b61ffff8267ffffffffffffffff1611610fff57610f4060fd60f81b611060565b610f4983611074565b6040516020018083805190602001908083835b60208310610f7b5780518252601f199092019160209182019101610f5c565b51815160209384036101000a600019018019909216911617905285519190930192850191508083835b60208310610fc35780518252601f199092019160209182019101610fa4565b6001836020036101000a038019825116818451168082178552505050505050905001925050506040516020818303038152906040529050610e30565b63ffffffff8267ffffffffffffffff161161102a57611021607f60f91b611060565b610f49836110b7565b61103b6001600160f81b0319611060565b610f49836110fa565b604080516001815260f89290921b602083015260218201905290565b606061106e8260f81c611044565b92915050565b6040516002808252606091906000601f5b828210156110a75785811a826020860101536001919091019060001901611085565b5050506022810160405292915050565b6040516004808252606091906000601f5b828210156110ea5785811a8260208601015360019190910190600019016110c8565b5050506024810160405292915050565b6040516008808252606091906000601f5b8282101561112d5785811a82602086010153600191909101906000190161110b565b505050602881016040529291505056fe4e65787455696e743235362c206f66667365742065786365656473206d6178696d756da26469706673582212205ac8e7d6745520d26a007790cb72497d6cfe6312c1ae356d91e6d901a90b5e6164736f6c634300060c0033"
+var PolyNFTQueryBin = "0x60806040523480156200001157600080fd5b506040516200172738038062001727833981810160405260408110156200003757600080fd5b50805160209091015160006200004c620000dc565b600080546001600160a01b0319166001600160a01b03831690811782556040519293509160008051602062001707833981519152908290a35060008111620000c4576040805162461bcd60e51b8152602060048201526006602482015265085b1959d85b60d21b604482015290519081900360640190fd5b6001819055620000d482620000e0565b505062000201565b3390565b620000ea6200014a565b6200013c576040805162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b620001478162000170565b50565b600080546001600160a01b031662000161620000dc565b6001600160a01b031614905090565b6001600160a01b038116620001b75760405162461bcd60e51b8152600401808060200182810382526026815260200180620016e16026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216916000805160206200170783398151915291a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b6114d080620002116000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c80638f32d59b116100665780638f32d59b1461019a578063bbc8e446146101b6578063c5cc029a146101f2578063c792f10f1461022e578063f2fde38b146102ac57610093565b806312d459ab14610098578063574ded3b1461014f578063715018a61461016e5780638da5cb5b14610176575b600080fd5b6100ce600480360360608110156100ae57600080fd5b506001600160a01b038135811691602081013590911690604001356102d2565b60405180831515815260200180602001828103825283818151815260200191508051906020019080838360005b838110156101135781810151838201526020016100fb565b50505050905090810190601f1680156101405780820380516001836020036101000a031916815260200191505b50935050505060405180910390f35b61016c6004803603602081101561016557600080fd5b50356104d1565b005b61016c61052f565b61017e6105d2565b604080516001600160a01b039092168252519081900360200190f35b6101a26105e1565b604080519115158252519081900360200190f35b6100ce600480360360808110156101cc57600080fd5b506001600160a01b03813581169160208101359091169060408101359060600135610605565b6100ce6004803603608081101561020857600080fd5b506001600160a01b038135811691602081013590911690604081013590606001356108c7565b6100ce6004803603604081101561024457600080fd5b6001600160a01b038235169190810190604081016020820135600160201b81111561026e57600080fd5b82018360208201111561028057600080fd5b803590602001918460018302840111600160201b831117156102a157600080fd5b509092509050610c02565b61016c600480360360208110156102c257600080fd5b50356001600160a01b0316610e25565b60006060806040518060200160405280600081525090506000866001600160a01b0316636352211e866040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b15801561032f57600080fd5b505afa158015610343573d6000803e3d6000fd5b505050506040513d602081101561035957600080fd5b505190506001600160a01b0386811690821614158061037f57506001600160a01b038616155b1561039057506000925090506104c9565b866001600160a01b031663c87b56dd866040518263ffffffff1660e01b81526004018082815260200191505060006040518083038186803b1580156103d457600080fd5b505afa1580156103e8573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f19168201604052602081101561041157600080fd5b8101908080516040519392919084600160201b82111561043057600080fd5b90830190602082018581111561044557600080fd5b8251600160201b81118282018810171561045e57600080fd5b82525081516020918201929091019080838360005b8381101561048b578181015183820152602001610473565b50505050905090810190601f1680156104b85780820380516001836020036101000a031916815260200191505b506040525060019650919450505050505b935093915050565b6104d96105e1565b61052a576040805162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b600155565b6105376105e1565b610588576040805162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b031690565b600080546001600160a01b03166105f6610e8a565b6001600160a01b031614905090565b6000606080831580610618575060015484115b15610628576000925090506108be565b6000876001600160a01b03166370a08231886040518263ffffffff1660e01b815260040180826001600160a01b0316815260200191505060206040518083038186803b15801561067757600080fd5b505afa15801561068b573d6000803e3d6000fd5b505050506040513d60208110156106a157600080fd5b505190508015806106b25750808610155b156106c357506000925090506108be565b60006106d0878784610e8e565b90508880885b8381116108b1576000826001600160a01b0316632f745c598d846040518363ffffffff1660e01b815260040180836001600160a01b031681526020018281526020019250505060206040518083038186803b15801561073457600080fd5b505afa158015610748573d6000803e3d6000fd5b505050506040513d602081101561075e57600080fd5b50516040805163c87b56dd60e01b81526004810183905290519192506060916001600160a01b0387169163c87b56dd916024808301926000929190829003018186803b1580156107ad57600080fd5b505afa1580156107c1573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405260208110156107ea57600080fd5b8101908080516040519392919084600160201b82111561080957600080fd5b90830190602082018581111561081e57600080fd5b8251600160201b81118282018810171561083757600080fd5b82525081516020918201929091019080838360005b8381101561086457818101518382015260200161084c565b50505050905090810190601f1680156108915780820380516001836020036101000a031916815260200191505b5060405250505090506108a5888383610ead565b975050506001016106d6565b5060019650939450505050505b94509492505050565b60006060808315806108da575060015484115b156108ea576000925090506108be565b6000879050600088905060008990506000826001600160a01b03166318160ddd6040518163ffffffff1660e01b815260040160206040518083038186803b15801561093457600080fd5b505afa158015610948573d6000803e3d6000fd5b505050506040513d602081101561095e57600080fd5b5051905080158061096f5750808910155b15610985576000859650965050505050506108be565b60006109928a8a84610e8e565b90505b808a111580156109a457508181105b156108b1576000846001600160a01b0316634f6ccce78c6040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b1580156109ef57600080fd5b505afa158015610a03573d6000803e3d6000fd5b505050506040513d6020811015610a1957600080fd5b5051604080516331a9108f60e11b81526004810183905290516001909d019c9192506000916001600160a01b03871691636352211e916024808301926020929190829003018186803b158015610a6e57600080fd5b505afa158015610a82573d6000803e3d6000fd5b505050506040513d6020811015610a9857600080fd5b505190506001600160a01b03808216908e161415610aba575050600101610995565b6060876001600160a01b031663c87b56dd846040518263ffffffff1660e01b81526004018082815260200191505060006040518083038186803b158015610b0057600080fd5b505afa158015610b14573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f191682016040526020811015610b3d57600080fd5b8101908080516040519392919084600160201b821115610b5c57600080fd5b908301906020820185811115610b7157600080fd5b8251600160201b811182820188101715610b8a57600080fd5b82525081516020918201929091019080838360005b83811015610bb7578181015183820152602001610b9f565b50505050905090810190601f168015610be45780820380516001836020036101000a031916815260200191505b506040525050509050610bf8898483610ead565b9850505050610995565b6000606060008060006060610c4e88888080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250889250610fc6915050565b94509150811580610c60575060015482115b15610c74576000955093506104c992505050565b8860005b83811015610e1257610cc18a8a8080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152508a9250610fc6915050565b80975081965050506060826001600160a01b031663c87b56dd876040518263ffffffff1660e01b81526004018082815260200191505060006040518083038186803b158015610d0f57600080fd5b505afa158015610d23573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f191682016040526020811015610d4c57600080fd5b8101908080516040519392919084600160201b821115610d6b57600080fd5b908301906020820185811115610d8057600080fd5b8251600160201b811182820188101715610d9957600080fd5b82525081516020918201929091019080838360005b83811015610dc6578181015183820152602001610dae565b50505050905090810190601f168015610df35780820380516001836020036101000a031916815260200191505b506040525050509050610e07848783610ead565b935050600101610c78565b5060019a91995090975050505050505050565b610e2d6105e1565b610e7e576040805162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b610e8781611066565b50565b3390565b600060001984840101828110610ea5575060001982015b949350505050565b606083610eb984611106565b610ec284611149565b6040516020018084805190602001908083835b60208310610ef45780518252601f199092019160209182019101610ed5565b51815160209384036101000a600019018019909216911617905286519190930192860191508083835b60208310610f3c5780518252601f199092019160209182019101610f1d565b51815160209384036101000a600019018019909216911617905285519190930192850191508083835b60208310610f845780518252601f199092019160209182019101610f65565b6001836020036101000a038019825116818451168082178552505050505050905001935050505060405160208183030381529060405293508390509392505050565b60008083518360200111158015610fdf57508260200183105b61101a5760405162461bcd60e51b81526004018080602001828103825260238152602001806114786023913960400191505060405180910390fd5b600060405160206000600182038760208a0101515b8383101561104f5780821a8386015360018301925060018203915061102f565b505050810160405251956020949094019450505050565b6001600160a01b0381166110ab5760405162461bcd60e51b81526004018080602001828103825260268152602001806114526026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b606060405160208082526000601f5b828210156111375785811a826020860101536001919091019060001901611115565b5050506040818101905290505b919050565b80516060906111578161120f565b836040516020018083805190602001908083835b6020831061118a5780518252601f19909201916020918201910161116b565b51815160209384036101000a600019018019909216911617905285519190930192850191508083835b602083106111d25780518252601f1990920191602091820191016111b3565b6001836020036101000a03801982511681845116808217855250505050505090500192505050604051602081830303815290604052915050919050565b606060fd8267ffffffffffffffff1610156112345761122d82611358565b9050611144565b61ffff8267ffffffffffffffff16116113135761125460fd60f81b611374565b61125d83611388565b6040516020018083805190602001908083835b6020831061128f5780518252601f199092019160209182019101611270565b51815160209384036101000a600019018019909216911617905285519190930192850191508083835b602083106112d75780518252601f1990920191602091820191016112b8565b6001836020036101000a038019825116818451168082178552505050505050905001925050506040516020818303038152906040529050611144565b63ffffffff8267ffffffffffffffff161161133e57611335607f60f91b611374565b61125d836113cb565b61134f6001600160f81b0319611374565b61125d8361140e565b604080516001815260f89290921b602083015260218201905290565b60606113828260f81c611358565b92915050565b6040516002808252606091906000601f5b828210156113bb5785811a826020860101536001919091019060001901611399565b5050506022810160405292915050565b6040516004808252606091906000601f5b828210156113fe5785811a8260208601015360019190910190600019016113dc565b5050506024810160405292915050565b6040516008808252606091906000601f5b828210156114415785811a82602086010153600191909101906000190161141f565b505050602881016040529291505056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f20616464726573734e65787455696e743235362c206f66667365742065786365656473206d6178696d756da264697066735822122023f1bea41f6e04d1999bb8477a62c1fc47078da71dfdd7a9fdc4a0e52f68c41b64736f6c634300060c00334f776e61626c653a206e6577206f776e657220697320746865207a65726f20616464726573738be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
 
 // DeployPolyNFTQuery deploys a new Ethereum contract, binding an instance of PolyNFTQuery to it.
-func DeployPolyNFTQuery(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *PolyNFTQuery, error) {
+func DeployPolyNFTQuery(auth *bind.TransactOpts, backend bind.ContractBackend, _owner common.Address, _limit *big.Int) (common.Address, *types.Transaction, *PolyNFTQuery, error) {
 	parsed, err := abi.JSON(strings.NewReader(PolyNFTQueryABI))
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
 
-	address, tx, contract, err := bind.DeployContract(auth, parsed, common.FromHex(PolyNFTQueryBin), backend)
+	address, tx, contract, err := bind.DeployContract(auth, parsed, common.FromHex(PolyNFTQueryBin), backend, _owner, _limit)
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
@@ -3555,6 +4104,273 @@ func (_PolyNFTQuery *PolyNFTQuerySession) GetTokensByIds(asset common.Address, a
 // Solidity: function getTokensByIds(address asset, bytes args) view returns(bool, bytes)
 func (_PolyNFTQuery *PolyNFTQueryCallerSession) GetTokensByIds(asset common.Address, args []byte) (bool, []byte, error) {
 	return _PolyNFTQuery.Contract.GetTokensByIds(&_PolyNFTQuery.CallOpts, asset, args)
+}
+
+// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
+//
+// Solidity: function isOwner() view returns(bool)
+func (_PolyNFTQuery *PolyNFTQueryCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
+	var (
+		ret0 = new(bool)
+	)
+	out := ret0
+	err := _PolyNFTQuery.contract.Call(opts, out, "isOwner")
+	return *ret0, err
+}
+
+// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
+//
+// Solidity: function isOwner() view returns(bool)
+func (_PolyNFTQuery *PolyNFTQuerySession) IsOwner() (bool, error) {
+	return _PolyNFTQuery.Contract.IsOwner(&_PolyNFTQuery.CallOpts)
+}
+
+// IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
+//
+// Solidity: function isOwner() view returns(bool)
+func (_PolyNFTQuery *PolyNFTQueryCallerSession) IsOwner() (bool, error) {
+	return _PolyNFTQuery.Contract.IsOwner(&_PolyNFTQuery.CallOpts)
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_PolyNFTQuery *PolyNFTQueryCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _PolyNFTQuery.contract.Call(opts, out, "owner")
+	return *ret0, err
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_PolyNFTQuery *PolyNFTQuerySession) Owner() (common.Address, error) {
+	return _PolyNFTQuery.Contract.Owner(&_PolyNFTQuery.CallOpts)
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_PolyNFTQuery *PolyNFTQueryCallerSession) Owner() (common.Address, error) {
+	return _PolyNFTQuery.Contract.Owner(&_PolyNFTQuery.CallOpts)
+}
+
+// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+//
+// Solidity: function renounceOwnership() returns()
+func (_PolyNFTQuery *PolyNFTQueryTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _PolyNFTQuery.contract.Transact(opts, "renounceOwnership")
+}
+
+// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+//
+// Solidity: function renounceOwnership() returns()
+func (_PolyNFTQuery *PolyNFTQuerySession) RenounceOwnership() (*types.Transaction, error) {
+	return _PolyNFTQuery.Contract.RenounceOwnership(&_PolyNFTQuery.TransactOpts)
+}
+
+// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
+//
+// Solidity: function renounceOwnership() returns()
+func (_PolyNFTQuery *PolyNFTQueryTransactorSession) RenounceOwnership() (*types.Transaction, error) {
+	return _PolyNFTQuery.Contract.RenounceOwnership(&_PolyNFTQuery.TransactOpts)
+}
+
+// SetQueryLimit is a paid mutator transaction binding the contract method 0x574ded3b.
+//
+// Solidity: function setQueryLimit(uint256 _limit) returns()
+func (_PolyNFTQuery *PolyNFTQueryTransactor) SetQueryLimit(opts *bind.TransactOpts, _limit *big.Int) (*types.Transaction, error) {
+	return _PolyNFTQuery.contract.Transact(opts, "setQueryLimit", _limit)
+}
+
+// SetQueryLimit is a paid mutator transaction binding the contract method 0x574ded3b.
+//
+// Solidity: function setQueryLimit(uint256 _limit) returns()
+func (_PolyNFTQuery *PolyNFTQuerySession) SetQueryLimit(_limit *big.Int) (*types.Transaction, error) {
+	return _PolyNFTQuery.Contract.SetQueryLimit(&_PolyNFTQuery.TransactOpts, _limit)
+}
+
+// SetQueryLimit is a paid mutator transaction binding the contract method 0x574ded3b.
+//
+// Solidity: function setQueryLimit(uint256 _limit) returns()
+func (_PolyNFTQuery *PolyNFTQueryTransactorSession) SetQueryLimit(_limit *big.Int) (*types.Transaction, error) {
+	return _PolyNFTQuery.Contract.SetQueryLimit(&_PolyNFTQuery.TransactOpts, _limit)
+}
+
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
+//
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_PolyNFTQuery *PolyNFTQueryTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
+	return _PolyNFTQuery.contract.Transact(opts, "transferOwnership", newOwner)
+}
+
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
+//
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_PolyNFTQuery *PolyNFTQuerySession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _PolyNFTQuery.Contract.TransferOwnership(&_PolyNFTQuery.TransactOpts, newOwner)
+}
+
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
+//
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_PolyNFTQuery *PolyNFTQueryTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _PolyNFTQuery.Contract.TransferOwnership(&_PolyNFTQuery.TransactOpts, newOwner)
+}
+
+// PolyNFTQueryOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the PolyNFTQuery contract.
+type PolyNFTQueryOwnershipTransferredIterator struct {
+	Event *PolyNFTQueryOwnershipTransferred // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *PolyNFTQueryOwnershipTransferredIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(PolyNFTQueryOwnershipTransferred)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(PolyNFTQueryOwnershipTransferred)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *PolyNFTQueryOwnershipTransferredIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *PolyNFTQueryOwnershipTransferredIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// PolyNFTQueryOwnershipTransferred represents a OwnershipTransferred event raised by the PolyNFTQuery contract.
+type PolyNFTQueryOwnershipTransferred struct {
+	PreviousOwner common.Address
+	NewOwner      common.Address
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_PolyNFTQuery *PolyNFTQueryFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*PolyNFTQueryOwnershipTransferredIterator, error) {
+
+	var previousOwnerRule []interface{}
+	for _, previousOwnerItem := range previousOwner {
+		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
+	}
+	var newOwnerRule []interface{}
+	for _, newOwnerItem := range newOwner {
+		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	}
+
+	logs, sub, err := _PolyNFTQuery.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	if err != nil {
+		return nil, err
+	}
+	return &PolyNFTQueryOwnershipTransferredIterator{contract: _PolyNFTQuery.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
+}
+
+// WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_PolyNFTQuery *PolyNFTQueryFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *PolyNFTQueryOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+
+	var previousOwnerRule []interface{}
+	for _, previousOwnerItem := range previousOwner {
+		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
+	}
+	var newOwnerRule []interface{}
+	for _, newOwnerItem := range newOwner {
+		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	}
+
+	logs, sub, err := _PolyNFTQuery.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(PolyNFTQueryOwnershipTransferred)
+				if err := _PolyNFTQuery.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_PolyNFTQuery *PolyNFTQueryFilterer) ParseOwnershipTransferred(log types.Log) (*PolyNFTQueryOwnershipTransferred, error) {
+	event := new(PolyNFTQueryOwnershipTransferred)
+	if err := _PolyNFTQuery.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+		return nil, err
+	}
+	return event, nil
 }
 
 // SafeMathABI is the input ABI used to generate the binding from.
@@ -4042,3 +4858,4 @@ func (_ZeroCopySource *ZeroCopySourceTransactorRaw) Transfer(opts *bind.Transact
 func (_ZeroCopySource *ZeroCopySourceTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	return _ZeroCopySource.Contract.contract.Transact(opts, method, params...)
 }
+
