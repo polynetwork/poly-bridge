@@ -255,7 +255,7 @@ func notExist(c *beego.Controller) {
 }
 
 func checkPageSize(c *beego.Controller, size int) bool {
-	if size <= 24 {
+	if size <= 10 {
 		return true
 	}
 	code := ErrCodeRequest

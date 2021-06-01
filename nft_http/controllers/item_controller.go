@@ -80,10 +80,10 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 }
 
 func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
-	// check params
-	if !checkPageSize(&c.Controller, req.PageSize) {
-		return
-	}
+	// check size in contract
+	//if !checkPageSize(&c.Controller, req.PageSize) {
+	//	return
+	//}
 	sdk, wrapper, _, err := selectNodeAndWrapper(req.ChainId)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
