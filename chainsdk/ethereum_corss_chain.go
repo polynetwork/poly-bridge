@@ -22,6 +22,7 @@ package chainsdk
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"time"
 
@@ -534,6 +535,36 @@ func (s *EthereumSdk) DeployNFTQueryContract(key *ecdsa.PrivateKey) (common.Addr
 	return addr, nil
 }
 
+func (s *EthereumSdk) AddGas(key *ecdsa.PrivateKey, txhash common.Hash, newGasPrice *big.Int) (common.Hash, error) {
+	tx, err := s.GetTransactionByHash(txhash)
+	if err != nil {
+		return EmptyHash, err
+	}
+	nonce := tx.Nonce()
+	payload := tx.Data()
+	to := tx.To()
+	amount := tx.Value()
+	gasLimit := tx.Gas()
+	if newGasPrice.Cmp(tx.GasPrice()) <= 0 {
+		return EmptyHash, fmt.Errorf("gas price should be greater than %s", tx.GasPrice().String())
+	}
+	gasPrice := newGasPrice
+
+	newTx := types.NewTransaction(nonce, *to, amount, gasLimit, gasPrice, payload)
+	signedTx, err := types.SignTx(newTx, types.HomesteadSigner{}, key)
+	if err != nil {
+		return EmptyHash, err
+	}
+	if err := s.SendRawTransaction(signedTx); err != nil {
+		return EmptyHash, err
+	}
+
+	if err := s.waitTxConfirm(signedTx.Hash()); err != nil {
+		return EmptyHash, err
+	}
+	return signedTx.Hash(), nil
+}
+
 func (s *EthereumSdk) dumpTx(hash common.Hash) error {
 	tx, err := s.GetTransactionReceipt(hash)
 	if err != nil {
@@ -572,11 +603,7 @@ func (s *EthereumSdk) makeAuth(key *ecdsa.PrivateKey, gasLimit uint64) (*bind.Tr
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(int64(0)) // in wei
 	auth.GasLimit = gasLimit
-	if DefaultAddGasPrice.Cmp(gasPrice) > 0 {
-		auth.GasPrice = DefaultAddGasPrice
-	} else {
-		auth.GasPrice = gasPrice
-	}
+	auth.GasPrice = gasPrice
 
 	return auth, nil
 }
