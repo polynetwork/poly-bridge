@@ -145,7 +145,11 @@ func (pro *OntologySdkPro) GetSdk() (*ontology_go_sdk.OntologySdk, error) {
 }
 
 func (pro *OntologySdkPro) IsOngAddress(hash string) bool {
-	return true
+	if hash == "0200000000000000000000000000000000000000" {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (pro *OntologySdkPro) Oep4Balance(hash string, addr string) (*big.Int, error) {
