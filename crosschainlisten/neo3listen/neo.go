@@ -1,0 +1,321 @@
+/*
+ * Copyright (C) 2020 The poly network Authors
+ * This file is part of The poly network library.
+ *
+ * The  poly network  is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The  poly network  is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package neo3listen
+
+import (
+	"encoding/hex"
+	"fmt"
+	"github.com/astaxie/beego/logs"
+	neo3_models "github.com/joeqian10/neo3-gogogo/rpc/models"
+	"math/big"
+	"poly-bridge/basedef"
+	"poly-bridge/chainsdk"
+	"poly-bridge/conf"
+	"poly-bridge/models"
+)
+
+const (
+	_neo_crosschainlock   = "CrossChainLockEvent"
+	_neo_crosschainunlock = "CrossChainUnlockEvent"
+	_neo_lock             = "Lock"
+	_neo_lock2            = "LockEvent"
+	_neo_unlock           = "UnlockEvent"
+	_neo_unlock2          = "Unlock"
+	_poly_wrapper_lock    = "PolyWrapperLock"
+)
+
+type Neo3ChainListen struct {
+	neoCfg *conf.ChainListenConfig
+	neoSdk *chainsdk.Neo3SdkPro
+}
+
+func NewNeo3ChainListen(cfg *conf.ChainListenConfig) *Neo3ChainListen {
+	ethListen := &Neo3ChainListen{}
+	ethListen.neoCfg = cfg
+	urls := cfg.GetNodesUrl()
+	sdk := chainsdk.NewNeo3SdkPro(urls, cfg.ListenSlot, cfg.ChainId)
+	ethListen.neoSdk = sdk
+	return ethListen
+}
+
+func (this *Neo3ChainListen) GetLatestHeight() (uint64, error) {
+	return this.neoSdk.GetBlockCount()
+}
+
+func (this *Neo3ChainListen) GetChainListenSlot() uint64 {
+	return this.neoCfg.ListenSlot
+}
+
+func (this *Neo3ChainListen) GetChainId() uint64 {
+	return this.neoCfg.ChainId
+}
+
+func (this *Neo3ChainListen) GetChainName() string {
+	return this.neoCfg.ChainName
+}
+
+func (this *Neo3ChainListen) parseNeoMethod(v string) string {
+	xx, _ := hex.DecodeString(v)
+	return string(xx)
+}
+
+func (this *Neo3ChainListen) GetDefer() uint64 {
+	return this.neoCfg.Defer
+}
+
+func (this *Neo3ChainListen) isListeningContract(contract string, contracts []string) bool {
+	for _, item := range contracts {
+		if contract == item  {
+			return true
+		}
+	}
+	return false
+}
+
+func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
+	block, err := this.neoSdk.GetBlockByIndex(height)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	if block == nil {
+		return nil, nil, nil, nil, fmt.Errorf("can not get neo block!")
+	}
+	tt := block.Time
+	wrapperTransactions := make([]*models.WrapperTransaction, 0)
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	dstTransactions := make([]*models.DstTransaction, 0)
+	for _, tx := range block.Tx {
+		appLog, err := this.neoSdk.GetApplicationLog(tx.Hash)
+		if err != nil || appLog == nil {
+			continue
+		}
+		for _, exeitem := range appLog.Executions {
+			if exeitem.VMState == "FAULT" {
+				continue
+			}
+			for _, notify := range exeitem.Notifications {
+				if this.isListeningContract(notify.Contract[2:], this.neoCfg.WrapperContract) {
+					if notify.State.Type != "Array" {
+						continue
+					}
+					notify.State.Convert()
+					states := notify.State.Value.([]neo3_models.InvokeStack)
+					if len(states) < 0 {
+						continue
+					}
+					eventName := notify.EventName
+					switch eventName {
+					case _poly_wrapper_lock:
+						logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), tx.Hash[2:])
+						if len(states) < 7 {
+							continue
+						}
+						tchainId := big.NewInt(0)
+						if states[3].Type == "Integer" {
+							tchainId, _ = new(big.Int).SetString(states[3].Value.(string), 10)
+						} else {
+							tchainId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[3].Value.(string)), 16)
+						}
+						serverId := big.NewInt(0)
+						if states[7].Type == "Integer" {
+							serverId, _ = new(big.Int).SetString(states[7].Value.(string), 10)
+						} else {
+							serverId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[7].Value.(string)), 16)
+						}
+						if serverId == nil {
+							serverId = new(big.Int).SetUint64(0)
+						}
+						asset := basedef.HexStringReverse(states[1].Value.(string))
+						amount := big.NewInt(0)
+						if states[6].Type == "Integer" {
+							amount, _ = new(big.Int).SetString(states[6].Value.(string), 10)
+						} else {
+							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(states[6].Value.(string)), 16)
+						}
+						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+							Hash:         tx.Hash[2:],
+							User:         states[2].Value.(string),
+							DstChainId:   tchainId.Uint64(),
+							DstUser:      states[4].Value.(string),
+							FeeTokenHash: asset,
+							FeeAmount:    models.NewBigInt(amount),
+							ServerId:     serverId.Uint64(),
+							Status:       basedef.STATE_SOURCE_DONE,
+							Time:         uint64(tt),
+							BlockHeight:  height,
+							SrcChainId:   this.GetChainId(),
+						})
+					}
+				} else if notify.Contract[2:] == this.neoCfg.CCMContract {
+					if notify.State.Type != "Array" {
+						continue
+					}
+					notify.State.Convert()
+					states := notify.State.Value.([]neo3_models.InvokeStack)
+					if len(states) < 0 {
+						continue
+					}
+					eventName := notify.EventName
+					switch eventName {
+					case _neo_crosschainlock:
+						logs.Info("(lock) from chain: %s, txhash: %s", this.GetChainName(), tx.Hash[2:])
+						if len(states) < 6 {
+							continue
+						}
+						fctransfer := &models.SrcTransfer{}
+						for _, notifyNew := range exeitem.Notifications {
+							if notifyNew.State.Type != "Array" {
+								continue
+							}
+							notifyNew.State.Convert()
+							statesNew := notifyNew.State.Value.([]neo3_models.InvokeStack)
+							if len(statesNew) < 0 {
+								continue
+							}
+							eventNameNew := notifyNew.EventName
+							if eventNameNew == _neo_lock || eventNameNew == _neo_lock2 {
+								if len(statesNew) < 6 {
+									continue
+								}
+								fctransfer.ChainId = this.GetChainId()
+								fctransfer.TxHash = tx.Hash[2:]
+								fctransfer.Time = uint64(tt)
+								fctransfer.From = statesNew[2].Value.(string)
+								fctransfer.To = statesNew[2].Value.(string)
+								fctransfer.Asset = basedef.HexStringReverse(statesNew[1].Value.(string))
+								amount := big.NewInt(0)
+								if statesNew[6].Type == "Integer" {
+									amount, _ = new(big.Int).SetString(statesNew[6].Value.(string), 10)
+								} else {
+									amount, _ = new(big.Int).SetString(basedef.HexStringReverse(statesNew[6].Value.(string)), 16)
+								}
+								fctransfer.Amount = models.NewBigInt(amount)
+								tChainId := big.NewInt(0)
+								if statesNew[3].Type == "Integer" {
+									tChainId, _ = new(big.Int).SetString(statesNew[3].Value.(string), 10)
+								} else {
+									tChainId, _ = new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].Value.(string)), 16)
+								}
+								fctransfer.DstChainId = tChainId.Uint64()
+								if len(statesNew[5].Value.(string)) != 40 {
+									continue
+								}
+								fctransfer.DstUser = statesNew[5].Value.(string)
+								fctransfer.DstAsset = statesNew[4].Value.(string)
+								break
+							}
+						}
+						fctx := &models.SrcTransaction{}
+						fctx.ChainId = this.GetChainId()
+						fctx.Hash = tx.Hash[2:]
+						fctx.State = 1
+						fctx.Fee = models.NewBigInt(big.NewInt(int64(basedef.String2Float64(exeitem.GasConsumed))))
+						fctx.Time = uint64(tt)
+						fctx.Height = height
+						fctx.User = fctransfer.From
+						toChainId := big.NewInt(0)
+						if states[3].Type == "Integer" {
+							toChainId, _ = new(big.Int).SetString(states[3].Value.(string), 10)
+						} else {
+							toChainId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[3].Value.(string)), 16)
+						}
+						fctx.DstChainId = toChainId.Uint64()
+						fctx.Contract =states[2].Value.(string)
+						fctx.Key = states[4].Value.(string)
+						fctx.Param = states[5].Value.(string)
+						fctx.SrcTransfer = fctransfer
+						srcTransactions = append(srcTransactions, fctx)
+					case _neo_crosschainunlock:
+						logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), tx.Hash[2:])
+						if len(states) < 3 {
+							continue
+						}
+						tctransfer := &models.DstTransfer{}
+						for _, notifyNew := range exeitem.Notifications {
+							if notifyNew.State.Type != "Array" {
+								continue
+							}
+							notifyNew.State.Convert()
+							statesNew := notifyNew.State.Value.([]neo3_models.InvokeStack)
+							if len(statesNew) < 0 {
+								continue
+							}
+							eventNameNew := notifyNew.EventName
+							if eventNameNew == _neo_unlock || eventNameNew == _neo_unlock2 {
+								if len(statesNew) < 3 {
+									continue
+								}
+								tctransfer.ChainId = this.GetChainId()
+								tctransfer.TxHash = tx.Hash[2:]
+								tctransfer.Time = uint64(tt)
+								tctransfer.From = statesNew[2].Value.(string)
+								tctransfer.To = statesNew[2].Value.(string)
+								tctransfer.Asset = basedef.HexStringReverse(statesNew[1].Value.(string))
+								amount := big.NewInt(0)
+								if statesNew[3].Type == "Integer" {
+									amount, _ = new(big.Int).SetString(statesNew[3].Value.(string), 10)
+								} else {
+									amount, _ = new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].Value.(string)), 16)
+								}
+								tctransfer.Amount = models.NewBigInt(amount)
+								break
+							}
+						}
+						tctx := &models.DstTransaction{}
+						tctx.ChainId = this.GetChainId()
+						tctx.Hash = tx.Hash[2:]
+						tctx.State = 1
+						tctx.Fee = models.NewBigInt(big.NewInt(int64(basedef.String2Float64(exeitem.GasConsumed))))
+						tctx.Time = uint64(tt)
+						tctx.Height = height
+						fChainId := big.NewInt(0)
+						if states[1].Type == "Integer" {
+							fChainId, _ = new(big.Int).SetString(states[1].Value.(string), 10)
+						} else {
+							fChainId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[1].Value.(string)), 16)
+						}
+						tctx.SrcChainId = fChainId.Uint64()
+						tctx.Contract = basedef.HexStringReverse(states[2].Value.(string))
+						tctx.PolyHash = basedef.HexStringReverse(states[3].Value.(string))
+						tctx.DstTransfer = tctransfer
+						dstTransactions = append(dstTransactions, tctx)
+					default:
+						logs.Warn("ignore method: %s", eventName)
+					}
+				}
+			}
+		}
+	}
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
+}
+
+type Error struct {
+	Code    int64  `json:"code"`
+	Message string `json:"message"`
+}
+type ExtendHeight struct {
+	LastHeight uint64 `json:"result"`
+	Error      *Error `json:"error"`
+}
+
+func (this *Neo3ChainListen) GetExtendLatestHeight() (uint64, error) {
+	if len(this.neoCfg.ExtendNodes) == 0 {
+		return this.GetLatestHeight()
+	}
+	return this.GetLatestHeight()
+}
