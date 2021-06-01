@@ -42,11 +42,12 @@ func TestNeoListen(t *testing.T) {
 	if dao == nil {
 		panic("server is not valid")
 	}
-	neoListenConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
+	neoListenConfig := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
 	if neoListenConfig == nil {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(neoListenConfig)
 	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
+	chainListen.SetHeight(1)
 	chainListen.ListenChain()
 }

@@ -119,7 +119,7 @@ func startServer(ctx *cli.Context) {
 	if db == nil {
 		panic("server is invalid")
 	}
-	chainListenConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
+	chainListenConfig := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
 	if chainListenConfig == nil {
 		panic("chain is invalid")
 	}
