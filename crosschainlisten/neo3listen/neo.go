@@ -202,7 +202,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								fctransfer.Time = uint64(tt)
 								fctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								fctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
-								fctransfer.Asset = hex.EncodeToString(asset.Value.([]byte))
+								fctransfer.Asset = basedef.HexStringReverse(hex.EncodeToString(asset.Value.([]byte)))
 								fctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
 								fctransfer.DstChainId = toChainId.Value.(*big.Int).Uint64()
 								fctransfer.DstUser = hex.EncodeToString(dstUser.Value.([]byte))
@@ -230,7 +230,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							continue
 						}
 						aaa, _ := states[0].ToParameter()
-						fromChainId := new(big.Int).SetBytes(aaa.Value.([]byte))
+						fromChainId := new(big.Int).SetBytes(basedef.HexReverse(aaa.Value.([]byte)))
 						contract, _ := states[1].ToParameter()
 						polyHash, _ := states[2].ToParameter()
 						tctransfer := &models.DstTransfer{}
@@ -254,7 +254,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								tctransfer.Time = uint64(tt)
 								tctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								tctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
-								tctransfer.Asset = hex.EncodeToString(asset.Value.([]byte))
+								tctransfer.Asset = basedef.HexStringReverse(hex.EncodeToString(asset.Value.([]byte)))
 								tctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
 								break
 							}
@@ -267,8 +267,8 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						tctx.Time = uint64(tt)
 						tctx.Height = height
 						tctx.SrcChainId = fromChainId.Uint64()
-						tctx.Contract = hex.EncodeToString(contract.Value.([]byte))
-						tctx.PolyHash = hex.EncodeToString(polyHash.Value.([]byte))
+						tctx.Contract = basedef.HexStringReverse(hex.EncodeToString(contract.Value.([]byte)))
+						tctx.PolyHash = basedef.HexStringReverse(hex.EncodeToString(polyHash.Value.([]byte)))
 						tctx.DstTransfer = tctransfer
 						dstTransactions = append(dstTransactions, tctx)
 					default:
