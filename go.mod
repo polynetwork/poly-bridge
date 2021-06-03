@@ -15,6 +15,7 @@ require (
 	github.com/ontio/ontology-crypto v1.0.9
 	github.com/ontio/ontology-go-sdk v1.11.4
 	github.com/polynetwork/cosmos-poly-module v0.0.0-20200827085015-12374709b707
+	github.com/polynetwork/eth-contracts v0.0.0-20200814062128-70f58e22b014
 	github.com/polynetwork/poly v1.3.1
 	github.com/polynetwork/poly-go-sdk v0.0.0-20210114035303-84e1615f4ad4
 	github.com/polynetwork/poly-io-test v0.0.0-20200819093740-8cf514b07750 // indirect

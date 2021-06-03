@@ -167,56 +167,46 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					}
 					notify.State.Convert()
 					states := notify.State.Value.([]neo3_models.InvokeStack)
-					if len(states) < 0 {
-						continue
-					}
 					eventName := notify.EventName
 					switch eventName {
 					case _neo_crosschainlock:
 						logs.Info("(lock) from chain: %s, txhash: %s", this.GetChainName(), tx.Hash[2:])
-						if len(states) < 6 {
+						if len(states) < 5 {
 							continue
 						}
 						fctransfer := &models.SrcTransfer{}
+						contract, _ := states[1].ToParameter()
+						toChainId, _ := states[2].ToParameter()
+						key, _ := states[3].ToParameter()
+						param, _ := states[4].ToParameter()
 						for _, notifyNew := range exeitem.Notifications {
 							if notifyNew.State.Type != "Array" {
 								continue
 							}
 							notifyNew.State.Convert()
 							statesNew := notifyNew.State.Value.([]neo3_models.InvokeStack)
-							if len(statesNew) < 0 {
-								continue
-							}
 							eventNameNew := notifyNew.EventName
 							if eventNameNew == _neo_lock || eventNameNew == _neo_lock2 {
 								if len(statesNew) < 6 {
 									continue
 								}
+								fromAddress, _ := statesNew[1].ToParameter()
+								toAddress := contract
+								asset, _ := statesNew[0].ToParameter()
+								amount, _ := statesNew[5].ToParameter()
+								toChainId, _ := statesNew[2].ToParameter()
+								dstUser, _ := statesNew[4].ToParameter()
+								dstAsset, _ := statesNew[3].ToParameter()
 								fctransfer.ChainId = this.GetChainId()
 								fctransfer.TxHash = tx.Hash[2:]
 								fctransfer.Time = uint64(tt)
-								fctransfer.From = statesNew[2].Value.(string)
-								fctransfer.To = statesNew[2].Value.(string)
-								fctransfer.Asset = basedef.HexStringReverse(statesNew[1].Value.(string))
-								amount := big.NewInt(0)
-								if statesNew[6].Type == "Integer" {
-									amount, _ = new(big.Int).SetString(statesNew[6].Value.(string), 10)
-								} else {
-									amount, _ = new(big.Int).SetString(basedef.HexStringReverse(statesNew[6].Value.(string)), 16)
-								}
-								fctransfer.Amount = models.NewBigInt(amount)
-								tChainId := big.NewInt(0)
-								if statesNew[3].Type == "Integer" {
-									tChainId, _ = new(big.Int).SetString(statesNew[3].Value.(string), 10)
-								} else {
-									tChainId, _ = new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].Value.(string)), 16)
-								}
-								fctransfer.DstChainId = tChainId.Uint64()
-								if len(statesNew[5].Value.(string)) != 40 {
-									continue
-								}
-								fctransfer.DstUser = statesNew[5].Value.(string)
-								fctransfer.DstAsset = statesNew[4].Value.(string)
+								fctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
+								fctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
+								fctransfer.Asset = hex.EncodeToString(asset.Value.([]byte))
+								fctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
+								fctransfer.DstChainId = toChainId.Value.(*big.Int).Uint64()
+								fctransfer.DstUser = hex.EncodeToString(dstUser.Value.([]byte))
+								fctransfer.DstAsset = hex.EncodeToString(dstAsset.Value.([]byte))
 								break
 							}
 						}
@@ -228,16 +218,10 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						fctx.Time = uint64(tt)
 						fctx.Height = height
 						fctx.User = fctransfer.From
-						toChainId := big.NewInt(0)
-						if states[3].Type == "Integer" {
-							toChainId, _ = new(big.Int).SetString(states[3].Value.(string), 10)
-						} else {
-							toChainId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[3].Value.(string)), 16)
-						}
-						fctx.DstChainId = toChainId.Uint64()
-						fctx.Contract =states[2].Value.(string)
-						fctx.Key = states[4].Value.(string)
-						fctx.Param = states[5].Value.(string)
+						fctx.DstChainId = toChainId.Value.(*big.Int).Uint64()
+						fctx.Contract = hex.EncodeToString(contract.Value.([]byte))
+						fctx.Key = hex.EncodeToString(key.Value.([]byte))
+						fctx.Param = hex.EncodeToString(param.Value.([]byte))
 						fctx.SrcTransfer = fctransfer
 						srcTransactions = append(srcTransactions, fctx)
 					case _neo_crosschainunlock:
@@ -245,6 +229,9 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						if len(states) < 3 {
 							continue
 						}
+						fromChainId, _ := states[0].ToParameter()
+						contract, _ := states[1].ToParameter()
+						polyHash, _ := states[2].ToParameter()
 						tctransfer := &models.DstTransfer{}
 						for _, notifyNew := range exeitem.Notifications {
 							if notifyNew.State.Type != "Array" {
@@ -252,27 +239,22 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							}
 							notifyNew.State.Convert()
 							statesNew := notifyNew.State.Value.([]neo3_models.InvokeStack)
-							if len(statesNew) < 0 {
-								continue
-							}
 							eventNameNew := notifyNew.EventName
 							if eventNameNew == _neo_unlock || eventNameNew == _neo_unlock2 {
 								if len(statesNew) < 3 {
 									continue
 								}
+								fromAddress := contract
+								toAddress, _ := statesNew[1].ToParameter()
+								amount, _ := statesNew[2].ToParameter()
+								asset, _ := statesNew[0].ToParameter()
 								tctransfer.ChainId = this.GetChainId()
 								tctransfer.TxHash = tx.Hash[2:]
 								tctransfer.Time = uint64(tt)
-								tctransfer.From = statesNew[2].Value.(string)
-								tctransfer.To = statesNew[2].Value.(string)
-								tctransfer.Asset = basedef.HexStringReverse(statesNew[1].Value.(string))
-								amount := big.NewInt(0)
-								if statesNew[3].Type == "Integer" {
-									amount, _ = new(big.Int).SetString(statesNew[3].Value.(string), 10)
-								} else {
-									amount, _ = new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].Value.(string)), 16)
-								}
-								tctransfer.Amount = models.NewBigInt(amount)
+								tctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
+								tctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
+								tctransfer.Asset = hex.EncodeToString(asset.Value.([]byte))
+								tctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
 								break
 							}
 						}
@@ -283,15 +265,9 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						tctx.Fee = models.NewBigInt(big.NewInt(int64(basedef.String2Float64(exeitem.GasConsumed))))
 						tctx.Time = uint64(tt)
 						tctx.Height = height
-						fChainId := big.NewInt(0)
-						if states[1].Type == "Integer" {
-							fChainId, _ = new(big.Int).SetString(states[1].Value.(string), 10)
-						} else {
-							fChainId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[1].Value.(string)), 16)
-						}
-						tctx.SrcChainId = fChainId.Uint64()
-						tctx.Contract = basedef.HexStringReverse(states[2].Value.(string))
-						tctx.PolyHash = basedef.HexStringReverse(states[3].Value.(string))
+						tctx.SrcChainId = fromChainId.Value.(*big.Int).Uint64()
+						tctx.Contract = hex.EncodeToString(contract.Value.([]byte))
+						tctx.PolyHash = hex.EncodeToString(polyHash.Value.([]byte))
 						tctx.DstTransfer = tctransfer
 						dstTransactions = append(dstTransactions, tctx)
 					default:

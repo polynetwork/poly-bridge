@@ -48,6 +48,6 @@ func TestNeoListen(t *testing.T) {
 	}
 	chainHandle := crosschainlisten.NewChainHandle(neoListenConfig)
 	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
-	chainListen.SetHeight(1)
+	chainListen.SetHeight(70330)
 	chainListen.ListenChain()
 }
