@@ -229,7 +229,8 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						if len(states) < 3 {
 							continue
 						}
-						fromChainId, _ := states[0].ToParameter()
+						aaa, _ := states[0].ToParameter()
+						fromChainId := new(big.Int).SetBytes(aaa.Value.([]byte))
 						contract, _ := states[1].ToParameter()
 						polyHash, _ := states[2].ToParameter()
 						tctransfer := &models.DstTransfer{}
@@ -265,7 +266,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						tctx.Fee = models.NewBigInt(big.NewInt(int64(basedef.String2Float64(exeitem.GasConsumed))))
 						tctx.Time = uint64(tt)
 						tctx.Height = height
-						tctx.SrcChainId = fromChainId.Value.(*big.Int).Uint64()
+						tctx.SrcChainId = fromChainId.Uint64()
 						tctx.Contract = hex.EncodeToString(contract.Value.([]byte))
 						tctx.PolyHash = hex.EncodeToString(polyHash.Value.([]byte))
 						tctx.DstTransfer = tctransfer
