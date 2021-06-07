@@ -1,7 +1,7 @@
 ## Ethereum(ERC20 and ERC721) Chain Listener
 
 
-With the specified wrapper contract addresses, the ethereum chain listener will monitor the matched emitted contract events to find the desired `PolyWrapperLock` event and `PolyWrapperSpeedUp` event. Currently, two contract addresses were specified with the second will use the source chain asset as fee instead. The `PolyWrapperSpeedUp ` event will replace the transaction fee with a newer one normally to speed up the process. Besides the contract for asset of type ERC20, the NFT contract was deployed too and to be monitored in a similar way as the ERC20. 
+With the specified wrapper contract addresses, the ethereum chain listener will monitor the matched emitted contract events to find the desired `PolyWrapperLock` event and `PolyWrapperSpeedUp` event. Currently, two contract addresses were specified for wrapper smart contract with the second will use the cross chain asset as fee instead. The `PolyWrapperSpeedUp ` event will replace the transaction fee with a newer one normally to speed up the process. Besides the contract for asset of type ERC20, the NFT contract was deployed too and to be monitored in a similar way as the ERC20. 
 
 #### Wrapper Transaction
 
