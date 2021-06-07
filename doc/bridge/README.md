@@ -1,8 +1,8 @@
 ### Poly Bridge Overview
 
 
-<div align=center><img width="800" height="570" src="doc/bridge/PolyBridge.jpg"/></div>
 Poly Bridge
+<div align=center><img width="800" height="570" src="PolyBridge.jpg"/></div>
 
 
 Poly bridge monitors the target chains, parse the blocks, and find the cross chain transactions, then write into the state database(mysql), with which the bridge server will be able to expose APIs to check cross chain transactions status.
@@ -63,7 +63,7 @@ Status Code|Description
 * [POST expecttime](#post-expecttime)
 
 
-<div align=center><img width="800" height="570" src="doc/bridge/PolyCrossChain.jpg"/></div>
 Poly Cross Chain
+<div align=center><img width="800" height="570" src="PolyCrossChain.jpg"/></div>
 
 
