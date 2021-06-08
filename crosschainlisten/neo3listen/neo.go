@@ -95,7 +95,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	if block == nil {
 		return nil, nil, nil, nil, fmt.Errorf("can not get neo block!")
 	}
-	tt := block.Time
+	tt := block.Time / 1000
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
