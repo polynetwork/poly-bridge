@@ -22,13 +22,7 @@ package chainsdk
 import (
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
-	"time"
-
-	log "github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"poly-bridge/go_abi/eccd_abi"
 	"poly-bridge/go_abi/eccm_abi"
 	"poly-bridge/go_abi/eccmp_abi"
@@ -38,15 +32,22 @@ import (
 	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
 	nftquery "poly-bridge/go_abi/nft_query_abi"
 	nftwrap "poly-bridge/go_abi/nft_wrap_abi"
+	unmintable "poly-bridge/go_abi/unmintable_nft_mapping_abi"
 	xecdsa "poly-bridge/utils/ecdsa"
+	"time"
+
+	log "github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 var (
-	EmptyAddress          = common.Address{}
-	EmptyHash             = common.Hash{}
+	EmptyAddress                 = common.Address{}
+	EmptyHash                    = common.Hash{}
 	DefaultDeployGasLimit uint64 = 3000000
-	DefaultGasLimit       uint64 = 65000
-	DefaultAddGasPrice    = big.NewInt(0)
+	DefaultGasLimit       uint64 = 300000 // mint need 230000 wei of gas
+	DefaultAddGasPrice           = big.NewInt(0)
 )
 
 func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address, error) {
@@ -142,7 +143,7 @@ func (s *EthereumSdk) GetLockProxyNFTCCMP(proxyAddr common.Address) (common.Addr
 	return proxy.ManagerProxyContract(nil)
 }
 
-func (s *EthereumSdk) DeployNFT(
+func (s *EthereumSdk) DeployMintableNFT(
 	key *ecdsa.PrivateKey,
 	name, symbol string,
 ) (common.Address, error) {
@@ -152,6 +153,32 @@ func (s *EthereumSdk) DeployNFT(
 		return EmptyAddress, err
 	}
 	address, tx, inst, err := nftmapping.DeployCrossChainNFTMapping(auth, s.backend(), name, symbol)
+	if err != nil {
+		return EmptyAddress, err
+	}
+	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+		return EmptyAddress, err
+	}
+	nameAfterDeploy, err := inst.Name(nil)
+	if err != nil {
+		return EmptyAddress, err
+	}
+	if nameAfterDeploy != name {
+		return EmptyAddress, fmt.Errorf("mapping contract deployed name %s != %s", nameAfterDeploy, name)
+	}
+	return address, nil
+}
+
+func (s *EthereumSdk) DeployUnMintableNFT(
+	key *ecdsa.PrivateKey,
+	name, symbol string,
+) (common.Address, error) {
+
+	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
+	if err != nil {
+		return EmptyAddress, err
+	}
+	address, tx, inst, err := unmintable.DeployUnMintableNFTMapping(auth, s.backend(), name, symbol)
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -472,6 +499,60 @@ func (s *EthereumSdk) SetWrapFeeCollector(
 	return tx.Hash(), nil
 }
 
+func (s *EthereumSdk) SetNFTLockProxy(
+	ownerKey *ecdsa.PrivateKey,
+	nftAsset, nftLockProxyAddr common.Address,
+) (common.Hash, error) {
+
+	cm, err := unmintable.NewUnMintableNFTMapping(nftAsset, s.backend())
+	if err != nil {
+		return EmptyHash, err
+	}
+
+	auth, err := s.makeAuth(ownerKey, DefaultGasLimit)
+	if err != nil {
+		return EmptyHash, err
+	}
+
+	tx, err := cm.SetLockProxy(auth, nftLockProxyAddr)
+	if err != nil {
+		return EmptyHash, err
+	}
+
+	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+		return EmptyHash, err
+	}
+
+	return tx.Hash(), nil
+}
+
+//func (s *EthereumSdk) SetNFTManagerProxy(
+//	ownerKey *ecdsa.PrivateKey,
+//	nftAsset, managerProxy common.Address,
+//) (common.Hash, error) {
+//
+//	cm, err := nftmapping.NewCrossChainNFTMapping(nftAsset, s.backend())
+//	if err != nil {
+//		return EmptyHash, err
+//	}
+//
+//	auth, err := s.makeAuth(ownerKey, DefaultGasLimit)
+//	if err != nil {
+//		return EmptyHash, err
+//	}
+//
+//	tx, err := cm.SetManagerProxy(auth, managerProxy)
+//	if err != nil {
+//		return EmptyHash, err
+//	}
+//
+//	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+//		return EmptyHash, err
+//	}
+//
+//	return tx.Hash(), nil
+//}
+
 func (s *EthereumSdk) SetWrapLockProxy(
 	ownerKey *ecdsa.PrivateKey,
 	wrapAddr, nftLockProxyAddr common.Address,
@@ -612,7 +693,7 @@ func (s *EthereumSdk) makeAuth(key *ecdsa.PrivateKey, gasLimit uint64) (*bind.Tr
 
 func (s *EthereumSdk) waitTxConfirm(hash common.Hash) error {
 	ticker := time.NewTicker(time.Second * 1)
-	end := time.Now().Add(30 * time.Second)
+	end := time.Now().Add(60 * time.Second)
 	for now := range ticker.C {
 		_, pending, err := s.TransactionByHash(hash)
 		if err != nil {
