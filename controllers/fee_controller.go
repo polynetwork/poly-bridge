@@ -64,6 +64,15 @@ func (c *FeeController) GetFee() {
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 
+	{
+		chainFeeJson, _ := json.Marshal(chainFee)
+		logs.Error("chain fee: %s", string(chainFeeJson))
+	}
+	{
+		tokenJson, _ := json.Marshal(token)
+		logs.Error("token: %s", string(tokenJson))
+	}
+
 	if getFeeReq.SwapTokenHash != "" {
 		tokenMap := new(models.TokenMap)
 		res := db.Where("src_token_hash = ? and src_chain_id = ? and dst_chain_id = ?", getFeeReq.SwapTokenHash, getFeeReq.SrcChainId, getFeeReq.DstChainId).Preload("DstToken").First(tokenMap)
