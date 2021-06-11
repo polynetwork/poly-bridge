@@ -202,13 +202,32 @@ var (
 		Action: handleCmdDeployCCMPContract,
 	}
 
-	CmdDeployNFTContract = cli.Command{
-		Name:   "deployNFT",
-		Usage:  "admin account deploy new nft asset with mapping contract.",
-		Action: handleCmdDeployNFTContract,
+	CmdDeployMintableNFTContract = cli.Command{
+		Name:   "deployMintableNFT",
+		Usage:  "admin account deploy new mintable nft asset with mapping contract.",
+		Action: handleCmdDeployMintableNFTContract,
 		Flags: []cli.Flag{
 			NFTNameFlag,
 			NFTSymbolFlag,
+		},
+	}
+
+	CmdDeployUnMintableNFTContract = cli.Command{
+		Name:   "deployNFT",
+		Usage:  "admin account deploy new unmintable nft asset with mapping contract.",
+		Action: handleCmdDeployUnMintableNFTContract,
+		Flags: []cli.Flag{
+			NFTNameFlag,
+			NFTSymbolFlag,
+		},
+	}
+
+	CmdSetNFTLockProxy = cli.Command{
+		Name:   "setNFTLockProxy",
+		Usage:  "admin set lock proxy for nft asset contract.",
+		Action: handleCmdSetNFTLockProxy,
+		Flags: []cli.Flag{
+			AssetFlag,
 		},
 	}
 

@@ -22,6 +22,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	log "github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/polynetwork/poly/native/service/header_sync/bsc"
+	polyutils "github.com/polynetwork/poly/native/service/utils"
+	"github.com/urfave/cli"
 	"math/big"
 	"os"
 	"poly-bridge/basedef"
@@ -35,13 +41,7 @@ import (
 	"poly-bridge/utils/wallet"
 	"runtime"
 	"strings"
-
-	log "github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/polynetwork/poly/native/service/header_sync/bsc"
-	polyutils "github.com/polynetwork/poly/native/service/utils"
-	"github.com/urfave/cli"
+	"time"
 )
 
 var (
@@ -89,7 +89,9 @@ func setupApp() *cli.App {
 		CmdDeployECCDContract,
 		CmdDeployECCMContract,
 		CmdDeployCCMPContract,
-		CmdDeployNFTContract,
+		CmdDeployUnMintableNFTContract,
+		CmdSetNFTLockProxy,
+		CmdDeployMintableNFTContract,
 		CmdDeployFeeContract,
 		CmdDeployLockProxyContract,
 		CmdDeployNFTWrapContract,
@@ -241,16 +243,45 @@ func handleCmdDeployCCMPContract(ctx *cli.Context) error {
 	return updateConfig()
 }
 
-func handleCmdDeployNFTContract(ctx *cli.Context) error {
+func handleCmdDeployMintableNFTContract(ctx *cli.Context) error {
 	log.Info("start to deploy nft contract...")
 
 	name := flag2string(ctx, NFTNameFlag)
 	symbol := flag2string(ctx, NFTSymbolFlag)
 	owner := xecdsa.Key2address(adm)
-	if addr, err := sdk.DeployNFT(adm, name, symbol); err != nil {
+	if addr, err := sdk.DeployMintableNFT(adm, name, symbol); err != nil {
 		return fmt.Errorf("deploy nft contract for owner %s on chain %d failed, err: %v", owner.Hex(), cc.SideChainID, err)
 	} else {
 		log.Info("deploy nft contract %s for user %s on chain %d success!", addr.Hex(), owner.Hex(), cc.SideChainID)
+	}
+	return nil
+}
+
+func handleCmdDeployUnMintableNFTContract(ctx *cli.Context) error {
+	log.Info("start to deploy nft contract...")
+
+	name := flag2string(ctx, NFTNameFlag)
+	symbol := flag2string(ctx, NFTSymbolFlag)
+	owner := xecdsa.Key2address(adm)
+
+	addr, err := sdk.DeployUnMintableNFT(adm, name, symbol)
+	if err != nil {
+		return fmt.Errorf("deploy nft contract for owner %s on chain %d failed, err: %v", owner.Hex(), cc.SideChainID, err)
+	} else {
+		log.Info("deploy nft contract %s for user %s on chain %d success!", addr.Hex(), owner.Hex(), cc.SideChainID)
+	}
+
+	return nil
+}
+
+func handleCmdSetNFTLockProxy(ctx *cli.Context) error {
+	log.Info("start to deploy nft contract...")
+
+	asset := flag2address(ctx, AssetFlag)
+	proxy := common.HexToAddress(cc.NFTLockProxy)
+
+	if _, err := sdk.SetNFTLockProxy(adm, asset, proxy); err != nil {
+		return fmt.Errorf("set nft asset lock proxy manager failed, err: %s", err)
 	}
 	return nil
 }
@@ -677,15 +708,15 @@ func handleCmdNFTWrapLock(ctx *cli.Context) error {
 
 	{
 		log.Info("approve nft token")
-		if _, err := sdk.NFTApprove(key, asset, wrapper, tokenID); err != nil {
-			return err
-		}
 		approved, err := sdk.GetNFTApproved(asset, tokenID)
 		if err != nil {
 			return err
 		}
 		if approved != wrapper {
-			return fmt.Errorf("approved %s != sender %s", approved.Hex(), wrapper.Hex())
+			if _, err := sdk.NFTApprove(key, asset, wrapper, tokenID); err != nil {
+				return err
+			}
+			time.Sleep(20 * time.Second)
 		}
 	}
 
@@ -699,24 +730,24 @@ func handleCmdNFTWrapLock(ctx *cli.Context) error {
 		}
 	}
 
-	{
-		feeToken := common.HexToAddress(cc.FeeToken)
-		if _, err := sdk.ApproveERC20Token(key, feeToken, wrapper, fee); err != nil {
-			return err
-		}
-		allowance, err := sdk.GetERC20Allowance(feeToken, from, wrapper)
-		if err != nil {
-			return err
-		}
-		if allowance.Cmp(fee) < 0 {
-			return fmt.Errorf("approve fee token to wrapper contract failed")
-		}
-		tx, err := sdk.WrapLockWithErc20FeeToken(key, wrapper, asset, to, dstChainID, tokenID, feeToken, fee, id)
-		if err != nil {
-			return err
-		}
-		log.Info("wrap lock with erc20 feeToken success, feeToken %s, tx %s", feeToken.Hex(), tx.Hex())
-	}
+	//{
+	//	feeToken := common.HexToAddress(cc.FeeToken)
+	//	if _, err := sdk.ApproveERC20Token(key, feeToken, wrapper, fee); err != nil {
+	//		return err
+	//	}
+	//	allowance, err := sdk.GetERC20Allowance(feeToken, from, wrapper)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	if allowance.Cmp(fee) < 0 {
+	//		return fmt.Errorf("approve fee token to wrapper contract failed")
+	//	}
+	//	tx, err := sdk.WrapLockWithErc20FeeToken(key, wrapper, asset, to, dstChainID, tokenID, feeToken, fee, id)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	log.Info("wrap lock with erc20 feeToken success, feeToken %s, tx %s", feeToken.Hex(), tx.Hex())
+	//}
 
 	return nil
 }
