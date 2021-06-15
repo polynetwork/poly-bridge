@@ -18,9 +18,10 @@
 package models
 
 import (
-	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/basedef"
+
+	"github.com/shopspring/decimal"
 )
 
 type PolyBridgeResp struct {
@@ -61,7 +62,7 @@ func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 		Name:      tokenBasic.Name,
 		Time:      tokenBasic.Time,
 		Precision: tokenBasic.Precision,
-		Meta: tokenBasic.Meta,
+		Meta:      tokenBasic.Meta,
 		Price:     price.String(),
 		Ind:       tokenBasic.Ind,
 		Property:  tokenBasic.Property,
@@ -113,7 +114,7 @@ type TokenRsp struct {
 	Name           string
 	Property       int64
 	TokenBasicName string
-	Precision uint64
+	Precision      uint64
 	TokenBasic     *TokenBasicRsp
 	TokenMaps      []*TokenMapRsp
 }
@@ -125,7 +126,7 @@ func MakeTokenRsp(token *Token) *TokenRsp {
 		Name:           token.Name,
 		TokenBasicName: token.TokenBasicName,
 		Property:       token.Property,
-		Precision: token.Precision,
+		Precision:      token.Precision,
 	}
 	if token.TokenBasic != nil {
 		tokenRsp.TokenBasic = MakeTokenBasicRsp(token.TokenBasic)
@@ -236,9 +237,9 @@ func MakeTokenMapsRsp(tokenMaps []*TokenMap) *TokenMapsRsp {
 }
 
 type GetFeeReq struct {
-	SrcChainId uint64
-	Hash       string
-	DstChainId uint64
+	SrcChainId    uint64
+	Hash          string
+	DstChainId    uint64
 	SwapTokenHash string
 }
 
@@ -249,9 +250,9 @@ type GetFeeRsp struct {
 	UsdtAmount               string
 	TokenAmount              string
 	TokenAmountWithPrecision string
-	SwapTokenHash string
-	Balance string
-	BalanceWithPrecision string
+	SwapTokenHash            string
+	Balance                  string
+	BalanceWithPrecision     string
 }
 
 func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float,
@@ -263,9 +264,9 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		UsdtAmount:               usdtAmount.String(),
 		TokenAmount:              tokenAmount.String(),
 		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
-		SwapTokenHash: swapTokenHash,
-		Balance: balanceWithoutPrecision.String(),
-		BalanceWithPrecision: balance.String(),
+		SwapTokenHash:            swapTokenHash,
+		Balance:                  balanceWithoutPrecision.String(),
+		BalanceWithPrecision:     balance.String(),
 	}
 	{
 		aaa, _ := usdtAmount.Float64()
@@ -391,6 +392,14 @@ type WrapperTransactionsReq struct {
 	PageNo   int
 }
 
+type WrapperTransactionsWithFilterReq struct {
+	PageSize   int
+	PageNo     int
+	SrcChainId int
+	DstChainId int
+	Assets     []string
+}
+
 type WrapperTransactionsRsp struct {
 	PageSize     int
 	PageNo       int
@@ -425,12 +434,12 @@ type TransactionStateRsp struct {
 }
 
 type TransactionRsp struct {
-	Hash             string
-	User             string
-	SrcChainId       uint64
-	BlockHeight      uint64
-	Time             uint64
-	DstChainId       uint64
+	Hash        string
+	User        string
+	SrcChainId  uint64
+	BlockHeight uint64
+	Time        uint64
+	DstChainId  uint64
 	//Amount           string
 	FeeAmount        string
 	TransferAmount   string
@@ -438,7 +447,7 @@ type TransactionRsp struct {
 	ServerId         uint64
 	State            uint64
 	Token            *TokenRsp
-	FeeToken            *TokenRsp
+	FeeToken         *TokenRsp
 	TransactionState []*TransactionStateRsp
 }
 
@@ -571,8 +580,8 @@ func MakeCurveTransactionRsp(transaction1 *SrcPolyDstRelation, transaction2 *Src
 		FeeAmount:      feeAmount,
 		TransferAmount: transferAmount,
 		//Amount:         amount.String(),
-		DstUser:        transaction1.SrcTransaction.SrcTransfer.DstUser,
-		State:          transaction1.WrapperTransaction.Status,
+		DstUser: transaction1.SrcTransaction.SrcTransfer.DstUser,
+		State:   transaction1.WrapperTransaction.Status,
 	}
 	if transaction1.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction1.Token)
@@ -999,22 +1008,21 @@ func MakePolyTransactionsRsp(pageSize int, pageNo int, totalPage int, totalCount
 	return transactionsRsp
 }
 
-
 type ExpectTimeReq struct {
 	SrcChainId uint64
 	DstChainId uint64
 }
 
 type ExpectTimeRsp struct {
-	SrcChainId        uint64
-	DstChainId        uint64
-	Time uint64
+	SrcChainId uint64
+	DstChainId uint64
+	Time       uint64
 }
 
 func MakeExpectTimeRsp(srcchainId uint64, dstchainid uint64, time uint64) *ExpectTimeRsp {
 	expectTimeRsp := &ExpectTimeRsp{
-		Time:           time,
-		SrcChainId:        srcchainId,
+		Time:       time,
+		SrcChainId: srcchainId,
 		DstChainId: dstchainid,
 	}
 	return expectTimeRsp
