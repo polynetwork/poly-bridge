@@ -58,7 +58,7 @@ func (c *TransactionController) TransactionsWithFilter() {
 	}
 	transactions := make([]*models.WrapperTransaction, 0)
 
-	query := db.Model(&models.WrapperTransaction{}).Joins("LEFT JOIN src_transfers ON wrapper_transactions.hash = src_transfers.tx_hash").Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?", transactionsReq.SrcChainId, transactionsReq.DstChainId, transactionsReq.AssetHash)
+	query := db.Model(&models.WrapperTransaction{}).Joins("LEFT JOIN src_transfers ON wrapper_transactions.hash = src_transfers.tx_hash").Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?", transactionsReq.SrcChainId, transactionsReq.DstChainId, transactionsReq.Assets)
 	query.Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
 	var transactionNum int64
 	query.Count(&transactionNum)

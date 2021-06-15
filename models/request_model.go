@@ -397,7 +397,7 @@ type WrapperTransactionsWithFilterReq struct {
 	PageNo     int
 	SrcChainId int
 	DstChainId int
-	AssetHash  string
+	Assets     []string
 }
 
 type WrapperTransactionsRsp struct {
