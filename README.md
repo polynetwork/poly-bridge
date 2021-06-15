@@ -13,6 +13,7 @@ PolyBridge的API。
 * [POST getfee](#post-getfee)
 * [POST checkfee](#post-checkfee)
 * [POST transactions](#post-transactions)
+* [POST transactionswithfilter](#post-transactionswithfilter)
 * [POST transactionsofaddress](#post-transactionsofaddress)
 * [POST transactionofhash](#post-transactionofhash)
 * [POST transactionsofstate](#post-transactionsofstate)
@@ -902,6 +903,64 @@ Example Response
     ]
 }
 ```
+
+### POST transactionswithfilter
+
+获取跨链交易列表，支持参数(SrcChainId, DstChainId, Assets)：
+
+Request 
+```
+http://localhost:8080/v1/transactionswithfilter/
+```
+
+BODY raw
+```
+{
+    "PageNo":0,
+    "PageSize":10,
+    "SrcChainId": 2,
+    "DstChainId: 79,
+    "Assets": ["155040625d7ae3e9cada9a73e3e44f76d3ed1409"]
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/transactionswithfilter/' \
+--data-raw '{
+    "PageNo":0,
+    "PageSize":10,
+    "SrcChainId": 2,
+    "DstChainId: 79,
+    "Assets": ["155040625d7ae3e9cada9a73e3e44f76d3ed1409"]
+}'
+```
+
+Example Response
+```
+{
+    "PageSize": 1,
+    "PageNo": 0,
+    "TotalPage": 1,
+    "TotalCount": 1,
+    "Transactions": [
+        {
+            "Hash": "175beb5e1d93c50c216c512892bbf7d904a9903064051ec8225d471f221bc4dc",
+            "User": "e48956b4b73bfc8f0ac5f87e8f1c2df1f90e2339",
+            "SrcChainId": 2,
+            "BlockHeight": 9998505,
+            "Time": 1617873836,
+            "DstChainId": 79,
+            "DstUser": "e48956b4b73bfc8f0ac5f87e8f1c2df1f90e2339",
+            "ServerId": 0,
+            "FeeTokenHash": "155040625d7ae3e9cada9a73e3e44f76d3ed1409",
+            "FeeAmount": "55817733720000000000",
+            "State": 0
+        }
+    ]
+}
+```
+
 
 ### POST transactionsofaddress
 
