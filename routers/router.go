@@ -18,8 +18,9 @@
 package routers
 
 import (
-	"github.com/astaxie/beego"
 	"poly-bridge/controllers"
+
+	"github.com/astaxie/beego"
 )
 
 func init() {
@@ -34,6 +35,7 @@ func init() {
 		beego.NSRouter("/checkfee/", &controllers.FeeController{}, "post:CheckFee"),
 		beego.NSRouter("/checkswapfee/", &controllers.FeeController{}, "post:CheckSwapFee"),
 		beego.NSRouter("/transactions/", &controllers.TransactionController{}, "post:Transactions"),
+		beego.NSRouter("/transactionswithfilter/", &controllers.TransactionController{}, "post:Transactions,TransactionsWithFilter"),
 		beego.NSRouter("/transactionsofaddress/", &controllers.TransactionController{}, "post:TransactionsOfAddress"),
 		beego.NSRouter("/transactionofhash/", &controllers.TransactionController{}, "post:TransactionOfHash"),
 		beego.NSRouter("/transactionofcurve/", &controllers.TransactionController{}, "post:TransactionOfCurve"),

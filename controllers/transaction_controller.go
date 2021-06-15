@@ -20,10 +20,11 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
 	"time"
+
+	"github.com/astaxie/beego"
 )
 
 type TransactionController struct {
@@ -40,6 +41,23 @@ func (c *TransactionController) Transactions() {
 	}
 	transactions := make([]*models.WrapperTransaction, 0)
 	db.Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
+	var transactionNum int64
+	db.Model(&models.WrapperTransaction{}).Count(&transactionNum)
+	c.Data["json"] = models.MakeWrapperTransactionsRsp(transactionsReq.PageSize, transactionsReq.PageNo, (int(transactionNum)+transactionsReq.PageSize-1)/transactionsReq.PageSize,
+		int(transactionNum), transactions)
+	c.ServeJSON()
+}
+
+func (c *TransactionController) TransactionsWithFilter() {
+	var transactionsReq models.WrapperTransactionsWithFilterReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	transactions := make([]*models.WrapperTransaction, 0)
+	db.Model(&models.WrapperTransaction{}).Joins("LEFT JOIN src_transfers ON wrapper_transactions.hash = src_transfers.tx_hash").Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?", transactionsReq.SrcChainId, transactionsReq.DstChainId, transactionsReq.AssetHash).Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
 	var transactionNum int64
 	db.Model(&models.WrapperTransaction{}).Count(&transactionNum)
 	c.Data["json"] = models.MakeWrapperTransactionsRsp(transactionsReq.PageSize, transactionsReq.PageNo, (int(transactionNum)+transactionsReq.PageSize-1)/transactionsReq.PageSize,
