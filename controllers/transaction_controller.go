@@ -34,7 +34,7 @@ type TransactionController struct {
 func (c *TransactionController) Transactions() {
 	var transactionsReq models.WrapperTransactionsReq
 	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil {
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil || transactionsReq.PageSize == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
@@ -51,15 +51,17 @@ func (c *TransactionController) Transactions() {
 func (c *TransactionController) TransactionsWithFilter() {
 	var transactionsReq models.WrapperTransactionsWithFilterReq
 	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil {
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &transactionsReq); err != nil || transactionsReq.PageSize == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
 	transactions := make([]*models.WrapperTransaction, 0)
-	db.Model(&models.WrapperTransaction{}).Joins("LEFT JOIN src_transfers ON wrapper_transactions.hash = src_transfers.tx_hash").Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?", transactionsReq.SrcChainId, transactionsReq.DstChainId, transactionsReq.AssetHash).Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
+
+	query := db.Model(&models.WrapperTransaction{}).Joins("LEFT JOIN src_transfers ON wrapper_transactions.hash = src_transfers.tx_hash").Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?", transactionsReq.SrcChainId, transactionsReq.DstChainId, transactionsReq.AssetHash)
+	query.Limit(transactionsReq.PageSize).Offset(transactionsReq.PageSize * transactionsReq.PageNo).Order("time asc").Find(&transactions)
 	var transactionNum int64
-	db.Model(&models.WrapperTransaction{}).Count(&transactionNum)
+	query.Count(&transactionNum)
 	c.Data["json"] = models.MakeWrapperTransactionsRsp(transactionsReq.PageSize, transactionsReq.PageNo, (int(transactionNum)+transactionsReq.PageSize-1)/transactionsReq.PageSize,
 		int(transactionNum), transactions)
 	c.ServeJSON()
