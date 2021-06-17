@@ -20,8 +20,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
 	"poly-bridge/models"
+
+	"github.com/astaxie/beego"
 )
 
 type TokenController struct {
@@ -73,5 +74,22 @@ func (c *TokenController) TokenBasics() {
 	tokenBasics := make([]*models.TokenBasic, 0)
 	db.Model(&models.TokenBasic{}).Where("standard = 0").Preload("Tokens").Find(&tokenBasics)
 	c.Data["json"] = models.MakeTokenBasicsRsp(tokenBasics)
+	c.ServeJSON()
+}
+
+func (c *TokenController) TokenBasicsInfo() {
+	var tokenBasicReq models.TokenBasicsInfoReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &tokenBasicReq); err != nil || tokenBasicReq.PageSize < 1 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	tokenBasics := make([]*models.TokenBasic, 0)
+	query := db.Model(&models.TokenBasic{}).Where("standard = 0 AND property = 1")
+	var totalCount int64
+	query.Count(&totalCount)
+	query.Limit(tokenBasicReq.PageSize).Offset(tokenBasicReq.PageSize * tokenBasicReq.PageNo).Order("total_amount, name").Preload("Tokens").Find(&tokenBasics)
+	c.Data["json"] = models.MakeTokenBasicsInfoRsp(&tokenBasicReq, uint64(totalCount), tokenBasics)
 	c.ServeJSON()
 }

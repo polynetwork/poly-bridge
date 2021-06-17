@@ -103,6 +103,57 @@ func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
 	return tokenBasicsRsp
 }
 
+type TokenBasicsInfoReq struct {
+	PageSize int
+	PageNo   int
+}
+
+type TokenBasicsInfoRsp struct {
+	PageSize    int
+	PageNo      int
+	TotalPage   uint
+	TotalCount  uint64
+	TokenBasics []*TokenBasicInfoRsp
+}
+
+type TokenBasicInfoRsp struct {
+	TokenBasicRsp  `json:",inline"`
+	TotalAmount    string
+	TotalVolume    string
+	TotalCount     uint64
+	SocialTwitter  string
+	SocialTelegram string
+	SocialWebsite  string
+	SocialOther    string
+}
+
+func MakeTokenBasicsInfoRsp(req *TokenBasicsInfoReq, count uint64, tokenBasics []*TokenBasic) *TokenBasicsInfoRsp {
+	pages := int(count) / req.PageSize
+	if int(count)%req.PageSize != 0 {
+		pages++
+	}
+	tokenBasicsRsp := &TokenBasicsInfoRsp{
+		TotalCount: count,
+		PageSize:   len(tokenBasics),
+		PageNo:     req.PageNo,
+		TotalPage:  uint(pages),
+	}
+	for _, tokenBasic := range tokenBasics {
+		info := &TokenBasicInfoRsp{TokenBasicRsp: *MakeTokenBasicRsp(tokenBasic)}
+		info.TotalAmount = tokenBasic.TotalAmount.String()
+		info.TotalCount = tokenBasic.TotalCount
+		info.SocialTwitter = tokenBasic.SocialTwitter
+		info.SocialTelegram = tokenBasic.SocialTelegram
+		info.SocialWebsite = tokenBasic.SocialWebsite
+		info.SocialOther = tokenBasic.SocialOther
+		volume := new(big.Int).Mul(&tokenBasic.TotalAmount.Int, big.NewInt(tokenBasic.Price))
+		value := new(big.Int).Quo(volume, big.NewInt(int64(tokenBasic.Precision)))
+		info.TotalVolume = new(big.Int).Quo(value, big.NewInt(basedef.PRICE_PRECISION)).String()
+		tokenBasicsRsp.TokenBasics = append(tokenBasicsRsp.TokenBasics, info)
+	}
+	return tokenBasicsRsp
+}
+
 type TokenReq struct {
 	ChainId uint64
 	Hash    string
