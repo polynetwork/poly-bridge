@@ -1,21 +1,22 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
+
+	"github.com/astaxie/beego"
 )
 
 var (
 	ethereumSdk *chainsdk.EthereumSdkPro
-	bscSdk *chainsdk.EthereumSdkPro
-	hecoSdk *chainsdk.EthereumSdkPro
-	okSdk *chainsdk.EthereumSdkPro
-	neoSdk *chainsdk.NeoSdkPro
+	bscSdk      *chainsdk.EthereumSdkPro
+	hecoSdk     *chainsdk.EthereumSdkPro
+	okSdk       *chainsdk.EthereumSdkPro
+	neoSdk      *chainsdk.NeoSdkPro
 	ontologySdk *chainsdk.OntologySdkPro
-    config *conf.Config
+	config      *conf.Config
 )
 
 func init() {
@@ -78,7 +79,7 @@ func newChainSdks() {
 	}
 }
 
-func getBalance(chainId uint64, hash string) (*big.Int, error) {
+func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {

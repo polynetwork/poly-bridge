@@ -20,11 +20,12 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type FeeController struct {
@@ -88,7 +89,7 @@ func (c *FeeController) GetFee() {
 			c.ServeJSON()
 			return
 		}
-		tokenBalance, err := getBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+		tokenBalance, err := GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 		if err != nil {
 			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))

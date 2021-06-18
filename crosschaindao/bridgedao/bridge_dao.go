@@ -280,9 +280,18 @@ func (dao *BridgeDao) Name() string {
 	return basedef.SERVER_POLY_BRIDGE
 }
 
-func (dao *BridgeDao) GetTokens() ([]*models.TokenBasic, error) {
+func (dao *BridgeDao) GetTokenBasics() ([]*models.TokenBasic, error) {
 	tokens := make([]*models.TokenBasic, 0)
 	res := dao.db.Preload("Tokens").Find(&tokens)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return tokens, res.Error
+}
+
+func (dao *BridgeDao) GetTokens() ([]*models.Token, error) {
+	tokens := make([]*models.Token, 0)
+	res := dao.db.Find(&tokens)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -325,4 +334,9 @@ func (dao *BridgeDao) UpdateTokenBasicStatsWithCheckPoint(tokenBasic *models.Tok
 		logs.Info("Token basic stats successfully updated %s", tokenBasic.Name)
 	}
 	return nil
+}
+
+func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, amount *big.Int) error {
+	res := dao.db.Table("tokens").Where("hash=? AND chain_id=?", hash, chainId).Update("available_amount", &models.BigInt{*amount})
+	return res.Error
 }

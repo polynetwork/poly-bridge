@@ -165,6 +165,10 @@
       "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
     }
   ],
+  "StatsConfig": {
+    "TokenBasicStatsInterval": 60,
+    "TokenStatsInterval": 60
+  },
   "EventEffectConfig": {
     "HowOld": 1800,
     "HowOld2": 300,

@@ -21,10 +21,12 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"poly-bridge/controllers"
 	"poly-bridge/crosschaindao/bridgedao"
 	"poly-bridge/models"
 
@@ -36,7 +38,7 @@ type Stats struct {
 	cancel context.CancelFunc
 	cfg    *conf.StatsConfig
 	dao    *bridgedao.BridgeDao
-	exit   chan struct{}
+	wg     sync.WaitGroup
 }
 
 var ccs *Stats
@@ -46,7 +48,7 @@ func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBCo
 	if server != basedef.SERVER_POLY_BRIDGE {
 		panic("CrossChainStats Only runs on bridge server")
 	}
-	if cfg == nil || cfg.Interval == 0 {
+	if cfg == nil || cfg.TokenBasicStatsInterval == 0 || cfg.TokenStatsInterval == 0 {
 		panic("Invalid Stats config")
 	}
 
@@ -63,36 +65,42 @@ func StopCrossChainStats() {
 	}
 }
 
-func (this *Stats) Start() {
-	ticker := time.NewTicker(time.Second * time.Duration(this.cfg.Interval))
+func (this *Stats) run(interval int64, f func() error) {
+	this.wg.Add(1)
+	ticker := time.NewTicker(time.Second * time.Duration(interval))
 	for {
 		select {
 		case <-ticker.C:
-			err := this.computeStats()
+			err := f()
 			if err != nil {
-				logs.Error("computeStats failed for %s", err)
+				logs.Error("stats run error%s", err)
 			}
 		case <-this.Done():
-			close(this.exit)
 			break
 		}
 	}
+	this.wg.Done()
+}
+
+func (this *Stats) Start() {
+	go this.run(this.cfg.TokenBasicStatsInterval, this.computeStats)
+	go this.run(this.cfg.TokenStatsInterval, this.computeTokensStats)
 }
 
 func (this *Stats) Stop() {
 	logs.Info("Stopping stats server")
 	this.cancel()
-	<-this.exit
+	this.wg.Wait()
 }
 
 func (this *Stats) computeStats() (err error) {
-	logs.Info("Computing cross chain stats")
-	tokens, err := this.dao.GetTokens()
+	logs.Info("Computing cross chain token basic stats")
+	tokens, err := this.dao.GetTokenBasics()
 	if err != nil {
 		return fmt.Errorf("Failed to fetch token basic list %w", err)
 	}
 	for _, basic := range tokens {
-		err := this.computeTokenStats(basic)
+		err := this.computeTokenBasicStats(basic)
 		if err != nil {
 			return err
 		}
@@ -100,7 +108,7 @@ func (this *Stats) computeStats() (err error) {
 	return
 }
 
-func (this *Stats) computeTokenStats(token *models.TokenBasic) (err error) {
+func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) {
 	assets := make([]string, len(token.Tokens))
 	for i, t := range token.Tokens {
 		assets[i] = t.Hash
@@ -123,5 +131,25 @@ func (this *Stats) computeTokenStats(token *models.TokenBasic) (err error) {
 		token.TotalCount += totalCount
 	}
 	err = this.dao.UpdateTokenBasicStatsWithCheckPoint(token, checkPoint)
+	return
+}
+
+func (this *Stats) computeTokensStats() (err error) {
+	logs.Info("Computing cross chain token stats")
+	tokens, err := this.dao.GetTokens()
+	if err != nil {
+		return fmt.Errorf("Failed to fetch token basic list %w", err)
+	}
+	for _, t := range tokens {
+		amount, err := controllers.GetBalance(t.ChainId, t.Hash)
+		if err != nil || amount == nil {
+			logs.Error("Failed to fetch token available amount for token %s %v %s", t.Hash, t.ChainId, err)
+			continue
+		}
+		err = this.dao.UpdateTokenAvailableAmount(t.Hash, t.ChainId, amount)
+		if err != nil {
+			logs.Error("Failed to update token available amount for token %s %v %s", t.Hash, t.ChainId, err)
+		}
+	}
 	return
 }

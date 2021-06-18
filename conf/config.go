@@ -131,7 +131,8 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 }
 
 type StatsConfig struct {
-	Interval int64 // Chain stats aggregation interval in seconds
+	TokenBasicStatsInterval int64 // Chain token basic stats aggregation interval in seconds
+	TokenStatsInterval      int64 // Chain token stats aggregation interval in seconds
 }
 
 type EventEffectConfig struct {
