@@ -135,6 +135,28 @@
       "WrapperContract":["5598226aD2E8991deEFD03203739C87BdF6e6D03", "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"],
       "CCMContract":"2A4cF474Aef33F0046434E4916Ac6b2fef4e5B78",
       "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
+    },
+    {
+      "ChainName":"NEO3",
+      "ChainId":11,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "http://seed1t.neo.org:20332"
+        },
+        {
+          "Url": "http://seed2t.neo.org:20332"
+        },
+        {
+          "Url": "http://seed3t.neo.org:20332"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":[],
+      "CCMContract":"fdd6c536f59bfd1149e818635d46dcc6faf1ba44",
+      "ProxyContract":"97758f7e9c11e79423453e5acd925989ff7d3ade"
     }
   ],
   "StatsConfig": {
@@ -238,6 +260,15 @@
         }
       ],
       "GasLimit":220000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":11,
+      "ChainName":"NEO3",
+      "Nodes": [
+      ],
+      "GasLimit":5000000,
       "ProxyFee":120,
       "MinFee": 20
     }

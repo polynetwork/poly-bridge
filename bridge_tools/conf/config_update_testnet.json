@@ -3,46 +3,48 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"123456",
+    "Password":"wKd5sstfSsY3/Q==",
     "Scheme":"polyswap",
     "Debug": true
   },
   "Chains":[
     {
-      "ChainId": 3,
+      "ChainId": 11,
       "BackwardBlockNumber": 1
     }
   ],
   "ChainFees":[
     {
-      "ChainId": 3,
+      "ChainId": 11,
       "TokenBasic": {
-        "Name": "ONG"
+        "Name": "NEO"
       }
     }
   ],
   "TokenBasics":[
     {
-      "Name":"ONG",
-      "Precision":9,
-      "Property":1,
-      "PriceMarkets":[
-        {
-          "MarketName":"coinmarketcap",
-          "Name":"Ontology Gas"
-        },
-        {
-          "MarketName":"binance",
-          "Name":"ONGUSDT"
-        }
-      ],
+      "Name":"USDT",
       "Tokens":[
         {
-          "ChainId":3,
-          "Hash":"0200000000000000000000000000000000000000",
-          "Name":"ONG",
-          "Precision":9,
-          "Property":0
+          "ChainId":11,
+          "Hash":"c3b4f3b4b7c6c399cb44e8076192a8a9ee980a28",
+          "Name":"USDT",
+          "Precision":6,
+          "Property":1
+        },
+        {
+          "ChainId":5,
+          "Hash":"b8f78d43ea9fe006c85a26b9aff67bcf69dd4fe1",
+          "Name":"USDT",
+          "Precision":6,
+          "Property":1
+        },
+        {
+          "ChainId":2,
+          "Hash":"ad3f96ae966ad60347f31845b7e4b333104c52fb",
+          "Name":"USDT",
+          "Precision":6,
+          "Property":1
         }
       ]
     }
