@@ -18,14 +18,18 @@
 package bridgedao
 
 import (
+	"errors"
 	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type BridgeDao struct {
@@ -274,4 +278,48 @@ func (dao *BridgeDao) RemoveToken(token string) error {
 
 func (dao *BridgeDao) Name() string {
 	return basedef.SERVER_POLY_BRIDGE
+}
+
+func (dao *BridgeDao) GetTokens() ([]*models.TokenBasic, error) {
+	tokens := make([]*models.TokenBasic, 0)
+	res := dao.db.Preload("Tokens").Find(&tokens)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return tokens, res.Error
+}
+
+func (dao *BridgeDao) GetLastSrcTransferForToken(assetHashes []string) (*models.SrcTransfer, error) {
+	transfer := new(models.SrcTransfer)
+	res := dao.db.Where("asset in ", assetHashes).Order("time desc").Limit(1).First(transfer)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return transfer, res.Error
+}
+
+func (dao *BridgeDao) AggregateTokenBasicSrcTransfers(assetHashes []string, min, max uint64) (totalAmount *big.Int, totalCount uint64, err error) {
+	var v struct {
+		Sum   string
+		Count uint64
+	}
+	res := dao.db.Model(&models.SrcTransfer{}).Select("SUM(amount), COUNT(*)").Where("asset in ? AND time >= min AND time < max?", assetHashes, min, max).First(&v)
+	err = res.Error
+	if res.Error == nil {
+		sum := new(big.Float)
+		sum.SetString(v.Sum)
+		totalAmount, _ = sum.Int(nil)
+		totalCount = v.Count
+	}
+	return
+}
+
+func (dao *BridgeDao) UpdateTokenBasicStatsWithCheckPoint(tokenBasic *models.TokenBasic, checkPoint uint64) error {
+	res := dao.db.Debug().Model(tokenBasic).Where("name = ? AND stats_update_time=?", tokenBasic.Name, checkPoint).Select("total_amount, total_count, stats_update_time").Updates(tokenBasic)
+	if res.RowsAffected == 0 {
+		logs.Warn("Token basic stats was updated %s", tokenBasic.Name)
+	} else {
+		logs.Info("Token basic stats successfully updated %s", tokenBasic.Name)
+	}
+	return res.Error
 }
