@@ -8,4 +8,4 @@ ALTER TABLE `token_basics` ADD COLUMN `social_website` varchar(256);
 ALTER TABLE `token_basics` ADD COLUMN `social_other` varchar(256);
 
 
-ALTER TABLE `tokens` ADD COLUMNE `available_amount` varchar(64);
+ALTER TABLE `tokens` ADD COLUMN `available_amount` varchar(64);
