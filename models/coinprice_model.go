@@ -69,15 +69,16 @@ type ChainFee struct {
 }
 
 type Token struct {
-	Hash           string      `gorm:"primaryKey;size:66;not null"`
-	ChainId        uint64      `gorm:"primaryKey;type:bigint(20);not null"`
-	Name           string      `gorm:"size:64;not null"`
-	Precision      uint64      `gorm:"type:bigint(20);not null"`
-	TokenBasicName string      `gorm:"size:64;not null"`
-	Property       int64       `gorm:"type:bigint(20);not null"`
-	Standard       uint8       `gorm:"type:int(8);not null"`
-	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
-	TokenMaps      []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
+	Hash            string      `gorm:"primaryKey;size:66;not null"`
+	ChainId         uint64      `gorm:"primaryKey;type:bigint(20);not null"`
+	Name            string      `gorm:"size:64;not null"`
+	Precision       uint64      `gorm:"type:bigint(20);not null"`
+	TokenBasicName  string      `gorm:"size:64;not null"`
+	Property        int64       `gorm:"type:bigint(20);not null"`
+	Standard        uint8       `gorm:"type:int(8);not null"`
+	AvailableAmount *BigInt     `gorm:"type:varchar(64)"`
+	TokenBasic      *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
+	TokenMaps       []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
 }
 
 type TokenMap struct {

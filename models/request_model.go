@@ -160,24 +160,26 @@ type TokenReq struct {
 }
 
 type TokenRsp struct {
-	Hash           string
-	ChainId        uint64
-	Name           string
-	Property       int64
-	TokenBasicName string
-	Precision      uint64
-	TokenBasic     *TokenBasicRsp
-	TokenMaps      []*TokenMapRsp
+	Hash            string
+	ChainId         uint64
+	Name            string
+	Property        int64
+	TokenBasicName  string
+	Precision       uint64
+	AvailableAmount string
+	TokenBasic      *TokenBasicRsp
+	TokenMaps       []*TokenMapRsp
 }
 
 func MakeTokenRsp(token *Token) *TokenRsp {
 	tokenRsp := &TokenRsp{
-		Hash:           token.Hash,
-		ChainId:        token.ChainId,
-		Name:           token.Name,
-		TokenBasicName: token.TokenBasicName,
-		Property:       token.Property,
-		Precision:      token.Precision,
+		Hash:            token.Hash,
+		ChainId:         token.ChainId,
+		Name:            token.Name,
+		TokenBasicName:  token.TokenBasicName,
+		Property:        token.Property,
+		Precision:       token.Precision,
+		AvailableAmount: token.AvailableAmount.String(),
 	}
 	if token.TokenBasic != nil {
 		tokenRsp.TokenBasic = MakeTokenBasicRsp(token.TokenBasic)
