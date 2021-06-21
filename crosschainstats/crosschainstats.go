@@ -109,9 +109,9 @@ func (this *Stats) computeStats() (err error) {
 }
 
 func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) {
-	assets := make([]string, len(token.Tokens))
+	assets := make([][]interface{}, len(token.Tokens))
 	for i, t := range token.Tokens {
-		assets[i] = t.Hash
+		assets[i] = []interface{}{t.ChainId, t.Hash}
 	}
 	checkPoint := token.StatsUpdateTime
 	last, err := this.dao.GetLastSrcTransferForToken(assets)
