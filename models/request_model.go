@@ -140,15 +140,20 @@ func MakeTokenBasicsInfoRsp(req *TokenBasicsInfoReq, count uint64, tokenBasics [
 	}
 	for _, tokenBasic := range tokenBasics {
 		info := &TokenBasicInfoRsp{TokenBasicRsp: *MakeTokenBasicRsp(tokenBasic)}
-		info.TotalAmount = tokenBasic.TotalAmount.String()
+		if tokenBasic.TotalAmount == nil {
+			info.TotalAmount = "0"
+			info.TotalVolume = "0"
+		} else {
+			info.TotalAmount = tokenBasic.TotalAmount.String()
+			volume := new(big.Int).Mul(&tokenBasic.TotalAmount.Int, big.NewInt(tokenBasic.Price))
+			value := new(big.Int).Quo(volume, big.NewInt(int64(tokenBasic.Precision)))
+			info.TotalVolume = new(big.Int).Quo(value, big.NewInt(basedef.PRICE_PRECISION)).String()
+		}
 		info.TotalCount = tokenBasic.TotalCount
 		info.SocialTwitter = tokenBasic.SocialTwitter
 		info.SocialTelegram = tokenBasic.SocialTelegram
 		info.SocialWebsite = tokenBasic.SocialWebsite
 		info.SocialOther = tokenBasic.SocialOther
-		volume := new(big.Int).Mul(&tokenBasic.TotalAmount.Int, big.NewInt(tokenBasic.Price))
-		value := new(big.Int).Quo(volume, big.NewInt(int64(tokenBasic.Precision)))
-		info.TotalVolume = new(big.Int).Quo(value, big.NewInt(basedef.PRICE_PRECISION)).String()
 		tokenBasicsRsp.TokenBasics = append(tokenBasicsRsp.TokenBasics, info)
 	}
 	return tokenBasicsRsp
@@ -173,13 +178,15 @@ type TokenRsp struct {
 
 func MakeTokenRsp(token *Token) *TokenRsp {
 	tokenRsp := &TokenRsp{
-		Hash:            token.Hash,
-		ChainId:         token.ChainId,
-		Name:            token.Name,
-		TokenBasicName:  token.TokenBasicName,
-		Property:        token.Property,
-		Precision:       token.Precision,
-		AvailableAmount: token.AvailableAmount.String(),
+		Hash:           token.Hash,
+		ChainId:        token.ChainId,
+		Name:           token.Name,
+		TokenBasicName: token.TokenBasicName,
+		Property:       token.Property,
+		Precision:      token.Precision,
+	}
+	if token.AvailableAmount != nil {
+		tokenRsp.AvailableAmount = token.AvailableAmount.String()
 	}
 	if token.TokenBasic != nil {
 		tokenRsp.TokenBasic = MakeTokenBasicRsp(token.TokenBasic)
