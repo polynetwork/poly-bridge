@@ -2,7 +2,7 @@
   "Server":"polybridge",
   "Backup": false,
   "DBConfig":{
-    "URL":"10.203.0.11:3306",
+    "URL":"localhost:3306",
     "User":"root",
     "Password":"123456",
     "Scheme":"polyswap",
@@ -160,7 +160,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["11e2A718d46EBe97645b87F2363AFE1BF28c2672"],
+      "WrapperContract":["11e2A718d46EBe97645b87F2363AFE1BF28c2672", "bd4a08577476A521C41a21EF3f00b045b74175d5"],
       "CCMContract":"F35844C21A0Ca574D0e52697Bbd5ceDda5798A07",
       "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
     }
