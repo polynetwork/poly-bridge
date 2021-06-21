@@ -298,21 +298,21 @@ func (dao *BridgeDao) GetTokens() ([]*models.Token, error) {
 	return tokens, res.Error
 }
 
-func (dao *BridgeDao) GetLastSrcTransferForToken(assetHashes []string) (*models.SrcTransfer, error) {
+func (dao *BridgeDao) GetLastSrcTransferForToken(assetHashes [][]interface{}) (*models.SrcTransfer, error) {
 	transfer := new(models.SrcTransfer)
-	res := dao.db.Where("asset in ?", assetHashes).Order("time desc").Limit(1).First(transfer)
+	res := dao.db.Where("(chain_id, asset) in ?", assetHashes).Order("time desc").Limit(1).First(transfer)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
 	return transfer, res.Error
 }
 
-func (dao *BridgeDao) AggregateTokenBasicSrcTransfers(assetHashes []string, min, max uint64) (totalAmount *big.Int, totalCount uint64, err error) {
+func (dao *BridgeDao) AggregateTokenBasicSrcTransfers(assetHashes [][]interface{}, min, max uint64) (totalAmount *big.Int, totalCount uint64, err error) {
 	var v struct {
 		Sum   string
 		Count uint64
 	}
-	res := dao.db.Model(&models.SrcTransfer{}).Select("SUM(amount) as sum, COUNT(*) as count").Where("asset in ? AND time >=? AND time < ?", assetHashes, min, max).First(&v)
+	res := dao.db.Model(&models.SrcTransfer{}).Select("SUM(amount) as sum, COUNT(*) as count").Where("(chain_id, asset) in ? AND time >=? AND time < ?", assetHashes, min, max).First(&v)
 	err = res.Error
 	if res.Error == nil {
 		sum := new(big.Float)
@@ -337,6 +337,13 @@ func (dao *BridgeDao) UpdateTokenBasicStatsWithCheckPoint(tokenBasic *models.Tok
 }
 
 func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, amount *big.Int) error {
-	res := dao.db.Table("tokens").Where("hash=? AND chain_id=?", hash, chainId).Update("available_amount", &models.BigInt{*amount})
+	var v interface{}
+	if len(amount.String()) > 64 {
+		v = strings.Repeat("9", 64)
+	} else {
+		v = &models.BigInt{*amount}
+	}
+
+	res := dao.db.Table("tokens").Where("hash=? AND chain_id=?", hash, chainId).Update("available_amount", v)
 	return res.Error
 }
