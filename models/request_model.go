@@ -146,7 +146,7 @@ func MakeTokenBasicsInfoRsp(req *TokenBasicsInfoReq, count uint64, tokenBasics [
 		} else {
 			info.TotalAmount = tokenBasic.TotalAmount.String()
 			volume := new(big.Int).Mul(&tokenBasic.TotalAmount.Int, big.NewInt(tokenBasic.Price))
-			value := new(big.Int).Quo(volume, big.NewInt(int64(tokenBasic.Precision)))
+			value := new(big.Int).Quo(volume, new(big.Int).SetInt64(basedef.Int64FromFigure(int(tokenBasic.Precision))))
 			info.TotalVolume = new(big.Int).Quo(value, big.NewInt(basedef.PRICE_PRECISION)).String()
 		}
 		info.TotalCount = tokenBasic.TotalCount
