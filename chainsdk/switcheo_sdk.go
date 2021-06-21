@@ -18,6 +18,7 @@
 package chainsdk
 
 import (
+	"fmt"
 	"github.com/astaxie/beego/logs"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
@@ -99,4 +100,13 @@ func (client *SwitcheoSDK) GetGas(tx []byte) uint64 {
 	amount := aa.Fee.Amount.AmountOf("swth").BigInt()
 	gas := big.NewInt(int64(aa.Fee.Gas))
 	return amount.Div(amount, gas).Uint64()
+}
+
+func (sdk *SwitcheoSDK) GetCurrentBlockHeight() (uint64, error) {
+	status, err := sdk.Status()
+	if err != nil {
+		logs.Error("GetLatestBlockHeight: get current block status %s", err.Error())
+	}
+	res := status.SyncInfo.LatestBlockHeight
+	return uint64(res), nil
 }

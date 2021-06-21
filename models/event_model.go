@@ -82,4 +82,21 @@ type UnSwapEvent struct {
 	ToAssetHash  string
 	ToAddress    string
 }
+type LockEvent struct {
+	Method          string
+	TxHash          string
+	FromAddress     string
+	FromAssetHash   string
+	ToChainId       uint32
+	ToAssetHash     string
+	ToAddress       string
+	Amount          uint64
+}
+type UnlockEvent struct {
+	Method          string
+	TxHash          string
+	ToAssetHash     string
+	ToAddress       string
+	Amount          uint64
+}
 

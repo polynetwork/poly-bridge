@@ -67,6 +67,9 @@ func Hash2Address(chainId uint64, value string) string {
 		value = HexStringReverse(value)
 		addr, _ := ontcommon.AddressFromHexString(value)
 		return addr.ToBase58()
+	}else if chainId == SWITCHEO_CROSSCHAIN_ID{
+		addr, _ := cosmos_types.AccAddressFromHex(value)
+		return addr.String()
 	}
 	return value
 }
@@ -96,7 +99,7 @@ func Address2Hash(chainId uint64, value string) string {
 		}
 		addrHex := addr.ToHexString()
 		return HexStringReverse(addrHex)
-	} else if chainId == COSMOS_CROSSCHAIN_ID {
+	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
 		//cosmos_types.
 		addr, err := cosmos_types.AccAddressFromBech32(value)
 		if err != nil {
