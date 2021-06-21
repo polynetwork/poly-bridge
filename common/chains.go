@@ -1,12 +1,10 @@
-package controllers
+package common
 
 import (
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
-
-	"github.com/astaxie/beego"
 )
 
 var (
@@ -19,16 +17,14 @@ var (
 	config      *conf.Config
 )
 
-func init() {
-	newChainSdks()
+func SetupChainsSDK(cfg *conf.Config) {
+	if cfg == nil {
+		panic("Missing config")
+	}
+	newChainSdks(cfg)
 }
 
-func newChainSdks() {
-	configFile := beego.AppConfig.String("chain_config")
-	config = conf.NewConfig(configFile)
-	if config == nil {
-		panic("startServer - read config failed!")
-	}
+func newChainSdks(config *conf.Config) {
 	{
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {

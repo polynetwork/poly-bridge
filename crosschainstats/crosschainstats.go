@@ -25,8 +25,8 @@ import (
 	"time"
 
 	"poly-bridge/basedef"
+	"poly-bridge/common"
 	"poly-bridge/conf"
-	"poly-bridge/controllers"
 	"poly-bridge/crosschaindao/bridgedao"
 	"poly-bridge/models"
 
@@ -141,7 +141,7 @@ func (this *Stats) computeTokensStats() (err error) {
 		return fmt.Errorf("Failed to fetch token basic list %w", err)
 	}
 	for _, t := range tokens {
-		amount, err := controllers.GetBalance(t.ChainId, t.Hash)
+		amount, err := common.GetBalance(t.ChainId, t.Hash)
 		if err != nil || amount == nil {
 			logs.Error("Failed to fetch token available amount for token %s %v %s", t.Hash, t.ChainId, err)
 			continue

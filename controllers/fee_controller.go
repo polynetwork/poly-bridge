@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/common"
 	"poly-bridge/models"
 
 	"github.com/astaxie/beego"
@@ -89,7 +90,7 @@ func (c *FeeController) GetFee() {
 			c.ServeJSON()
 			return
 		}
-		tokenBalance, err := GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+		tokenBalance, err := common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 		if err != nil {
 			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
