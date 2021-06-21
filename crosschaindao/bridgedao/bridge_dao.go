@@ -312,7 +312,7 @@ func (dao *BridgeDao) AggregateTokenBasicSrcTransfers(assetHashes []string, min,
 		Sum   string
 		Count uint64
 	}
-	res := dao.db.Model(&models.SrcTransfer{}).Select("SUM(amount), COUNT(*)").Where("asset in ? AND time >=? AND time < ?", assetHashes, min, max).First(&v)
+	res := dao.db.Model(&models.SrcTransfer{}).Select("SUM(amount) as sum, COUNT(*) as count").Where("asset in ? AND time >=? AND time < ?", assetHashes, min, max).First(&v)
 	err = res.Error
 	if res.Error == nil {
 		sum := new(big.Float)

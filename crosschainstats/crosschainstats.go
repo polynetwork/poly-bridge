@@ -113,11 +113,11 @@ func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) 
 	for i, t := range token.Tokens {
 		assets[i] = t.Hash
 	}
+	checkPoint := token.StatsUpdateTime
 	last, err := this.dao.GetLastSrcTransferForToken(assets)
-	if err != nil || last == nil {
+	if err != nil || last == nil || checkPoint == last.Time {
 		return err
 	}
-	checkPoint := token.StatsUpdateTime
 	totalAmount, totalCount, err := this.dao.AggregateTokenBasicSrcTransfers(assets, checkPoint, last.Time)
 	if err != nil {
 		return err

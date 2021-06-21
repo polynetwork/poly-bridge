@@ -21,6 +21,7 @@ func SetupChainsSDK(cfg *conf.Config) {
 	if cfg == nil {
 		panic("Missing config")
 	}
+	config = cfg
 	newChainSdks(cfg)
 }
 
