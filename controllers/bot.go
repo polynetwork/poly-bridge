@@ -275,7 +275,8 @@ func (c *BotController) checkTxs() (err error) {
 		if ok && fee.Pass {
 			pass = "Pass"
 		}
-		list[i] = fmt.Sprintf("- Hash %s fee_paid(%s) %v fee_min %v", tx.SrcHash, pass, fee.Paid, fee.Min)
+		tsp := time.Unix(int64(tx.WrapperTransaction.Time), 0).Format(time.RFC3339)
+		list[i] = fmt.Sprintf("- %s %s fee_paid(%s) %v fee_min %v", tsp, tx.SrcHash, pass, fee.Paid, fee.Min)
 	}
 	body := strings.Join(list, "\n")
 	return PostDing(title, body)
@@ -287,7 +288,7 @@ func PostDing(title, body string) error {
 	payload["msgtype"] = "markdown"
 	payload["markdown"] = map[string]string{
 		"title": title,
-		"text":  body,
+		"text":  fmt.Sprintf("%s\n%s", title, body),
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {
