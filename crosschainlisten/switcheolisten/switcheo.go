@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strconv"
 	"strings"
-	"poly-bridge/basedef"
 )
 
 const (
@@ -87,13 +87,13 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.TxHash = lockEvent.TxHash
 					srcTransfer.Time = tt
 					srcTransfer.From = v.FromAddress
-					srcTransfer.To = basedef.Hash2Address(basedef.SWITCHEO_CROSSCHAIN_ID, lockEvent.Contract)//还是lockEvent.Contract?
+					srcTransfer.To = lockEvent.Contract
 					srcTransfer.Asset =v.FromAssetHash
 					amount:= new(big.Int).SetUint64(v.Amount)
 					srcTransfer.Amount=models.NewBigInt(amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
 					srcTransfer.DstAsset = v.ToAssetHash
-					srcTransfer.DstUser = basedef.Hash2Address(uint64(v.ToChainId), v.ToAddress)//还是v.ToAddress?
+					srcTransfer.DstUser = v.ToAddress
 					break
 				}
 			}
@@ -101,7 +101,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.ChainId = this.GetChainId()
 			srcTransaction.Hash = lockEvent.TxHash
 			srcTransaction.State = 1
-			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))//还是0?
+			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
 			srcTransaction.Time = tt
 			srcTransaction.Height = lockEvent.Height
 			srcTransaction.User = lockEvent.User
@@ -122,7 +122,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					dstTransfer.ChainId = this.GetChainId()
 					dstTransfer.TxHash = unLockEvent.TxHash
 					dstTransfer.Time = tt
-					dstTransfer.From = basedef.Hash2Address(basedef.SWITCHEO_CROSSCHAIN_ID, unLockEvent.Contract)
+					dstTransfer.From =unLockEvent.Contract
 					dstTransfer.To = v.ToAddress
 					dstTransfer.Asset = v.ToAssetHash
 					amount := new(big.Int).SetUint64(v.Amount)
@@ -134,7 +134,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.ChainId = this.GetChainId()
 			dstTransaction.Hash = unLockEvent.TxHash
 			dstTransaction.State = 1
-			dstTransaction.Fee = models.NewBigIntFromInt(int64(unLockEvent.Fee))//原来的0
+			dstTransaction.Fee = models.NewBigIntFromInt(int64(unLockEvent.Fee))
 			dstTransaction.Time = tt
 			dstTransaction.Height = height
 			dstTransaction.SrcChainId = uint64(unLockEvent.FChainId)
@@ -253,7 +253,10 @@ func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uin
 }
 
 func (this *SwitcheoChainListen) GetExtendLatestHeight() (uint64, error) {
-	panic("implement me")
+	if len(this.swthCfg.ExtendNodes) == 0 {
+		return this.GetLatestHeight()
+	}
+	return this.GetLatestHeight()
 }
 
 
