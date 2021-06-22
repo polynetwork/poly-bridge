@@ -18,13 +18,19 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"net/http"
+	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"runtime/debug"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -214,4 +220,92 @@ func (c *BotController) getTxs(pageSize, pageNo int) ([]*models.SrcPolyDstRelati
 		return nil, 0, err
 	}
 	return srcPolyDstRelations, int(transactionNum), nil
+}
+
+func (c *BotController) CheckTxs() {
+	err := c.checkTxs()
+	if err != nil {
+		c.Data["json"] = err.Error()
+	} else {
+		c.Data["json"] = "Success"
+	}
+	c.ServeJSON()
+}
+
+func (c *BotController) RunChecks() {
+	ticker := time.NewTicker(time.Hour)
+	for _ = range ticker.C {
+		err := c.checkTxs()
+		if err != nil {
+			logs.Error("check txs error %s", err)
+		}
+	}
+}
+
+func (c *BotController) checkTxs() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "CoGroup panic captured: %s", debug.Stack())
+		}
+	}()
+
+	pageSize := 20
+	pageNo := 0
+	txs, count, err := c.getTxs(pageSize, pageNo)
+	if err != nil {
+		return err
+	}
+	hashes := make([]string, len(txs))
+	for i, tx := range txs {
+		hashes[i] = tx.SrcHash
+	}
+	fees, err := c.checkFees(hashes)
+	if err != nil {
+		return err
+	}
+	pages := count / pageSize
+	if count%pageSize != 0 {
+		pages++
+	}
+	title := fmt.Sprintf("### Total %d, page %d/%d page size %d", count, pageNo, pages, len(txs))
+	list := make([]string, len(txs))
+	for i, tx := range txs {
+		pass := "Lack"
+		fee, ok := fees[tx.SrcHash]
+		if ok && fee.Pass {
+			pass = "Pass"
+		}
+		list[i] = fmt.Sprintf("- Hash %s fee_paid(%s) %v fee_min %v", tx.SrcHash, pass, fee.Paid, fee.Min)
+	}
+	body := strings.Join(list, "\n")
+	return PostDing(title, body)
+}
+
+func PostDing(title, body string) error {
+	url := "https://oapi.dingtalk.com/robot/send?access_token=396db615a934b9cb0156c9264979a4345cb4e191b06427923fe5f8f365079964"
+	payload := map[string]interface{}{}
+	payload["msgtype"] = "markdown"
+	payload["markdown"] = map[string]string{
+		"title": title,
+		"text":  body,
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	logs.Info("PostDing response Body:", string(respBody))
+	return nil
 }
