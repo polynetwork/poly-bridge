@@ -27,7 +27,8 @@ const (
 )
 
 type TokenBasic struct {
-	Name            string         `gorm:"primaryKey;size:64;not null"`
+	Id              int64          `gorm:"primaryKey;autoIncrement"`
+	Name            string         `gorm:"uniqueIndex;size:64;not null"`
 	Precision       uint64         `gorm:"type:bigint(20);not null"`
 	Price           int64          `gorm:"size:64;not null"`
 	Ind             uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
@@ -48,8 +49,9 @@ type TokenBasic struct {
 }
 
 type PriceMarket struct {
-	TokenBasicName string      `gorm:"primaryKey;size:64;not null"`
-	MarketName     string      `gorm:"primaryKey;size:64;not null"`
+	Id             int64       `gorm:"primaryKey;autoIncrement"`
+	TokenBasicName string      `gorm:"uniqueIndex:idx_tokenmarket;size:64;not null"`
+	MarketName     string      `gorm:"uniqueIndex:idx_tokenmarket;size:64;not null"`
 	Name           string      `gorm:"size:64;not null"`
 	Price          int64       `gorm:"type:bigint(20);not null"`
 	Ind            uint64      `gorm:"type:bigint(20);not null"`
@@ -58,7 +60,8 @@ type PriceMarket struct {
 }
 
 type ChainFee struct {
-	ChainId        uint64      `gorm:"primaryKey;type:bigint(20);not null"`
+	Id             int64       `gorm:"primaryKey;autoIncrement"`
+	ChainId        uint64      `gorm:"uniqueIndex;type:bigint(20);not null"`
 	TokenBasicName string      `gorm:"size:64;not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 	MaxFee         *BigInt     `gorm:"type:varchar(64);not null"`
@@ -69,8 +72,9 @@ type ChainFee struct {
 }
 
 type Token struct {
-	Hash            string      `gorm:"primaryKey;size:66;not null"`
-	ChainId         uint64      `gorm:"primaryKey;type:bigint(20);not null"`
+	Id              int64       `gorm:"primaryKey;autoIncrement"`
+	Hash            string      `gorm:"uniqueIndex:idx_token;size:66;not null"`
+	ChainId         uint64      `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
 	Name            string      `gorm:"size:64;not null"`
 	Precision       uint64      `gorm:"type:bigint(20);not null"`
 	TokenBasicName  string      `gorm:"size:64;not null"`
@@ -82,18 +86,20 @@ type Token struct {
 }
 
 type TokenMap struct {
-	SrcChainId   uint64 `gorm:"primaryKey;type:bigint(20);not null"`
-	SrcTokenHash string `gorm:"primaryKey;size:66;not null"`
+	Id           int64  `gorm:"primaryKey;autoIncrement"`
+	SrcChainId   uint64 `gorm:"uniqueIndex:idx_token_map;type:bigint(20);not null"`
+	SrcTokenHash string `gorm:"uniqueIndex:idx_token_map;size:66;not null"`
+	DstChainId   uint64 `gorm:"uniqueIndex:idx_token_map;type:bigint(20);not null"`
+	DstTokenHash string `gorm:"uniqueIndex:idx_token_map;size:66;not null"`
 	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
-	DstChainId   uint64 `gorm:"primaryKey;type:bigint(20);not null"`
-	DstTokenHash string `gorm:"primaryKey;size:66;not null"`
 	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
 	Standard     uint8  `gorm:"type:int(8);not null"`
 	Property     int64  `gorm:"type:bigint(20);not null"`
 }
 
 type WrapperTransactionWithToken struct {
-	Hash         string  `gorm:"primaryKey;size:66;not null"`
+	Id           int64   `gorm:"primaryKey;autoIncrement"`
+	Hash         string  `gorm:"uniqueIndex;size:66;not null"`
 	User         string  `gorm:"size:64"`
 	SrcChainId   uint64  `gorm:"type:bigint(20);not null"`
 	BlockHeight  uint64  `gorm:"type:bigint(20);not null"`
@@ -116,7 +122,8 @@ type CheckFee struct {
 }
 
 type TimeStatistic struct {
-	SrcChainId uint64 `gorm:"primaryKey;type:bigint(20);not null"`
-	DstChainId uint64 `gorm:"primaryKey;type:bigint(20);not null"`
-	Time       uint64 `gorm:"primaryKey;type:bigint(20);not null"`
+	Id         int64  `gorm:"primaryKey;autoIncrement"`
+	SrcChainId uint64 `gorm:"uniqueIndex:idx_chains;type:bigint(20);not null"`
+	DstChainId uint64 `gorm:"uniqueIndex:idx_chains;type:bigint(20);not null"`
+	Time       uint64 `gorm:"type:bigint(20);not null"`
 }
