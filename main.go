@@ -19,11 +19,12 @@ package main
 
 import (
 	"encoding/json"
+	_ "poly-bridge/routers"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/plugins/cors"
-	_ "poly-bridge/routers"
 )
 
 func main() {

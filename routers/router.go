@@ -18,12 +18,20 @@
 package routers
 
 import (
+	"poly-bridge/conf"
 	"poly-bridge/controllers"
 
 	"github.com/astaxie/beego"
 )
 
 func init() {
+
+	configFile := beego.AppConfig.String("chain_config")
+	config := conf.NewConfig(configFile)
+	if config == nil {
+		panic("startServer - read config failed!")
+	}
+
 	ns := beego.NewNamespace("/v1",
 		beego.NSRouter("/", &controllers.InfoController{}, "*:Get"),
 		beego.NSRouter("/token/", &controllers.TokenController{}, "post:Token"),
@@ -42,6 +50,8 @@ func init() {
 		beego.NSRouter("/transactionsofstate/", &controllers.TransactionController{}, "post:TransactionsOfState"),
 		beego.NSRouter("/transactionsofunfinished/", &controllers.TransactionController{}, "post:TransactionsOfUnfinished"),
 		beego.NSRouter("/transactionsofasset/", &controllers.TransactionController{}, "post:TransactionsOfAsset"),
+		beego.NSRouter("/bottxs/", &controllers.BotController{Conf: *config}, "get:GetTxs"),
+		beego.NSRouter("/botcheckfee/", &controllers.BotController{Conf: *config}, "get:CheckFees"),
 		beego.NSRouter("/expecttime/", &controllers.StatisticController{}, "post:ExpectTime"),
 	)
 	beego.AddNamespace(ns)

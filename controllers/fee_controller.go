@@ -20,11 +20,12 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type FeeController struct {
@@ -238,7 +239,7 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 	return checkFees
 }
 
-func (c *FeeController) getSwapSrcTransactions(o3Hashs []string) (map[string]string, error) {
+func getSwapSrcTransactions(o3Hashs []string) (map[string]string, error) {
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Table("dst_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
@@ -281,7 +282,7 @@ func (c *FeeController) CheckSwapFee(Checks []*models.CheckFeeReq) []*models.Che
 		}
 		o3Hashs = append(o3Hashs, srcTransaction.Hash)
 	}
-	srcHashs, err := c.getSwapSrcTransactions(o3Hashs)
+	srcHashs, err := getSwapSrcTransactions(o3Hashs)
 	if err != nil {
 		return nil
 	}
