@@ -135,8 +135,43 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]CheckFeeResu
 func (c *BotController) GetTxs() {
 	var err error
 	var transactionsOfUnfinishedReq models.TransactionsOfUnfinishedReq
-	transactionsOfUnfinishedReq.PageNo, _ = strconv.Atoi(c.Ctx.Input.Param("page_no"))
-	transactionsOfUnfinishedReq.PageSize, _ = strconv.Atoi(c.Ctx.Input.Param("page_size"))
+	transactionsOfUnfinishedReq.PageNo, _ = strconv.Atoi(c.Ctx.Input.Query("page_no"))
+	transactionsOfUnfinishedReq.PageSize, _ = strconv.Atoi(c.Ctx.Input.Query("page_size"))
+	if transactionsOfUnfinishedReq.PageSize == 0 {
+		transactionsOfUnfinishedReq.PageSize = 10
+	}
+
+	txs, count, err := c.getTxs(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo)
+	if err == nil {
+		// Check fee
+		hashes := make([]string, len(txs))
+		for i, tx := range txs {
+			hashes[i] = tx.SrcHash
+		}
+		fees, checkFeeError := c.checkFees(hashes)
+		if checkFeeError != nil {
+			err = checkFeeError
+		} else {
+			resp := models.MakeTransactionOfUnfinishedRsp(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo,
+				(count+transactionsOfUnfinishedReq.PageSize-1)/transactionsOfUnfinishedReq.PageSize, count, txs)
+			c.Data["json"] = struct {
+				models.TransactionOfUnfinishedRsp `json:",inline"`
+				CheckFeeResult                    map[string]CheckFeeResult
+			}{
+				TransactionOfUnfinishedRsp: *resp,
+				CheckFeeResult:             fees,
+			}
+			c.ServeJSON()
+			return
+		}
+	}
+
+	c.Data["json"] = err.Error()
+	c.Ctx.ResponseWriter.WriteHeader(400)
+	c.ServeJSON()
+}
+
+func (c *BotController) getTxs(pageSize, pageNo int) ([]*models.SrcPolyDstRelation, int, error) {
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
 	from := tt - c.Conf.EventEffectConfig.HowOld2
@@ -159,46 +194,24 @@ func (c *BotController) GetTxs() {
 		Preload("Token").
 		Preload("Token.TokenBasic").
 		Preload("FeeToken").
-		Limit(transactionsOfUnfinishedReq.PageSize).Offset(transactionsOfUnfinishedReq.PageSize * transactionsOfUnfinishedReq.PageNo).
+		Limit(pageSize).Offset(pageSize * pageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
-	err = res.Error
-	if err == nil {
-		var transactionNum int64
-		err = db.Table("src_transactions").
-			Where("dst_transactions.hash is null").
-			Where("src_transactions.standard = ?", 0).
-			Where("src_transactions.time > ?", tt-24*60*60*28).
-			Where("wrapper_transactions.time < ?", from).
-			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-			Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
-			Count(&transactionNum).Error
-		if err == nil {
-			// Check fee
-			hashes := make([]string, len(srcPolyDstRelations))
-			for i, tx := range srcPolyDstRelations {
-				hashes[i] = tx.SrcHash
-			}
-			fees, checkFeeError := c.checkFees(hashes)
-			if checkFeeError != nil {
-				err = checkFeeError
-			} else {
-				resp := models.MakeTransactionOfUnfinishedRsp(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo,
-					(int(transactionNum)+transactionsOfUnfinishedReq.PageSize-1)/transactionsOfUnfinishedReq.PageSize, int(transactionNum), srcPolyDstRelations)
-				c.Data["json"] = struct {
-					models.TransactionOfUnfinishedRsp `json:",inline"`
-					CheckFeeResult                    map[string]CheckFeeResult
-				}{
-					TransactionOfUnfinishedRsp: *resp,
-					CheckFeeResult:             fees,
-				}
-				c.ServeJSON()
-				return
-			}
-		}
+	if res.Error != nil {
+		return nil, 0, res.Error
 	}
-	c.Data["json"] = res.Error.Error()
-	c.Ctx.ResponseWriter.WriteHeader(400)
-	c.ServeJSON()
+	var transactionNum int64
+	err := db.Table("src_transactions").
+		Where("dst_transactions.hash is null").
+		Where("src_transactions.standard = ?", 0).
+		Where("src_transactions.time > ?", tt-24*60*60*28).
+		Where("wrapper_transactions.time < ?", from).
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+		Count(&transactionNum).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	return srcPolyDstRelations, int(transactionNum), nil
 }
