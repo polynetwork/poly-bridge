@@ -89,8 +89,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.From = v.FromAddress
 					srcTransfer.To = lockEvent.Contract
 					srcTransfer.Asset =v.FromAssetHash
-					amount:= new(big.Int).SetUint64(v.Amount)
-					srcTransfer.Amount=models.NewBigInt(amount)
+					srcTransfer.Amount=models.NewBigInt(v.Amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
 					srcTransfer.DstAsset = v.ToAssetHash
 					srcTransfer.DstUser = v.ToAddress
@@ -125,8 +124,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					dstTransfer.From =unLockEvent.Contract
 					dstTransfer.To = v.ToAddress
 					dstTransfer.Asset = v.ToAssetHash
-					amount := new(big.Int).SetUint64(v.Amount)
-					dstTransfer.Amount = models.NewBigInt(amount)
+					dstTransfer.Amount = models.NewBigInt(v.Amount)
 					break
 				}
 			}
@@ -147,10 +145,10 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	return nil, srcTransactions, nil, dstTransactions, nil
 }
 
-func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint64) ([]*models.ECCMLockEvent, []*models.LockEvent, error) {
+func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint64) ([]*models.ECCMLockEvent, []*models.ProxyLockEvent, error) {
 	client := this.swthSdk
 	ccmLockEvents := make([]*models.ECCMLockEvent, 0)
-	lockEvents := make([]*models.LockEvent, 0)
+	lockEvents := make([]*models.ProxyLockEvent, 0)
 	query := fmt.Sprintf("tx.height=%d AND make_from_cosmos_proof.status='1'", height)
 	res, err := client.TxSearch(height,query, false, 1, 100, "asc")
 	if err != nil {
@@ -184,7 +182,7 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 					} else if e.Type == _switcheo_lock {
 						tchainId, _ := strconv.ParseUint(string(e.Attributes[1].Value), 10, 32)
 						amount, _ := strconv.ParseUint(string(e.Attributes[5].Value), 10, 64)
-						lockEvents = append(lockEvents, &models.LockEvent{
+						lockEvents = append(lockEvents, &models.ProxyLockEvent{
 							Method: _switcheo_lock,
 							TxHash: strings.ToLower(tx.Hash.String()),
 							FromAddress: string(e.Attributes[3].Value),
@@ -192,7 +190,7 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 							ToChainId: uint32(tchainId),
 							ToAssetHash: string(e.Attributes[2].Value),
 							ToAddress: string(e.Attributes[4].Value),
-							Amount: amount,
+							Amount: new(big.Int).SetUint64(amount),
 						})
 					}
 				}
@@ -203,10 +201,10 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 	return ccmLockEvents, lockEvents, nil
 }
 
-func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uint64) ([]*models.ECCMUnlockEvent, []*models.UnlockEvent, error) {
+func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uint64) ([]*models.ECCMUnlockEvent, []*models.ProxyUnlockEvent, error) {
 	client := this.swthSdk
 	ccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
-	unlockEvents := make([]*models.UnlockEvent, 0)
+	unlockEvents := make([]*models.ProxyUnlockEvent, 0)
 	query := fmt.Sprintf("tx.height=%d", height)
 	res, err := client.TxSearch(height,query, false, 1, 100, "asc")
 	if err != nil {
@@ -236,12 +234,12 @@ func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uin
 						})
 					} else if e.Type == _switcheo_unlock {
 						amount, _ := strconv.ParseUint(string(e.Attributes[2].Value), 10, 64)
-						unlockEvents = append(unlockEvents, &models.UnlockEvent{
+						unlockEvents = append(unlockEvents, &models.ProxyUnlockEvent{
 							Method: _switcheo_unlock,
 							TxHash: strings.ToLower(tx.Hash.String()),
 							ToAssetHash: string(e.Attributes[0].Value),
 							ToAddress: string(e.Attributes[1].Value),
-							Amount: amount,
+							Amount: new(big.Int).SetUint64(amount),
 						})
 					}
 				}
