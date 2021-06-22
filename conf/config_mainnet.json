@@ -132,6 +132,19 @@
       "WrapperContract":"c93837e82178d406af8c84e1841c6960af251cb5",
       "CCMContract":"0900000000000000000000000000000000000000",
       "ProxyContract":"86b4ab5d99037113867247a1e68f70e348c07597"
+    },
+    {
+      "ChainName":"Switcheo",
+      "ChainId":5,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "http://40.115.182.238:26657"
+        }
+      ],
+      "ExtendNodes": [
+      ]
     }
   ],
   "EventEffectConfig": {
@@ -223,6 +236,18 @@
       "Nodes": [
       ],
       "GasLimit":200000000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":5,
+      "ChainName":"Switcheo",
+      "Nodes": [
+        {
+          "Url": "http://40.115.182.238:26657"
+        }
+      ],
+      "GasLimit":0,
       "ProxyFee":120,
       "MinFee": 20
     }
