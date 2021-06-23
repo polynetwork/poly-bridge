@@ -115,14 +115,14 @@ func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) 
 	}
 	checkPoint := token.StatsUpdateTime
 	last, err := this.dao.GetLastSrcTransferForToken(assets)
-	if err != nil || last == nil || checkPoint == last.Time {
+	if err != nil || last == nil || checkPoint >= last.Id {
 		return err
 	}
-	totalAmount, totalCount, err := this.dao.AggregateTokenBasicSrcTransfers(assets, checkPoint, last.Time)
+	totalAmount, totalCount, err := this.dao.AggregateTokenBasicSrcTransfers(assets, checkPoint, last.Id)
 	if err != nil {
 		return err
 	}
-	token.StatsUpdateTime = last.Time
+	token.StatsUpdateTime = last.Id
 	if checkPoint == 0 {
 		token.TotalAmount = &models.BigInt{*totalAmount}
 		token.TotalCount = totalCount

@@ -300,19 +300,19 @@ func (dao *BridgeDao) GetTokens() ([]*models.Token, error) {
 
 func (dao *BridgeDao) GetLastSrcTransferForToken(assetHashes [][]interface{}) (*models.SrcTransfer, error) {
 	transfer := new(models.SrcTransfer)
-	res := dao.db.Where("(chain_id, asset) in ?", assetHashes).Order("time desc").Limit(1).First(transfer)
+	res := dao.db.Where("(chain_id, asset) in ?", assetHashes).Order("id desc").Limit(1).First(transfer)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
 	return transfer, res.Error
 }
 
-func (dao *BridgeDao) AggregateTokenBasicSrcTransfers(assetHashes [][]interface{}, min, max uint64) (totalAmount *big.Int, totalCount uint64, err error) {
+func (dao *BridgeDao) AggregateTokenBasicSrcTransfers(assetHashes [][]interface{}, min, max int64) (totalAmount *big.Int, totalCount uint64, err error) {
 	var v struct {
 		Sum   string
 		Count uint64
 	}
-	res := dao.db.Model(&models.SrcTransfer{}).Select("SUM(amount) as sum, COUNT(*) as count").Where("(chain_id, asset) in ? AND time >=? AND time < ?", assetHashes, min, max).First(&v)
+	res := dao.db.Model(&models.SrcTransfer{}).Select("SUM(amount) as sum, COUNT(*) as count").Where("(chain_id, asset) in ? AND id > ? AND id <= ?", assetHashes, min, max).First(&v)
 	err = res.Error
 	if res.Error == nil {
 		sum := new(big.Float)
@@ -323,7 +323,7 @@ func (dao *BridgeDao) AggregateTokenBasicSrcTransfers(assetHashes [][]interface{
 	return
 }
 
-func (dao *BridgeDao) UpdateTokenBasicStatsWithCheckPoint(tokenBasic *models.TokenBasic, checkPoint uint64) error {
+func (dao *BridgeDao) UpdateTokenBasicStatsWithCheckPoint(tokenBasic *models.TokenBasic, checkPoint int64) error {
 	res := dao.db.Table("token_basics").Where("name = ? AND stats_update_time=?", tokenBasic.Name, checkPoint).Updates(map[string]interface{}{"total_amount": tokenBasic.TotalAmount, "total_count": tokenBasic.TotalCount, "stats_update_time": tokenBasic.StatsUpdateTime})
 	if res.Error != nil {
 		return res.Error

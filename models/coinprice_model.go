@@ -38,7 +38,7 @@ type TokenBasic struct {
 	Meta            string         `gorm:"type:varchar(128)"`
 	TotalAmount     *BigInt        `gorm:"type:varchar(64)"`
 	TotalCount      uint64         `gorm:"type:bigint(20)"`
-	StatsUpdateTime uint64         `gorm:"type:bigint(20)"`
+	StatsUpdateTime int64          `gorm:"type:bigint(20)"`
 	SocialTwitter   string         `gorm:"type:varchar(256)"`
 	SocialTelegram  string         `gorm:"type:varchar(256)"`
 	SocialWebsite   string         `gorm:"type:varchar(256)"`
