@@ -349,7 +349,8 @@ func (c *BotController) checkTxs() (err error) {
 		entry := models.ParseBotTx(tx, fees)
 		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
 		body := fmt.Sprintf(
-			"- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v",
+			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v",
+			title,
 			entry.Amount,
 			entry.Time,
 			entry.Duration,
