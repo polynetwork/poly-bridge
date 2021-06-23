@@ -39,11 +39,7 @@ import (
 
 type BotController struct {
 	beego.Controller
-	conf conf.Config
-}
-
-func NewBotController(config conf.Config) *BotController {
-	return &BotController{conf: config}
+	Conf *conf.Config
 }
 
 func (c *BotController) BotPage() {
@@ -179,8 +175,8 @@ func (c *BotController) GetTxs() {
 func (c *BotController) getTxs(pageSize, pageNo int) ([]*models.SrcPolyDstRelation, int, error) {
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
-	end := tt - c.conf.EventEffectConfig.HowOld
-	endBsc := tt - c.conf.EventEffectConfig.HowOld2
+	end := tt - c.Conf.EventEffectConfig.HowOld
+	endBsc := tt - c.Conf.EventEffectConfig.HowOld2
 	query := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("status != ?", basedef.STATE_FINISHED). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
@@ -225,10 +221,10 @@ func (c *BotController) CheckTxs() {
 }
 
 func (c *BotController) RunChecks() {
-	if c.conf.BotConfig == nil || c.conf.BotConfig.DingUrl == "" {
+	if c.Conf.BotConfig == nil || c.Conf.BotConfig.DingUrl == "" {
 		panic("Invalid ding url")
 	}
-	interval := c.conf.BotConfig.Interval
+	interval := c.Conf.BotConfig.Interval
 	if interval == 0 {
 		interval = 60 * 5
 	}
@@ -292,7 +288,7 @@ func (c *BotController) PostDing(title, body string) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", c.conf.BotConfig.DingUrl, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", c.Conf.BotConfig.DingUrl, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
