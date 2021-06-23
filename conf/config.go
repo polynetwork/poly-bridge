@@ -139,8 +139,10 @@ type EventEffectConfig struct {
 }
 
 type BotConfig struct {
-	DingUrl  string
-	Interval int64
+	DingUrl   string
+	CheckFrom int64
+	DetailUrl string
+	Interval  int64
 }
 
 type Config struct {

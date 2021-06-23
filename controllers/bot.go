@@ -43,11 +43,89 @@ type BotController struct {
 }
 
 func (c *BotController) BotPage() {
-	rb := []byte("<html><body><h1>HI</h1></body></html>")
-	if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
-		c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
+	var err error
+	pageNo, _ := strconv.Atoi(c.Ctx.Input.Query("page_no"))
+	pageSize, _ := strconv.Atoi(c.Ctx.Input.Query("page_size"))
+	from, _ := strconv.Atoi(c.Ctx.Input.Query("from"))
+	if pageSize == 0 {
+		pageSize = 10
 	}
-	c.Ctx.Output.Body(rb)
+	if from != 0 {
+		from = from * 24 * 60 * 60
+	}
+
+	txs, count, err := c.getTxs(pageSize, pageNo, from)
+	if err == nil {
+		// Check fee
+		hashes := make([]string, len(txs))
+		for i, tx := range txs {
+			hashes[i] = tx.SrcHash
+		}
+		fees, checkFeeError := c.checkFees(hashes)
+		if checkFeeError != nil {
+			err = checkFeeError
+		} else {
+
+			rows := make([]string, len(txs))
+			for i, entry := range txs {
+				tx := models.ParseBotTx(entry, fees)
+				rows[i] = fmt.Sprintf(
+					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 12)),
+					tx.Hash,
+					tx.Asset,
+					tx.Amount,
+					tx.SrcChainName,
+					tx.DstChainName,
+					tx.FeeToken,
+					tx.FeePaid,
+					tx.FeeMin,
+					tx.FeePass,
+					tx.Status,
+					tx.Time,
+					tx.Duration,
+				)
+			}
+			pages := count / pageSize
+			if count%pageSize != 0 {
+				pages++
+			}
+
+			rb := []byte(
+				fmt.Sprintf(
+					`<html><body><h1>Poly transaction status</h1>
+					<div>total %d page %d/%d current page size %d</div>
+						<table style="width:100%">
+						<tr>
+							<th>Hash</th>
+							<th>Asset</th>
+							<th>Amount</th>
+							<th>From</th>
+							<th>To</th>
+							<th>FeeToken</th>
+							<th>FeePaid</th>
+							<th>FeeMin</th>
+							<th>FeePass</th>
+							<th>Status</th>
+							<th>Time</th>
+							<th>Duration</th>
+						</tr>
+						%s
+						</table>
+				</body></html>`,
+					count, pageNo, pages, len(txs), strings.Join(rows, "\n"),
+				),
+			)
+			if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
+				c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
+			}
+			c.Ctx.Output.Body(rb)
+			return
+		}
+	}
+	c.Data["json"] = err.Error()
+	c.Ctx.ResponseWriter.WriteHeader(400)
+	c.ServeJSON()
+
 }
 
 func (c *BotController) CheckFees() {
@@ -142,14 +220,18 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 
 func (c *BotController) GetTxs() {
 	var err error
-	var transactionsOfUnfinishedReq models.TransactionsOfUnfinishedReq
-	transactionsOfUnfinishedReq.PageNo, _ = strconv.Atoi(c.Ctx.Input.Query("page_no"))
-	transactionsOfUnfinishedReq.PageSize, _ = strconv.Atoi(c.Ctx.Input.Query("page_size"))
-	if transactionsOfUnfinishedReq.PageSize == 0 {
-		transactionsOfUnfinishedReq.PageSize = 10
+	pageNo, _ := strconv.Atoi(c.Ctx.Input.Query("page_no"))
+	pageSize, _ := strconv.Atoi(c.Ctx.Input.Query("page_size"))
+	from, _ := strconv.Atoi(c.Ctx.Input.Query("from"))
+	if pageSize == 0 {
+		pageSize = 10
 	}
 
-	txs, count, err := c.getTxs(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo)
+	if from != 0 {
+		from = from * 24 * 60 * 60
+	}
+
+	txs, count, err := c.getTxs(pageSize, pageNo, from)
 	if err == nil {
 		// Check fee
 		hashes := make([]string, len(txs))
@@ -160,8 +242,8 @@ func (c *BotController) GetTxs() {
 		if checkFeeError != nil {
 			err = checkFeeError
 		} else {
-			c.Data["json"] = models.MakeBottxsRsp(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo,
-				(count+transactionsOfUnfinishedReq.PageSize-1)/transactionsOfUnfinishedReq.PageSize, count, txs, fees)
+			c.Data["json"] = models.MakeBottxsRsp(pageSize, pageNo,
+				(count+pageSize-1)/pageSize, count, txs, fees)
 			c.ServeJSON()
 			return
 		}
@@ -172,10 +254,13 @@ func (c *BotController) GetTxs() {
 	c.ServeJSON()
 }
 
-func (c *BotController) getTxs(pageSize, pageNo int) ([]*models.SrcPolyDstRelation, int, error) {
+func (c *BotController) getTxs(pageSize, pageNo, from int) ([]*models.SrcPolyDstRelation, int, error) {
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
 	end := tt - c.Conf.EventEffectConfig.HowOld
+	if from != 0 {
+		end = tt - int64(from)
+	}
 	endBsc := tt - c.Conf.EventEffectConfig.HowOld2
 	query := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
@@ -244,9 +329,14 @@ func (c *BotController) checkTxs() (err error) {
 		}
 	}()
 
+	from := c.Conf.BotConfig.CheckFrom
+	if from != 0 {
+		from = from * 24 * 60 * 60
+	}
+
 	pageSize := 20
 	pageNo := 0
-	txs, count, err := c.getTxs(pageSize, pageNo)
+	txs, _, err := c.getTxs(pageSize, pageNo, int(from))
 	if err != nil {
 		return err
 	}
@@ -258,32 +348,72 @@ func (c *BotController) checkTxs() (err error) {
 	if err != nil {
 		return err
 	}
-	pages := count / pageSize
-	if count%pageSize != 0 {
-		pages++
-	}
-	title := fmt.Sprintf("### Total %d, page %d/%d page size %d", count, pageNo, pages, len(txs))
-	list := make([]string, len(txs))
-	for i, tx := range txs {
-		pass := "Lack"
-		fee, ok := fees[tx.SrcHash]
-		if ok && fee.Pass {
-			pass = "Pass"
+	for _, tx := range txs {
+		entry := models.ParseBotTx(tx, fees)
+		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
+		body := fmt.Sprintf(
+			"- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v",
+			entry.Amount,
+			entry.Time,
+			entry.Duration,
+			entry.FeePass,
+			entry.FeePaid,
+			entry.FeeMin,
+			entry.Hash,
+		)
+		err = c.PostDingCard(title, body, "Detail", c.Conf.BotConfig.DetailUrl)
+		if err != nil {
+			logs.Error("Post dingtalk error %s", err)
 		}
-		tsp := time.Unix(int64(tx.WrapperTransaction.Time), 0).Format(time.RFC3339)
-		list[i] = fmt.Sprintf("- %s %s fee_paid(%s) %v fee_min %v", tsp, tx.SrcHash, pass, fee.Paid, fee.Min)
 	}
-	body := strings.Join(list, "\n")
-	return c.PostDing(title, body)
+
+	/*
+		title := fmt.Sprintf("### Total %d, page %d/%d page size %d", count, pageNo, pages, len(txs))
+		list := make([]string, len(txs))
+		for i, tx := range txs {
+			pass := "Lack"
+			fee, ok := fees[tx.SrcHash]
+			if ok && fee.Pass {
+				pass = "Pass"
+			}
+			tsp := time.Unix(int64(tx.WrapperTransaction.Time), 0).Format(time.RFC3339)
+			list[i] = fmt.Sprintf("- %s %s fee_paid(%s) %v fee_min %v", tsp, tx.SrcHash, pass, fee.Paid, fee.Min)
+		}
+		body := strings.Join(list, "\n")
+		return c.PostDing(title, body)
+	*/
+	return nil
 }
 
-func (c *BotController) PostDing(title, body string) error {
+func (c *BotController) PostDingCard(title, body, btn, url string) error {
+	payload := map[string]interface{}{}
+	payload["msgtype"] = "actionCard"
+	btns := []map[string]string{
+		map[string]string{
+			"title":     btn,
+			"actionURL": url,
+		},
+	}
+	card := map[string]interface{}{}
+	card["title"] = title
+	card["text"] = body
+	card["hideAvatar"] = 0
+	card["btns"] = btns
+	payload["actionCard"] = card
+	return c.postDing(payload)
+}
+
+func (c *BotController) PostDingMarkDown(title, body string) error {
 	payload := map[string]interface{}{}
 	payload["msgtype"] = "markdown"
 	payload["markdown"] = map[string]string{
 		"title": title,
 		"text":  fmt.Sprintf("%s\n%s", title, body),
 	}
+	return c.postDing(payload)
+}
+
+func (c *BotController) postDing(payload interface{}) error {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return err
