@@ -278,11 +278,10 @@ func (c *BotController) checkTxs() (err error) {
 		list[i] = fmt.Sprintf("- %s %s fee_paid(%s) %v fee_min %v", tsp, tx.SrcHash, pass, fee.Paid, fee.Min)
 	}
 	body := strings.Join(list, "\n")
-	return PostDing(title, body)
+	return c.PostDing(title, body)
 }
 
-func PostDing(title, body string) error {
-	url := "https://oapi.dingtalk.com/robot/send?access_token=396db615a934b9cb0156c9264979a4345cb4e191b06427923fe5f8f365079964"
+func (c *BotController) PostDing(title, body string) error {
 	payload := map[string]interface{}{}
 	payload["msgtype"] = "markdown"
 	payload["markdown"] = map[string]string{
@@ -293,7 +292,7 @@ func PostDing(title, body string) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", c.conf.BotConfig.DingUrl, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
