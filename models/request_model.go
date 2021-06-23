@@ -20,6 +20,7 @@ package models
 import (
 	"math/big"
 	"poly-bridge/basedef"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -906,6 +907,79 @@ func MakeTransactionOfUnfinishedRsp(pageSize int, pageNo int, totalPage int, tot
 		transactionOfUnfinishedRsp.Transactions = append(transactionOfUnfinishedRsp.Transactions, MakeCrossChainTransactionRsp(transaction))
 	}
 	return transactionOfUnfinishedRsp
+}
+
+type CheckFeeResult struct {
+	Pass bool
+	Paid float64
+	Min  float64
+}
+
+type BotTx struct {
+	Asset        string
+	Hash         string
+	SrcChainId   uint64
+	SrcChainName string
+	DstChainId   uint64
+	DstChainName string
+	Amount       string
+	Time         string
+	Duration     string
+	Status       string
+	FeeToken     string
+	FeePaid      float64
+	FeeMin       float64
+	FeePass      string
+}
+
+func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
+	v := BotTx{Hash: tx.SrcHash}
+	if c := tx.WrapperTransaction; c != nil {
+		v.SrcChainId = c.SrcChainId
+		v.DstChainId = c.DstChainId
+		v.SrcChainName = basedef.GetChainName(v.SrcChainId)
+		v.DstChainName = basedef.GetChainName(v.DstChainId)
+		v.Status = basedef.GetStateName(int(c.Status))
+		tsp := time.Unix(int64(c.Time), 0)
+		v.Time = tsp.Format(time.RFC3339)
+		v.Duration = time.Now().Sub(tsp).String()
+	}
+	if fee, ok := fees[v.Hash]; ok {
+		v.FeePaid = fee.Paid
+		v.FeeMin = fee.Min
+		v.FeePass = "NotPass"
+		if fee.Pass {
+			v.FeePass = "Pass"
+		}
+	} else {
+		v.FeePass = "Unknown"
+	}
+	if token := tx.Token; token != nil {
+		v.Asset = token.Name
+	}
+	if token := tx.FeeToken; token != nil {
+		v.FeeToken = token.Name
+	}
+	if tx.SrcTransaction != nil && tx.SrcTransaction.SrcTransfer != nil {
+		if amount := tx.SrcTransaction.SrcTransfer.Amount; amount != nil {
+			v.Amount = amount.String()
+		}
+	}
+	return v
+}
+
+func MakeBottxsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*SrcPolyDstRelation, fees map[string]CheckFeeResult) map[string]interface{} {
+	rsp := map[string]interface{}{}
+	rsp["PageSize"] = pageSize
+	rsp["PageNo"] = pageNo
+	rsp["TotalPage"] = totalPage
+	rsp["TotalCount"] = totalCount
+	txs := make([]BotTx, len(transactions))
+	for i, tx := range transactions {
+		txs[i] = ParseBotTx(tx, fees)
+	}
+	rsp["Transactions"] = txs
+	return rsp
 }
 
 type TransactionsOfStateRsp struct {

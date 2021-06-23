@@ -20,14 +20,15 @@ package basedef
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/joeqian10/neo-gogogo/helper"
-	ontcommon "github.com/ontio/ontology/common"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/joeqian10/neo-gogogo/helper"
+	ontcommon "github.com/ontio/ontology/common"
 )
 
 func ReadFile(fileName string) ([]byte, error) {
@@ -102,4 +103,27 @@ func Int64FromFigure(figure int) int64 {
 		x *= 10
 	}
 	return x
+}
+
+func GetChainName(id uint64) string {
+	switch id {
+	case POLY_CROSSCHAIN_ID:
+		return "Poly"
+	case ETHEREUM_CROSSCHAIN_ID:
+		return "Ethereum"
+	case ONT_CROSSCHAIN_ID:
+		return "Ontology"
+	case NEO_CROSSCHAIN_ID:
+		return "Neo"
+	case BSC_CROSSCHAIN_ID:
+		return "Bsc"
+	case HECO_CROSSCHAIN_ID:
+		return "Heco"
+	case O3_CROSSCHAIN_ID:
+		return "O3"
+	case OK_CROSSCHAIN_ID:
+		return "OK"
+	default:
+		return fmt.Sprintf("Unknown(%d)", id)
+	}
 }

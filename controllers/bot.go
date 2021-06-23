@@ -39,13 +39,19 @@ import (
 
 type BotController struct {
 	beego.Controller
-	Conf conf.Config
+	conf conf.Config
 }
 
-type CheckFeeResult struct {
-	Pass bool
-	Paid float64
-	Min  float64
+func NewBotController(config conf.Config) *BotController {
+	return &BotController{conf: config}
+}
+
+func (c *BotController) BotPage() {
+	rb := []byte("<html><body><h1>HI</h1></body></html>")
+	if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
+		c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
+	}
+	c.Ctx.Output.Body(rb)
 }
 
 func (c *BotController) CheckFees() {
@@ -69,7 +75,7 @@ func (c *BotController) CheckFees() {
 	c.ServeJSON()
 }
 
-func (c *BotController) checkFees(hashes []string) (fees map[string]CheckFeeResult, err error) {
+func (c *BotController) checkFees(hashes []string) (fees map[string]models.CheckFeeResult, err error) {
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
 	err = db.Table("wrapper_transactions").Where("hash in ?", hashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens).Error
 	if err != nil {
@@ -103,7 +109,7 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]CheckFeeResu
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 
-	fees = make(map[string]CheckFeeResult, 0)
+	fees = make(map[string]models.CheckFeeResult, 0)
 	for _, tx := range wrapperTransactionWithTokens {
 		if tx.DstChainId == basedef.O3_CROSSCHAIN_ID {
 			continue
@@ -126,7 +132,7 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]CheckFeeResu
 		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
-		res := CheckFeeResult{}
+		res := models.CheckFeeResult{}
 		if feePay.Cmp(feeMin) >= 0 {
 			res.Pass = true
 		}
@@ -158,15 +164,8 @@ func (c *BotController) GetTxs() {
 		if checkFeeError != nil {
 			err = checkFeeError
 		} else {
-			resp := models.MakeTransactionOfUnfinishedRsp(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo,
-				(count+transactionsOfUnfinishedReq.PageSize-1)/transactionsOfUnfinishedReq.PageSize, count, txs)
-			c.Data["json"] = struct {
-				models.TransactionOfUnfinishedRsp `json:",inline"`
-				CheckFeeResult                    map[string]CheckFeeResult
-			}{
-				TransactionOfUnfinishedRsp: *resp,
-				CheckFeeResult:             fees,
-			}
+			c.Data["json"] = models.MakeBottxsRsp(transactionsOfUnfinishedReq.PageSize, transactionsOfUnfinishedReq.PageNo,
+				(count+transactionsOfUnfinishedReq.PageSize-1)/transactionsOfUnfinishedReq.PageSize, count, txs, fees)
 			c.ServeJSON()
 			return
 		}
@@ -180,13 +179,13 @@ func (c *BotController) GetTxs() {
 func (c *BotController) getTxs(pageSize, pageNo int) ([]*models.SrcPolyDstRelation, int, error) {
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
-	from := tt - c.Conf.EventEffectConfig.HowOld2
-	res := db.Table("src_transactions").
+	end := tt - c.conf.EventEffectConfig.HowOld
+	endBsc := tt - c.conf.EventEffectConfig.HowOld2
+	query := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
-		Where("dst_transactions.hash is null").
-		Where("src_transactions.standard = ?", 0).
-		Where("src_transactions.time > ?", tt-24*60*60*28).
-		Where("wrapper_transactions.time < ?", from).
+		Where("status != ?", basedef.STATE_FINISHED). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
+		Where("src_transactions.time > ?", tt-24*60*60*3).
+		Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
@@ -199,7 +198,8 @@ func (c *BotController) getTxs(pageSize, pageNo int) ([]*models.SrcPolyDstRelati
 		Preload("DstTransaction.DstTransfer").
 		Preload("Token").
 		Preload("Token.TokenBasic").
-		Preload("FeeToken").
+		Preload("FeeToken")
+	res := query.
 		Limit(pageSize).Offset(pageSize * pageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
@@ -207,15 +207,7 @@ func (c *BotController) getTxs(pageSize, pageNo int) ([]*models.SrcPolyDstRelati
 		return nil, 0, res.Error
 	}
 	var transactionNum int64
-	err := db.Table("src_transactions").
-		Where("dst_transactions.hash is null").
-		Where("src_transactions.standard = ?", 0).
-		Where("src_transactions.time > ?", tt-24*60*60*28).
-		Where("wrapper_transactions.time < ?", from).
-		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
-		Count(&transactionNum).Error
+	err := query.Count(&transactionNum).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -233,7 +225,14 @@ func (c *BotController) CheckTxs() {
 }
 
 func (c *BotController) RunChecks() {
-	ticker := time.NewTicker(time.Hour)
+	if c.conf.BotConfig == nil || c.conf.BotConfig.DingUrl == "" {
+		panic("Invalid ding url")
+	}
+	interval := c.conf.BotConfig.Interval
+	if interval == 0 {
+		interval = 60 * 5
+	}
+	ticker := time.NewTicker(time.Second * time.Duration(interval))
 	for _ = range ticker.C {
 		err := c.checkTxs()
 		if err != nil {

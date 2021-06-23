@@ -1,5 +1,7 @@
 package basedef
 
+import "fmt"
+
 var (
 	PRICE_PRECISION = int64(100000000)
 	FEE_PRECISION   = int64(100000000)
@@ -32,3 +34,22 @@ const (
 const (
 	ADDRESS_LENGTH = 64
 )
+
+func GetStateName(state int) string {
+	switch state {
+	case STATE_FINISHED:
+		return "Finished"
+	case STATE_PENDDING:
+		return "Pending"
+	case STATE_SOURCE_DONE:
+		return "SrcDone"
+	case STATE_SOURCE_CONFIRMED:
+		return "SrcConfirmed"
+	case STATE_POLY_CONFIRMED:
+		return "PolyConfirmed"
+	case STATE_DESTINATION_DONE:
+		return "DestDone"
+	default:
+		return fmt.Sprintf("Unknown(%d)", state)
+	}
+}

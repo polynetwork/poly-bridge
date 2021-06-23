@@ -19,8 +19,9 @@ package conf
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego/logs"
 	"poly-bridge/basedef"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type DBConfig struct {
@@ -130,11 +131,16 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 }
 
 type EventEffectConfig struct {
-	HowOld         int64
-	HowOld2        int64
-	ChainListening int64
-	EffectSlot     int64
+	HowOld            int64
+	HowOld2           int64
+	ChainListening    int64
+	EffectSlot        int64
 	TimeStatisticSlot int64
+}
+
+type BotConfig struct {
+	DingUrl  string
+	Interval int64
 }
 
 type Config struct {
@@ -147,6 +153,7 @@ type Config struct {
 	FeeListenConfig       []*FeeListenConfig
 	EventEffectConfig     *EventEffectConfig
 	DBConfig              *DBConfig
+	BotConfig             *BotConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
