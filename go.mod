@@ -6,6 +6,7 @@ require (
 	github.com/astaxie/beego v1.12.1
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/goleveldb v1.0.0
+	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/ethereum/go-ethereum v1.9.15
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c

@@ -19,11 +19,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/urfave/cli"
 	"os"
 	"poly-bridge/bridge_tools/conf"
 	"runtime"
 	"strings"
+
+	"github.com/urfave/cli"
 )
 
 var (
@@ -126,6 +127,8 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		startTransactions(config)
+	} else if cmd == 6 {
+		merge()
 	}
 }
 
