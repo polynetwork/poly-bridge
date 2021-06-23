@@ -37,6 +37,9 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+// Deduplicate alarms
+var ALARMS = map[string]struct{}{}
+
 type BotController struct {
 	beego.Controller
 	Conf *conf.Config
@@ -49,9 +52,6 @@ func (c *BotController) BotPage() {
 	from, _ := strconv.Atoi(c.Ctx.Input.Query("from"))
 	if pageSize == 0 {
 		pageSize = 10
-	}
-	if from != 0 {
-		from = from * 24 * 60 * 60
 	}
 
 	txs, count, err := c.getTxs(pageSize, pageNo, from)
@@ -93,8 +93,8 @@ func (c *BotController) BotPage() {
 			rb := []byte(
 				fmt.Sprintf(
 					`<html><body><h1>Poly transaction status</h1>
-					<div>total %d page %d/%d current page size %d</div>
-						<table style="width:100%">
+					<div>total %d transactions (page %d/%d current page size %d)</div>
+						<table style="width:100%%">
 						<tr>
 							<th>Hash</th>
 							<th>Asset</th>
@@ -227,10 +227,6 @@ func (c *BotController) GetTxs() {
 		pageSize = 10
 	}
 
-	if from != 0 {
-		from = from * 24 * 60 * 60
-	}
-
 	txs, count, err := c.getTxs(pageSize, pageNo, from)
 	if err == nil {
 		// Check fee
@@ -258,14 +254,14 @@ func (c *BotController) getTxs(pageSize, pageNo, from int) ([]*models.SrcPolyDst
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
 	end := tt - c.Conf.EventEffectConfig.HowOld
-	if from != 0 {
-		end = tt - int64(from)
+	if from == 0 {
+		from = 3
 	}
 	endBsc := tt - c.Conf.EventEffectConfig.HowOld2
 	query := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("status != ?", basedef.STATE_FINISHED). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
-		Where("src_transactions.time > ?", tt-24*60*60*3).
+		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
@@ -330,10 +326,6 @@ func (c *BotController) checkTxs() (err error) {
 	}()
 
 	from := c.Conf.BotConfig.CheckFrom
-	if from != 0 {
-		from = from * 24 * 60 * 60
-	}
-
 	pageSize := 20
 	pageNo := 0
 	txs, _, err := c.getTxs(pageSize, pageNo, int(from))
@@ -349,6 +341,11 @@ func (c *BotController) checkTxs() (err error) {
 		return err
 	}
 	for _, tx := range txs {
+		_, ok := ALARMS[tx.SrcHash]
+		if ok {
+			continue
+		}
+		ALARMS[tx.SrcHash] = struct{}{}
 		entry := models.ParseBotTx(tx, fees)
 		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
 		body := fmt.Sprintf(
