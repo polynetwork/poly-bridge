@@ -32,6 +32,10 @@ func init() {
 		panic("startServer - read config failed!")
 	}
 
+	// run checks
+	bot := &controllers.BotController{Conf: config}
+	go bot.RunChecks()
+
 	ns := beego.NewNamespace("/v1",
 		beego.NSRouter("/", &controllers.InfoController{}, "*:Get"),
 		beego.NSRouter("/token/", &controllers.TokenController{}, "post:Token"),
