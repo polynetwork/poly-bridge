@@ -264,7 +264,7 @@ func migrateExplorerDstTransactions(exp, db *gorm.DB) {
 		logs.Info("migrateExplorerDstTransactions %d", count)
 		dstTransactions := make([]*explorerdao.DstTransaction, 0)
 		//exp.Preload("DstTransfer").Order("tt asc").Limit(selectNum).Find(&dstTransactions)
-		err := exp.Preload("DstTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Order("tt asc").Find(&dstTransactions).Error
+		err := exp.Preload("DstTransfer").Limit(selectNum).Offset(selectNum * count).Order("tt asc").Find(&dstTransactions).Error
 		if err != nil {
 			panic(err)
 		}
@@ -297,14 +297,15 @@ func migrateExplorerDstTransactions(exp, db *gorm.DB) {
 	countTables("tchain_tx", "dst_transactions", exp, db)
 }
 
-func migrateTableInBatches(src, db *gorm.DB, table string, model func() interface{}, query func(*gorm.DB) *gorm.DB) {
+func migrateTableInBatches(orderKey string, src, db *gorm.DB, table string, model func() interface{}, query func(*gorm.DB) *gorm.DB) {
 	logs.Info("Runnign migrate table in batch %s", table)
 	selectNum := 1000
 	count := 0
+	order := fmt.Sprintf("%s asc", orderKey)
 	for {
 		logs.Info("%s %d", table, count)
 		entries := model()
-		res := query(src).Limit(selectNum).Offset(selectNum * count).Order("tt asc").Order("tt asc").Find(entries)
+		res := query(src).Limit(selectNum).Offset(selectNum * count).Order(order).Find(entries)
 		checkError(res.Error, "Fetch src_transactions")
 		if res.RowsAffected > 0 {
 			err := db.Save(entries).Error
@@ -324,41 +325,41 @@ func migrateBridgeTxs(bri, db *gorm.DB) {
 		query := func(tx *gorm.DB) *gorm.DB {
 			return tx.Preload("SrcTransfer")
 		}
-		migrateTableInBatches(bri, db, "src_transactions", model, query)
+		migrateTableInBatches("time", bri, db, "src_transactions", model, query)
 	}
 	{
 		model := func() interface{} { return &[]*models.PolyTransaction{} }
 		query := func(tx *gorm.DB) *gorm.DB {
 			return tx
 		}
-		migrateTableInBatches(bri, db, "poly_transactions", model, query)
+		migrateTableInBatches("time", bri, db, "poly_transactions", model, query)
 	}
 	{
 		model := func() interface{} { return &[]*models.DstTransaction{} }
 		query := func(tx *gorm.DB) *gorm.DB {
 			return tx.Preload("DstTransfer")
 		}
-		migrateTableInBatches(bri, db, "dst_transactions", model, query)
+		migrateTableInBatches("time", bri, db, "dst_transactions", model, query)
 	}
 	{
 		model := func() interface{} { return &[]*models.WrapperTransaction{} }
 		query := func(tx *gorm.DB) *gorm.DB {
 			return tx
 		}
-		migrateTableInBatches(bri, db, "wrapper_transactions", model, query)
+		migrateTableInBatches("time", bri, db, "wrapper_transactions", model, query)
 	}
 	{
 		model := func() interface{} { return &[]*models.SrcSwap{} }
 		query := func(tx *gorm.DB) *gorm.DB {
 			return tx
 		}
-		migrateTableInBatches(bri, db, "src_swaps", model, query)
+		migrateTableInBatches("time", bri, db, "src_swaps", model, query)
 	}
 	{
 		model := func() interface{} { return &[]*models.DstSwap{} }
 		query := func(tx *gorm.DB) *gorm.DB {
 			return tx
 		}
-		migrateTableInBatches(bri, db, "dst_swaps", model, query)
+		migrateTableInBatches("time", bri, db, "dst_swaps", model, query)
 	}
 }
