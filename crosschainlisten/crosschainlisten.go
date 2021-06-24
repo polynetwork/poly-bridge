@@ -19,18 +19,20 @@ package crosschainlisten
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"math"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten/ethereumlisten"
 	"poly-bridge/crosschainlisten/neolisten"
+	"poly-bridge/crosschainlisten/o3listen"
 	"poly-bridge/crosschainlisten/ontologylisten"
 	"poly-bridge/crosschainlisten/polylisten"
 	"poly-bridge/models"
 	"runtime/debug"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 var chainListens [10]*CrossChainListen
@@ -84,6 +86,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return ontologylisten.NewOntologyChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == basedef.OK_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == basedef.O3_CROSSCHAIN_ID {
+		return o3listen.NewO3ChainListen(chainListenConfig)
 	} else {
 		return nil
 	}

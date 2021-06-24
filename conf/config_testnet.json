@@ -45,7 +45,8 @@
       "CCMContract":"726532586c50ec9f4080b71f906a3d9779bbd64f",
       "ProxyContract":"D8aE73e06552E270340b63A8bcAbf9277a1aac99",
       "NFTWrapperContract":"940300dc3Fc26e3A330a300be766184C0b5Fe019",
-      "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
+      "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03",
+      "SwapContract": "1E7A3e54494F300dC66181621E23eE657E22D725"
     },
     {
       "ChainName":"NEO",
@@ -85,7 +86,8 @@
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c",
       "NFTWrapperContract":"61E289D43C1FEA7598786557A2F309979ad144D3",
-      "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
+      "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03",
+      "SwapContract": "6407673152fc40B648C3348BeE66D162d39923c6"
     },
     {
       "ChainName":"HECO",
@@ -103,7 +105,8 @@
       "CCMContract":"D9A3d265a1127051F620e700B5a461af4991EaAE",
       "ProxyContract":"4a76E52600C6285029c8f7c52183cf86282cA5b8",
       "NFTWrapperContract": "baBaAF5CF7f63437755aAAFE7a4106463c5cD540",
-      "NFTProxyContract": "25BB8E9C0Cc03B30d09769735208a47d389Ff36c"
+      "NFTProxyContract": "25BB8E9C0Cc03B30d09769735208a47d389Ff36c",
+      "SwapContract": "5B18542A4cD54C7c1641bdF63541F19072b79260"
     },
     {
       "ChainName":"Ontology",
@@ -157,6 +160,23 @@
       "WrapperContract":[],
       "CCMContract":"fdd6c536f59bfd1149e818635d46dcc6faf1ba44",
       "ProxyContract":"97758f7e9c11e79423453e5acd925989ff7d3ade"
+    },
+    {
+      "ChainName":"curve",
+      "ChainId":82,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "http://40.115.136.96:8546"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"],
+      "CCMContract":"0E916fc31F67A59318743ca0A3a33ff8B1279854",
+      "ProxyContract":"A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
+      "SwapContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"
     }
   ],
   "StatsConfig": {
