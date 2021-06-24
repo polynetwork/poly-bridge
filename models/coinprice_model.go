@@ -80,6 +80,7 @@ type Token struct {
 	TokenBasicName  string      `gorm:"size:64;not null"`
 	Property        int64       `gorm:"type:bigint(20);not null"`
 	Standard        uint8       `gorm:"type:int(8);not null"`
+	TokenType       string      `gorm:"type:varchar(32)"`
 	AvailableAmount *BigInt     `gorm:"type:varchar(64)"`
 	TokenBasic      *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 	TokenMaps       []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`

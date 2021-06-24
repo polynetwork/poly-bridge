@@ -150,6 +150,16 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 			checkError(err, "Saving table")
 		}
 	}
+	{
+		logs.Info("Migrating table tokens from explorer")
+		model := make([]*explorerdao.Token, 0)
+		err := exp.Find(&model).Error
+		checkError(err, "Loading table")
+		for _, token := range model {
+			err = db.Table("tokens").Where("chain_id=? AND hash=?", token.Id, token.Hash).Update("token_type", token.Type).Error
+			checkError(err, "Saving table")
+		}
+	}
 }
 
 func createTables(db *gorm.DB) {
