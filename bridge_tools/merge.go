@@ -134,22 +134,22 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 
 func createTables(db *gorm.DB) {
 	err := db.Debug().AutoMigrate(
-		&models.ChainFee{},
-		&models.Chain{},
-		&models.DstSwap{},
 		&models.DstTransaction{},
+		&models.SrcTransaction{},
+		&models.WrapperTransaction{},
+		&models.TokenBasic{},
+		&models.PriceMarket{},
+		&models.Chain{},
+		&models.ChainFee{},
+		&models.DstSwap{},
 		&models.DstTransfer{},
 		&models.NFTProfile{},
 		&models.PolyTransaction{},
-		&models.PriceMarket{},
 		&models.SrcSwap{},
-		&models.SrcTransaction{},
 		&models.SrcTransfer{},
 		&models.TimeStatistic{},
-		&models.TokenBasic{},
-		&models.TokenMap{},
 		&models.Token{},
-		&models.WrapperTransaction{},
+		&models.TokenMap{},
 	)
 	checkError(err, "Creating tables")
 }
