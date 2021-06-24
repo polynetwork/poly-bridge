@@ -403,7 +403,7 @@ func verifyTables(bri, db *gorm.DB) {
 		checkError(err, "Loading data")
 		for _, a := range data {
 			b := models.SrcTransaction{}
-			err := bri.Where("hash = ? ", a.Hash).Preload("SrcTransfer").Preload("SrcSwap").First(&b).Error
+			err := db.Where("hash = ? ", a.Hash).Preload("SrcTransfer").Preload("SrcSwap").First(&b).Error
 			checkError(err, "Loading data")
 			assert(reflect.DeepEqual(a, b))
 		}
@@ -414,7 +414,7 @@ func verifyTables(bri, db *gorm.DB) {
 		checkError(err, "Loading data")
 		for _, a := range data {
 			b := models.PolyTransaction{}
-			err := bri.Where("hash = ? ", a.Hash).First(&b).Error
+			err := db.Where("hash = ? ", a.Hash).First(&b).Error
 			checkError(err, "Loading data")
 			assert(reflect.DeepEqual(a, b))
 		}
@@ -425,7 +425,7 @@ func verifyTables(bri, db *gorm.DB) {
 		checkError(err, "Loading data")
 		for _, a := range data {
 			b := models.DstTransaction{}
-			err := bri.Where("hash = ? ", a.Hash).Preload("DstTransfer").Preload("DstSwap").First(&b).Error
+			err := db.Where("hash = ? ", a.Hash).Preload("DstTransfer").Preload("DstSwap").First(&b).Error
 			checkError(err, "Loading data")
 			assert(reflect.DeepEqual(a, b))
 		}
