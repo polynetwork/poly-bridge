@@ -8,6 +8,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/explorerdao"
 	"poly-bridge/models"
+	"reflect"
 	"strings"
 	"time"
 
@@ -32,6 +33,7 @@ type MergeConfig struct {
  * - migrateExplorerDstTransactions
  * - migrateBridgeTxs
  * - migrateExplorerBasicTables
+ * - verifyTables
  */
 
 func checkError(err error, msg string) {
@@ -105,8 +107,6 @@ func merge() {
 		createTables(db)
 	case "migrateBridgeBasicTables":
 		migrateBridgeBasicTables(bri, db)
-	case "migrateExplorerBasicTables":
-		migrateExplorerBasicTables(exp, db)
 	case "migrateExplorerSrcTransactions":
 		migrateExplorerSrcTransactions(exp, db)
 	case "migrateExplorerPolyTransactions":
@@ -115,6 +115,10 @@ func merge() {
 		migrateExplorerDstTransactions(exp, db)
 	case "migrateBridgeTxs":
 		migrateBridgeTxs(bri, db)
+	case "migrateExplorerBasicTables":
+		migrateExplorerBasicTables(exp, db)
+	case "verifyTables":
+		verifyTables(bri, db)
 	default:
 		logs.Error("Invalid step %s", step)
 	}
@@ -381,5 +385,49 @@ func migrateBridgeTxs(bri, db *gorm.DB) {
 			return tx
 		}
 		migrateTableInBatches("time", bri, db, "dst_swaps", model, query)
+	}
+}
+
+func verifyTables(bri, db *gorm.DB) {
+	assert := func(check bool) {
+		if !check {
+			panic("false")
+		}
+	}
+
+	limit := 200
+	tsp := time.Now().Unix() - 60*60*24*1
+	{
+		data := []*models.SrcTransaction{}
+		err := bri.Where("time < ?", tsp).Order("time desc").Limit(limit).Preload("SrcTransfer").Preload("SrcSwap").Find(&data).Error
+		checkError(err, "Loading data")
+		for _, a := range data {
+			b := models.SrcTransaction{}
+			err := bri.Where("hash = ? ", a.Hash).Preload("SrcTransfer").Preload("SrcSwap").First(&b).Error
+			checkError(err, "Loading data")
+			assert(reflect.DeepEqual(a, b))
+		}
+	}
+	{
+		data := []*models.PolyTransaction{}
+		err := bri.Where("time < ?", tsp).Order("time desc").Limit(limit).Find(&data).Error
+		checkError(err, "Loading data")
+		for _, a := range data {
+			b := models.PolyTransaction{}
+			err := bri.Where("hash = ? ", a.Hash).First(&b).Error
+			checkError(err, "Loading data")
+			assert(reflect.DeepEqual(a, b))
+		}
+	}
+	{
+		data := []*models.DstTransaction{}
+		err := bri.Where("time < ?", tsp).Order("time desc").Limit(limit).Preload("DstTransfer").Preload("DstSwap").Find(&data).Error
+		checkError(err, "Loading data")
+		for _, a := range data {
+			b := models.DstTransaction{}
+			err := bri.Where("hash = ? ", a.Hash).Preload("DstTransfer").Preload("DstSwap").First(&b).Error
+			checkError(err, "Loading data")
+			assert(reflect.DeepEqual(a, b))
+		}
 	}
 }
