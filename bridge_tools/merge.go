@@ -117,6 +117,7 @@ func migrateTable(src, dst *gorm.DB, table string, model interface{}) {
 	checkError(err, "Loading table")
 	err = dst.Save(model).Error
 	checkError(err, "Saving table")
+	countTables(table, table, src, dst)
 }
 
 func migrateBridgeBasicTables(bri, db *gorm.DB) {
@@ -152,6 +153,15 @@ func createTables(db *gorm.DB) {
 		&models.TokenMap{},
 	)
 	checkError(err, "Creating tables")
+}
+
+func countTables(tableA, tableB string, src, dst *gorm.DB) {
+	var a, b int64
+	err := src.Table(tableA).Count(&a).Error
+	checkError(err, "count table error")
+	err = src.Table(tableA).Count(&b).Error
+	checkError(err, "count table error")
+	logs.Info("===============  Compare table size %s %d:%d %s ============", tableA, a, b, tableB)
 }
 
 func migrateExplorerSrcTransactions(exp, db *gorm.DB) {
@@ -199,6 +209,7 @@ func migrateExplorerSrcTransactions(exp, db *gorm.DB) {
 			break
 		}
 	}
+	countTables("fchain_tx", "src_transactions", exp, db)
 }
 
 func migrateExplorerPolyTransactions(exp, db *gorm.DB) {
@@ -233,6 +244,7 @@ func migrateExplorerPolyTransactions(exp, db *gorm.DB) {
 			break
 		}
 	}
+	countTables("mchain_tx", "poly_transactions", exp, db)
 }
 
 func migrateExplorerDstTransactions(exp, db *gorm.DB) {
@@ -273,6 +285,7 @@ func migrateExplorerDstTransactions(exp, db *gorm.DB) {
 			break
 		}
 	}
+	countTables("tchain_tx", "dst_transactions", exp, db)
 }
 
 func migrateTableInBatches(src, db *gorm.DB, table string, model func() interface{}, query func(*gorm.DB) *gorm.DB) {
@@ -293,6 +306,7 @@ func migrateTableInBatches(src, db *gorm.DB, table string, model func() interfac
 			break
 		}
 	}
+	countTables(table, table, src, db)
 }
 
 func migrateBridgeTxs(bri, db *gorm.DB) {
