@@ -120,13 +120,13 @@ func migrateTable(src, dst *gorm.DB, table string, model interface{}) {
 }
 
 func migrateBridgeBasicTables(bri, db *gorm.DB) {
-	migrateTable(bri, db, "chain_fees", []*models.ChainFee{})
-	migrateTable(bri, db, "chains", []*models.Chain{})
-	migrateTable(bri, db, "nft_profiles", []*models.NFTProfile{})
-	migrateTable(bri, db, "price_markets", []*models.PriceMarket{})
-	migrateTable(bri, db, "token_basics", []*models.TokenBasic{})
-	migrateTable(bri, db, "tokens", []*models.Token{})
-	migrateTable(bri, db, "token_maps", []*models.TokenMap{})
+	migrateTable(bri, db, "chain_fees", &[]*models.ChainFee{})
+	migrateTable(bri, db, "chains", &[]*models.Chain{})
+	migrateTable(bri, db, "nft_profiles", &[]*models.NFTProfile{})
+	migrateTable(bri, db, "price_markets", &[]*models.PriceMarket{})
+	migrateTable(bri, db, "token_basics", &[]*models.TokenBasic{})
+	migrateTable(bri, db, "tokens", &[]*models.Token{})
+	migrateTable(bri, db, "token_maps", &[]*models.TokenMap{})
 }
 
 func migrateExplorerBasicTables(exp, db *gorm.DB) {
