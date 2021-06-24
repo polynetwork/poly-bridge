@@ -282,7 +282,7 @@ func migrateTableInBatches(src, db *gorm.DB, table string, model func() interfac
 	for {
 		logs.Info("%s %d", table, count)
 		entries := model()
-		res := query(src).Limit(selectNum).Offset(selectNum * count).Order("tt asc").Order("tt asc").Find(&entries)
+		res := query(src).Limit(selectNum).Offset(selectNum * count).Order("tt asc").Order("tt asc").Find(entries)
 		checkError(res.Error, "Fetch src_transactions")
 		if res.RowsAffected > 0 {
 			err := db.Save(entries).Error
