@@ -183,7 +183,7 @@ func migrateExplorerSrcTransactions(exp, db *gorm.DB) {
 						transaction.SrcTransfer.From = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
 					}
 					transaction.SrcTransfer.To = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
-					transaction.SrcTransfer.DstUser = basedef.Address2Hash(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
+					transaction.SrcTransfer.DstUser = basedef.Address2HashForTestnet(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
 				}
 				if transaction.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 					transaction.Hash, transaction.Key = transaction.Key, transaction.Hash
