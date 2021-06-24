@@ -106,53 +106,40 @@ func Int64FromFigure(figure int) int64 {
 	return x
 }
 
-func Address2HashForTestnet(chainId uint64, value string) string {
-	if chainId == NEO_CROSSCHAIN_ID {
-		if !strings.HasPrefix(value, "A") {
-			if strings.HasPrefix(value, "swth") {
-				return Address2Hash(COSMOS_CROSSCHAIN_ID, value)
-			} else {
-				return value
-			}
-		}
-	}
-	return Address2Hash(chainId, value)
-}
-
-func Address2Hash(chainId uint64, value string) string {
+func Address2Hash(chainId uint64, value string) (string, error) {
 	if chainId == ETHEREUM_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
-		return strings.ToLower(addr.String()[2:])
+		return strings.ToLower(addr.String()[2:]), nil
 	} else if chainId == NEO_CROSSCHAIN_ID {
 		scripHash, err := helper.AddressToScriptHash(value)
 		if err != nil {
-			panic(err)
+			return value, err
 		}
 		addrBytes := scripHash.Bytes()
 		addrHex := hex.EncodeToString(addrBytes)
-		return addrHex
+		return addrHex, nil
 	} else if chainId == BSC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
-		return strings.ToLower(addr.String()[2:])
+		return strings.ToLower(addr.String()[2:]), nil
 	} else if chainId == HECO_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
-		return strings.ToLower(addr.String()[2:])
+		return strings.ToLower(addr.String()[2:]), nil
 	} else if chainId == ONT_CROSSCHAIN_ID {
 		addr, err := ontcommon.AddressFromBase58(value)
 		if err != nil {
-			panic(err)
+			return value, err
 		}
 		addrHex := addr.ToHexString()
-		return HexStringReverse(addrHex)
+		return HexStringReverse(addrHex), nil
 	} else if chainId == COSMOS_CROSSCHAIN_ID {
 		//cosmos_types.
 		addr, err := cosmos_types.AccAddressFromBech32(value)
 		if err != nil {
-			panic(err)
+			return value, err
 		}
 		addrBytes := addr.Bytes()
 		addrHex := hex.EncodeToString(addrBytes)
-		return addrHex
+		return addrHex, nil
 	}
-	return value
+	return value, nil
 }

@@ -8,6 +8,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/explorerdao"
 	"poly-bridge/models"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
@@ -37,6 +38,14 @@ func checkError(err error, msg string) {
 	if err != nil {
 		panic(fmt.Sprintf("Fatal: %s error %+v", msg, err))
 	}
+}
+
+func AddressAsHash(chainId uint64, value string) string {
+	if chainId == basedef.NEO_CROSSCHAIN_ID && strings.HasPrefix(value, "swth") {
+		chainId = basedef.COSMOS_CROSSCHAIN_ID
+	}
+	hash, _ := basedef.Address2Hash(chainId, value)
+	return hash
 }
 
 func merge() {
@@ -187,13 +196,13 @@ func migrateExplorerSrcTransactions(exp, db *gorm.DB) {
 				panic(err)
 			}
 			for _, transaction := range newSrcTransactions {
-				transaction.User = basedef.Address2HashForTestnet(transaction.ChainId, transaction.User)
+				transaction.User = AddressAsHash(transaction.ChainId, transaction.User)
 				if transaction.SrcTransfer != nil {
 					if transaction.SrcTransfer.ChainId != basedef.COSMOS_CROSSCHAIN_ID {
-						transaction.SrcTransfer.From = basedef.Address2HashForTestnet(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
+						transaction.SrcTransfer.From = AddressAsHash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
 					}
-					transaction.SrcTransfer.To = basedef.Address2HashForTestnet(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
-					transaction.SrcTransfer.DstUser = basedef.Address2HashForTestnet(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
+					transaction.SrcTransfer.To = AddressAsHash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
+					transaction.SrcTransfer.DstUser = AddressAsHash(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
 				}
 				if transaction.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 					transaction.Hash, transaction.Key = transaction.Key, transaction.Hash
@@ -271,8 +280,8 @@ func migrateExplorerDstTransactions(exp, db *gorm.DB) {
 			}
 			for _, transaction := range newDstTransactions {
 				if transaction.DstTransfer != nil {
-					transaction.DstTransfer.From = basedef.Address2Hash(transaction.DstTransfer.ChainId, transaction.DstTransfer.From)
-					transaction.DstTransfer.To = basedef.Address2Hash(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
+					transaction.DstTransfer.From = AddressAsHash(transaction.DstTransfer.ChainId, transaction.DstTransfer.From)
+					transaction.DstTransfer.To = AddressAsHash(transaction.DstTransfer.ChainId, transaction.DstTransfer.To)
 				}
 			}
 			err = db.Save(newDstTransactions).Error
