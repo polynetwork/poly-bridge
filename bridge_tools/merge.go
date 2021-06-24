@@ -187,10 +187,10 @@ func migrateExplorerSrcTransactions(exp, db *gorm.DB) {
 				panic(err)
 			}
 			for _, transaction := range newSrcTransactions {
-				transaction.User = basedef.Address2Hash(transaction.ChainId, transaction.User)
+				transaction.User = basedef.Address2HashForTestnet(transaction.ChainId, transaction.User)
 				if transaction.SrcTransfer != nil {
 					if transaction.SrcTransfer.ChainId != basedef.COSMOS_CROSSCHAIN_ID {
-						transaction.SrcTransfer.From = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
+						transaction.SrcTransfer.From = basedef.Address2HashForTestnet(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
 					}
 					transaction.SrcTransfer.To = basedef.Address2Hash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
 					transaction.SrcTransfer.DstUser = basedef.Address2HashForTestnet(transaction.SrcTransfer.DstChainId, transaction.SrcTransfer.DstUser)
