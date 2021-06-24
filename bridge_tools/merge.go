@@ -140,6 +140,16 @@ func migrateBridgeBasicTables(bri, db *gorm.DB) {
 }
 
 func migrateExplorerBasicTables(exp, db *gorm.DB) {
+	{
+		logs.Info("Migrating table chains from explorer")
+		model := make([]*explorerdao.Chain, 0)
+		err := exp.Find(&model).Error
+		checkError(err, "Loading table")
+		for _, chain := range model {
+			err = db.Table("chains").Where("chain_id=?", chain.ChainId).Update("name", chain.Name).Error
+			checkError(err, "Saving table")
+		}
+	}
 }
 
 func createTables(db *gorm.DB) {

@@ -20,6 +20,7 @@ package models
 type Chain struct {
 	Id                  int64   `gorm:"primaryKey;autoIncrement"`
 	ChainId             *uint64 `gorm:"uniqueIndex;type:bigint(20);not null"`
+	Name                string  `gorm:"type:varchar(32)"`
 	Height              uint64  `gorm:"type:bigint(20);not null"`
 	HeightSwap          uint64  `gorm:"type:bigint(20);not null"`
 	BackwardBlockNumber uint64  `gorm:"type:bigint(20);not null"`
