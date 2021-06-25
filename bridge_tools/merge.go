@@ -429,21 +429,23 @@ func verifyTables(bri, db *gorm.DB) {
 			if b.SrcSwap != nil {
 				b.SrcSwap.Id = 0
 			}
-			assert(a, b)
+			assert(a, &b)
 		}
 	}
-	{
-		data := []*models.PolyTransaction{}
-		err := bri.Where("time < ?", tsp).Order("time desc").Limit(limit).Find(&data).Error
-		checkError(err, "Loading data")
-		for _, a := range data {
-			b := models.PolyTransaction{}
-			err := db.Where("hash = ? ", a.Hash).First(&b).Error
+	/*
+		{
+			data := []*models.PolyTransaction{}
+			err := bri.Where("time < ?", tsp).Order("time desc").Limit(limit).Find(&data).Error
 			checkError(err, "Loading data")
-			b.Id = 0
-			assert(a, b)
+			for _, a := range data {
+				b := models.PolyTransaction{}
+				err := db.Where("hash = ? ", a.Hash).First(&b).Error
+				checkError(err, "Loading data")
+				b.Id = 0
+				assert(a, &b)
+			}
 		}
-	}
+	*/
 	{
 		data := []*models.DstTransaction{}
 		err := bri.Where("time < ?", tsp).Order("time desc").Limit(limit).Preload("DstTransfer").Preload("DstSwap").Find(&data).Error
@@ -460,7 +462,7 @@ func verifyTables(bri, db *gorm.DB) {
 				b.DstSwap.Id = 0
 			}
 
-			assert(a, b)
+			assert(a, &b)
 		}
 	}
 }
