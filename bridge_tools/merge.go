@@ -42,6 +42,14 @@ func checkError(err error, msg string) {
 	}
 }
 
+func assert(a, b interface{}) {
+
+	if !reflect.DeepEqual(a, b) {
+		fmt.Printf("a:%+v b:%+v", a, b)
+		panic("false")
+	}
+}
+
 func AddressAsHash(chainId uint64, value string) string {
 	if chainId == basedef.NEO_CROSSCHAIN_ID && strings.HasPrefix(value, "swth") {
 		chainId = basedef.COSMOS_CROSSCHAIN_ID
@@ -389,11 +397,6 @@ func migrateBridgeTxs(bri, db *gorm.DB) {
 }
 
 func verifyTables(bri, db *gorm.DB) {
-	assert := func(check bool) {
-		if !check {
-			panic("false")
-		}
-	}
 
 	limit := 200
 	tsp := time.Now().Unix() - 60*60*24*1
@@ -405,7 +408,7 @@ func verifyTables(bri, db *gorm.DB) {
 			b := models.SrcTransaction{}
 			err := db.Where("hash = ? ", a.Hash).Preload("SrcTransfer").Preload("SrcSwap").First(&b).Error
 			checkError(err, "Loading data")
-			assert(reflect.DeepEqual(a, b))
+			assert(a, b)
 		}
 	}
 	{
@@ -416,7 +419,7 @@ func verifyTables(bri, db *gorm.DB) {
 			b := models.PolyTransaction{}
 			err := db.Where("hash = ? ", a.Hash).First(&b).Error
 			checkError(err, "Loading data")
-			assert(reflect.DeepEqual(a, b))
+			assert(a, b)
 		}
 	}
 	{
@@ -427,7 +430,7 @@ func verifyTables(bri, db *gorm.DB) {
 			b := models.DstTransaction{}
 			err := db.Where("hash = ? ", a.Hash).Preload("DstTransfer").Preload("DstSwap").First(&b).Error
 			checkError(err, "Loading data")
-			assert(reflect.DeepEqual(a, b))
+			assert(a, b)
 		}
 	}
 }
