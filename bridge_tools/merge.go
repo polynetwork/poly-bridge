@@ -355,7 +355,7 @@ func migrateBridgeTxs(bri, db *gorm.DB) {
 	{
 		model := func() interface{} { return &[]*models.SrcTransaction{} }
 		query := func(tx *gorm.DB) *gorm.DB {
-			return tx.Preload("SrcTransfer")
+			return tx
 		}
 		migrateTableInBatches("time", bri, db, "src_transactions", model, query)
 	}
@@ -369,7 +369,7 @@ func migrateBridgeTxs(bri, db *gorm.DB) {
 	{
 		model := func() interface{} { return &[]*models.DstTransaction{} }
 		query := func(tx *gorm.DB) *gorm.DB {
-			return tx.Preload("DstTransfer")
+			return tx
 		}
 		migrateTableInBatches("time", bri, db, "dst_transactions", model, query)
 	}
@@ -379,6 +379,20 @@ func migrateBridgeTxs(bri, db *gorm.DB) {
 			return tx
 		}
 		migrateTableInBatches("time", bri, db, "wrapper_transactions", model, query)
+	}
+	{
+		model := func() interface{} { return &[]*models.SrcTransfer{} }
+		query := func(tx *gorm.DB) *gorm.DB {
+			return tx
+		}
+		migrateTableInBatches("time", bri, db, "src_transfers", model, query)
+	}
+	{
+		model := func() interface{} { return &[]*models.DstTransfer{} }
+		query := func(tx *gorm.DB) *gorm.DB {
+			return tx
+		}
+		migrateTableInBatches("time", bri, db, "dst_transfers", model, query)
 	}
 	{
 		model := func() interface{} { return &[]*models.SrcSwap{} }
