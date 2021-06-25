@@ -408,6 +408,13 @@ func verifyTables(bri, db *gorm.DB) {
 			b := models.SrcTransaction{}
 			err := db.Where("hash = ? ", a.Hash).Preload("SrcTransfer").Preload("SrcSwap").First(&b).Error
 			checkError(err, "Loading data")
+			b.Id = 0
+			if b.SrcTransfer != nil {
+				b.SrcTransfer.Id = 0
+			}
+			if b.SrcSwap != nil {
+				b.SrcSwap.Id = 0
+			}
 			assert(a, b)
 		}
 	}
@@ -419,6 +426,7 @@ func verifyTables(bri, db *gorm.DB) {
 			b := models.PolyTransaction{}
 			err := db.Where("hash = ? ", a.Hash).First(&b).Error
 			checkError(err, "Loading data")
+			b.Id = 0
 			assert(a, b)
 		}
 	}
@@ -430,6 +438,14 @@ func verifyTables(bri, db *gorm.DB) {
 			b := models.DstTransaction{}
 			err := db.Where("hash = ? ", a.Hash).Preload("DstTransfer").Preload("DstSwap").First(&b).Error
 			checkError(err, "Loading data")
+			b.Id = 0
+			if b.DstTransfer != nil {
+				b.DstTransfer.Id = 0
+			}
+			if b.DstSwap != nil {
+				b.DstSwap.Id = 0
+			}
+
 			assert(a, b)
 		}
 	}
