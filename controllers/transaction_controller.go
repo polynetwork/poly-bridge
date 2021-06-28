@@ -119,7 +119,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 	c.Data["json"] = models.MakeTransactionsOfUserRsp(transactionsOfAddressReq.PageSize, transactionsOfAddressReq.PageNo,
 		(int(transactionNum)+transactionsOfAddressReq.PageSize-1)/transactionsOfAddressReq.PageSize, int(transactionNum), srcPolyDstRelations, chainsMap)
@@ -200,7 +200,7 @@ func (c *TransactionController) TransactionOfHash() {
 		db.Model(&models.Chain{}).Find(&chains)
 		chainsMap := make(map[uint64]*models.Chain)
 		for _, chain := range chains {
-			chainsMap[*chain.ChainId] = chain
+			chainsMap[chain.ChainId] = chain
 		}
 		c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
 		c.ServeJSON()
@@ -219,7 +219,7 @@ func (c *TransactionController) TransactionOfHash() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 	c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
 	c.ServeJSON()
@@ -258,7 +258,7 @@ func (c *TransactionController) TransactionOfCurve() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 	c.Data["json"] = models.MakeCurveTransactionRsp(srcPolyDstRelation1, srcPolyDstRelation2, chainsMap)
 	c.ServeJSON()

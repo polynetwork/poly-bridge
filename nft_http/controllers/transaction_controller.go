@@ -18,8 +18,9 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"poly-bridge/models"
+
+	"github.com/astaxie/beego"
 )
 
 type TransactionController struct {
@@ -64,7 +65,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 
 	totalPage := (int(transactionNum) + req.PageSize - 1) / req.PageSize
@@ -101,7 +102,7 @@ func (c *TransactionController) TransactionOfHash() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 
 	data := new(TransactionRsp).instance(list[0], chainsMap)

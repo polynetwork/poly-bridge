@@ -19,14 +19,15 @@ package bridgeeffect
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego/logs"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"time"
+
+	"github.com/astaxie/beego/logs"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type BridgeEffect struct {
@@ -139,7 +140,7 @@ func (eff *BridgeEffect) updateStatus() error {
 	id2Chains := make(map[uint64]*models.Chain)
 	eff.db.Model(&models.Chain{}).Find(&chains)
 	for _, chain := range chains {
-		id2Chains[*chain.ChainId] = chain
+		id2Chains[chain.ChainId] = chain
 	}
 	wrapperPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
@@ -192,17 +193,17 @@ func (eff *BridgeEffect) checkChainListening() error {
 	}
 	id2Chains := make(map[uint64]*models.Chain)
 	for _, chain := range eff.chains {
-		id2Chains[*chain.ChainId] = chain
+		id2Chains[chain.ChainId] = chain
 	}
 	chains := make([]*models.Chain, 0)
 	eff.db.Model(&models.Chain{}).Find(&chains)
 	for _, chain := range chains {
-		old, ok := id2Chains[*chain.ChainId]
+		old, ok := id2Chains[chain.ChainId]
 		if !ok {
 			continue
 		}
 		if chain.Height == old.Height && chain.HeightSwap == old.HeightSwap {
-			logs.Error("Chain %d is not listening!", *chain.ChainId)
+			logs.Error("Chain %d is not listening!", chain.ChainId)
 		}
 	}
 	eff.chains = chains
@@ -210,13 +211,11 @@ func (eff *BridgeEffect) checkChainListening() error {
 	return nil
 }
 
-
 type TimeStatistic struct {
-	SrcChainId   uint64
+	SrcChainId uint64
 	DstChainId uint64
-	Time  float64
+	Time       float64
 }
-
 
 func (eff *BridgeEffect) doStatistic() error {
 	timeStatistics := make([]*TimeStatistic, 0)
