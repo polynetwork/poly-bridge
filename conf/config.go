@@ -20,9 +20,26 @@ package conf
 import (
 	"encoding/json"
 	"poly-bridge/basedef"
+	"strings"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/urfave/cli"
 )
+
+var GlobalConfig *Config
+
+var (
+	ConfigPathFlag = cli.StringFlag{
+		Name:  "config",
+		Usage: "Server config file `<path>`",
+		Value: "./conf/config_testnet.json",
+	}
+)
+
+//getFlagName deal with short flag, and return the flag name whether flag name have short name
+func GetFlagName(flag cli.Flag) string {
+	return strings.TrimSpace(strings.Split(flag.GetName(), ",")[0])
+}
 
 type DBConfig struct {
 	URL      string
@@ -144,9 +161,17 @@ type EventEffectConfig struct {
 	TimeStatisticSlot int64
 }
 
+type HttpConfig struct {
+	Address string
+	Port    int
+}
+
 type Config struct {
 	Server                string
+	RunMode               string
 	Backup                bool
+	LogFile               string
+	HttpConfig            *HttpConfig
 	ChainListenConfig     []*ChainListenConfig
 	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig
@@ -196,5 +221,6 @@ func NewConfig(filePath string) *Config {
 		logs.Error("NewServiceConfig: failed, err: %s", err)
 		return nil
 	}
+	GlobalConfig = config
 	return config
 }

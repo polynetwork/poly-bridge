@@ -19,8 +19,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
+
 	"poly-bridge/common"
 	"poly-bridge/conf"
+	"poly-bridge/controllers"
 	"poly-bridge/nft_http"
 	_ "poly-bridge/routers"
 
@@ -28,20 +32,52 @@ import (
 	"github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/plugins/cors"
+	"github.com/urfave/cli"
 )
 
 func main() {
+	if err := setupApp().Run(os.Args); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
 
+func setupApp() *cli.App {
+	app := cli.NewApp()
+	app.Name = "poly bridge server"
+	app.Usage = "poly-bridge http server"
+	app.Action = run
+	app.Version = "1.0.0"
+	app.Copyright = "Copyright in 2019 The PolyNetwork Authors"
+	app.Flags = []cli.Flag{
+		conf.ConfigPathFlag,
+	}
+	return app
+}
+
+func run(ctx *cli.Context) {
 	// Initialize
-	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_http.log"}`)
-	configFile := beego.AppConfig.String("chain_config")
+	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
+	if config == nil || config.HttpConfig == nil {
+		panic("Invalid server config")
+	}
+	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
+
+	controllers.Init()
 	common.SetupChainsSDK(config)
 	// NFT http
 	nft_http.Init(config)
 
-	mode := beego.AppConfig.String("runmode")
-	if mode == "dev" {
+	// Insert beego config
+	beego.BConfig.Listen.HTTPAddr = config.HttpConfig.Address
+	beego.BConfig.Listen.HTTPPort = config.HttpConfig.Port
+	beego.BConfig.RunMode = config.RunMode
+	beego.BConfig.AppName = "bridgehttp"
+	beego.BConfig.CopyRequestBody = true
+	beego.BConfig.EnableErrorsRender = false
+
+	if config.RunMode == "dev" {
 		var FilterLog = func(ctx *context.Context) {
 			url, _ := json.Marshal(ctx.Input.Data()["RouterPattern"])
 			params := string(ctx.Input.RequestBody)
@@ -55,11 +91,14 @@ func main() {
 		}
 		beego.InsertFilter("/*", beego.FinishRouter, FilterLog, false)
 	}
+
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-		AllowCredentials: true}))
+		AllowCredentials: true}),
+	)
+
 	beego.Run()
 }

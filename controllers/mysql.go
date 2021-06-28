@@ -18,29 +18,27 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
+	"fmt"
+	"poly-bridge/conf"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-var (
-	db = newDB()
-)
+var db *gorm.DB
 
-func newDB() *gorm.DB {
-	user := beego.AppConfig.String("mysqluser")
-	password := beego.AppConfig.String("mysqlpass")
-	url := beego.AppConfig.String("mysqlurls")
-	scheme := beego.AppConfig.String("mysqldb")
-	mode := beego.AppConfig.String("runmode")
+func Init() {
+	config := conf.GlobalConfig.DBConfig
 	Logger := logger.Default
-	if mode == "dev" {
+	if conf.GlobalConfig.RunMode == "dev" {
 		Logger = Logger.LogMode(logger.Info)
 	}
-	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+
+	conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", config.User, config.Password, config.URL, config.Scheme)
+	var err error
+	db, err = gorm.Open(mysql.Open(conn), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
 	}
-	return db
 }

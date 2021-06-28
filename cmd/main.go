@@ -22,6 +22,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
+	"syscall"
+
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/coinpricelisten"
 	"poly-bridge/common"
@@ -29,42 +32,10 @@ import (
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
 	"poly-bridge/crosschainstats"
-	"runtime"
-	"strings"
-	"syscall"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/urfave/cli"
 )
-
-var (
-	logLevelFlag = cli.UintFlag{
-		Name:  "loglevel",
-		Usage: "Set the log level to `<level>` (0~6). 0:Trace 1:Debug 2:Info 3:Warn 4:Error 5:Fatal 6:MaxLevel",
-		Value: 1,
-	}
-
-	configPathFlag = cli.StringFlag{
-		Name:  "cliconfig",
-		Usage: "Server config file `<path>`",
-		Value: "./conf/config_testnet.json",
-	}
-
-	logDirFlag = cli.StringFlag{
-		Name:  "logdir",
-		Usage: "log directory",
-		Value: "./Log/",
-	}
-)
-
-//getFlagName deal with short flag, and return the flag name whether flag name have short name
-func getFlagName(flag cli.Flag) string {
-	name := flag.GetName()
-	if name == "" {
-		return ""
-	}
-	return strings.TrimSpace(strings.Split(name, ",")[0])
-}
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
@@ -73,9 +44,7 @@ func setupApp() *cli.App {
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
 	app.Flags = []cli.Flag{
-		logLevelFlag,
-		configPathFlag,
-		logDirFlag,
+		conf.ConfigPathFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -99,13 +68,14 @@ func StartServer(ctx *cli.Context) {
 }
 
 func startServer(ctx *cli.Context) {
-	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_server.log"}`)
-	configFile := ctx.GlobalString(getFlagName(configPathFlag))
+	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
 	if config == nil {
 		logs.Error("startServer - read config failed!")
 		return
 	}
+	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
+
 	{
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
