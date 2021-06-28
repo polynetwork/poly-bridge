@@ -31,8 +31,8 @@ mv tools ./$base/bridge_tools/bridge_tools
 
 if [ "$tag"x = "mainnet"x ]
 then
-  cp ./conf/config_mainnet.json ./../$base/bridge_server/
-  cp ./conf/config_mainnet.json ./../$base/bridge_http/
+  cp ./conf/config_mainnet.json ./$base/bridge_server/
+  cp ./conf/config_mainnet.json ./$base/bridge_http/
 else
   cp ./conf/config_testnet.json ./$base/bridge_server/
   cp ./conf/config_testnet.json ./$base/bridge_http/
