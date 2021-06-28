@@ -52,7 +52,7 @@ func assert(a, b interface{}) {
 
 func AddressAsHash(chainId uint64, value string) string {
 	if chainId == basedef.NEO_CROSSCHAIN_ID && strings.HasPrefix(value, "swth") {
-		chainId = basedef.COSMOS_CROSSCHAIN_ID
+		chainId = basedef.SWITCHEO_CROSSCHAIN_ID
 	}
 	hash, _ := basedef.Address2Hash(chainId, value)
 	return hash
@@ -230,7 +230,7 @@ func migrateExplorerSrcTransactions(exp, db *gorm.DB) {
 			for _, transaction := range newSrcTransactions {
 				transaction.User = AddressAsHash(transaction.ChainId, transaction.User)
 				if transaction.SrcTransfer != nil {
-					if transaction.SrcTransfer.ChainId != basedef.COSMOS_CROSSCHAIN_ID {
+					if transaction.SrcTransfer.ChainId != basedef.SWITCHEO_CROSSCHAIN_ID {
 						transaction.SrcTransfer.From = AddressAsHash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.From)
 					}
 					transaction.SrcTransfer.To = AddressAsHash(transaction.SrcTransfer.ChainId, transaction.SrcTransfer.To)
