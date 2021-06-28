@@ -15,11 +15,12 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package main
+package nft_http
 
 import (
-	"github.com/astaxie/beego"
 	"poly-bridge/nft_http/controllers"
+
+	"github.com/astaxie/beego"
 )
 
 func init() {

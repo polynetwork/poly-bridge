@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"poly-bridge/common"
 	"poly-bridge/conf"
+	"poly-bridge/nft_http"
 	_ "poly-bridge/routers"
 
 	"github.com/astaxie/beego"
@@ -36,6 +37,8 @@ func main() {
 	configFile := beego.AppConfig.String("chain_config")
 	config := conf.NewConfig(configFile)
 	common.SetupChainsSDK(config)
+	// NFT http
+	nft_http.Init(config)
 
 	mode := beego.AppConfig.String("runmode")
 	if mode == "dev" {
