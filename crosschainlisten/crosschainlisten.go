@@ -28,6 +28,7 @@ import (
 	"poly-bridge/crosschainlisten/o3listen"
 	"poly-bridge/crosschainlisten/ontologylisten"
 	"poly-bridge/crosschainlisten/polylisten"
+	"poly-bridge/crosschainlisten/switcheolisten"
 	"poly-bridge/models"
 	"runtime/debug"
 	"time"
@@ -88,6 +89,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == basedef.O3_CROSSCHAIN_ID {
 		return o3listen.NewO3ChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
+		return switcheolisten.NewSwitcheoChainListen(chainListenConfig)
 	} else {
 		return nil
 	}

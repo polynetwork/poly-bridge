@@ -294,5 +294,18 @@
       "ProxyFee":120,
       "MinFee": 20
     }
+    ,
+    {
+      "ChainId":5,
+      "ChainName":"Switcheo",
+      "Nodes": [
+        {
+          "Url": "http://40.115.182.238:26657"
+        }
+      ],
+      "GasLimit":0,
+      "ProxyFee":120,
+      "MinFee": 20
+    }
   ]
 }

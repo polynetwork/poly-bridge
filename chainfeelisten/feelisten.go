@@ -18,18 +18,21 @@
 package chainfeelisten
 
 import (
-	"github.com/astaxie/beego/logs"
 	"math/big"
+	"runtime/debug"
+	"strings"
+	"time"
+
 	"poly-bridge/basedef"
 	"poly-bridge/chainfeedao"
 	"poly-bridge/chainfeelisten/ethereumfee"
 	"poly-bridge/chainfeelisten/neofee"
 	"poly-bridge/chainfeelisten/ontologyfee"
+	"poly-bridge/chainfeelisten/switcheofee"
 	"poly-bridge/conf"
 	"poly-bridge/models"
-	"runtime/debug"
-	"strings"
-	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 var feeListen *FeeListen
@@ -76,6 +79,8 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		return ontologyfee.NewOntologyFee(cfg, feeUpdateSlot)
 	} else if cfg.ChainId == basedef.OK_CROSSCHAIN_ID {
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
+	} else if cfg.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
+		return switcheofee.NewSwitcheoFee(cfg, feeUpdateSlot)
 	} else {
 		return nil
 	}
