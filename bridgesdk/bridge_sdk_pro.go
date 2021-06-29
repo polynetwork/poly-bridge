@@ -129,3 +129,22 @@ func (pro *BridgeSdkPro) CheckFee(checks []*CheckFeeReq) ([]*CheckFeeRsp, error)
 	}
 	return nil, fmt.Errorf("all node is not working")
 }
+
+
+func (pro *BridgeSdkPro) GetFee(srcChainId uint64, dstChainId uint64, feeTokenHash string, swapTokenHash string) (*GetFeeRsp, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		rsp, err := info.sdk.GetFee(srcChainId, dstChainId, feeTokenHash, swapTokenHash)
+		if err != nil {
+			logs.Error("check fee err: %v, url: %s", err, info.sdk.url)
+			info.online = false
+			info = pro.GetLatest()
+		} else {
+			return rsp, nil
+		}
+	}
+	return nil, fmt.Errorf("all node is not working")
+}

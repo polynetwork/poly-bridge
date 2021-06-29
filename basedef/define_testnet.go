@@ -24,8 +24,9 @@ var (
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
 	ONT_CROSSCHAIN_ID      = uint64(3)
 	NEO_CROSSCHAIN_ID      = uint64(5)
-	BSC_CROSSCHAIN_ID      = uint64(79)
 	HECO_CROSSCHAIN_ID     = uint64(7)
+	NEO3_CROSSCHAIN_ID     = uint64(11)
+	BSC_CROSSCHAIN_ID      = uint64(79)
 	O3_CROSSCHAIN_ID       = uint64(82)
 	OK_CROSSCHAIN_ID       = uint64(200)
 	SWITCHEO_CROSSCHAIN_ID = uint64(1000) // No testnet for cosmos

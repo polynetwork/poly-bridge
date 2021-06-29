@@ -29,6 +29,8 @@ import (
 	cosmos_types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
+	"github.com/joeqian10/neo3-gogogo/crypto"
+	neo3_helper "github.com/joeqian10/neo3-gogogo/helper"
 	ontcommon "github.com/ontio/ontology/common"
 )
 
@@ -74,6 +76,11 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
 		addr, _ := cosmos_types.AccAddressFromHex(value)
 		return addr.String()
+	} else if chainId == NEO3_CROSSCHAIN_ID {
+		addrHex, _ := hex.DecodeString(value)
+		addr := neo3_helper.UInt160FromBytes(addrHex)
+		address := crypto.ScriptHashToAddress(addr, neo3_helper.DefaultAddressVersion)
+		return address
 	}
 	return value
 }

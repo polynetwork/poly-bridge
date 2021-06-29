@@ -58,6 +58,25 @@ type CheckFeesRsp struct {
 	CheckFees []*CheckFeeRsp `json:"CheckFees"`
 }
 
+type GetFeeRsp struct {
+	SrcChainId               uint64
+	Hash                     string
+	DstChainId               uint64
+	UsdtAmount               string
+	TokenAmount              string
+	TokenAmountWithPrecision string
+	SwapTokenHash string
+	Balance string
+	BalanceWithPrecision string
+}
+
+type GetFeeReq struct {
+	SrcChainId uint64
+	Hash       string
+	DstChainId uint64
+	SwapTokenHash string
+}
+
 type BridgeSdk struct {
 	url string
 }
@@ -97,6 +116,42 @@ func (sdk *BridgeSdk) CheckFee(checks []*CheckFeeReq) ([]*CheckFeeRsp, error) {
 		return nil, err
 	}
 	return checkFeesRsp.CheckFees, nil
+}
+
+func (sdk *BridgeSdk) GetFee(srcChainId uint64, dstChainId uint64, feeTokenHash string, swapTokenHash string) (*GetFeeRsp, error) {
+	getFeesReq := &GetFeeReq{
+		SrcChainId: srcChainId,
+		DstChainId: dstChainId,
+		Hash: feeTokenHash,
+		SwapTokenHash: swapTokenHash,
+	}
+	requestJson, err := json.Marshal(getFeesReq)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", sdk.url+"getfee", strings.NewReader(string(requestJson)))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accepts", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("response status code: %d", resp.StatusCode)
+	}
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	getFeesRsp := new(GetFeeRsp)
+	err = json.Unmarshal(respBody, getFeesRsp)
+	if err != nil {
+		return nil, err
+	}
+	return getFeesRsp, nil
 }
 
 func (sdk *BridgeSdk) Info() (bool, error) {

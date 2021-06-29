@@ -20,16 +20,59 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"poly-bridge/bridgesdk"
 	"testing"
+	"time"
 )
 
 func TestBridageSdk(t *testing.T) {
-	sdk := bridgesdk.NewBridgeSdkPro([]string{"http://40.115.153.174:30330/v1/"}, 1)
-	rsp, err := sdk.CheckFee([]string{"336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729"})
+	sdk := bridgesdk.NewBridgeSdkPro([]string{"https://bridge.poly.network/testnet/v1/"}, 1)
+	rsp, err := sdk.GetFee(79, 2, "0000000000000000000000000000000000000000", "155040625D7ae3e9caDA9a73E3E44f76D3Ed1409")
 	if err != nil {
 		panic(err)
 	}
 	rspJson, _ := json.Marshal(rsp)
 	fmt.Printf("rsp: %s\n", string(rspJson))
+}
+
+func Diff(a *big.Float, b *big.Float) float32 {
+	diff := new(big.Float).Sub(a, b)
+	aaa := new(big.Float).Quo(diff, b)
+	bbb, _ := aaa.Float32()
+	return bbb
+}
+
+func TestBridageSdkStable(t *testing.T) {
+	sdk := bridgesdk.NewBridgeSdkPro([]string{"https://bridge.poly.network/testnet/v1/"}, 10)
+	avgAmount := new(big.Float)
+	{
+		rsp, err := sdk.GetFee(79, 2, "0000000000000000000000000000000000000000", "155040625D7ae3e9caDA9a73E3E44f76D3Ed1409")
+		if err != nil {
+			panic(err)
+		}
+		amount, result := new(big.Float).SetString(rsp.TokenAmount)
+		if !result {
+			panic("float error")
+		}
+		avgAmount = amount
+	}
+
+	for true {
+		time.Sleep(time.Second * 5)
+		rsp, err := sdk.GetFee(79, 2, "0000000000000000000000000000000000000000", "155040625D7ae3e9caDA9a73E3E44f76D3Ed1409")
+		if err != nil {
+			panic(err)
+		}
+		rspJson, _ := json.Marshal(rsp)
+		fmt.Printf("rsp: %s\n", string(rspJson))
+		amount, result := new(big.Float).SetString(rsp.TokenAmount)
+		if !result {
+			panic("float error")
+		}
+		diff := Diff(amount, avgAmount)
+		if diff < -0.2 {
+			panic(err)
+		}
+	}
 }
