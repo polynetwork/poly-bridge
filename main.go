@@ -65,13 +65,20 @@ func run(ctx *cli.Context) {
 	}
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
+	common.SetupChainsSDK(config)
 	// bridge http
 	http.Init()
-	common.SetupChainsSDK(config)
-	// NFT http
-	nft_http.Init(config)
 	// explorer http
 	explorer.Init()
+
+	// register http routers
+	web.AddNamespace(
+		web.NewNamespace("/v1",
+			nft_http.Init(config),
+			http.GetRouter(),
+			explorer.GetRouter(),
+		),
+	)
 
 	// Insert web config
 	web.BConfig.Listen.HTTPAddr = config.HttpConfig.Address

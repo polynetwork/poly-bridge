@@ -21,8 +21,8 @@ import (
 	"github.com/beego/beego/v2/server/web"
 )
 
-func init() {
-	ns := web.NewNamespace("/bridge/v1",
+func GetRouter() web.LinkNamespace {
+	ns := web.NSNamespace("/bridge",
 		web.NSRouter("/", &InfoController{}, "*:Get"),
 		web.NSRouter("/token/", &TokenController{}, "post:Token"),
 		web.NSRouter("/tokens/", &TokenController{}, "post:Tokens"),
@@ -43,5 +43,5 @@ func init() {
 		web.NSRouter("/transactionsofasset/", &TransactionController{}, "post:TransactionsOfAsset"),
 		web.NSRouter("/expecttime/", &StatisticController{}, "post:ExpectTime"),
 	)
-	web.AddNamespace(ns)
+	return ns
 }
