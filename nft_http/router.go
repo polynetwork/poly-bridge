@@ -48,5 +48,4 @@ func init() {
 		//web.NSRouter("/transactionsofstate/", &controllers.TransactionController{}, "post:TransactionsOfState"),
 	)
 	web.AddNamespace(ns)
-	web.Router("/", &controllers.InfoController{}, "*:Get")
 }

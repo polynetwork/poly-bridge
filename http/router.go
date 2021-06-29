@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	ns := web.NewNamespace("/v1",
+	ns := web.NewNamespace("/bridge/v1",
 		web.NSRouter("/", &InfoController{}, "*:Get"),
 		web.NSRouter("/token/", &TokenController{}, "post:Token"),
 		web.NSRouter("/tokens/", &TokenController{}, "post:Tokens"),

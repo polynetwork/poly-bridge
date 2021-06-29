@@ -192,6 +192,8 @@ func createTables(db *gorm.DB) {
 		&models.TimeStatistic{},
 		&models.Token{},
 		&models.TokenMap{},
+		&models.TokenStatistic{},
+		&models.ChainStatistic{},
 	)
 	checkError(err, "Creating tables")
 }
