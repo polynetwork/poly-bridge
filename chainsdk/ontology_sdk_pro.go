@@ -19,7 +19,7 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/ontio/ontology-go-sdk"
 	"github.com/ontio/ontology-go-sdk/common"
 	"github.com/ontio/ontology/core/types"

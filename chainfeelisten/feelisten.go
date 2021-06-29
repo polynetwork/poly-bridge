@@ -33,7 +33,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/models"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 )
 
 var feeListen *FeeListen

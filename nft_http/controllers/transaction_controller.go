@@ -20,11 +20,11 @@ package controllers
 import (
 	"poly-bridge/models"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type TransactionController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *TransactionController) TransactionsOfAddress() {

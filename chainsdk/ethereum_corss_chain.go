@@ -36,7 +36,7 @@ import (
 	xecdsa "poly-bridge/utils/ecdsa"
 	"time"
 
-	log "github.com/astaxie/beego/logs"
+	log "github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

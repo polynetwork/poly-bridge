@@ -18,7 +18,7 @@
 package explorereffect
 
 import (
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

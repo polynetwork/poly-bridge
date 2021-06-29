@@ -34,7 +34,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 )
 
 var chainListens [10]*CrossChainListen

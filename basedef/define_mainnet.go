@@ -21,6 +21,7 @@ package basedef
 
 var (
 	POLY_CROSSCHAIN_ID     = uint64(0)
+	BTC_CROSSCHAIN_ID      = uint64(1)
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
 	ONT_CROSSCHAIN_ID      = uint64(3)
 	NEO_CROSSCHAIN_ID      = uint64(4)

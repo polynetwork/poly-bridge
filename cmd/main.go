@@ -33,7 +33,7 @@ import (
 	"poly-bridge/crosschainlisten"
 	"poly-bridge/crosschainstats"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/urfave/cli"
 )
 

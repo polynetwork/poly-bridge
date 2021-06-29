@@ -15,22 +15,31 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
-	"github.com/astaxie/beego"
+	"encoding/json"
+
 	"poly-bridge/models"
+
+	"github.com/beego/beego/v2/server/web"
 )
 
-type InfoController struct {
-	beego.Controller
+type AddressController struct {
+	web.Controller
 }
 
-func (c *InfoController) Get() {
-	explorer := &models.PolyBridgeResp{
-		Version: "v1",
-		URL:     "http://localhost:8080/v1",
+func (c *AddressController) Address() {
+	var addressReq models.AddressReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &addressReq); err != nil {
+		panic(err)
 	}
-	c.Data["json"] = explorer
+
+	c.Data["json"] = models.MakeAddressRsp(addressReq.AddressHash, addressReq.ChainId, address(addressReq.AddressHash, addressReq.ChainId))
 	c.ServeJSON()
+}
+
+func address(hash string, chainId uint64) string {
+	return hash
 }

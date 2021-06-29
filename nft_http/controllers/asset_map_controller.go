@@ -17,12 +17,10 @@
 
 package controllers
 
-import (
-	"github.com/astaxie/beego"
-)
+import "github.com/beego/beego/v2/server/web"
 
 type AssetMapController struct {
-	beego.Controller
+	web.Controller
 }
 
 //func (c *AssetMapController) AssetMap() {

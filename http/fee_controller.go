@@ -15,22 +15,23 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+
 	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/models"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type FeeController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *FeeController) GetFee() {

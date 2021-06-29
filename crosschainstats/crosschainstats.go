@@ -30,7 +30,7 @@ import (
 	"poly-bridge/crosschaindao/bridgedao"
 	"poly-bridge/models"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 )
 
 type Stats struct {

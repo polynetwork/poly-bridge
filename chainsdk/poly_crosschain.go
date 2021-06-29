@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/astaxie/beego/logs"
+	log "github.com/beego/beego/v2/core/logs"
 	"github.com/btcsuite/btcd/btcec"
 	ecm "github.com/ethereum/go-ethereum/common"
 	"github.com/ontio/ontology-crypto/ec"
