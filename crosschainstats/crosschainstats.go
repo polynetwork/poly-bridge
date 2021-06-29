@@ -20,7 +20,6 @@ package crosschainstats
 import (
 	"context"
 	"fmt"
-	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/common"
@@ -29,6 +28,8 @@ import (
 	"poly-bridge/models"
 	"sync"
 	"time"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -162,7 +163,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	nowOutId := this.dao.GetNewSrcTransfer().Id
 	nowTokenStatistic := this.dao.GetNewTokenSta()
 
-	inTokenStatistics := make([]*models.TokenStatistic, 0)
+	inTokenStatistics := make([]*models.TokenStatisticResp, 0)
 	if nowInId > nowTokenStatistic.LastInCheckId {
 		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastInCheckId, nowInId, inTokenStatistics)
 		if err != nil {
@@ -175,7 +176,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			tokenStatistic.InAmountUsdt = models.NewBigInt(inAmount_new.Div(precision_new).Mul(price_new).BigInt())
 		}
 	}
-	outTokenStatistics := make([]*models.TokenStatistic, 0)
+	outTokenStatistics := make([]*models.TokenStatisticResp, 0)
 	if nowOutId > nowTokenStatistic.LastOutCheckId {
 		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastOutCheckId, nowOutId, outTokenStatistics)
 		if err != nil {
@@ -199,7 +200,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
 					statistic.InAmount = addDecimalBigInt(statistic.InAmount, in.InAmount)
 					statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
-					statistic.InAmountUsdt = addDecimalBigInt(statistic.InAmountUsdt, in.InAmountUsdt)
 					statistic.LastInCheckId = nowInId
 				}
 			}
@@ -207,7 +207,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 				if statistic.ChainId == out.ChainId && statistic.Hash == out.Hash {
 					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, out.OutAmount)
 					statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
-					statistic.OutAmountUsdt = addDecimalBigInt(statistic.OutAmountUsdt, out.OutAmountUsdt)
 					statistic.LastOutCheckId = nowOutId
 				}
 			}

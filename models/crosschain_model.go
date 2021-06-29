@@ -27,11 +27,13 @@ type Chain struct {
 }
 
 type ChainStatistic struct {
-	Id        int64  `gorm:"primaryKey;autoIncrement"`
-	ChainId   uint64 `gorm:"uniqueIndex;type:bigint(20);not null"`
-	Addresses int64  `gorm:"type:bigint(20);not null"`
-	In        int64  `gorm:"type:bigint(20);not null"`
-	Out       int64  `gorm:"type:bigint(20);not null"`
+	Id             int64  `gorm:"primaryKey;autoIncrement"`
+	ChainId        uint64 `gorm:"uniqueIndex;type:bigint(20);not null"`
+	Addresses      int64  `gorm:"type:bigint(20);not null"`
+	In             int64  `gorm:"type:bigint(20);not null"`
+	Out            int64  `gorm:"type:bigint(20);not null"`
+	LastInCheckId  int64  `gorm:"type:int"`
+	LastOutCheckId int64  `gorm:"type:int"`
 }
 
 type SrcTransaction struct {

@@ -26,7 +26,6 @@ import (
 	"poly-bridge/models"
 	"strings"
 
-	"github.com/astaxie/beego/logs"
 	"github.com/beego/beego/v2/core/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -349,18 +348,20 @@ func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, am
 	return res.Error
 }
 
-func (dao *BridgeDao) CalculateInTokenStatistics(lastId, nowId int64, tokenStatistics []*models.TokenStatistic) error {
-	res := dao.db.Raw("select count(*) in_counter,  sum(amount) as in_amount, asset as hash, chain_id as chain_id from dst_transfers where id>lastId and id<=nowId group by chain_id, asset").
+func (dao *BridgeDao) CalculateInTokenStatistics(lastId, nowId int64, tokenStatistics []*models.TokenStatisticResp) error {
+	res := dao.db.Raw("select count(*) in_counter,  sum(amount) as in_amount, asset as hash, chain_id as chain_id from dst_transfers where id > ? and id <= ? group by chain_id, asset", lastId, nowId).
 		Preload("Token").Preload("Token.TokenBasic").
 		Find(&tokenStatistics)
 	return res.Error
 }
+
 func (dao *BridgeDao) CalculateOutTokenStatistics(lastId, nowId int64, tokenStatistics []*models.TokenStatistic) error {
-	res := dao.db.Raw("select count(*) out_counter,  sum(amount) as out_amount, asset as hash, chain_id as chain_id from src_transfers where id>lastId and id<=nowId group by chain_id, asset").
+	res := dao.db.Raw("select count(*) out_counter,  sum(amount) as out_amount, asset as hash, chain_id as chain_id from src_transfers where id > ? and id<= ? group by chain_id, asset", lastId, nowId).
 		Preload("Token").Preload("Token.TokenBasic").
 		Find(&tokenStatistics)
 	return res.Error
 }
+
 func (dao *BridgeDao) GetTokenStatistics(tokenStatistics []*models.TokenStatistic) error {
 	res := dao.db.Find(&tokenStatistics)
 	return res.Error
@@ -401,12 +402,12 @@ func (dao *BridgeDao) GetChainStatistic(chainStatistic []*models.ChainStatistic)
 	return res.Error
 }
 func (dao *BridgeDao) CalculateInChainStatistics(lastId, nowId int64, chainStatistics []*models.ChainStatistic) error {
-	res := dao.db.Raw("select count(*) as `in`,chain_id from dst_transfers where id>lastId and id<=nowId group by chain_id").
+	res := dao.db.Raw("select count(*) as `in`, chain_id from dst_transfers where id > ? and id <= ? group by chain_id", lastId, nowId).
 		Find(&chainStatistics)
 	return res.Error
 }
 func (dao *BridgeDao) CalculateOutChainStatistics(lastId, nowId int64, chainStatistics []*models.ChainStatistic) error {
-	res := dao.db.Raw("select count(*) as `out`,chain_id from src_transfers where id>lastId and id<=nowId group by chain_id").
+	res := dao.db.Raw("select count(*) as `out`, chain_id from src_transfers where id > ? and id <= ? group by chain_id", lastId, nowId).
 		Find(&chainStatistics)
 	return res.Error
 }

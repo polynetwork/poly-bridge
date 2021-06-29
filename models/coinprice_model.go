@@ -87,13 +87,15 @@ type Token struct {
 }
 
 type TokenStatistic struct {
-	Id         int64   `gorm:"primaryKey;autoIncrement"`
-	Hash       string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
-	ChainId    uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
-	InCounter  int64   `gorm:"type:bigint(20)"`
-	InAmount   *BigInt `gorm:"type:varchar(64)"`
-	OutCounter int64   `gorm:"type:bigint(20)"`
-	OutAmount  *BigInt `gorm:"type:varchar(64)"`
+	Id             int64   `gorm:"primaryKey;autoIncrement"`
+	Hash           string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
+	ChainId        uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
+	InCounter      int64   `gorm:"type:bigint(20)"`
+	InAmount       *BigInt `gorm:"type:varchar(64)"`
+	OutCounter     int64   `gorm:"type:bigint(20)"`
+	OutAmount      *BigInt `gorm:"type:varchar(64)"`
+	LastInCheckId  int64   `gorm:"type:int;not null"`
+	LastOutCheckId int64   `gorm:"type:int;not null"`
 }
 
 type TokenMap struct {
@@ -137,28 +139,4 @@ type TimeStatistic struct {
 	SrcChainId uint64 `gorm:"uniqueIndex:idx_chains;type:bigint(20);not null"`
 	DstChainId uint64 `gorm:"uniqueIndex:idx_chains;type:bigint(20);not null"`
 	Time       uint64 `gorm:"type:bigint(20);not null"`
-}
-
-type TokenStatistic struct {
-	Id             int64
-	ChainId        uint64
-	Hash           string
-	Token          *Token `gorm:"foreignKey:Hash,ChainId;references:Hash,ChainId"`
-	InCounter      int64
-	InAmount       *BigInt
-	InAmountUsdt   *BigInt
-	OutCounter     int64
-	OutAmount      *BigInt
-	OutAmountUsdt  *BigInt
-	LastInCheckId  int64
-	LastOutCheckId int64
-}
-type ChainStatistic struct {
-	Id             int64
-	ChainId        uint64
-	Addresses      int64
-	In             int64
-	Out            int64
-	LastInCheckId  int64
-	LastOutCheckId int64
 }
