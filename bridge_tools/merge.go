@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/cosmos/cosmos-sdk/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

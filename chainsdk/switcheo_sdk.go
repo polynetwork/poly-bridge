@@ -20,7 +20,7 @@ package chainsdk
 import (
 	"math/big"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	tmclient "github.com/tendermint/tendermint/rpc/client/http"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"

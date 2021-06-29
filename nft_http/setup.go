@@ -21,12 +21,15 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/nft_http/controllers"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 )
 
 func Init(config *conf.Config) {
-	mode := beego.AppConfig.String("runmode")
-	httpPort, err := beego.AppConfig.Int("httpport")
+	mode, err := web.AppConfig.String("runmode")
+	if err != nil {
+		panic(err)
+	}
+	httpPort, err := web.AppConfig.Int("httpport")
 	if err != nil {
 		panic(err)
 	}

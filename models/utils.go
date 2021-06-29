@@ -21,7 +21,26 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"math/big"
+
+	"poly-bridge/basedef"
+	"poly-bridge/utils/decimal"
 )
+
+var chainsNamesCache = map[uint64]string{}
+
+func Init(chains []*Chain) {
+	for _, chain := range chains {
+		chainsNamesCache[chain.ChainId] = chain.Name
+	}
+}
+
+func ChainId2Name(id uint64) string {
+	name, ok := chainsNamesCache[id]
+	if ok {
+		return name
+	}
+	return fmt.Sprintf("%v", id)
+}
 
 type BigInt struct {
 	big.Int
@@ -57,4 +76,34 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 	}
 	bigInt.Int = *data
 	return nil
+}
+
+func FormatAmount(precision uint64, amount *BigInt) string {
+	precision_new := decimal.New(int64(precision), 0)
+	amount_new := decimal.New(amount.Int64(), 0)
+	return amount_new.Div(precision_new).String()
+}
+
+func FormatFee(chain uint64, fee *BigInt) string {
+	if chain == basedef.BTC_CROSSCHAIN_ID {
+		precision_new := decimal.New(int64(100000000), 0)
+		fee_new := decimal.New(fee.Int64(), 0)
+		return fee_new.Div(precision_new).String()
+	} else if chain == basedef.ONT_CROSSCHAIN_ID {
+		precision_new := decimal.New(int64(1000000000), 0)
+		fee_new := decimal.New(fee.Int64(), 0)
+		return fee_new.Div(precision_new).String()
+	} else if chain == basedef.ETHEREUM_CROSSCHAIN_ID {
+		precision_new := decimal.New(int64(1000000000000000000), 0)
+		fee_new := decimal.New(fee.Int64(), 0)
+		return fee_new.Div(precision_new).String()
+	} else {
+		precision_new := decimal.New(int64(1), 0)
+		fee_new := decimal.New(fee.Int64(), 0)
+		return fee_new.Div(precision_new).String()
+	}
+}
+
+func TxType2Name(ty uint32) string {
+	return "cross chain transfer"
 }

@@ -24,14 +24,15 @@ import (
 
 	"poly-bridge/common"
 	"poly-bridge/conf"
-	"poly-bridge/controllers"
+	"poly-bridge/explorer"
+	"poly-bridge/http"
 	"poly-bridge/nft_http"
-	_ "poly-bridge/routers"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
-	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/plugins/cors"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/context"
+	"github.com/beego/beego/v2/server/web/filter/cors"
+
 	"github.com/urfave/cli"
 )
 
@@ -64,18 +65,21 @@ func run(ctx *cli.Context) {
 	}
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
-	controllers.Init()
+	// bridge http
+	http.Init()
 	common.SetupChainsSDK(config)
 	// NFT http
 	nft_http.Init(config)
+	// explorer http
+	explorer.Init()
 
-	// Insert beego config
-	beego.BConfig.Listen.HTTPAddr = config.HttpConfig.Address
-	beego.BConfig.Listen.HTTPPort = config.HttpConfig.Port
-	beego.BConfig.RunMode = config.RunMode
-	beego.BConfig.AppName = "bridgehttp"
-	beego.BConfig.CopyRequestBody = true
-	beego.BConfig.EnableErrorsRender = false
+	// Insert web config
+	web.BConfig.Listen.HTTPAddr = config.HttpConfig.Address
+	web.BConfig.Listen.HTTPPort = config.HttpConfig.Port
+	web.BConfig.RunMode = config.RunMode
+	web.BConfig.AppName = "bridgehttp"
+	web.BConfig.CopyRequestBody = true
+	web.BConfig.EnableErrorsRender = false
 
 	if config.RunMode == "dev" {
 		var FilterLog = func(ctx *context.Context) {
@@ -89,10 +93,10 @@ func run(ctx *cli.Context) {
 			outputStr := "\n" + topDivider + "\n│ url:" + string(url) + "\n" + middleDivider + "\n│ request:" + string(params) + "\n│ response:" + string(outputBytes) + "\n" + bottomDivider
 			logs.Info(outputStr)
 		}
-		beego.InsertFilter("/*", beego.FinishRouter, FilterLog, false)
+		web.InsertFilter("/*", web.FinishRouter, FilterLog)
 	}
 
-	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
+	web.InsertFilter("*", web.BeforeRouter, cors.Allow(&cors.Options{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
@@ -100,5 +104,5 @@ func run(ctx *cli.Context) {
 		AllowCredentials: true}),
 	)
 
-	beego.Run()
+	web.Run()
 }

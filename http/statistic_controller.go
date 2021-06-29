@@ -15,30 +15,30 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
+	"encoding/json"
 	"fmt"
-	"poly-bridge/conf"
+	"poly-bridge/models"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/beego/beego/v2/server/web"
 )
 
-var db *gorm.DB
+type StatisticController struct {
+	web.Controller
+}
 
-func Init() {
-	config := conf.GlobalConfig.DBConfig
-	Logger := logger.Default
-	if conf.GlobalConfig.RunMode == "dev" {
-		Logger = Logger.LogMode(logger.Info)
-	}
-
-	conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", config.User, config.Password, config.URL, config.Scheme)
+func (c *StatisticController) ExpectTime() {
+	var expectTimeReq models.ExpectTimeReq
 	var err error
-	db, err = gorm.Open(mysql.Open(conn), &gorm.Config{Logger: Logger})
-	if err != nil {
-		panic(err)
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &expectTimeReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
 	}
+	var expectTime models.TimeStatistic
+	db.Where("src_chain_id = ? and dst_chain_id = ?", expectTimeReq.SrcChainId, expectTimeReq.DstChainId).First(&expectTime)
+	c.Data["json"] = models.MakeExpectTimeRsp(expectTime.SrcChainId, expectTime.DstChainId, (expectTime.Time)/100000000)
+	c.ServeJSON()
 }

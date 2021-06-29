@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	cosmos_types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
@@ -74,6 +74,9 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
 		addr, _ := cosmos_types.AccAddressFromHex(value)
 		return addr.String()
+	} else if chainId == BTC_CROSSCHAIN_ID {
+		addrHex, _ := hex.DecodeString(value)
+		return string(addrHex)
 	}
 	return value
 }

@@ -32,7 +32,7 @@ import (
 	"poly-bridge/go_abi/wrapper_abi"
 	"poly-bridge/models"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )

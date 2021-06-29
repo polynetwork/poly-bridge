@@ -15,29 +15,30 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
-	"encoding/json"
-	"github.com/astaxie/beego"
-	"poly-bridge/models"
+	"fmt"
+	"poly-bridge/conf"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-type AddressController struct {
-	beego.Controller
-}
+var db *gorm.DB
 
-func (c *AddressController) Address() {
-	var addressReq models.AddressReq
-	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &addressReq); err != nil {
-		panic(err)
+func Init() {
+	config := conf.GlobalConfig.DBConfig
+	Logger := logger.Default
+	if conf.GlobalConfig.RunMode == "dev" {
+		Logger = Logger.LogMode(logger.Info)
 	}
 
-	c.Data["json"] = models.MakeAddressRsp(addressReq.AddressHash, addressReq.ChainId, address(addressReq.AddressHash, addressReq.ChainId))
-	c.ServeJSON()
-}
-
-func address(hash string, chainId uint64) string {
-	return hash
+	conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", config.User, config.Password, config.URL, config.Scheme)
+	var err error
+	db, err = gorm.Open(mysql.Open(conn), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(err)
+	}
 }

@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego/logs"
 	"poly-bridge/models"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type ExplorerController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *ExplorerController) Transactions() {

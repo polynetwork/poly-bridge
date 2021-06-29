@@ -26,6 +26,14 @@ type Chain struct {
 	BackwardBlockNumber uint64 `gorm:"type:bigint(20);not null"`
 }
 
+type ChainStatistic struct {
+	Id        int64  `gorm:"primaryKey;autoIncrement"`
+	ChainId   uint64 `gorm:"uniqueIndex;type:bigint(20);not null"`
+	Addresses int64  `gorm:"type:bigint(20);not null"`
+	In        int64  `gorm:"type:bigint(20);not null"`
+	Out       int64  `gorm:"type:bigint(20);not null"`
+}
+
 type SrcTransaction struct {
 	Id          int64        `gorm:"primaryKey;autoIncrement"`
 	Hash        string       `gorm:"uniqueIndex;size:66;not null"`
@@ -169,4 +177,50 @@ type SrcPolyDstRelation struct {
 	FeeTokenHash       string          `gorm:"type:varchar(66);not null"`
 	Token              *Token          `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
 	FeeToken           *Token          `gorm:"foreignKey:FeeTokenHash,ChainId;references:Hash,ChainId"`
+}
+
+type PolyTxRelation struct {
+	SrcHash            string
+	WrapperTransaction *WrapperTransaction `gorm:"foreignKey:SrcHash;references:Hash"`
+	SrcTransaction     *SrcTransaction     `gorm:"foreignKey:SrcHash;references:Hash"`
+	PolyHash           string
+	PolyTransaction    *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
+	DstHash            string
+	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
+	ChainId            uint64          `gorm:"type:bigint(20);not null"`
+	ToChainId          uint64          `gorm:"type:bigint(20);not null"`
+	DstChainId         uint64          `gorm:"type:bigint(20);not null"`
+	TokenHash          string          `gorm:"type:varchar(66);not null"`
+	ToTokenHash        string          `gorm:"type:varchar(66);not null"`
+	DstTokenHash       string          `gorm:"type:varchar(66);not null"`
+	FeeTokenHash       string          `gorm:"type:varchar(66);not null"`
+	Token              *Token          `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
+	FeeToken           *Token          `gorm:"foreignKey:FeeTokenHash,ChainId;references:Hash,ChainId"`
+	ToToken            *Token          `gorm:"foreignKey:ToTokenHash,ToChainId;references:Hash,ChainId"`
+	DstToken           *Token          `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
+}
+
+type TransactionOnToken struct {
+	Hash    string
+	ChainId uint64
+	Time    uint64
+	Height  uint64
+	From    string
+	To      string
+	Amount  *BigInt
+	Direct  uint32
+}
+
+type TransactionOnAddress struct {
+	Hash      string
+	ChainId   uint64
+	Time      uint64
+	Height    uint64
+	From      string
+	To        string
+	Amount    *BigInt
+	TokenHash string
+	TokenName string
+	TokenType string
+	Direct    uint32
 }
