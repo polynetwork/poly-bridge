@@ -1,16 +1,16 @@
 package explorer
 
 import (
-	beego "github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web"
 )
 
-func init() {
-	ns := beego.NewNamespace("/explorer/v1",
-		beego.NSRouter("/getCrossTx", &ExplorerController{}, "get:GetCrossTx"),
-		beego.NSRouter("/getcrosstxlist/", &ExplorerController{}, "post:GetCrossTxList"),
-		beego.NSRouter("/getexplorerinfo/", &ExplorerController{}, "post:GetExplorerInfo"),
-		beego.NSRouter("/gettokentxlist/", &ExplorerController{}, "post:GetTokenTxList"),
-		beego.NSRouter("/getaddresstxlist/", &ExplorerController{}, "post:GetAddressTxList"),
+func GetRouter() web.LinkNamespace {
+	ns := web.NSNamespace("/explorer",
+		web.NSRouter("/getCrossTx", &ExplorerController{}, "get:GetCrossTx"),
+		web.NSRouter("/getcrosstxlist/", &ExplorerController{}, "post:GetCrossTxList"),
+		web.NSRouter("/getexplorerinfo/", &ExplorerController{}, "post:GetExplorerInfo"),
+		web.NSRouter("/gettokentxlist/", &ExplorerController{}, "post:GetTokenTxList"),
+		web.NSRouter("/getaddresstxlist/", &ExplorerController{}, "post:GetAddressTxList"),
 	)
-	beego.AddNamespace(ns)
+	return ns
 }
