@@ -138,3 +138,27 @@ type TimeStatistic struct {
 	DstChainId uint64 `gorm:"uniqueIndex:idx_chains;type:bigint(20);not null"`
 	Time       uint64 `gorm:"type:bigint(20);not null"`
 }
+
+type TokenStatistic struct {
+	Id             int64
+	ChainId        uint64
+	Hash           string
+	Token          *Token `gorm:"foreignKey:Hash,ChainId;references:Hash,ChainId"`
+	InCounter      int64
+	InAmount       *BigInt
+	InAmountUsdt   *BigInt
+	OutCounter     int64
+	OutAmount      *BigInt
+	OutAmountUsdt  *BigInt
+	LastInCheckId  int64
+	LastOutCheckId int64
+}
+type ChainStatistic struct {
+	Id             int64
+	ChainId        uint64
+	Addresses      int64
+	In             int64
+	Out            int64
+	LastInCheckId  int64
+	LastOutCheckId int64
+}

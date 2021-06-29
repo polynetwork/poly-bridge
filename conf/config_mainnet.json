@@ -193,7 +193,9 @@
   ],
   "StatsConfig": {
     "TokenBasicStatsInterval": 60,
-    "TokenStatsInterval": 60
+    "TokenStatsInterval": 60,
+    "TokenStatisticInterval":600,
+    "ChainStatisticInterval":600
   },
   "EventEffectConfig": {
     "HowOld": 1800,
