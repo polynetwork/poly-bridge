@@ -34,7 +34,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/checkfee/", &FeeController{}, "post:CheckFee"),
 		web.NSRouter("/checkswapfee/", &FeeController{}, "post:CheckSwapFee"),
 		web.NSRouter("/transactions/", &TransactionController{}, "post:Transactions"),
-		web.NSRouter("/transactionswithfilter/", &TransactionController{}, "post:TransactionsWithFilter"),
+		web.NSRouter("/transactionswithfilter/", &TransactionController{}, "post:TransactionsOfAddressWithFilter"),
 		web.NSRouter("/transactionsofaddress/", &TransactionController{}, "post:TransactionsOfAddress"),
 		web.NSRouter("/transactionofhash/", &TransactionController{}, "post:TransactionOfHash"),
 		web.NSRouter("/transactionofcurve/", &TransactionController{}, "post:TransactionOfCurve"),

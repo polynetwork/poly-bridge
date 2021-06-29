@@ -24,6 +24,7 @@ import (
 	"poly-bridge/models"
 	"time"
 
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 )
 
@@ -81,6 +82,66 @@ func (c *TransactionController) PolyTransactions() {
 	db.Model(&models.PolyTransaction{}).Count(&transactionNum)
 	c.Data["json"] = models.MakePolyTransactionsRsp(transactionsReq.PageSize, transactionsReq.PageNo, (int(transactionNum)+transactionsReq.PageSize-1)/transactionsReq.PageSize,
 		int(transactionNum), transactions)
+	c.ServeJSON()
+}
+
+func (c *TransactionController) TransactionsOfAddressWithFilter() {
+	var req models.TransactionsOfAddressWithFilterReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil || req.PageSize == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
+	query := db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+		Where("`from` in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses).
+		Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?",
+			req.SrcChainId,
+			req.DstChainId,
+			req.Assets,
+		),
+	).
+		Where("src_transactions.standard = ?", 0).
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
+		Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
+		Joins("left join src_transactions on u.hash = src_transactions.hash").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
+
+	err = query.
+		Preload("WrapperTransaction").
+		Preload("SrcTransaction").
+		Preload("SrcTransaction.SrcTransfer").
+		Preload("PolyTransaction").
+		Preload("DstTransaction").
+		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
+		Preload("Token.TokenBasic").
+		Preload("FeeToken").
+		Limit(req.PageSize).Offset(req.PageSize * req.PageNo).
+		Order("src_transactions.time desc").
+		Find(&srcPolyDstRelations).Error
+
+	if err == nil {
+		var transactionNum int64
+		err = query.Count(&transactionNum).Error
+		if err == nil {
+			chains := make([]*models.Chain, 0)
+			db.Model(&models.Chain{}).Find(&chains)
+			chainsMap := make(map[uint64]*models.Chain)
+			for _, chain := range chains {
+				chainsMap[chain.ChainId] = chain
+			}
+			c.Data["json"] = models.MakeTransactionsOfUserRsp(req.PageSize, req.PageNo,
+				(int(transactionNum)+req.PageSize-1)/req.PageSize, int(transactionNum), srcPolyDstRelations, chainsMap)
+			c.ServeJSON()
+			return
+		}
+	}
+	logs.Error("Load data error %v", err)
+	c.Data["json"] = models.MakeErrorRsp("service error!")
+	c.Ctx.ResponseWriter.WriteHeader(500)
 	c.ServeJSON()
 }
 
