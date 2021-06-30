@@ -87,13 +87,15 @@ type Token struct {
 }
 
 type TokenStatistic struct {
-	Id         int64   `gorm:"primaryKey;autoIncrement"`
-	Hash       string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
-	ChainId    uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
-	InCounter  int64   `gorm:"type:bigint(20)"`
-	InAmount   *BigInt `gorm:"type:varchar(64)"`
-	OutCounter int64   `gorm:"type:bigint(20)"`
-	OutAmount  *BigInt `gorm:"type:varchar(64)"`
+	Id             int64   `gorm:"primaryKey;autoIncrement"`
+	Hash           string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
+	ChainId        uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
+	InCounter      int64   `gorm:"type:bigint(20)"`
+	InAmount       *BigInt `gorm:"type:varchar(64)"`
+	OutCounter     int64   `gorm:"type:bigint(20)"`
+	OutAmount      *BigInt `gorm:"type:varchar(64)"`
+	LastInCheckId  int64   `gorm:"type:int;not null"`
+	LastOutCheckId int64   `gorm:"type:int;not null"`
 }
 
 type TokenMap struct {

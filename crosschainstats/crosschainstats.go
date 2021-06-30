@@ -21,14 +21,15 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"sync"
-	"time"
-
 	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/bridgedao"
 	"poly-bridge/models"
+	"sync"
+	"time"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -48,7 +49,7 @@ func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBCo
 	if server != basedef.SERVER_POLY_BRIDGE {
 		panic("CrossChainStats Only runs on bridge server")
 	}
-	if cfg == nil || cfg.TokenBasicStatsInterval == 0 || cfg.TokenStatsInterval == 0 {
+	if cfg == nil || cfg.TokenBasicStatsInterval == 0 || cfg.TokenAmountCheckInterval == 0 {
 		panic("Invalid Stats config")
 	}
 
@@ -84,7 +85,10 @@ func (this *Stats) run(interval int64, f func() error) {
 
 func (this *Stats) Start() {
 	go this.run(this.cfg.TokenBasicStatsInterval, this.computeStats)
-	go this.run(this.cfg.TokenStatsInterval, this.computeTokensStats)
+	go this.run(this.cfg.TokenAmountCheckInterval, this.computeTokensStats)
+	go this.run(this.cfg.TokenStatisticInterval, this.computeTokenStatistics)
+	go this.run(this.cfg.ChainStatisticInterval, this.computeChainStatistics)
+	go this.run(this.cfg.ChainAddressCheckInterval, this.computeChainStatisticAssets)
 }
 
 func (this *Stats) Stop() {
@@ -152,4 +156,127 @@ func (this *Stats) computeTokensStats() (err error) {
 		}
 	}
 	return
+}
+
+func (this *Stats) computeTokenStatistics() (err error) {
+	nowInId := this.dao.GetNewDstTransfer().Id
+	nowOutId := this.dao.GetNewSrcTransfer().Id
+	nowTokenStatistic := this.dao.GetNewTokenSta()
+
+	inTokenStatistics := make([]*models.TokenStatistic, 0)
+	if nowInId > nowTokenStatistic.LastInCheckId {
+		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastInCheckId, nowInId, inTokenStatistics)
+		if err != nil {
+			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
+		}
+	}
+	outTokenStatistics := make([]*models.TokenStatistic, 0)
+	if nowOutId > nowTokenStatistic.LastOutCheckId {
+		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastOutCheckId, nowOutId, outTokenStatistics)
+		if err != nil {
+			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
+		}
+	}
+	if nowInId > nowTokenStatistic.LastInCheckId || nowOutId > nowTokenStatistic.LastOutCheckId {
+		tokenStatistics := make([]*models.TokenStatistic, 0)
+		err = this.dao.GetTokenStatistics(tokenStatistics)
+		if err != nil {
+			return fmt.Errorf("Failed to GetTokenStatistics %w", err)
+		}
+		for _, statistic := range tokenStatistics {
+			for _, in := range inTokenStatistics {
+				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
+					statistic.InAmount = addDecimalBigInt(statistic.InAmount, in.InAmount)
+					statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
+					statistic.LastInCheckId = nowInId
+				}
+			}
+			for _, out := range outTokenStatistics {
+				if statistic.ChainId == out.ChainId && statistic.Hash == out.Hash {
+					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, out.OutAmount)
+					statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
+					statistic.LastOutCheckId = nowOutId
+				}
+			}
+		}
+		err = this.dao.SaveTokenStatistics(tokenStatistics)
+		if err != nil {
+			return fmt.Errorf("Failed to SaveTokenStatistics %w", err)
+		}
+	}
+	return
+}
+
+func (this *Stats) computeChainStatistics() (err error) {
+	nowChainStatistic := this.dao.GetNewChainSta()
+	nowInId := this.dao.GetNewDstTransfer().Id
+	nowOutId := this.dao.GetNewSrcTransfer().Id
+
+	inChainStatistics := make([]*models.ChainStatistic, 0)
+	if nowInId > nowChainStatistic.LastInCheckId {
+		err = this.dao.CalculateInChainStatistics(nowChainStatistic.LastInCheckId, nowInId, inChainStatistics)
+		if err != nil {
+			logs.Error("Failed to CalculateInTokenStatistics %w", err)
+		}
+	}
+	outChainStatistics := make([]*models.ChainStatistic, 0)
+	if nowOutId > nowChainStatistic.LastOutCheckId {
+		err = this.dao.CalculateOutChainStatistics(nowChainStatistic.LastOutCheckId, nowOutId, outChainStatistics)
+		if err != nil {
+			logs.Error("Failed to CalculateInTokenStatistics %w", err)
+		}
+	}
+	if nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId {
+		chainStatistics := make([]*models.ChainStatistic, 0)
+		err = this.dao.GetChainStatistic(chainStatistics)
+		if err != nil {
+			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
+		}
+		for _, chainStatistic := range chainStatistics {
+			for _, in := range inChainStatistics {
+				if chainStatistic.ChainId == in.ChainId {
+					chainStatistic.In = addDecimalInt64(chainStatistic.In, in.In)
+					chainStatistic.LastInCheckId = nowInId
+				}
+			}
+			for _, out := range outChainStatistics {
+				if chainStatistic.ChainId == out.ChainId {
+					chainStatistic.Out = addDecimalInt64(chainStatistic.Out, out.Out)
+					chainStatistic.LastOutCheckId = nowOutId
+				}
+			}
+		}
+	}
+	return
+}
+func (this *Stats) computeChainStatisticAssets() (err error) {
+	computeChainStatistics := make([]*models.ChainStatistic, 0)
+	err = this.dao.CalculateChainStatisticAssets(computeChainStatistics)
+	if err != nil {
+		return fmt.Errorf("Failed to CalculateChainStatisticAssets %w", err)
+	}
+
+	chainStatistics := make([]*models.ChainStatistic, 0)
+	this.dao.GetChainStatistic(chainStatistics)
+	for _, chainStatistic := range chainStatistics {
+		for _, chain := range computeChainStatistics {
+			if chainStatistic.ChainId == chain.ChainId {
+				chainStatistic.Addresses = chain.Addresses
+			}
+		}
+	}
+	return
+}
+
+func addDecimalBigInt(a, b *models.BigInt) *models.BigInt {
+	a_new := decimal.New(a.Int64(), 0)
+	b_new := decimal.New(b.Int64(), 0)
+	c := a_new.Add(b_new)
+	return models.NewBigInt(c.BigInt())
+}
+func addDecimalInt64(a, b int64) int64 {
+	a_new := decimal.New(a, 0)
+	b_new := decimal.New(b, 0)
+	c := a_new.Add(b_new)
+	return c.IntPart()
 }
