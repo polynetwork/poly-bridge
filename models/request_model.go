@@ -767,6 +767,16 @@ type TransactionsOfAddressReq struct {
 	PageNo    int
 }
 
+type TransactionsOfAddressWithFilterReq struct {
+	State      int // -1 表示查全部
+	Addresses  []string
+	SrcChainId int
+	DstChainId int
+	Assets     []string
+	PageSize   int
+	PageNo     int
+}
+
 type TransactionsOfAddressRsp struct {
 	PageSize     int
 	PageNo       int
