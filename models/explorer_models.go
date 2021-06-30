@@ -102,13 +102,9 @@ type ChainInfoResp struct {
 
 func MakeChainInfoResp(chain *Chain) *ChainInfoResp {
 	chainInfoResp := &ChainInfoResp{
-		Id:        0,
-		Name:      "",
-		Height:    0,
-		In:        0,
-		Out:       0,
-		Addresses: 0,
-		Tokens:    nil,
+		Id:     uint32(chain.ChainId),
+		Name:   chain.Name,
+		Height: uint32(chain.Height),
 	}
 	return chainInfoResp
 }
@@ -135,7 +131,15 @@ type ChainTokenResp struct {
 }
 
 func MakeChainTokenResp(token *Token) *ChainTokenResp {
-	chainTokenResp := &ChainTokenResp{}
+	chainTokenResp := &ChainTokenResp{
+		Chain:     int32(token.ChainId),
+		ChainName: ChainId2Name(token.ChainId),
+		Hash:      token.Hash,
+		Token:     token.TokenBasicName,
+		Name:      token.Name,
+		Type:      token.TokenType,
+		Precision: token.Precision,
+	}
 	return chainTokenResp
 }
 

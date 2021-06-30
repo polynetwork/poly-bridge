@@ -49,7 +49,7 @@ func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBCo
 	if server != basedef.SERVER_POLY_BRIDGE {
 		panic("CrossChainStats Only runs on bridge server")
 	}
-	if cfg == nil || cfg.TokenBasicStatsInterval == 0 || cfg.TokenStatsInterval == 0 {
+	if cfg == nil || cfg.TokenBasicStatsInterval == 0 || cfg.TokenAmountCheckInterval == 0 {
 		panic("Invalid Stats config")
 	}
 
@@ -85,10 +85,10 @@ func (this *Stats) run(interval int64, f func() error) {
 
 func (this *Stats) Start() {
 	go this.run(this.cfg.TokenBasicStatsInterval, this.computeStats)
-	go this.run(this.cfg.TokenStatsInterval, this.computeTokensStats)
+	go this.run(this.cfg.TokenAmountCheckInterval, this.computeTokensStats)
 	go this.run(this.cfg.TokenStatisticInterval, this.computeTokenStatistics)
 	go this.run(this.cfg.ChainStatisticInterval, this.computeChainStatistics)
-	go this.run(this.cfg.ChainStatisticAssetInterval, this.computeChainStatisticAssets)
+	go this.run(this.cfg.ChainAddressCheckInterval, this.computeChainStatisticAssets)
 }
 
 func (this *Stats) Stop() {
@@ -163,30 +163,18 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	nowOutId := this.dao.GetNewSrcTransfer().Id
 	nowTokenStatistic := this.dao.GetNewTokenSta()
 
-	inTokenStatistics := make([]*models.TokenStatisticResp, 0)
+	inTokenStatistics := make([]*models.TokenStatistic, 0)
 	if nowInId > nowTokenStatistic.LastInCheckId {
 		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastInCheckId, nowInId, inTokenStatistics)
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
-		for _, tokenStatistic := range inTokenStatistics {
-			precision_new := decimal.New(int64(tokenStatistic.Token.Precision), 0)
-			inAmount_new := decimal.New(tokenStatistic.InAmount.Int64(), 0)
-			price_new := decimal.New(tokenStatistic.Token.TokenBasic.Price, 0)
-			tokenStatistic.InAmountUsdt = models.NewBigInt(inAmount_new.Div(precision_new).Mul(price_new).BigInt())
-		}
 	}
-	outTokenStatistics := make([]*models.TokenStatisticResp, 0)
+	outTokenStatistics := make([]*models.TokenStatistic, 0)
 	if nowOutId > nowTokenStatistic.LastOutCheckId {
 		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastOutCheckId, nowOutId, outTokenStatistics)
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
-		}
-		for _, tokenStatistic := range outTokenStatistics {
-			precision_new := decimal.New(int64(tokenStatistic.Token.Precision), 0)
-			outAmount_new := decimal.New(tokenStatistic.OutAmount.Int64(), 0)
-			price_new := decimal.New(tokenStatistic.Token.TokenBasic.Price, 0)
-			tokenStatistic.OutAmountUsdt = models.NewBigInt(outAmount_new.Div(precision_new).Mul(price_new).BigInt())
 		}
 	}
 	if nowInId > nowTokenStatistic.LastInCheckId || nowOutId > nowTokenStatistic.LastOutCheckId {
@@ -267,13 +255,13 @@ func (this *Stats) computeChainStatisticAssets() (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to CalculateChainStatisticAssets %w", err)
 	}
-	return
+
 	chainStatistics := make([]*models.ChainStatistic, 0)
 	this.dao.GetChainStatistic(chainStatistics)
 	for _, chainStatistic := range chainStatistics {
-		for _, new := range computeChainStatistics {
-			if chainStatistic.ChainId == new.ChainId {
-				chainStatistic.Addresses = new.Addresses
+		for _, chain := range computeChainStatistics {
+			if chainStatistic.ChainId == chain.ChainId {
+				chainStatistic.Addresses = chain.Addresses
 			}
 		}
 	}

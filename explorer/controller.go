@@ -82,6 +82,12 @@ func (c *ExplorerController) GetExplorerInfo() {
 
 	// get all chains statistic
 	chainStatistics := make([]*models.ChainStatistic, 0)
+	if db.Find(&chainStatistics).Error != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain stats does not exist"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
 
 	// get all tokens
 	tokenBasics := make([]*models.TokenBasic, 0)

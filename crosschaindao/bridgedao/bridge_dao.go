@@ -348,7 +348,7 @@ func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, am
 	return res.Error
 }
 
-func (dao *BridgeDao) CalculateInTokenStatistics(lastId, nowId int64, tokenStatistics []*models.TokenStatisticResp) error {
+func (dao *BridgeDao) CalculateInTokenStatistics(lastId, nowId int64, tokenStatistics []*models.TokenStatistic) error {
 	res := dao.db.Raw("select count(*) in_counter,  sum(amount) as in_amount, asset as hash, chain_id as chain_id from dst_transfers where id > ? and id <= ? group by chain_id, asset", lastId, nowId).
 		Preload("Token").Preload("Token.TokenBasic").
 		Find(&tokenStatistics)
