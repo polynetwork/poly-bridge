@@ -26,6 +26,7 @@ import (
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
+	"gorm.io/gorm"
 )
 
 type TransactionController struct {
@@ -94,22 +95,24 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 		c.ServeJSON()
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	query := db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
-		Where("`from` in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses).
-		Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?",
-			req.SrcChainId,
-			req.DstChainId,
-			req.Assets,
-		),
-	).
-		Where("src_transactions.standard = ?", 0).
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
-		Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
-		Joins("left join src_transactions on u.hash = src_transactions.hash").
-		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
+	query := func(tx *gorm.DB) *gorm.DB {
+		return tx.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+			Where("`from` in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses).
+			Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?",
+				req.SrcChainId,
+				req.DstChainId,
+				req.Assets,
+			),
+		).
+			Where("src_transactions.standard = ?", 0).
+			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
+			Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
+			Joins("left join src_transactions on u.hash = src_transactions.hash").
+			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
+	}
 
-	err = query.
+	err = query(db).
 		Preload("WrapperTransaction").
 		Preload("SrcTransaction").
 		Preload("SrcTransaction.SrcTransfer").
@@ -125,7 +128,7 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 
 	if err == nil {
 		var transactionNum int64
-		err = query.Count(&transactionNum).Error
+		err = query(db).Count(&transactionNum).Error
 		if err == nil {
 			chains := make([]*models.Chain, 0)
 			db.Model(&models.Chain{}).Find(&chains)
