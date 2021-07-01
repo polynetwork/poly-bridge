@@ -172,6 +172,8 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 			checkError(err, "Saving table")
 		}
 	}
+	{
+	}
 }
 
 func createTables(db *gorm.DB) {
