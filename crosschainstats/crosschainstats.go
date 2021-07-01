@@ -159,10 +159,20 @@ func (this *Stats) computeTokensStats() (err error) {
 }
 
 func (this *Stats) computeTokenStatistics() (err error) {
-	nowInId := this.dao.GetNewDstTransfer().Id
-	nowOutId := this.dao.GetNewSrcTransfer().Id
-	nowTokenStatistic := this.dao.GetNewTokenSta()
-
+	newDst,err := this.dao.GetNewDstTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
+	}
+	nowInId:=newDst.Id
+	newSrc,err:=this.dao.GetNewSrcTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
+	}
+	nowOutId := newSrc.Id
+	nowTokenStatistic,err := this.dao.GetNewTokenSta()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewTokenSta %w", err)
+	}
 	inTokenStatistics := make([]*models.TokenStatistic, 0)
 	if nowInId > nowTokenStatistic.LastInCheckId {
 		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastInCheckId, nowInId, &inTokenStatistics)
@@ -208,10 +218,20 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
-	nowChainStatistic := this.dao.GetNewChainSta()
-	nowInId := this.dao.GetNewDstTransfer().Id
-	nowOutId := this.dao.GetNewSrcTransfer().Id
-
+	nowChainStatistic,err := this.dao.GetNewChainSta()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewChainSta %w", err)
+	}
+	nowIn,err:=this.dao.GetNewDstTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
+	}
+	nowInId := nowIn.Id
+	nowOut,err:=this.dao.GetNewSrcTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
+	}
+	nowOutId := nowOut.Id
 	inChainStatistics := make([]*models.ChainStatistic, 0)
 	if nowInId > nowChainStatistic.LastInCheckId {
 		err = this.dao.CalculateInChainStatistics(nowChainStatistic.LastInCheckId, nowInId, &inChainStatistics)

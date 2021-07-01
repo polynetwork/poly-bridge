@@ -26,8 +26,6 @@ func TestMain(m *testing.M) {
 
 func Test_GetExplorerInfo(t *testing.T) {
 	req := &models.ExplorerInfoReq{
-		Start: 0,
-		End:    10,
 	}
 
 	c := new(ExplorerController)
@@ -51,79 +49,60 @@ func Test_GetTokenTxList(t *testing.T) {
 	c.GetTokenTxList()
 }
 
-func Test_GetAddressTxListt(t *testing.T) {
+func Test_GetAddressTxList(t *testing.T) {
 	req := &models.AddressTxListReq{
-		PageSize:10,
-		PageNo:0,
-		ChainId:2,
 	}
 
 	c := new(ExplorerController)
 	c.Controller = web.Controller{}
 	assert.NoError(t, encodeContextParams(&c.Controller, req))
 
-	c.GetTokenTxList()
+	c.GetAddressTxList()
 }
 
 func Test_GetCrossTxList(t *testing.T) {
 	req := &models.AddressTxListReq{
-		PageSize:10,
-		PageNo:0,
-		ChainId:2,
 	}
 
 	c := new(ExplorerController)
 	c.Controller = web.Controller{}
 	assert.NoError(t, encodeContextParams(&c.Controller, req))
 
-	c.GetTokenTxList()
+	c.GetCrossTxList()
 }
 
 func Test_GetCrossTx(t *testing.T) {
 	req := &models.AddressTxListReq{
-		PageSize:10,
-		PageNo:0,
-		ChainId:2,
 	}
 
 	c := new(ExplorerController)
 	c.Controller = web.Controller{}
 	assert.NoError(t, encodeContextParams(&c.Controller, req))
 
-	c.GetTokenTxList()
+	c.GetCrossTx()
 }
 
 func Test_GetAssetStatistic(t *testing.T) {
 	req := &models.AddressTxListReq{
-		PageSize:10,
-		PageNo:0,
-		ChainId:2,
 	}
 
 	c := new(ExplorerController)
 	c.Controller = web.Controller{}
 	assert.NoError(t, encodeContextParams(&c.Controller, req))
 
-	c.GetTokenTxList()
+	c.GetAssetStatistic()
 }
 
 func Test_GetTransferStatistic(t *testing.T) {
 	req := &models.AddressTxListReq{
-		PageSize:10,
-		PageNo:0,
-		ChainId:2,
 	}
 
 	c := new(ExplorerController)
 	c.Controller = web.Controller{}
 	assert.NoError(t, encodeContextParams(&c.Controller, req))
 
-	c.GetTokenTxList()
+	c.GetTransferStatistic()
 }
-
-
-
-
 
 func encodeContextParams(c *web.Controller, request interface{}) error {
 	c.Ctx = new(context.Context)
