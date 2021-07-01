@@ -256,7 +256,7 @@ func (c *ExplorerController) GetCrossTx() {
 
 func (c *ExplorerController) GetAssetStatistic() {
 	assetStatistic:=make([]*models.AssetStatistic,0)
-	res:=db.Raw("select sum(amount) as amount, count(*) as txnum, count(distinct `from`) as addressnum, a.chain_id, asset, token_basic_name from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash group by b.token_basic_name").
+	res:=db.Raw("select sum(amount) as amount, count(*) as txnum, count(distinct `from`) as addressnum, b.token_basic_name from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash group by token_basic_name").
 		Find(&assetStatistic).Preload("TokenBasic")
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("assetStatistic does not exist"))
