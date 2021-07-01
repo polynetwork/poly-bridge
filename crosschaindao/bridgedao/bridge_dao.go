@@ -348,66 +348,66 @@ func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, am
 	return res.Error
 }
 
-func (dao *BridgeDao) CalculateInTokenStatistics(lastId, nowId int64, tokenStatistics []*models.TokenStatistic) error {
+func (dao *BridgeDao) CalculateInTokenStatistics(lastId, nowId int64, tokenStatistics interface{}) error {
 	res := dao.db.Raw("select count(*) in_counter,  sum(amount) as in_amount, asset as hash, chain_id as chain_id from dst_transfers where id > ? and id <= ? group by chain_id, asset", lastId, nowId).
 		Preload("Token").Preload("Token.TokenBasic").
-		Find(&tokenStatistics)
+		Find(tokenStatistics)
 	return res.Error
 }
 
-func (dao *BridgeDao) CalculateOutTokenStatistics(lastId, nowId int64, tokenStatistics []*models.TokenStatistic) error {
+func (dao *BridgeDao) CalculateOutTokenStatistics(lastId, nowId int64, tokenStatistics interface{}) error {
 	res := dao.db.Raw("select count(*) out_counter,  sum(amount) as out_amount, asset as hash, chain_id as chain_id from src_transfers where id > ? and id<= ? group by chain_id, asset", lastId, nowId).
 		Preload("Token").Preload("Token.TokenBasic").
-		Find(&tokenStatistics)
+		Find(tokenStatistics)
 	return res.Error
 }
 
-func (dao *BridgeDao) GetTokenStatistics(tokenStatistics []*models.TokenStatistic) error {
-	res := dao.db.Find(&tokenStatistics)
+func (dao *BridgeDao) GetTokenStatistics(tokenStatistics interface{}) error {
+	res := dao.db.Find(tokenStatistics)
 	return res.Error
 }
 
 func (dao *BridgeDao) SaveTokenStatistics(tokenStatistics []*models.TokenStatistic) error {
-	res := dao.db.Save(&tokenStatistics)
+	res := dao.db.Save(tokenStatistics)
 	return res.Error
 }
 
 func (dao *BridgeDao) GetNewDstTransfer() *models.DstTransfer {
-	var transfer *models.DstTransfer
-	dao.db.Last(&transfer)
+	transfer:=&models.DstTransfer{}
+	dao.db.Last(transfer)
 	return transfer
 }
 func (dao *BridgeDao) GetNewSrcTransfer() *models.SrcTransfer {
-	var srcTransfer *models.SrcTransfer
-	dao.db.Last(&srcTransfer)
+	srcTransfer:=&models.SrcTransfer{}
+	dao.db.Last(srcTransfer)
 	return srcTransfer
 }
 func (dao *BridgeDao) GetNewTokenSta() *models.TokenStatistic {
-	var tokenStatistic *models.TokenStatistic
-	dao.db.Last(&tokenStatistic)
+	tokenStatistic:=&models.TokenStatistic{}
+	dao.db.Last(tokenStatistic)
 	return tokenStatistic
 }
 func (dao *BridgeDao) GetNewChainSta() *models.ChainStatistic {
-	var chainStatistic *models.ChainStatistic
-	dao.db.Last(&chainStatistic)
+	chainStatistic := &models.ChainStatistic{}
+	dao.db.Last(chainStatistic)
 	return chainStatistic
 }
-func (dao *BridgeDao) CalculateChainStatisticAssets(chainStatistics []*models.ChainStatistic) error {
+func (dao *BridgeDao) CalculateChainStatisticAssets(chainStatistics interface{}) error {
 	res := dao.db.Raw("select count(distinct addresses) as addresses, chain_id from (select  `from` as addresses, chain_id from src_transfers union select `to` as addresses, chain_id from dst_transfers) u group by chain_id").
-		Find(&chainStatistics)
+		Find(chainStatistics)
 	return res.Error
 }
-func (dao *BridgeDao) GetChainStatistic(chainStatistic []*models.ChainStatistic) error {
-	res := dao.db.Find(&chainStatistic)
+func (dao *BridgeDao) GetChainStatistic(chainStatistic interface{}) error {
+	res := dao.db.Find(chainStatistic)
 	return res.Error
 }
-func (dao *BridgeDao) CalculateInChainStatistics(lastId, nowId int64, chainStatistics []*models.ChainStatistic) error {
+func (dao *BridgeDao) CalculateInChainStatistics(lastId, nowId int64, chainStatistics interface{}) error {
 	res := dao.db.Raw("select count(*) as `in`, chain_id from dst_transfers where id > ? and id <= ? group by chain_id", lastId, nowId).
-		Find(&chainStatistics)
+		Find(chainStatistics)
 	return res.Error
 }
-func (dao *BridgeDao) CalculateOutChainStatistics(lastId, nowId int64, chainStatistics []*models.ChainStatistic) error {
+func (dao *BridgeDao) CalculateOutChainStatistics(lastId, nowId int64, chainStatistics interface{}) error {
 	res := dao.db.Raw("select count(*) as `out`, chain_id from src_transfers where id > ? and id <= ? group by chain_id", lastId, nowId).
-		Find(&chainStatistics)
+		Find(chainStatistics)
 	return res.Error
 }
