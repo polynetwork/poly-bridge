@@ -372,25 +372,25 @@ func (dao *BridgeDao) SaveTokenStatistics(tokenStatistics []*models.TokenStatist
 	return res.Error
 }
 
-func (dao *BridgeDao) GetNewDstTransfer() *models.DstTransfer {
+func (dao *BridgeDao) GetNewDstTransfer() (*models.DstTransfer,error) {
 	transfer:=&models.DstTransfer{}
-	dao.db.Last(transfer)
-	return transfer
+	res:=dao.db.Last(transfer)
+	return transfer,res.Error
 }
-func (dao *BridgeDao) GetNewSrcTransfer() *models.SrcTransfer {
+func (dao *BridgeDao) GetNewSrcTransfer() (*models.SrcTransfer,error) {
 	srcTransfer:=&models.SrcTransfer{}
-	dao.db.Last(srcTransfer)
-	return srcTransfer
+	res:=dao.db.Last(srcTransfer)
+	return srcTransfer,res.Error
 }
-func (dao *BridgeDao) GetNewTokenSta() *models.TokenStatistic {
+func (dao *BridgeDao) GetNewTokenSta() (*models.TokenStatistic,error) {
 	tokenStatistic:=&models.TokenStatistic{}
-	dao.db.Last(tokenStatistic)
-	return tokenStatistic
+	res:=dao.db.Last(tokenStatistic)
+	return tokenStatistic,res.Error
 }
-func (dao *BridgeDao) GetNewChainSta() *models.ChainStatistic {
+func (dao *BridgeDao) GetNewChainSta() (*models.ChainStatistic,error) {
 	chainStatistic := &models.ChainStatistic{}
-	dao.db.Last(chainStatistic)
-	return chainStatistic
+	res:=dao.db.Last(chainStatistic)
+	return chainStatistic,res.Error
 }
 func (dao *BridgeDao) CalculateChainStatisticAssets(chainStatistics interface{}) error {
 	res := dao.db.Raw("select count(distinct addresses) as addresses, chain_id from (select  `from` as addresses, chain_id from src_transfers union select `to` as addresses, chain_id from dst_transfers) u group by chain_id").
