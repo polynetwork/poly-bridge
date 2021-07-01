@@ -159,27 +159,37 @@ func (this *Stats) computeTokensStats() (err error) {
 }
 
 func (this *Stats) computeTokenStatistics() (err error) {
-	nowInId := this.dao.GetNewDstTransfer().Id
-	nowOutId := this.dao.GetNewSrcTransfer().Id
-	nowTokenStatistic := this.dao.GetNewTokenSta()
-
+	newDst,err := this.dao.GetNewDstTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
+	}
+	nowInId:=newDst.Id
+	newSrc,err:=this.dao.GetNewSrcTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
+	}
+	nowOutId := newSrc.Id
+	nowTokenStatistic,err := this.dao.GetNewTokenSta()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewTokenSta %w", err)
+	}
 	inTokenStatistics := make([]*models.TokenStatistic, 0)
 	if nowInId > nowTokenStatistic.LastInCheckId {
-		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastInCheckId, nowInId, inTokenStatistics)
+		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastInCheckId, nowInId, &inTokenStatistics)
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
 	outTokenStatistics := make([]*models.TokenStatistic, 0)
 	if nowOutId > nowTokenStatistic.LastOutCheckId {
-		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastOutCheckId, nowOutId, outTokenStatistics)
+		err = this.dao.CalculateOutTokenStatistics(nowTokenStatistic.LastOutCheckId, nowOutId, &outTokenStatistics)
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
 	if nowInId > nowTokenStatistic.LastInCheckId || nowOutId > nowTokenStatistic.LastOutCheckId {
 		tokenStatistics := make([]*models.TokenStatistic, 0)
-		err = this.dao.GetTokenStatistics(tokenStatistics)
+		err = this.dao.GetTokenStatistics(&tokenStatistics)
 		if err != nil {
 			return fmt.Errorf("Failed to GetTokenStatistics %w", err)
 		}
@@ -208,20 +218,30 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
-	nowChainStatistic := this.dao.GetNewChainSta()
-	nowInId := this.dao.GetNewDstTransfer().Id
-	nowOutId := this.dao.GetNewSrcTransfer().Id
-
+	nowChainStatistic,err := this.dao.GetNewChainSta()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewChainSta %w", err)
+	}
+	nowIn,err:=this.dao.GetNewDstTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
+	}
+	nowInId := nowIn.Id
+	nowOut,err:=this.dao.GetNewSrcTransfer()
+	if err != nil {
+		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
+	}
+	nowOutId := nowOut.Id
 	inChainStatistics := make([]*models.ChainStatistic, 0)
 	if nowInId > nowChainStatistic.LastInCheckId {
-		err = this.dao.CalculateInChainStatistics(nowChainStatistic.LastInCheckId, nowInId, inChainStatistics)
+		err = this.dao.CalculateInChainStatistics(nowChainStatistic.LastInCheckId, nowInId, &inChainStatistics)
 		if err != nil {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
 	outChainStatistics := make([]*models.ChainStatistic, 0)
 	if nowOutId > nowChainStatistic.LastOutCheckId {
-		err = this.dao.CalculateOutChainStatistics(nowChainStatistic.LastOutCheckId, nowOutId, outChainStatistics)
+		err = this.dao.CalculateOutChainStatistics(nowChainStatistic.LastOutCheckId, nowOutId, &outChainStatistics)
 		if err != nil {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
@@ -251,13 +271,13 @@ func (this *Stats) computeChainStatistics() (err error) {
 }
 func (this *Stats) computeChainStatisticAssets() (err error) {
 	computeChainStatistics := make([]*models.ChainStatistic, 0)
-	err = this.dao.CalculateChainStatisticAssets(computeChainStatistics)
+	err = this.dao.CalculateChainStatisticAssets(&computeChainStatistics)
 	if err != nil {
 		return fmt.Errorf("Failed to CalculateChainStatisticAssets %w", err)
 	}
 
 	chainStatistics := make([]*models.ChainStatistic, 0)
-	this.dao.GetChainStatistic(chainStatistics)
+	this.dao.GetChainStatistic(&chainStatistics)
 	for _, chainStatistic := range chainStatistics {
 		for _, chain := range computeChainStatistics {
 			if chainStatistic.ChainId == chain.ChainId {
