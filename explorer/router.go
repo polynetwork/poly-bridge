@@ -6,7 +6,9 @@ import (
 
 func GetRouter() web.LinkNamespace {
 	ns := web.NSNamespace("/explorer",
-		web.NSRouter("/getCrossTx", &ExplorerController{}, "get:GetCrossTx"),
+		web.NSRouter("/getcrosstx", &ExplorerController{}, "get:GetCrossTx"),
+		web.NSRouter("/getassetstatistic", &ExplorerController{}, "get:GetAssetStatistic"),
+		web.NSRouter("/gettransferstatistic", &ExplorerController{}, "get:GetTransferStatistic"),
 		web.NSRouter("/getcrosstxlist/", &ExplorerController{}, "post:GetCrossTxList"),
 		web.NSRouter("/getexplorerinfo/", &ExplorerController{}, "post:GetExplorerInfo"),
 		web.NSRouter("/gettokentxlist/", &ExplorerController{}, "post:GetTokenTxList"),
