@@ -29,7 +29,7 @@ const (
 type TokenBasic struct {
 	Id              int64          `gorm:"primaryKey;autoIncrement"`
 	Name            string         `gorm:"uniqueIndex;size:64;not null"`
-	ChainId			uint64			`gorm:"uniqueIndex;type:bigint(20);not null"`
+	ChainId         uint64         `gorm:"type:bigint(20);not null;default:0"`
 	Precision       uint64         `gorm:"type:bigint(20);not null"`
 	Price           int64          `gorm:"size:64;not null"`
 	Ind             uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
