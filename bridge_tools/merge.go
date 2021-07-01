@@ -173,6 +173,21 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 		}
 	}
 	{
+		logs.Info("Filling chain ids in table token_basics from explorer chain_token_bind and chain_token")
+		type SourceBasic struct {
+			ChainId uint64
+			Name    string
+		}
+		sourceBasics := make([]*SourceBasic, 0)
+		err := exp.Raw("SELECT b.id as chainId,b.xname as name from chain_token_bind a join chain_token b on a.hash_src=b.hash Where a.hash_src=a.hash_dest and  b.hash != '0000000000000000000000000000000000000000'").
+			Find(&sourceBasics).Error
+		checkError(err, "Loading table")
+		for _, sourceBasic := range sourceBasics {
+			err = db.Model(&models.TokenBasic{}).
+				Where("name=?", sourceBasic.Name).
+				Update("chain_id", sourceBasic.ChainId).Error
+			checkError(err, "Updating table")
+		}
 	}
 }
 
