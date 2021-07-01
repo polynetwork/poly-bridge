@@ -107,3 +107,7 @@ func FormatFee(chain uint64, fee *BigInt) string {
 func TxType2Name(ty uint32) string {
 	return "cross chain transfer"
 }
+func Precent(a uint64, b uint64) string {
+	c := float64(a) / float64(b)
+	return fmt.Sprintf("%.2f%%", c * 100)
+}
