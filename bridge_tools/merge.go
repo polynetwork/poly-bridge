@@ -201,7 +201,7 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 	{
 		logs.Info("initialization table token_statistics")
 		tokenStatistics := make([]*models.TokenStatistic, 0)
-		err := db.Raw("select chain_id,hash from tokenssele").
+		err := db.Raw("select chain_id,hash from tokens").
 			Find(&tokenStatistics).Error
 		checkError(err, "Loading table")
 		err = db.Save(tokenStatistics).Error
