@@ -191,20 +191,20 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 	}
 	{
 		logs.Info("initialization table chain_statistics")
-		chainStatistics:=models.ChainStatistic{}
-		err:=db.Raw("select chain_id from chains").
+		chainStatistics := make([]*models.ChainStatistic, 0)
+		err := db.Raw("select chain_id from chains").
 			Find(&chainStatistics).Error
 		checkError(err, "Loading table")
-		err=db.Save(chainStatistics).Error
+		err = db.Save(chainStatistics).Error
 		checkError(err, "Loading table")
 	}
 	{
 		logs.Info("initialization table token_statistics")
-		tokenStatistics:=models.TokenStatistic{}
-		err:=db.Raw("select chain_id from chains").
+		tokenStatistics := make([]*models.TokenStatistic, 0)
+		err := db.Raw("select chain_id,hash from tokenssele").
 			Find(&tokenStatistics).Error
 		checkError(err, "Loading table")
-		err=db.Save(tokenStatistics).Error
+		err = db.Save(tokenStatistics).Error
 		checkError(err, "Loading table")
 	}
 
