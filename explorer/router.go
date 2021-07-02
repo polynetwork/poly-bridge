@@ -9,8 +9,8 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/getcrosstx", &ExplorerController{}, "get:GetCrossTx"),
 		web.NSRouter("/getassetstatistic", &ExplorerController{}, "get:GetAssetStatistic"),
 		web.NSRouter("/gettransferstatistic", &ExplorerController{}, "get:GetTransferStatistic"),
+		web.NSRouter("/getexplorerinfo/", &ExplorerController{}, "get:GetExplorerInfo"),
 		web.NSRouter("/getcrosstxlist/", &ExplorerController{}, "post:GetCrossTxList"),
-		web.NSRouter("/getexplorerinfo/", &ExplorerController{}, "post:GetExplorerInfo"),
 		web.NSRouter("/gettokentxlist/", &ExplorerController{}, "post:GetTokenTxList"),
 		web.NSRouter("/getaddresstxlist/", &ExplorerController{}, "post:GetAddressTxList"),
 	)

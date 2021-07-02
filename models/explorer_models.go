@@ -35,11 +35,6 @@ import (
 	"poly-bridge/basedef"
 )
 
-type ExplorerInfoReq struct {
-	Start int64 `json:"start"`
-	End   int64 `json:"end"`
-}
-
 type ExplorerInfoResp struct {
 	Chains        []*ChainInfoResp       `json:"chains"`
 	CrossTxNumber int64                  `json:"crosstxnumber"`

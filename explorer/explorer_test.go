@@ -25,13 +25,9 @@ func TestMain(m *testing.M) {
 // todo(fuk): these test case are debug only! delete them after test.
 
 func Test_GetExplorerInfo(t *testing.T) {
-	req := &models.ExplorerInfoReq{
-	}
 
 	c := new(ExplorerController)
 	c.Controller = web.Controller{}
-	assert.NoError(t, encodeContextParams(&c.Controller, req))
-
 	c.GetExplorerInfo()
 }
 

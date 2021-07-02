@@ -60,14 +60,6 @@ type ExplorerController struct {
 
 // GetExplorerInfo shows explorer information, such as current blockheight (the number of blockchain and so on) on the home page.
 func (c *ExplorerController) GetExplorerInfo() {
-	// get parameter
-	var explorerReq models.ExplorerInfoReq
-	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &explorerReq); err != nil {
-		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
-		c.Ctx.ResponseWriter.WriteHeader(400)
-		c.ServeJSON()
-	}
 
 	//get all chains
 	chains := make([]*models.Chain, 0)
@@ -90,8 +82,7 @@ func (c *ExplorerController) GetExplorerInfo() {
 
 	// get all tokens
 	tokenBasics := make([]*models.TokenBasic, 0)
-	res = db.Where("time > ? and time < ?",explorerReq.Start,explorerReq.End).
-		Find(&tokenBasics)
+	res = db.Find(&tokenBasics)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
