@@ -159,6 +159,7 @@ func (this *Stats) computeTokensStats() (err error) {
 }
 
 func (this *Stats) computeTokenStatistics() (err error) {
+	logs.Info("start computeTokenStatistics")
 	newDst,err := this.dao.GetNewDstTransfer()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
@@ -187,6 +188,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
+	logs.Info("nowInId:",nowInId,"LastInCheckId:",nowTokenStatistic.LastInCheckId,"nowOutId:",nowOutId,"nowTokenStatistic.LastOutCheckId",nowTokenStatistic.LastOutCheckId)
 	if nowInId > nowTokenStatistic.LastInCheckId || nowOutId > nowTokenStatistic.LastOutCheckId {
 		tokenStatistics := make([]*models.TokenStatistic, 0)
 		err = this.dao.GetTokenStatistics(&tokenStatistics)
@@ -209,6 +211,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 				}
 			}
 		}
+		logs.Info("tokenStatistics:",tokenStatistics)
 		err = this.dao.SaveTokenStatistics(tokenStatistics)
 		if err != nil {
 			return fmt.Errorf("Failed to SaveTokenStatistics %w", err)
@@ -218,6 +221,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
+	logs.Info("start computeChainStatistics")
 	nowChainStatistic,err := this.dao.GetNewChainSta()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
@@ -266,24 +270,35 @@ func (this *Stats) computeChainStatistics() (err error) {
 				}
 			}
 		}
+		err=this.dao.SaveChainStatistics(chainStatistics)
+		if err!=nil{
+			logs.Error("computeChainStatisticAssets SaveChainStatistics error",err)
+		}
 	}
 	return
 }
 func (this *Stats) computeChainStatisticAssets() (err error) {
+	logs.Info("start computeChainStatisticAssets")
 	computeChainStatistics := make([]*models.ChainStatistic, 0)
 	err = this.dao.CalculateChainStatisticAssets(&computeChainStatistics)
 	if err != nil {
 		return fmt.Errorf("Failed to CalculateChainStatisticAssets %w", err)
 	}
-
 	chainStatistics := make([]*models.ChainStatistic, 0)
-	this.dao.GetChainStatistic(&chainStatistics)
+	err=this.dao.GetChainStatistic(&chainStatistics)
+	if err!=nil{
+		logs.Error("computeChainStatisticAssets GetChainStatistic error",err)
+	}
 	for _, chainStatistic := range chainStatistics {
 		for _, chain := range computeChainStatistics {
 			if chainStatistic.ChainId == chain.ChainId {
 				chainStatistic.Addresses = chain.Addresses
 			}
 		}
+	}
+	err=this.dao.SaveChainStatistics(chainStatistics)
+	if err!=nil{
+		logs.Error("computeChainStatisticAssets SaveChainStatistics error",err)
 	}
 	return
 }

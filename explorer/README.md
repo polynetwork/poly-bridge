@@ -7,22 +7,17 @@
 ### 1. getexplorerinfo
 查询信息
 
-POST
+Get
 ```
 http://{{host}}/api/v1/getexplorerinfo
 ```
 
 
 #### 参数:
-start: 开始的日期
-end: 结束日期
-开始日期和结束日期用于返回链上该日期区间上的跨链交易总数。
+无
 
 ```json
-{
-    "start":1592274867,
-    "end":1593534067
-}
+
 ```
 
 #### example:
