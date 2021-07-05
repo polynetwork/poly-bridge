@@ -58,6 +58,7 @@ func init() {
 		beego.NSRouter("/bottxs/", &controllers.BotController{Conf: config}, "get:GetTxs"),
 		beego.NSRouter("/botcheck/", &controllers.BotController{Conf: config}, "get:CheckTxs"),
 		beego.NSRouter("/botcheckfee/", &controllers.BotController{Conf: config}, "post:CheckFees"),
+		beego.NSRouter("/botfinishtx/", &controllers.BotController{Conf: config}, "get:FinishTx"),
 		beego.NSRouter("/expecttime/", &controllers.StatisticController{}, "post:ExpectTime"),
 	)
 	beego.AddNamespace(ns)

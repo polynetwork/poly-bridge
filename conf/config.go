@@ -142,6 +142,8 @@ type BotConfig struct {
 	DingUrl   string
 	CheckFrom int64
 	DetailUrl string
+	FinishUrl string
+	ApiToken  string
 	Interval  int64
 }
 

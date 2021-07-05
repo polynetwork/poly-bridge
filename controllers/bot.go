@@ -128,6 +128,23 @@ func (c *BotController) BotPage() {
 
 }
 
+func (c *BotController) FinishTx() {
+	tx := c.Ctx.Input.Query("tx")
+	token := c.Ctx.Input.Query("token")
+	var err error
+	if token == c.Conf.BotConfig.ApiToken {
+		err = db.Table("wrapper_transactions").Where("hash in ?", []string{tx}).Update("status", 0).Error
+	} else {
+		err = fmt.Errorf("Access denied")
+	}
+	resp := fmt.Sprintf("Success: %s", tx)
+	if err != nil {
+		resp = fmt.Sprintf("Tx %s Error %s", tx, err.Error())
+	}
+	c.Data["json"] = models.MakeErrorRsp(resp)
+	c.ServeJSON()
+}
+
 func (c *BotController) CheckFees() {
 	hashes := []string{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &hashes)
@@ -359,7 +376,19 @@ func (c *BotController) checkTxs() (err error) {
 			entry.FeeMin,
 			entry.Hash,
 		)
-		err = c.PostDingCard(title, body, "Detail", c.Conf.BotConfig.DetailUrl)
+
+		btns := []map[string]string{
+			map[string]string{
+				"title":     "Detail",
+				"actionURL": c.Conf.BotConfig.DetailUrl,
+			},
+			map[string]string{
+				"title":     "MarkAsFinished",
+				"actionURL": fmt.Sprintf("%s&tx=%s", c.Conf.BotConfig.FinishUrl, entry.Hash),
+			},
+		}
+
+		err = c.PostDingCard(title, body, btns)
 		if err != nil {
 			logs.Error("Post dingtalk error %s", err)
 		}
@@ -383,15 +412,9 @@ func (c *BotController) checkTxs() (err error) {
 	return nil
 }
 
-func (c *BotController) PostDingCard(title, body, btn, url string) error {
+func (c *BotController) PostDingCard(title, body string, btns interface{}) error {
 	payload := map[string]interface{}{}
 	payload["msgtype"] = "actionCard"
-	btns := []map[string]string{
-		map[string]string{
-			"title":     btn,
-			"actionURL": url,
-		},
-	}
 	card := map[string]interface{}{}
 	card["title"] = title
 	card["text"] = body
