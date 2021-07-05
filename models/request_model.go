@@ -963,6 +963,10 @@ func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
 	if tx.SrcTransaction != nil && tx.SrcTransaction.SrcTransfer != nil {
 		if amount := tx.SrcTransaction.SrcTransfer.Amount; amount != nil {
 			v.Amount = amount.String()
+			if tx.Token != nil {
+				tokenAmount := new(big.Float).Quo(new(big.Float).SetInt(&amount.Int), new(big.Float).SetInt64(basedef.Int64FromFigure(int(tx.Token.Precision))))
+				v.Amount = tokenAmount.String()
+			}
 		}
 	}
 	return v
