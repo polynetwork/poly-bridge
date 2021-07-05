@@ -153,7 +153,10 @@ type StatsConfig struct {
 	TokenAmountCheckInterval  int64 // Chain token stats aggregation interval in seconds
 	TokenStatisticInterval    int64 // TokenStatistic aggregation interval in seconds
 	ChainStatisticInterval    int64 // ChainStatisticInterval except asset aggregation interval in seconds
-	ChainAddressCheckInterval int64 //ChainStatistic's asset Interval aggregation interval in seconds
+	ChainAddressCheckInterval int64 // ChainStatistic's asset Interval aggregation interval in seconds
+	TransferStatisticInterval int64 // TransferStatistic aggregation interval in seconds
+	AssetStatisticInterval    int64 // AssetStatistic aggregation interval in seconds
+	AssetAdressInterval       int64 // AssetAdress aggregation interval in seconds
 }
 
 type EventEffectConfig struct {

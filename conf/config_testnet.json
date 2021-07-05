@@ -7,10 +7,17 @@
     "Address": "0.0.0.0",
     "Port": 8080
   },
+//  "DBConfig":{
+//    "URL":"localhost:3306",
+//    "User":"root",
+//    "Password":"123456",
+//    "Scheme":"polyswap",
+//    "Debug": true
+//  },
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"123456",
+    "Password":"root123",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -188,9 +195,12 @@
   "StatsConfig": {
     "TokenBasicStatsInterval": 120,
     "TokenAmountCheckInterval": 120,
-    "TokenStatisticInterval": 600, 
+    "TokenStatisticInterval": 600,
     "ChainStatisticInterval": 600,
-    "ChainAddressCheckInterval": 86400
+    "ChainAddressCheckInterval": 86400,
+    "TransferStatisticInterval": 600,
+    "AssetStatisticInterval": 600,
+    "AssetAdressInterval": 86400
   },
   "EventEffectConfig": {
     "HowOld": 3600,

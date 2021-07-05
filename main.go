@@ -21,19 +21,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
-	"poly-bridge/common"
-	"poly-bridge/conf"
-	"poly-bridge/explorer"
 	"poly-bridge/http"
-	"poly-bridge/nft_http"
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/beego/v2/server/web/filter/cors"
-
 	"github.com/urfave/cli"
+	"poly-bridge/common"
+	"poly-bridge/conf"
+	"poly-bridge/explorer"
 )
 
 func main() {
@@ -61,6 +58,8 @@ func run(ctx *cli.Context) {
 	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
 	if config == nil || config.HttpConfig == nil {
+		fmt.Println(config)
+		fmt.Println(config.HttpConfig)
 		panic("Invalid server config")
 	}
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
@@ -74,7 +73,7 @@ func run(ctx *cli.Context) {
 	// register http routers
 	web.AddNamespace(
 		web.NewNamespace("/v1",
-			nft_http.Init(config),
+			//			nft_http.Init(config),
 			http.GetRouter(),
 			explorer.GetRouter(),
 		),

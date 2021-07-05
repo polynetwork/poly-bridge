@@ -196,7 +196,10 @@
     "TokenAmountCheckInterval": 120,
     "TokenStatisticInterval": 600, 
     "ChainStatisticInterval": 600,
-    "ChainAddressCheckInterval": 86400
+    "ChainAddressCheckInterval": 86400,
+    "TransferStatisticInterval": 600,
+    "AssetStatisticInterval": 600,
+    "AssetAdressInterval": 86400
   },
   "EventEffectConfig": {
     "HowOld": 1800,

@@ -82,7 +82,8 @@ func (c *ExplorerController) GetExplorerInfo() {
 
 	// get all tokens
 	tokenBasics := make([]*models.TokenBasic, 0)
-	res = db.Find(&tokenBasics)
+	res = db.Find(&tokenBasics).
+		Preload("Token")
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
@@ -104,25 +105,29 @@ func (c *ExplorerController) GetTokenTxList() {
 		c.ServeJSON()
 	}
 	transactionOnTokens := make([]*models.TransactionOnToken, 0)
-	res:=db.Raw("select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, 1 as direct from src_transactions a inner join src_transfers b on a.hash = b.tx_hash where b.asset = ?"+
-		"union select c.hash, c.height, c.time, c.chain_id, d.from, d.to, d.amount, 2 as direct from dst_transactions c inner join dst_transfers d on c.hash = d.tx_hash where d.asset = ?"+
-		"order by height desc limit ?,?",
-		tokenTxListReq.Token,tokenTxListReq.Token, (tokenTxListReq.PageNo-1)*tokenTxListReq.PageSize, tokenTxListReq.PageSize).Find(&transactionOnTokens)
+	res := db.Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, 1 as direct from src_transactions a inner join src_transfers b on a.hash = b.tx_hash where b.chain_id = ? and b.asset = ?
+		union select c.hash, c.height, c.time, c.chain_id, d.from, d.to, d.amount, 2 as direct from dst_transactions c inner join dst_transfers d on c.hash = d.tx_hash where d.chain_id = ? and d.asset = ?
+		order by height desc limit ?,?`,
+		tokenTxListReq.ChainId, tokenTxListReq.Token, tokenTxListReq.ChainId, tokenTxListReq.Token, (tokenTxListReq.PageNo-1)*tokenTxListReq.PageSize, tokenTxListReq.PageSize).
+		Find(&transactionOnTokens)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transactionOnTokens does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
-	tokenStatistic := new(models.TokenStatistic)
-	res=db.Where("and hash = ?",tokenTxListReq.Token).Find(tokenStatistic)
+	counter := struct {
+		Counter int64
+	}{}
+	res = db.Raw("select sum(in_counter)+sum(out_counter) as counter from token_statistics where chain_id = ? and hash = ?", tokenTxListReq.ChainId, tokenTxListReq.Token).
+		Find(&counter)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("tokenStatistic does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
-	c.Data["json"] = models.MakeTokenTxList(transactionOnTokens, tokenStatistic)
+	c.Data["json"] = models.MakeTokenTxList(transactionOnTokens, counter.Counter)
 	c.ServeJSON()
 }
 
@@ -137,7 +142,7 @@ func (c *ExplorerController) GetAddressTxList() {
 	}
 
 	transactionOnAddresses := make([]*models.TransactionOnAddress, 0)
-	res:=db.Raw("select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.type as token_type, c.name as token_name 1 as direct from src_transactions a inner join src_transfers b on a.hash = b.tx_hash inner join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and b.chain_id = ?"+
+	res := db.Raw("select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.type as token_type, c.name as token_name 1 as direct from src_transactions a inner join src_transfers b on a.hash = b.tx_hash inner join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and b.chain_id = ?"+
 		"union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.type as token_type, f.name as token_name, 2 as direct from dst_transactions d inner join dst_transfers e on d.hash = e.tx_hash inner join tokens f on e.asset = f.hash and e.chain_id = f.chain_id where e.to = ? and e.chain_id = ?"+
 		"order by height desc limit ?,?",
 		addressTxListReq.Address, addressTxListReq.ChainId, addressTxListReq.Address, addressTxListReq.ChainId, (addressTxListReq.PageNo-1)*addressTxListReq.PageSize, addressTxListReq.PageSize).
@@ -152,7 +157,7 @@ func (c *ExplorerController) GetAddressTxList() {
 	counter := struct {
 		Counter int64
 	}{}
-	res=db.Raw("select sum(cnt) as counter from (select count(*) as cnt from src_transactions a inner join src_transfers b on a.hash = b.tx_hash inner join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and b.chain_id = ?"+
+	res = db.Raw("select sum(cnt) as counter from (select count(*) as cnt from src_transactions a inner join src_transfers b on a.hash = b.tx_hash inner join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and b.chain_id = ?"+
 		"union count(*) as cnt from dst_transactions d inner join dst_transfers e on d.hash = e.tx_hash inner join tokens f on e.asset = f.hash and e.chain_id = f.chain_id where e.to = ? and e.chain_id = ?) as u",
 		addressTxListReq.Address, addressTxListReq.ChainId, addressTxListReq.Address, addressTxListReq.ChainId).
 		Find(&counter)
@@ -177,7 +182,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.ServeJSON()
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	res:=db.Model(&models.PolyTransaction{}).
+	res := db.Model(&models.PolyTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
@@ -187,7 +192,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		Preload("PolyTransaction").
 		Preload("DstTransaction").
 		Preload("DstTransaction.DstTransfer").
-		Limit((crossTxListReq.PageNo-1)*crossTxListReq.PageSize).Offset(crossTxListReq.PageSize).
+		Limit(crossTxListReq.PageSize).Offset((crossTxListReq.PageNo - 1) * crossTxListReq.PageSize).
 		Find(&srcPolyDstRelations)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("srcPolyDstRelations does not exist"))
@@ -196,7 +201,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		return
 	}
 	var transactionNum int64
-	res=db.Model(&models.PolyTransaction{}).Where("src_transactions.standard = ?", 0).
+	res = db.Model(&models.PolyTransaction{}).Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Count(&transactionNum)
 	if res.RowsAffected == 0 {
@@ -219,7 +224,7 @@ func (c *ExplorerController) GetCrossTx() {
 		c.ServeJSON()
 	}
 	relations := make([]*models.PolyTxRelation, 0)
-	res:=db.Model(&models.SrcTransaction{}).
+	res := db.Model(&models.SrcTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transactions.asset as token_hash, src_transfers.dst_chain_id as to_chain_id, src_transfers.dst_asset as to_token_hash, dst_transfers.chain_id as dst_chain_id, dst_transfers.asset as dst_token_hash").
 		Where("src_transactions.standard = ? and (src_transactions.hash = ? or poly_transactions.hash = ? or dst_transactions.hash = ?)", 0, crossTxReq.TxHash, crossTxReq.TxHash, crossTxReq.TxHash).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
@@ -246,16 +251,15 @@ func (c *ExplorerController) GetCrossTx() {
 }
 
 func (c *ExplorerController) GetAssetStatistic() {
-	assetStatistic:=make([]*models.AssetStatistic,0)
-	res:=db.Raw("select sum(amount) as amount, count(*) as txnum, count(distinct `from`) as addressnum, b.token_basic_name from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash group by token_basic_name").
-		Find(&assetStatistic).Preload("TokenBasic")
+	assetStatistics := make([]*models.AssetStatistic, 0)
+	res := db.Find(&assetStatistics)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("assetStatistic does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
-	c.Data["json"] =models.MakeAssetInfoResp(assetStatistic)
+	c.Data["json"] = models.MakeAssetInfoResp(assetStatistics)
 	c.ServeJSON()
 }
 
@@ -267,55 +271,51 @@ func (c *ExplorerController) GetTransferStatistic() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-	transferStatistics:=make([]*models.TransferStatistic,0)
+	transferStatistics := make([]*models.TransferStatistic, 0)
 	chainStatistics := make([]*models.ChainStatistic, 0)
 	chains := make([]*models.Chain, 0)
-	if transferStatisticReq.Chain==0{
-		res:=db.Raw(`select IFNULL(a.amount,0) - IFNULL(b.amount,0) as amount, a.chain_id, a.hash, a.name from
-		(select sum(amount) as amount, a.chain_id, asset as hash, b.token_basic_name as name from dst_transfers a inner join tokens b on a.asset = b.hash and a.chain_id = b.chain_id group by chain_id, asset) a left join
-		(select sum(amount) as amount, a.chain_id, asset as hash, b.token_basic_name as name from src_transfers a inner join tokens b on a.asset = b.hash and a.chain_id = b.chain_id group by chain_id, asset) b on a.chain_id = b.chain_id and a.hash = b.hash")`).
-			Find(&transferStatistics).Preload("TokenBasic")
+	if transferStatisticReq.Chain == 0 {
+		res := db.Find(&transferStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transferStatistics does not exist"))
 			c.Ctx.ResponseWriter.WriteHeader(400)
 			c.ServeJSON()
 			return
 		}
-		res=db.Model(&models.ChainStatistic{}).Find(&chainStatistics)
+		res = db.Model(&models.ChainStatistic{}).Find(&chainStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chainStatistics does not exist"))
 			c.Ctx.ResponseWriter.WriteHeader(400)
 			c.ServeJSON()
 			return
 		}
-		res=db.Model(&models.Chain{}).Find(&chains)
+		res = db.Model(&models.Chain{}).Find(&chains)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chains does not exist"))
 			c.Ctx.ResponseWriter.WriteHeader(400)
 			c.ServeJSON()
 			return
 		}
-	}else{
-		res:=db.Raw(`select IFNULL(a.amount,0) - IFNULL(b.amount,0) as amount, a.chain_id, a.hash, a.name from
-		(select sum(amount) as amount, a.chain_id, asset as hash, b.token_basic_name as name from dst_transfers a inner join tokens b on a.asset = b.hash and a.chain_id = ? and b.chain_id=a.chain_id  group by chain_id, asset) a left join
-		(select sum(amount) as amount, a.chain_id, asset as hash, b.token_basic_name as name from src_transfers a inner join tokens b on a.asset = b.hash and a.chain_id = ? and b.chain_id=a.chain_id group by chain_id, asset) b on a.chain_id = b.chain_id and a.hash = b.hash")`,transferStatisticReq.Chain,transferStatisticReq.Chain).
-			Find(&transferStatistics).Preload("TokenBasic")
+	} else {
+		res := db.
+			Where("chain_id=?", transferStatisticReq.Chain).
+			Find(&transferStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transferStatistics does not exist"))
 			c.Ctx.ResponseWriter.WriteHeader(400)
 			c.ServeJSON()
 			return
 		}
-		res=db.Model(&models.ChainStatistic{}).
-		Where("chain_id=?",transferStatisticReq.Chain).Find(&chainStatistics)
+		res = db.Model(&models.ChainStatistic{}).
+			Where("chain_id=?", transferStatisticReq.Chain).Find(&chainStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chainStatistics does not exist"))
 			c.Ctx.ResponseWriter.WriteHeader(400)
 			c.ServeJSON()
 			return
 		}
-		res=db.Model(&models.Chain{}).
-			Where("chain_id=?",transferStatisticReq.Chain).Find(&chains)
+		res = db.Model(&models.Chain{}).
+			Where("chain_id=?", transferStatisticReq.Chain).Find(&chains)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chains does not exist"))
 			c.Ctx.ResponseWriter.WriteHeader(400)
@@ -324,7 +324,6 @@ func (c *ExplorerController) GetTransferStatistic() {
 		}
 	}
 
-	c.Data["json"] =models.MakeTransferInfoResp(transferStatistics,chainStatistics,chains)
+	c.Data["json"] = models.MakeTransferInfoResp(transferStatistics, chainStatistics, chains)
 	c.ServeJSON()
 }
-

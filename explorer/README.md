@@ -116,6 +116,7 @@ http://{{host}}/api/v1/gettokentxlist
 #### 参数:
 ```json
 {
+    "chainId": 2,
     "token":"0000000000000000000000000000000000000000",
     "pageNo":1,
     "pageSize":10
