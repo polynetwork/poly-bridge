@@ -384,7 +384,7 @@ func (c *BotController) checkTxs() (err error) {
 			},
 			map[string]string{
 				"title":     "MarkAsFinished",
-				"actionURL": fmt.Sprintf("%s&tx=%s", c.Conf.BotConfig.FinishUrl, entry.Hash),
+				"actionURL": fmt.Sprintf("%s?token=%s&tx=%s", c.Conf.BotConfig.FinishUrl, c.Conf.BotConfig.ApiToken, entry.Hash),
 			},
 		}
 
