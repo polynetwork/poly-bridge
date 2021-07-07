@@ -422,3 +422,12 @@ func (dao *ExplorerDao) RemoveTokens(tokens []string) error {
 func (dao *ExplorerDao) Name() string {
 	return basedef.SERVER_EXPLORER
 }
+
+type AssetStatistic struct {
+	Name       string
+	Addressnum uint32
+	Amount     *models.BigInt
+	AmountBtc  *models.BigInt
+	AmountUsd  *models.BigInt
+	TxNum      uint32
+}
