@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"poly-bridge/http"
+	"poly-bridge/nft_http"
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
@@ -73,7 +74,7 @@ func run(ctx *cli.Context) {
 	// register http routers
 	web.AddNamespace(
 		web.NewNamespace("/v1",
-			//			nft_http.Init(config),
+			nft_http.Init(config),
 			http.GetRouter(),
 			explorer.GetRouter(),
 		),
