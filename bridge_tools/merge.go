@@ -125,6 +125,8 @@ func merge() {
 		migrateBridgeTxs(bri, db)
 	case "migrateExplorerBasicTables":
 		migrateExplorerBasicTables(exp, db)
+	case "migrateExplorerAssetStatisticTables":
+		migrateExplorerAssetStatisticTables(exp, db)
 	case "verifyTables":
 		verifyTables(bri, db)
 	default:
@@ -152,43 +154,43 @@ func migrateBridgeBasicTables(bri, db *gorm.DB) {
 }
 
 func migrateExplorerBasicTables(exp, db *gorm.DB) {
-	{
-		logs.Info("Migrating table chains from explorer")
-		model := make([]*explorerdao.Chain, 0)
-		err := exp.Find(&model).Error
-		checkError(err, "Loading table")
-		for _, chain := range model {
-			err = db.Table("chains").Where("chain_id=?", chain.ChainId).Update("name", chain.Name).Error
-			checkError(err, "Saving table")
-		}
-	}
-	{
-		logs.Info("Migrating table tokens from explorer")
-		model := make([]*explorerdao.Token, 0)
-		err := exp.Find(&model).Error
-		checkError(err, "Loading table")
-		for _, token := range model {
-			err = db.Table("tokens").Where("chain_id=? AND hash=?", token.Id, token.Hash).Update("token_type", token.Type).Error
-			checkError(err, "Saving table")
-		}
-	}
-	{
-		logs.Info("Filling chain ids in table token_basics from explorer chain_token_bind and chain_token")
-		type SourceBasic struct {
-			ChainId uint64
-			Name    string
-		}
-		sourceBasics := make([]*SourceBasic, 0)
-		err := exp.Raw("SELECT b.id as chainId,b.xname as name from chain_token_bind a join chain_token b on a.hash_src=b.hash Where a.hash_src=a.hash_dest and  b.hash != '0000000000000000000000000000000000000000'").
-			Find(&sourceBasics).Error
-		checkError(err, "Loading table")
-		for _, sourceBasic := range sourceBasics {
-			err = db.Model(&models.TokenBasic{}).
-				Where("name=?", sourceBasic.Name).
-				Update("chain_id", sourceBasic.ChainId).Error
-			checkError(err, "Updating table")
-		}
-	}
+	//{
+	//	logs.Info("Migrating table chains from explorer")
+	//	model := make([]*explorerdao.Chain, 0)
+	//	err := exp.Find(&model).Error
+	//	checkError(err, "Loading table")
+	//	for _, chain := range model {
+	//		err = db.Table("chains").Where("chain_id=?", chain.ChainId).Update("name", chain.Name).Error
+	//		checkError(err, "Saving table")
+	//	}
+	//}
+	//{
+	//	logs.Info("Migrating table tokens from explorer")
+	//	model := make([]*explorerdao.Token, 0)
+	//	err := exp.Find(&model).Error
+	//	checkError(err, "Loading table")
+	//	for _, token := range model {
+	//		err = db.Table("tokens").Where("chain_id=? AND hash=?", token.Id, token.Hash).Update("token_type", token.Type).Error
+	//		checkError(err, "Saving table")
+	//	}
+	//}
+	//{
+	//	logs.Info("Filling chain ids in table token_basics from explorer chain_token_bind and chain_token")
+	//	type SourceBasic struct {
+	//		ChainId uint64
+	//		Name    string
+	//	}
+	//	sourceBasics := make([]*SourceBasic, 0)
+	//	err := exp.Raw("SELECT b.id as chainId,b.xname as name from chain_token_bind a join chain_token b on a.hash_src=b.hash Where a.hash_src=a.hash_dest and  b.hash != '0000000000000000000000000000000000000000'").
+	//		Find(&sourceBasics).Error
+	//	checkError(err, "Loading table")
+	//	for _, sourceBasic := range sourceBasics {
+	//		err = db.Model(&models.TokenBasic{}).
+	//			Where("name=?", sourceBasic.Name).
+	//			Update("chain_id", sourceBasic.ChainId).Error
+	//		checkError(err, "Updating table")
+	//	}
+	//}
 	{
 		logs.Info("initialization table chain_statistics")
 		chainStatistics := make([]*models.ChainStatistic, 0)
@@ -230,6 +232,7 @@ func createTables(db *gorm.DB) {
 		&models.TokenMap{},
 		&models.TokenStatistic{},
 		&models.ChainStatistic{},
+		&models.AssetStatistic{},
 	)
 	checkError(err, "Creating tables")
 }
@@ -502,5 +505,26 @@ func verifyTables(bri, db *gorm.DB) {
 
 			assert(a, &b)
 		}
+	}
+}
+
+func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
+	logs.Info("Migrating table AssetStatistic")
+	oldAssetstatictics := make([]*explorerdao.AssetStatistic, 0)
+	err := exp.Find(oldAssetstatictics).Error
+	checkError(err, "Loading table")
+	srcTransfer := new(models.SrcTransfer)
+	err = db.Last(srcTransfer).Error
+	checkError(err, "Loading table")
+	for _, oldAssetstatictic := range oldAssetstatictics {
+		newAssetstatictic := &models.AssetStatistic{}
+		newAssetstatictic.Amount = oldAssetstatictic.Amount
+		newAssetstatictic.AmountUsd = oldAssetstatictic.AmountUsd
+		newAssetstatictic.AmountBtc = oldAssetstatictic.AmountBtc
+		newAssetstatictic.TokenBasicName = oldAssetstatictic.Name
+		newAssetstatictic.Txnum = uint64(oldAssetstatictic.TxNum)
+		newAssetstatictic.LastCheckId = srcTransfer.Id
+		err = db.Save(newAssetstatictic).Error
+		checkError(err, "Saving table")
 	}
 }

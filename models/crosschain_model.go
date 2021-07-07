@@ -174,11 +174,11 @@ type SrcPolyDstRelation struct {
 	PolyTransaction    *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
 	DstHash            string
 	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
-	ChainId            uint64          `gorm:"type:bigint(20);not null"`
-	TokenHash          string          `gorm:"type:varchar(66);not null"`
-	FeeTokenHash       string          `gorm:"type:varchar(66);not null"`
-	Token              *Token          `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
-	FeeToken           *Token          `gorm:"foreignKey:FeeTokenHash,ChainId;references:Hash,ChainId"`
+	ChainId            uint64
+	TokenHash          string
+	FeeTokenHash       string
+	Token              *Token `gorm:"foreignKey:TokenHash,ChainId;references:Hash,ChainId"`
+	FeeToken           *Token `gorm:"foreignKey:FeeTokenHash,ChainId;references:Hash,ChainId"`
 }
 
 type PolyTxRelation struct {
@@ -215,6 +215,7 @@ type TransferStatistic struct {
 	TokenBasic     *TokenBasic `gorm:"foreignKey:Name;references:Name"`
 }
 type AssetStatistic struct {
+	Id             int64       `gorm:"primaryKey;autoIncrement"`
 	Amount         *BigInt     `gorm:"type:varchar(64);not null"`
 	Txnum          uint64      `gorm:"type:bigint(20);not null"`
 	Addressnum     uint64      `gorm:"type:bigint(20);not null"`

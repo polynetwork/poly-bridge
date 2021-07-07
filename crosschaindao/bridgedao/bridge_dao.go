@@ -18,6 +18,7 @@
 package bridgedao
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -379,7 +380,8 @@ func (dao *BridgeDao) GetNewDstTransfer() (*models.DstTransfer, error) {
 }
 func (dao *BridgeDao) GetNewSrcTransfer() (*models.SrcTransfer, error) {
 	srcTransfer := &models.SrcTransfer{}
-	res := dao.db.Last(srcTransfer)
+	res := dao.db.Debug().Last(srcTransfer)
+	fmt.Println("GetNewSrcTransfer:", *srcTransfer)
 	return srcTransfer, res.Error
 }
 func (dao *BridgeDao) GetNewTokenSta() (*models.TokenStatistic, error) {
@@ -417,7 +419,7 @@ func (dao *BridgeDao) SaveChainStatistic(chainStatistics *models.ChainStatistic)
 }
 func (dao *BridgeDao) GetNewTransferSta() (*models.TransferStatistic, error) {
 	transferStatistic := new(models.TransferStatistic)
-	err := dao.db.FirstOrInit(transferStatistic, models.TransferStatistic{LastInCheckId: 0, LastOutCheckId: 0}).
+	err := dao.db.First(transferStatistic).
 		Error
 	return transferStatistic, err
 }
@@ -442,14 +444,17 @@ func (dao *BridgeDao) UpdateTransferStatistic(transferStatistic *models.Transfer
 }
 func (dao *BridgeDao) GetNewAssetSta() (*models.AssetStatistic, error) {
 	assetStatistic := new(models.AssetStatistic)
-	err := dao.db.FirstOrInit(assetStatistic, models.AssetStatistic{LastCheckId: 0}).
+	err := dao.db.Debug().First(assetStatistic).
 		Error
+	fmt.Println("GetNewAssetSta assetStatistic:", assetStatistic)
 	return assetStatistic, err
 }
 func (dao *BridgeDao) CalculateAsset(lastId, nowId int64) ([]*models.AssetStatistic, error) {
 	assetStatistics := make([]*models.AssetStatistic, 0)
-	err := dao.db.Raw("select sum(amount) as amount, count(*) as txnum, b.token_basic_name  from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash a.id > ? and a.id <= ? group by token_basic_name", lastId, nowId).
+	err := dao.db.Debug().Raw("select CONVERT(sum(amount), DECIMAL(37, 0)) as amount, count(*) as txnum, b.token_basic_name  from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash where a.id > ? and a.id <= ? group by token_basic_name", lastId, nowId).
 		Scan(&assetStatistics).Preload("TokenBasic").Error
+	jsonAssetStatistics, _ := json.Marshal(assetStatistics[0])
+	fmt.Println("CalculateAsset assetStatistics:" + string(jsonAssetStatistics))
 	return assetStatistics, err
 }
 func (dao *BridgeDao) UpdateAssetStatistic(assetStatistic *models.AssetStatistic) (err error) {

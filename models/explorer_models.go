@@ -28,6 +28,8 @@
 package models
 
 import (
+	"fmt"
+	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
 	"strconv"
@@ -384,7 +386,7 @@ type TransferStatisticReq struct {
 	Chain uint64 `json:"chain"`
 }
 
-func MakeCrossTxResp(srcPolyDst []*PolyTxRelation) *CrossTxResp {
+func MakeCrossTxResp(srcPolyDst *PolyTxRelation) *CrossTxResp {
 	crosstx := &CrossTxResp{
 		Fchaintx_valid: false,
 		Mchaintx_valid: false,
@@ -393,8 +395,10 @@ func MakeCrossTxResp(srcPolyDst []*PolyTxRelation) *CrossTxResp {
 			CrossTxType: 0,
 		},
 	}
-	tx := srcPolyDst[0]
+	tx := srcPolyDst
 
+	log.Info("111-------MakeCrossTxResp tx.SrcTransaction: %v", tx.SrcTransaction)
+	log.Info("222-------MakeCrossTxResp tx.SrcTransaction != nil %v", tx.SrcTransaction != nil)
 	if tx.SrcTransaction != nil {
 		crosstx.Fchaintx_valid = true
 		crosstx.Fchaintx = makeFChainTxResp(tx.SrcTransaction, tx.Token, tx.ToToken)
@@ -432,7 +436,7 @@ type CrossTxListResp struct {
 	CrossTxList []*CrossTxOutlineResp `json:"crosstxs"`
 }
 
-func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
+func MakeCrossTxListResp(txs []SrcPolyDstRelation) *CrossTxListResp {
 	crossTxListResp := &CrossTxListResp{}
 	crossTxListResp.CrossTxList = make([]*CrossTxOutlineResp, 0)
 	for _, tx := range txs {
@@ -581,14 +585,13 @@ type AssetTransferStatisticResp struct {
 	SourceChainName  string `json:"source_chainname"`
 }
 
-func MakeTransferInfoResp(transferStatistics []*TransferStatistic, chainStatistics []*ChainStatistic, chains []*Chain) *AllTransferStatisticResp {
+func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*ChainStatistic, chains []*Chain) *AllTransferStatisticResp {
 	allTransferStatistic := new(AllTransferStatisticResp)
 	allTransferStatistic.ChainTransferStatistics = make([]*ChainTransferStatisticResp, 0)
 
 	allAmountUsdTotal := new(big.Int)
 	allAddress := uint32(0)
 	allTransactions := uint32(0)
-
 	for _, chainStatistic := range chainStatistics {
 		amountBtcTotal := new(big.Int)
 		amountUsdTotal := new(big.Int)
@@ -598,19 +601,25 @@ func MakeTransferInfoResp(transferStatistics []*TransferStatistic, chainStatisti
 				totalHeight += chain.Height
 			}
 		}
+		fmt.Println("totalHeight:", totalHeight)
 		assetTransferStatisticResps := make([]*AssetTransferStatisticResp, 0)
-		for _, transferStatistic := range transferStatistics {
-			if transferStatistic.ChainId == chainStatistic.ChainId {
-				amountBtcTotal.Add(amountBtcTotal, &transferStatistic.AmountBtc.Int)
-				amountUsdTotal.Add(amountUsdTotal, &transferStatistic.AmountUsd.Int)
+		for _, tokenStatistic := range tokenStatistics {
+			fmt.Println("tokenStatistic.ChainId:", tokenStatistic.ChainId, "chainStatistic.ChainId", chainStatistic.ChainId)
+			if tokenStatistic.ChainId == chainStatistic.ChainId {
+				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
+				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
+				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
+
+				amountBtcTotal.Add(amountBtcTotal, amountBtc)
+				amountUsdTotal.Add(amountUsdTotal, amountUsd)
 				assetTransferStatisticResp := &AssetTransferStatisticResp{
-					Name:            transferStatistic.Name,
-					Hash:            transferStatistic.Hash,
-					Amount:          FormatAmount(uint64(100), transferStatistic.Amount),
-					AmountBtc:       FormatAmount(uint64(10000), transferStatistic.AmountBtc),
-					AmountUsd:       FormatAmount(uint64(10000), transferStatistic.AmountUsd),
-					AmountUsd1:      &transferStatistic.AmountUsd.Int,
-					SourceChainName: transferStatistic.SourceName,
+					Name:            tokenStatistic.Token.TokenBasicName,
+					Hash:            tokenStatistic.Hash,
+					Amount:          FormatAmount(uint64(100), NewBigInt(amount)),
+					AmountBtc:       FormatAmount(uint64(10000), NewBigInt(amountBtc)),
+					AmountUsd:       FormatAmount(uint64(10000), NewBigInt(amountUsd)),
+					AmountUsd1:      amountUsd,
+					SourceChainName: ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId),
 				}
 				assetTransferStatisticResps = append(assetTransferStatisticResps, assetTransferStatisticResp)
 			}
