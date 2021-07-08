@@ -130,6 +130,10 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						} else {
 							tchainId, _ = new(big.Int).SetString(basedef.HexStringReverse(value[3].Value), 16)
 						}
+						if tchainId == nil {
+							logs.Error("Invalid to chain id %+v tx %s", value, tx.Txid[2:])
+							continue
+						}
 						serverId := big.NewInt(0)
 						if value[7].Type == "Integer" {
 							serverId, _ = new(big.Int).SetString(value[7].Value, 10)
