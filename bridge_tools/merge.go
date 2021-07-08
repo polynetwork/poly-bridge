@@ -519,14 +519,32 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	err = db.Last(srcTransfer).Error
 	checkError(err, "Loading table")
 	for _, oldAssetstatictic := range oldAssetstatictics {
+		if oldAssetstatictic.Xname == "" {
+			continue
+		}
+		hash := struct {
+			Hash string
+		}{}
+		err = exp.Table("chain_token").Select("hash").
+			Where("xtoken = ?", oldAssetstatictic.Xname).
+			First(&hash).Error
+		if err != nil || hash.Hash == "0000000000000000000000000000000000000000" {
+			continue
+		}
+		token := new(models.Token)
+		err = db.Select("token_basic_name").Where("hash=?", hash.Hash).
+			First(token).Error
+		if err != nil {
+			continue
+		}
 		newAssetstatictic := &models.AssetStatistic{}
 		newAssetstatictic.Amount = oldAssetstatictic.Amount
 		newAssetstatictic.AmountUsd = oldAssetstatictic.AmountUsd
 		newAssetstatictic.AmountBtc = oldAssetstatictic.AmountBtc
-		newAssetstatictic.TokenBasicName = oldAssetstatictic.Xname
+		newAssetstatictic.TokenBasicName = token.TokenBasicName
 		newAssetstatictic.Txnum = uint64(oldAssetstatictic.Txnum)
 		newAssetstatictic.LastCheckId = srcTransfer.Id
 		err = db.Save(newAssetstatictic).Error
-		checkError(err, "Saving table")
+		checkError(err, "Saving AssetStatistic table")
 	}
 }
