@@ -147,7 +147,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(value[6].Value), 16)
 						}
 						if amount == nil {
-							amount = new(big.Int).SetUint64(0)
+							amount = big.NewInt(0)
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 							Hash:         tx.Txid[2:],
