@@ -28,11 +28,12 @@
 package models
 
 import (
+	"fmt"
+	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
+	"poly-bridge/basedef"
 	"strconv"
 	"strings"
-	"github.com/shopspring/decimal"
-	"poly-bridge/basedef"
 )
 
 type ExplorerInfoResp struct {
@@ -385,7 +386,7 @@ type TransferStatisticReq struct {
 	Chain uint64 `json:"chain"`
 }
 
-func MakeCrossTxResp(srcPolyDst []*PolyTxRelation) *CrossTxResp {
+func MakeCrossTxResp(srcPolyDst *PolyTxRelation) *CrossTxResp {
 	crosstx := &CrossTxResp{
 		Fchaintx_valid: false,
 		Mchaintx_valid: false,
@@ -394,8 +395,10 @@ func MakeCrossTxResp(srcPolyDst []*PolyTxRelation) *CrossTxResp {
 			CrossTxType: 0,
 		},
 	}
-	tx := srcPolyDst[0]
+	tx := srcPolyDst
 
+	log.Info("111-------MakeCrossTxResp tx.SrcTransaction: %v", tx.SrcTransaction)
+	log.Info("222-------MakeCrossTxResp tx.SrcTransaction != nil %v", tx.SrcTransaction != nil)
 	if tx.SrcTransaction != nil {
 		crosstx.Fchaintx_valid = true
 		crosstx.Fchaintx = makeFChainTxResp(tx.SrcTransaction, tx.Token, tx.ToToken)
@@ -414,7 +417,7 @@ func MakeCrossTxResp(srcPolyDst []*PolyTxRelation) *CrossTxResp {
 
 type CrossTxListReq struct {
 	PageSize int
-	PageNo int
+	PageNo   int
 }
 
 type CrossTxOutlineResp struct {
@@ -433,19 +436,19 @@ type CrossTxListResp struct {
 	CrossTxList []*CrossTxOutlineResp `json:"crosstxs"`
 }
 
-func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
+func MakeCrossTxListResp(txs []SrcPolyDstRelation) *CrossTxListResp {
 	crossTxListResp := &CrossTxListResp{}
 	crossTxListResp.CrossTxList = make([]*CrossTxOutlineResp, 0)
 	for _, tx := range txs {
 		crossTxListResp.CrossTxList = append(crossTxListResp.CrossTxList, &CrossTxOutlineResp{
-			TxHash: tx.PolyHash,
-			State:  byte(tx.PolyTransaction.State),
-			TT:     uint32(tx.PolyTransaction.Time),
-			Fee:    tx.PolyTransaction.Fee.Uint64(),
-			Height: uint32(tx.PolyTransaction.Height),
-			FChainId: uint32(tx.PolyTransaction.DstChainId),
+			TxHash:     tx.PolyHash,
+			State:      byte(tx.PolyTransaction.State),
+			TT:         uint32(tx.PolyTransaction.Time),
+			Fee:        tx.PolyTransaction.Fee.Uint64(),
+			Height:     uint32(tx.PolyTransaction.Height),
+			FChainId:   uint32(tx.PolyTransaction.DstChainId),
 			FChainName: ChainId2Name(tx.PolyTransaction.SrcChainId),
-			TChainId: uint32(tx.PolyTransaction.DstChainId),
+			TChainId:   uint32(tx.PolyTransaction.DstChainId),
 			TChainName: ChainId2Name(tx.PolyTransaction.DstChainId),
 		})
 	}
@@ -453,9 +456,10 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
 }
 
 type TokenTxListReq struct {
+	ChainId  uint64 `json:"chain"`
 	Token    string `json:"token"`
 	PageSize int
-	PageNo int
+	PageNo   int
 }
 
 type TokenTxResp struct {
@@ -473,18 +477,18 @@ type TokenTxListResp struct {
 	Total       int64          `json:"total"`
 }
 
-func MakeTokenTxList(transactoins []*TransactionOnToken, tokenStatistic *TokenStatistic) *TokenTxListResp {
+func MakeTokenTxList(transactoins []*TransactionOnToken, counter int64) *TokenTxListResp {
 	tokenTxListResp := &TokenTxListResp{}
-	tokenTxListResp.Total = tokenStatistic.InCounter + tokenStatistic.OutCounter
+	tokenTxListResp.Total = counter
 	tokenTxListResp.TokenTxList = make([]*TokenTxResp, 0)
 	for _, transactoin := range transactoins {
 		tokenTxListResp.TokenTxList = append(tokenTxListResp.TokenTxList, &TokenTxResp{
 			TxHash: transactoin.Hash,
-			From: basedef.Hash2Address(transactoin.ChainId,transactoin.From),
-			To: basedef.Hash2Address(transactoin.ChainId,transactoin.To),
+			From:   basedef.Hash2Address(transactoin.ChainId, transactoin.From),
+			To:     basedef.Hash2Address(transactoin.ChainId, transactoin.To),
 			Amount: transactoin.Amount.String(),
 			Height: uint32(transactoin.Height),
-			TT: uint32(transactoin.Time),
+			TT:     uint32(transactoin.Time),
 			Direct: transactoin.Direct,
 		})
 	}
@@ -493,7 +497,7 @@ func MakeTokenTxList(transactoins []*TransactionOnToken, tokenStatistic *TokenSt
 
 type AddressTxListReq struct {
 	PageSize int
-	PageNo int
+	PageNo   int
 	Address  string `json:"address"`
 	ChainId  uint64 `json:"chain"`
 }
@@ -522,214 +526,180 @@ func MakeAddressTxList(transactoins []*TransactionOnAddress, counter int64) *Add
 	addressTxListResp.AddressTxList = make([]*AddressTxResp, 0)
 	for _, transactoin := range transactoins {
 		addressTxListResp.AddressTxList = append(addressTxListResp.AddressTxList, &AddressTxResp{
-			TxHash: transactoin.Hash,
-			From: basedef.Hash2Address(transactoin.ChainId,transactoin.From),
-			To: basedef.Hash2Address(transactoin.ChainId,transactoin.To),
-			Amount: transactoin.Amount.String(),
-			Height: uint32(transactoin.Height),
-			TT: uint32(transactoin.Time),
-			Direct: transactoin.Direct,
+			TxHash:    transactoin.Hash,
+			From:      basedef.Hash2Address(transactoin.ChainId, transactoin.From),
+			To:        basedef.Hash2Address(transactoin.ChainId, transactoin.To),
+			Amount:    transactoin.Amount.String(),
+			Height:    uint32(transactoin.Height),
+			TT:        uint32(transactoin.Time),
+			Direct:    transactoin.Direct,
 			TokenHash: transactoin.TokenHash,
 		})
 	}
 	return addressTxListResp
 }
 
-type TransferStatistic struct {
-	Name	string
-	ChainId uint64
-	SourceName string
-	Hash string
-	Amount *big.Int
-	AmountBtc *big.Int
+type TransferStatisticResp struct {
+	Name             string
+	ChainId          uint64
+	SourceName       string
+	Hash             string
+	Amount           *big.Int
+	AmountBtc        *big.Int
 	AmountBtcPrecent string   `json:"amount_btc_precent"`
-	AmountUsd   *big.Int    `json:"amount_usd"`
+	AmountUsd        *big.Int `json:"amount_usd"`
 	AmountUsdPrecent string   `json:"Amount_usd_precent"`
-	TokenBasic     *TokenBasic `gorm:"foreignKey:Name;references:Name"`
 }
 
 type AllTransferStatisticResp struct {
-	ChainTransferStatistics []*ChainTransferStatisticResp   `json:"chain_transfer_statistics"`
-	AmountUsd1      *big.Int
-	AmountUsd   string    `json:"amounts_usd"`
-	Addresses   uint32     `json:"addresses"`
-	Transactions uint32   `json:"transactions"`
+	ChainTransferStatistics []*ChainTransferStatisticResp `json:"chain_transfer_statistics"`
+	AmountUsd1              *big.Int
+	AmountUsd               string `json:"amounts_usd"`
+	Addresses               uint32 `json:"addresses"`
+	Transactions            uint32 `json:"transactions"`
 }
 type ChainTransferStatisticResp struct {
-	Chain        uint32    `json:"chainid"`
-	ChainName    string    `json:"chainname"`
-	AmountBtc   string    `json:"amount_btc"`
-	AmountUsd   string    `json:"amount_usd"`
-	AmountUsd1      *big.Int
-	In        uint32               `json:"in"`
-	Out       uint32               `json:"out"`
-	Addresses uint32               `json:"addresses"`
-	Height    uint32               `json:"blockheight"`
-	AssetTransferStatistics []*AssetTransferStatisticResp   `json:"asset_transfer_statistics"`
+	Chain                   uint32 `json:"chainid"`
+	ChainName               string `json:"chainname"`
+	AmountBtc               string `json:"amount_btc"`
+	AmountUsd               string `json:"amount_usd"`
+	AmountUsd1              *big.Int
+	In                      uint32                        `json:"in"`
+	Out                     uint32                        `json:"out"`
+	Addresses               uint32                        `json:"addresses"`
+	Height                  uint32                        `json:"blockheight"`
+	AssetTransferStatistics []*AssetTransferStatisticResp `json:"asset_transfer_statistics"`
 }
 type AssetTransferStatisticResp struct {
-	Name         string    `json:"name"`
-	Token        string    `json:"token"`
-	Hash         string    `json:"hash"`
-	Amount       string    `json:"amount"`
-	Amount1      *big.Int
-	AmountBtc   string    `json:"amount_btc"`
-	AmountUsd   string    `json:"amount_usd"`
-	AmountUsdPrecent string   `json:"Amount_usd_precent"`
-	AmountUsd1  *big.Int
-	SourceName  string   `json:"source_name"`
-	SourceChain uint32  `json:"source_chainid"`
-	SourceChainName string `json:"source_chainname"`
+	Name             string `json:"name"`
+	Token            string `json:"token"`
+	Hash             string `json:"hash"`
+	Amount           string `json:"amount"`
+	Amount1          *big.Int
+	AmountBtc        string `json:"amount_btc"`
+	AmountUsd        string `json:"amount_usd"`
+	AmountUsdPrecent string `json:"Amount_usd_precent"`
+	AmountUsd1       *big.Int
+	SourceName       string `json:"source_name"`
+	SourceChain      uint32 `json:"source_chainid"`
+	SourceChainName  string `json:"source_chainname"`
 }
 
-
-func MakeTransferInfoResp (transferStatistics []*TransferStatistic,chainStatistics []*ChainStatistic,chains []*Chain) *AllTransferStatisticResp{
+func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*ChainStatistic, chains []*Chain) *AllTransferStatisticResp {
 	allTransferStatistic := new(AllTransferStatisticResp)
 	allTransferStatistic.ChainTransferStatistics = make([]*ChainTransferStatisticResp, 0)
 
-	var tokenBasicBTC *TokenBasic
-	for _, assetStatistic := range transferStatistics {
-		if assetStatistic.TokenBasic.Name == "WBTC" {
-			tokenBasicBTC=assetStatistic.TokenBasic
-			break
-		}
-	}
 	allAmountUsdTotal := new(big.Int)
-	allAddress:=uint32(0)
-	allTransactions:=uint32(0)
-
-	for  _,chainStatistic:=range chainStatistics{
+	allAddress := uint32(0)
+	allTransactions := uint32(0)
+	for _, chainStatistic := range chainStatistics {
 		amountBtcTotal := new(big.Int)
 		amountUsdTotal := new(big.Int)
-		totalHeight :=uint64(0)
-		for _,chain:=range chains{
-			if chainStatistic.ChainId==chain.ChainId{
-				totalHeight+=chain.Height
+		totalHeight := uint64(0)
+		for _, chain := range chains {
+			if chainStatistic.ChainId == chain.ChainId {
+				totalHeight += chain.Height
 			}
 		}
-		assetTransferStatisticResps:=make([]*AssetTransferStatisticResp,0)
-		for _,transferStatistic:=range transferStatistics{
-			if transferStatistic.ChainId==chainStatistic.ChainId{
-				amount_new:=decimal.New(transferStatistic.Amount.Int64(), 0)
-				precision_new:=decimal.New(int64(transferStatistic.TokenBasic.Precision), 0)
-				price_new:=decimal.New(transferStatistic.TokenBasic.Price, 0)
-				amount_usd:=amount_new.Div(precision_new).Mul(price_new)
-				transferStatistic.AmountUsd=amount_usd.BigInt()
-				amount_btc:=amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price,0))
-				transferStatistic.AmountBtc=amount_btc.BigInt()
-				amountBtcTotal.Add(amountBtcTotal, amount_btc.BigInt())
-				amountUsdTotal.Add(amountUsdTotal, amount_usd.BigInt())
-				transferStatistic.SourceName=ChainId2Name(transferStatistic.TokenBasic.ChainId)
-				assetTransferStatisticResp:=&AssetTransferStatisticResp{
-					Name:	transferStatistic.Name,
-					Hash      :  transferStatistic.Hash,
-					Amount     :FormatAmount(uint64(100), NewBigInt(transferStatistic.Amount)),
-					AmountBtc   :FormatAmount(uint64(10000), NewBigInt(transferStatistic.AmountBtc)),
-					AmountUsd   :FormatAmount(uint64(10000), NewBigInt(transferStatistic.AmountUsd)),
-					AmountUsd1	: transferStatistic.AmountUsd,
-					SourceChainName  :transferStatistic.SourceName,
+		fmt.Println("totalHeight:", totalHeight)
+		assetTransferStatisticResps := make([]*AssetTransferStatisticResp, 0)
+		for _, tokenStatistic := range tokenStatistics {
+			fmt.Println("tokenStatistic.ChainId:", tokenStatistic.ChainId, "chainStatistic.ChainId", chainStatistic.ChainId)
+			if tokenStatistic.ChainId == chainStatistic.ChainId {
+				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
+				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
+				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
+
+				amountBtcTotal.Add(amountBtcTotal, amountBtc)
+				amountUsdTotal.Add(amountUsdTotal, amountUsd)
+				assetTransferStatisticResp := &AssetTransferStatisticResp{
+					Name:            tokenStatistic.Token.TokenBasicName,
+					Hash:            tokenStatistic.Hash,
+					Amount:          FormatAmount(uint64(100), NewBigInt(amount)),
+					AmountBtc:       FormatAmount(uint64(10000), NewBigInt(amountBtc)),
+					AmountUsd:       FormatAmount(uint64(10000), NewBigInt(amountUsd)),
+					AmountUsd1:      amountUsd,
+					SourceChainName: ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId),
 				}
-				assetTransferStatisticResps=append(assetTransferStatisticResps,assetTransferStatisticResp)
+				assetTransferStatisticResps = append(assetTransferStatisticResps, assetTransferStatisticResp)
 			}
 		}
-		allAmountUsdTotal.Add(allAmountUsdTotal,amountUsdTotal)
+		allAmountUsdTotal.Add(allAmountUsdTotal, amountUsdTotal)
 
-		for _,assetTransferStatisticResp:=range assetTransferStatisticResps{
-			assetTransferStatisticResp.AmountUsdPrecent=Precent(assetTransferStatisticResp.AmountUsd1.Uint64(), amountUsdTotal.Uint64())
+		for _, assetTransferStatisticResp := range assetTransferStatisticResps {
+			assetTransferStatisticResp.AmountUsdPrecent = Precent(assetTransferStatisticResp.AmountUsd1.Uint64(), amountUsdTotal.Uint64())
 		}
-		allAddress+=uint32(chainStatistic.Addresses)
+		allAddress += uint32(chainStatistic.Addresses)
 
-		chainTransferStatisticResp:=&ChainTransferStatisticResp{
-			Chain       :uint32(chainStatistic.ChainId),
-			ChainName    :ChainId2Name(chainStatistic.ChainId),
-			AmountBtc   :FormatAmount(uint64(10000), NewBigInt(amountBtcTotal)),
-			AmountUsd   :FormatAmount(uint64(10000), NewBigInt(amountUsdTotal)),
-			In        :uint32(chainStatistic.In),
-			Out       :uint32(chainStatistic.Out),
-			Addresses :uint32(chainStatistic.Addresses),
-			Height    :uint32(totalHeight),
-			AssetTransferStatistics :assetTransferStatisticResps,
+		chainTransferStatisticResp := &ChainTransferStatisticResp{
+			Chain:                   uint32(chainStatistic.ChainId),
+			ChainName:               ChainId2Name(chainStatistic.ChainId),
+			AmountBtc:               FormatAmount(uint64(10000), NewBigInt(amountBtcTotal)),
+			AmountUsd:               FormatAmount(uint64(10000), NewBigInt(amountUsdTotal)),
+			In:                      uint32(chainStatistic.In),
+			Out:                     uint32(chainStatistic.Out),
+			Addresses:               uint32(chainStatistic.Addresses),
+			Height:                  uint32(totalHeight),
+			AssetTransferStatistics: assetTransferStatisticResps,
 		}
-		allTransactions+=uint32(chainStatistic.In)+uint32(chainStatistic.Out)
-		allTransferStatistic.ChainTransferStatistics=append(allTransferStatistic.ChainTransferStatistics,chainTransferStatisticResp)
+		allTransactions += uint32(chainStatistic.In) + uint32(chainStatistic.Out)
+		allTransferStatistic.ChainTransferStatistics = append(allTransferStatistic.ChainTransferStatistics, chainTransferStatisticResp)
 	}
-	allTransferStatistic.AmountUsd=FormatAmount(uint64(10000), NewBigInt(allAmountUsdTotal))
-	allTransferStatistic.Addresses=allAddress
-	allTransferStatistic.Transactions=allTransactions
+	allTransferStatistic.AmountUsd = FormatAmount(uint64(10000), NewBigInt(allAmountUsdTotal))
+	allTransferStatistic.Addresses = allAddress
+	allTransferStatistic.Transactions = allTransactions
 	return allTransferStatistic
 }
 
-type AssetStatistic struct {
-	Amount *big.Int
-	Txnum	uint32
-	Addressnum uint32
-	ChainId	uint64
-	Asset	string
-	TokenBasicName	string
-	AmountBtc *big.Int
-	AmountUsd *big.Int
-	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
-}
 type AssetStatisticResp struct {
-	Name         string    `json:"name"`
-	AddressNum   uint32    `json:"addressnumber"`
-	AddressNumPrecent string   `json:"addressnumber_precent"`
-	Amount       string    	`json:"amount"`
-	AmountBtc   string    `json:"amount_btc"`
-	AmountBtcPrecent string   `json:"amount_btc_precent"`
-	AmountUsd   string    `json:"amount_usd"`
-	AmountUsdPrecent string   `json:"Amount_usd_precent"`
-	TxNum        uint32    `json:"txnumber"`
-	TxNumPrecent string    `json:"txnumber_precent"`
+	Name              string `json:"name"`
+	AddressNum        uint64 `json:"addressnumber"`
+	AddressNumPrecent string `json:"addressnumber_precent"`
+	Amount            string `json:"amount"`
+	AmountBtc         string `json:"amount_btc"`
+	AmountBtcPrecent  string `json:"amount_btc_precent"`
+	AmountUsd         string `json:"amount_usd"`
+	AmountUsdPrecent  string `json:"Amount_usd_precent"`
+	TxNum             uint64 `json:"txnumber"`
+	TxNumPrecent      string `json:"txnumber_precent"`
 }
 type AssetInfoResp struct {
-	AmountBtcTotal  string   `json:"amount_btc_total"`
-	AmountUsdTotal  string   `json:"amount_usd_total"`
-	AssetStatistics  []*AssetStatisticResp  `json:"asset_statistics"`
+	AmountBtcTotal  string                `json:"amount_btc_total"`
+	AmountUsdTotal  string                `json:"amount_usd_total"`
+	AssetStatistics []*AssetStatisticResp `json:"asset_statistics"`
 }
-func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp{
+
+func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 	assetInfo := new(AssetInfoResp)
 	amountBtcTotal := new(big.Int)
 	amountUsdTotal := new(big.Int)
-	addressNumberTotal := uint32(0)
-	txNumTotal := uint32(0)
-	var tokenBasicBTC *TokenBasic
+	addressNumberTotal := uint64(0)
+	txNumTotal := uint64(0)
+
 	for _, assetStatistic := range assetStatistics {
-		if assetStatistic.TokenBasic.Name == "WBTC" {
-			tokenBasicBTC=assetStatistic.TokenBasic
-			break
-		}
-	}
-	for _, assetStatistic := range assetStatistics {
-		amount_new:=decimal.New(assetStatistic.Amount.Int64(), 0)
-		precision_new:=decimal.New(int64(assetStatistic.TokenBasic.Precision), 0)
-		price_new:=decimal.New(assetStatistic.TokenBasic.Price, 0)
-		amount_usd:=amount_new.Div(precision_new).Mul(price_new)
-		assetStatistic.AmountUsd=amount_usd.BigInt()
-		amount_btc:=amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price,0))
-		assetStatistic.AmountBtc=amount_btc.BigInt()
-		amountBtcTotal.Add(amountBtcTotal, amount_btc.BigInt())
-		amountUsdTotal.Add(amountUsdTotal, amount_usd.BigInt())
+
+		amountBtcTotal.Add(amountBtcTotal, &assetStatistic.AmountBtc.Int)
+		amountUsdTotal.Add(amountUsdTotal, &assetStatistic.AmountUsd.Int)
 
 		addressNumberTotal += assetStatistic.Addressnum
 		txNumTotal += assetStatistic.Txnum
 	}
 
 	assetInfo.AmountBtcTotal = FormatAmount(uint64(10000), NewBigInt(amountBtcTotal))
-	assetInfo.AmountUsdTotal = FormatAmount(uint64(10000),NewBigInt(amountUsdTotal))
+	assetInfo.AmountUsdTotal = FormatAmount(uint64(10000), NewBigInt(amountUsdTotal))
 
 	for _, assetStatistic := range assetStatistics {
 		assetStatisticResp := &AssetStatisticResp{
-			Name: assetStatistic.TokenBasicName,
-			AddressNum: assetStatistic.Addressnum,
-			AddressNumPrecent: Precent(uint64(assetStatistic.Addressnum), uint64(addressNumberTotal)),
-			Amount: FormatAmount(uint64(100), NewBigInt(assetStatistic.Amount)),
-			AmountBtc: FormatAmount(uint64(10000), NewBigInt(assetStatistic.AmountBtc)),
-			AmountBtcPrecent: Precent(assetStatistic.AmountBtc.Uint64(), amountBtcTotal.Uint64()),
-			AmountUsd: FormatAmount(uint64(10000), NewBigInt(assetStatistic.AmountUsd)),
-			AmountUsdPrecent: Precent(assetStatistic.AmountUsd.Uint64(), amountUsdTotal.Uint64()),
-			TxNum: assetStatistic.Txnum,
-			TxNumPrecent: Precent(uint64(assetStatistic.Txnum), uint64(txNumTotal)),
+			Name:              assetStatistic.TokenBasicName,
+			AddressNum:        assetStatistic.Addressnum,
+			AddressNumPrecent: Precent(assetStatistic.Addressnum, addressNumberTotal),
+			Amount:            FormatAmount(uint64(100), assetStatistic.Amount),
+			AmountBtc:         FormatAmount(uint64(10000), assetStatistic.AmountBtc),
+			AmountBtcPrecent:  Precent(assetStatistic.AmountBtc.Uint64(), amountBtcTotal.Uint64()),
+			AmountUsd:         FormatAmount(uint64(10000), assetStatistic.AmountUsd),
+			AmountUsdPrecent:  Precent(assetStatistic.AmountUsd.Uint64(), amountUsdTotal.Uint64()),
+			TxNum:             assetStatistic.Txnum,
+			TxNumPrecent:      Precent(assetStatistic.Txnum, txNumTotal),
 		}
 		assetInfo.AssetStatistics = append(assetInfo.AssetStatistics, assetStatisticResp)
 	}

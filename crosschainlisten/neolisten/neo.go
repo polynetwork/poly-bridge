@@ -83,7 +83,7 @@ func (this *NeoChainListen) GetDefer() uint64 {
 
 func (this *NeoChainListen) isListeningContract(contract string, contracts []string) bool {
 	for _, item := range contracts {
-		if contract == item  {
+		if contract == item {
 			return true
 		}
 	}
@@ -145,6 +145,9 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							amount, _ = new(big.Int).SetString(value[6].Value, 10)
 						} else {
 							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(value[6].Value), 16)
+						}
+						if amount == nil {
+							amount = new(big.Int).SetUint64(0)
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 							Hash:         tx.Txid[2:],
