@@ -54,11 +54,12 @@ func executeMethod(method string, ctx *cli.Context) {
 func fetchBlock(config *conf.Config) {
 	height, _ := strconv.Atoi(os.Getenv("BR_HEIGHT"))
 	chain, _ := strconv.Atoi(os.Getenv("BR_CHAIN"))
+	save := os.Getenv("BR_SAVE")
 	if height == 0 || chain == 0 {
 		panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
 	}
 
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, true, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
@@ -77,9 +78,28 @@ func fetchBlock(config *conf.Config) {
 	if err != nil {
 		panic(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
 	}
-	err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
-	if err != nil {
-		panic(err)
+
+	if save == "true" {
+		err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		if err != nil {
+			panic(err)
+		}
 	}
-	fmt.Printf("Success chain %d height %d:\n wrappper tx %+v\nsrc tx %+v\npoly tx %+v\n dst tx %+v", chain, height, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+
+	fmt.Printf(
+		"Fetch block events success chain %d height %d wrapper %d src %d poly %d dst %d \n",
+		chain, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions),
+	)
+	for i, tx := range wrapperTransactions {
+		fmt.Printf("wrapper %d: %+v\n", i, *tx)
+	}
+	for i, tx := range srcTransactions {
+		fmt.Printf("src %d: %+v\n", i, *tx)
+	}
+	for i, tx := range polyTransactions {
+		fmt.Printf("poly %d: %+v\n", i, *tx)
+	}
+	for i, tx := range dstTransactions {
+		fmt.Printf("dst %d: %+v\n", i, *tx)
+	}
 }
