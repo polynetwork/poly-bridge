@@ -513,7 +513,7 @@ func verifyTables(bri, db *gorm.DB) {
 func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	logs.Info("Migrating table AssetStatistic")
 	oldAssetstatictics := make([]*explorerdao.AssetStatistic, 0)
-	err := exp.Table("asset_statistic").Find(oldAssetstatictics).Error
+	err := exp.Table("asset_statistic").Find(&oldAssetstatictics).Error
 	checkError(err, "Loading table")
 	srcTransfer := new(models.SrcTransfer)
 	err = db.Last(srcTransfer).Error
