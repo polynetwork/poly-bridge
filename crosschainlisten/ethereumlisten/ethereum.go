@@ -94,13 +94,16 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	tt := blockHeader.Time
 
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	erc20WrapperTransactions, err1 := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, height, height)
-	nftWrapperTransactions, err2 := this.getNFTWrapperEventByBlockNumber(this.ethCfg.NFTWrapperContract, height, height)
-	wrapperTransactions = append(wrapperTransactions, erc20WrapperTransactions...)
-	wrapperTransactions = append(wrapperTransactions, nftWrapperTransactions...)
-	if err := allErr(err1, err2); err != nil {
+	erc20WrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, height, height)
+	if err != nil {
 		return nil, nil, nil, nil, err
 	}
+	nftWrapperTransactions, err := this.getNFTWrapperEventByBlockNumber(this.ethCfg.NFTWrapperContract, height, height)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	wrapperTransactions = append(wrapperTransactions, erc20WrapperTransactions...)
+	wrapperTransactions = append(wrapperTransactions, nftWrapperTransactions...)
 
 	for _, item := range wrapperTransactions {
 		logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), item.Hash)
@@ -114,15 +117,20 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 
 	proxyLockEvents, proxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
-	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err3 := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, height, height)
-	nftProxyLockEvents, nftProxyUnlockEvents, err4 := this.getNFTProxyEventByBlockNumber(this.ethCfg.NFTProxyContract, height, height)
+	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, height, height)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	nftProxyLockEvents, nftProxyUnlockEvents, err := this.getNFTProxyEventByBlockNumber(this.ethCfg.NFTProxyContract, height, height)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
 	proxyLockEvents = append(proxyLockEvents, erc20ProxyLockEvents...)
 	proxyUnlockEvents = append(proxyUnlockEvents, erc20ProxyUnlockEvents...)
 	proxyLockEvents = append(proxyLockEvents, nftProxyLockEvents...)
 	proxyUnlockEvents = append(proxyUnlockEvents, nftProxyUnlockEvents...)
-	if err := allErr(err3, err4); err != nil {
-		return nil, nil, nil, nil, err
-	}
 
 	swapLockEvents, swapEvents, err := this.getSwapEventByBlockNumber(this.ethCfg.SwapContract, height, height)
 	if err != nil {

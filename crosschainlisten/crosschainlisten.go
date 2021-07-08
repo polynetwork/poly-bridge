@@ -181,6 +181,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			for chain.Height < height-ccl.handle.GetDefer() {
 				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.handle.HandleNewBlock(chain.Height + 1)
+				if len(wrapperTransactions) != len(srcTransactions) {
+					logs.Error("Possible inconsistent chain %d height %d wrapper %d src %d", chain.ChainId, chain.Height, len(wrapperTransactions), len(srcTransactions))
+				}
 				if err != nil {
 					logs.Error("HandleNewBlock %d err: %v", chain.Height+1, err)
 					break
