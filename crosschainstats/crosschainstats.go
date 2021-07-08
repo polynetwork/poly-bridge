@@ -344,59 +344,6 @@ func (this *Stats) computeChainStatisticAssets() (err error) {
 	return
 }
 
-//func (this *Stats) computeTransferStatistics() (err error) {
-//	logs.Info("start computeTransferStatistics")
-//	nowTransferStatistic, err := this.dao.GetNewTransferSta()
-//	if err != nil {
-//		return fmt.Errorf("Failed to GetNewTransferSta %w", err)
-//	}
-//	nowIn, err := this.dao.GetNewDstTransfer()
-//	if err != nil {
-//		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
-//	}
-//	nowInId := nowIn.Id
-//	nowOut, err := this.dao.GetNewSrcTransfer()
-//	if err != nil {
-//		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
-//	}
-//	nowOutId := nowOut.Id
-//	if nowTransferStatistic.LastInCheckId >= nowInId && nowTransferStatistic.LastOutCheckId >= nowOutId {
-//		return nil
-//	}
-//	newTransfers, err := this.dao.CalculateTransfer(nowTransferStatistic.LastInCheckId, nowInId, nowTransferStatistic.LastOutCheckId, nowOutId)
-//	if err != nil {
-//		return fmt.Errorf("Failed to CalculateTransfer %w", err)
-//	}
-//	var tokenBasicBTC *models.TokenBasic
-//	for _, transferStatistic := range newTransfers {
-//		if transferStatistic.TokenBasic.Name == "WBTC" {
-//			tokenBasicBTC = transferStatistic.TokenBasic
-//			break
-//		}
-//	}
-//	for _, transferStatistic := range newTransfers {
-//
-//		amount_new := decimal.New(transferStatistic.Amount.Int64(), 0)
-//		precision_new := decimal.New(int64(transferStatistic.TokenBasic.Precision), 0)
-//		real_amount := amount_new.Div(precision_new)
-//		price_new := decimal.New(transferStatistic.TokenBasic.Price, 0)
-//		amount_usd := real_amount.Mul(price_new)
-//		amount_btc := amount_usd.Div(decimal.New(tokenBasicBTC.Price, 0))
-//
-//		transferStatistic.Amount = models.NewBigInt((real_amount.Mul(decimal.New(int64(100), 0))).BigInt())
-//		transferStatistic.AmountUsd = models.NewBigInt((amount_usd.Mul(decimal.New(int64(10000), 0))).BigInt())
-//		transferStatistic.AmountBtc = models.NewBigInt((amount_btc.Mul(decimal.New(int64(10000), 0))).BigInt())
-//		transferStatistic.SourceName = models.ChainId2Name(transferStatistic.TokenBasic.ChainId)
-//		transferStatistic.LastInCheckId = nowInId
-//		transferStatistic.LastOutCheckId = nowOutId
-//
-//		err := this.dao.UpdateTransferStatistic(transferStatistic)
-//		if err != nil {
-//			return fmt.Errorf("Failed to UpdateTransferStatistic %w", err)
-//		}
-//	}
-//	return
-//}
 func (this *Stats) computeAssetStatistics() (err error) {
 	logs.Info("start computeAssetStatistics")
 	nowAssetStatistic, err := this.dao.GetNewAssetSta()

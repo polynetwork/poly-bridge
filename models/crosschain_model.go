@@ -201,19 +201,7 @@ type PolyTxRelation struct {
 	ToToken            *Token          `gorm:"foreignKey:ToTokenHash,ToChainId;references:Hash,ChainId"`
 	DstToken           *Token          `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
 }
-type TransferStatistic struct {
-	Id             int64       `gorm:"primaryKey;autoIncrement"`
-	Name           string      `gorm:"size:64;not null"`
-	ChainId        uint64      `gorm:"type:bigint(20);not null"`
-	SourceName     string      `gorm:"size:64;not null"`
-	Hash           string      `gorm:"uniqueIndex;size:66;not null"`
-	Amount         *BigInt     `gorm:"type:varchar(64);not null"`
-	AmountBtc      *BigInt     `gorm:"type:varchar(64);not null"`
-	AmountUsd      *BigInt     `gorm:"type:varchar(64);not null"`
-	LastInCheckId  int64       `gorm:"type:int"`
-	LastOutCheckId int64       `gorm:"type:int"`
-	TokenBasic     *TokenBasic `gorm:"foreignKey:Name;references:Name"`
-}
+
 type AssetStatistic struct {
 	Id             int64       `gorm:"primaryKey;autoIncrement"`
 	Amount         *BigInt     `gorm:"type:varchar(64);not null"`

@@ -84,8 +84,7 @@ func (c *ExplorerController) GetExplorerInfo() {
 
 	// get all tokens
 	tokenBasics := make([]*models.TokenBasic, 0)
-	res = db.Debug().Find(&tokenBasics).
-		Preload("Token")
+	res = db.Debug().Preload("Token").Find(&tokenBasics)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
@@ -196,11 +195,6 @@ func (c *ExplorerController) GetCrossTxList() {
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		//Preload("SrcTransaction").
-		//Preload("SrcTransaction.SrcTransfer").
-		//Preload("PolyTransaction").
-		//Preload("DstTransaction").
-		//Preload("DstTransaction.DstTransfer").
 		Limit(crossTxListReq.PageSize).Offset((crossTxListReq.PageNo - 1) * crossTxListReq.PageSize).
 		Find(&srcPolyDstRelations)
 	if res.RowsAffected == 0 {
@@ -216,16 +210,6 @@ func (c *ExplorerController) GetCrossTxList() {
 			srcPolyDstRelation.PolyTransaction = polyTransaction
 		}
 	}
-	//var transactionNum int64
-	//res = db.Model(&models.PolyTransaction{}).Where("src_transactions.standard = ?", 0).
-	//	Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
-	//	Count(&transactionNum)
-	//if res.RowsAffected == 0 {
-	//	c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transactionNum does not exist"))
-	//	c.Ctx.ResponseWriter.WriteHeader(400)
-	//	c.ServeJSON()
-	//	return
-	//}
 	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations)
 	c.ServeJSON()
 }
