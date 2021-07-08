@@ -424,10 +424,10 @@ func (dao *ExplorerDao) Name() string {
 }
 
 type AssetStatistic struct {
-	Name       string
+	Xname      string
 	Addressnum uint32
 	Amount     *models.BigInt
 	AmountBtc  *models.BigInt
 	AmountUsd  *models.BigInt
-	TxNum      uint32
+	Txnum      uint32
 }
