@@ -21,6 +21,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"poly-bridge/common"
+	"poly-bridge/conf"
+	"poly-bridge/explorer"
 	"poly-bridge/http"
 	"poly-bridge/nft_http"
 
@@ -29,9 +33,6 @@ import (
 	"github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/beego/v2/server/web/filter/cors"
 	"github.com/urfave/cli"
-	"poly-bridge/common"
-	"poly-bridge/conf"
-	"poly-bridge/explorer"
 )
 
 func main() {
