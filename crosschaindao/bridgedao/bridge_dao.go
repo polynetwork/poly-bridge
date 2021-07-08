@@ -350,14 +350,14 @@ func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, am
 }
 
 func (dao *BridgeDao) CalculateInTokenStatistics(lastId, nowId int64, tokenStatistics interface{}) error {
-	res := dao.db.Raw("select count(*) in_counter,  sum(amount) as in_amount, asset as hash, chain_id as chain_id from dst_transfers where id > ? and id <= ? group by chain_id, asset", lastId, nowId).
+	res := dao.db.Raw("select count(*) in_counter,  CONVERT(sum(amount), DECIMAL(37, 0)) as in_amount, asset as hash, chain_id as chain_id from dst_transfers where id > ? and id <= ? group by chain_id, asset", lastId, nowId).
 		Preload("Token").Preload("Token.TokenBasic").
 		Find(tokenStatistics)
 	return res.Error
 }
 
 func (dao *BridgeDao) CalculateOutTokenStatistics(lastId, nowId int64, tokenStatistics interface{}) error {
-	res := dao.db.Raw("select count(*) out_counter,  sum(amount) as out_amount, asset as hash, chain_id as chain_id from src_transfers where id > ? and id<= ? group by chain_id, asset", lastId, nowId).
+	res := dao.db.Raw("select count(*) out_counter,  CONVERT(sum(amount), DECIMAL(37, 0)) as out_amount, asset as hash, chain_id as chain_id from src_transfers where id > ? and id<= ? group by chain_id, asset", lastId, nowId).
 		Preload("Token").Preload("Token.TokenBasic").
 		Find(tokenStatistics)
 	return res.Error
@@ -417,31 +417,6 @@ func (dao *BridgeDao) SaveChainStatistic(chainStatistics *models.ChainStatistic)
 	res := dao.db.Save(chainStatistics)
 	return res.Error
 }
-func (dao *BridgeDao) GetNewTransferSta() (*models.TransferStatistic, error) {
-	transferStatistic := new(models.TransferStatistic)
-	err := dao.db.First(transferStatistic).
-		Error
-	return transferStatistic, err
-}
-func (dao *BridgeDao) CalculateTransfer(lastIn, nowIn, lastOut, nowOut int64) ([]*models.TransferStatistic, error) {
-	transferStatistics := make([]*models.TransferStatistic, 0)
-	err := dao.db.Raw(`select IFNULL(a.amount,0) - IFNULL(b.amount,0) as amount, a.chain_id, a.hash, a.name from
-		(select sum(amount) as amount, a.chain_id, asset as hash, b.token_basic_name as name  from dst_transfers a inner join tokens b on  a.asset = b.hash and a.chain_id = b.chain_id where a.id > ? and a.id <= ? group by chain_id, asset) a left join
-		(select sum(amount) as amount, a.chain_id, asset as hash, b.token_basic_name as name  from src_transfers a inner join tokens b on  a.asset = b.hash and a.chain_id = b.chain_id where a.id > ? and a.id <= ? group by chain_id, asset) b on a.chain_id = b.chain_id and a.hash = b.hash`, lastIn, nowIn, lastOut, nowOut).
-		Scan(&transferStatistics).Preload("TokenBasic").Error
-	return transferStatistics, err
-}
-func (dao *BridgeDao) UpdateTransferStatistic(transferStatistic *models.TransferStatistic) (err error) {
-	tx := dao.db.Model(&models.TransferStatistic{}).
-		Where("chain_id = ? and hash = ?", transferStatistic.ChainId, transferStatistic.Hash)
-	if tx.RowsAffected == 0 {
-		err = dao.db.Create(transferStatistic).Error
-	} else {
-		err = tx.Updates(map[string]interface{}{"amount": gorm.Expr("amount + ?", transferStatistic.Amount), "amount_usd": gorm.Expr("amount_usd + ?", transferStatistic.AmountUsd), "amount_btc": gorm.Expr("amount_btc + ?", transferStatistic.AmountBtc),
-			"last_in_check_id": transferStatistic.LastInCheckId, "last_out_check_id": transferStatistic.LastOutCheckId}).Error
-	}
-	return
-}
 func (dao *BridgeDao) GetNewAssetSta() (*models.AssetStatistic, error) {
 	assetStatistic := new(models.AssetStatistic)
 	err := dao.db.Debug().First(assetStatistic).
@@ -452,7 +427,7 @@ func (dao *BridgeDao) GetNewAssetSta() (*models.AssetStatistic, error) {
 func (dao *BridgeDao) CalculateAsset(lastId, nowId int64) ([]*models.AssetStatistic, error) {
 	assetStatistics := make([]*models.AssetStatistic, 0)
 	err := dao.db.Debug().Raw("select CONVERT(sum(amount), DECIMAL(37, 0)) as amount, count(*) as txnum, b.token_basic_name  from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash where a.id > ? and a.id <= ? group by token_basic_name", lastId, nowId).
-		Scan(&assetStatistics).Preload("TokenBasic").Error
+		Preload("TokenBasic").Find(&assetStatistics).Error
 	jsonAssetStatistics, _ := json.Marshal(assetStatistics[0])
 	fmt.Println("CalculateAsset assetStatistics:" + string(jsonAssetStatistics))
 	return assetStatistics, err
@@ -471,7 +446,7 @@ func (dao *BridgeDao) UpdateAssetStatistic(assetStatistic *models.AssetStatistic
 func (dao *BridgeDao) CalculateAssetAdress() ([]*models.AssetStatistic, error) {
 	assetStatistics := make([]*models.AssetStatistic, 0)
 	err := dao.db.Raw("select count(distinct `from`) as addressnum,b.token_basic_name from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash  group by token_basic_name").
-		Scan(&assetStatistics).Preload("TokenBasic").Error
+		Preload("TokenBasic").Find(&assetStatistics).Error
 	return assetStatistics, err
 }
 func (dao *BridgeDao) UpdateAssetStatisticAdress(assetStatistic *models.AssetStatistic) (err error) {
