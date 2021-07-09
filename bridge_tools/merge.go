@@ -522,6 +522,9 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	checkError(err, "Loading table")
 
 	for _,old:=range oldAssetstatictics{
+		if old.Hash==""{
+			continue
+		}
 		err = db.Debug().Raw("SELECT `token_basic_name` FROM `tokens` WHERE hash=? limit 1",old.Hash).
 			Scan(&old).Error
 		if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
@@ -533,6 +536,9 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		newAssetstatictic := &models.AssetStatistic{}
 		newAssetstatictic.TokenBasicName = tokenBasic.Name
 		for _, old := range oldAssetstatictics {
+			if old.Hash==""{
+				continue
+			}
 			if old.TokenBasicName == tokenBasic.Name {
 				if newAssetstatictic.Amount.Uint64() != uint64(0) {
 					continue
