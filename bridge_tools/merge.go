@@ -522,7 +522,7 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 			continue
 		}
 		token:=new(models.Token)
-		err = db.Select("token_basic_name").Where("hash=?", oldAssetstatictic.Hash).
+		err = db.Debug().Select("token_basic_name").Where("hash=?", oldAssetstatictic.Hash).
 			First(token).Error
 		if errors.Is(err, gorm.ErrRecordNotFound){
 			continue
@@ -530,7 +530,7 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 			checkError(err, "Saving AssetStatistic table1")
 		}
 		newAssetstatictic := &models.AssetStatistic{}
-		err = db.Where("token_basic_name=?",token.TokenBasicName).
+		err = db.Debug().Where("token_basic_name=?",token.TokenBasicName).
 			First(newAssetstatictic).Error
 		if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
 			checkError(err, "Saving AssetStatistic table2")
@@ -546,7 +546,7 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		newAssetstatictic.Txnum = uint64(oldAssetstatictic.Txnum)
 		newAssetstatictic.LastCheckId = srcTransfer.Id
 
-		err = db.Save(newAssetstatictic).Error
+		err = db.Debug().Save(newAssetstatictic).Error
 		checkError(err, "Saving AssetStatistic table3")
 	}
 }
