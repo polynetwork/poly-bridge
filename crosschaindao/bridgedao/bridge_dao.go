@@ -455,3 +455,8 @@ func (dao *BridgeDao) UpdateAssetStatisticAdress(assetStatistic *models.AssetSta
 		Update("addressnum", assetStatistic.Addressnum).Error
 	return
 }
+func (dao *BridgeDao) GetBTCPrice() (*models.TokenBasic,error){
+	tokenBasicBTC:=new(models.TokenBasic)
+	err:=dao.db.Where("name='WBTC'").First(tokenBasicBTC).Error
+	return tokenBasicBTC,err
+}

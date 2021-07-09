@@ -430,4 +430,5 @@ type AssetStatistic struct {
 	AmountBtc  *models.BigInt
 	AmountUsd  *models.BigInt
 	Txnum      uint32
+	Hash	string
 }

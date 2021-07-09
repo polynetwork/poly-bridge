@@ -204,44 +204,39 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		if err != nil {
 			return fmt.Errorf("Failed to GetTokenStatistics %w", err)
 		}
-		var tokenBasicBTC *models.TokenBasic
-		for _, tokenStatistic := range tokenStatistics {
-			if tokenStatistic.Token.TokenBasicName == "WBTC" {
-				tokenBasicBTC = tokenStatistic.Token.TokenBasic
-				break
-			}
+		tokenBasicBTC,err:=this.dao.GetBTCPrice()
+		if err!=nil{
+			return fmt.Errorf("Failed to GetBTCPrice %w", err)
 		}
 		for _, statistic := range tokenStatistics {
 			for _, in := range inTokenStatistics {
 				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
-					statistic.InAmount = addDecimalBigInt(statistic.InAmount, in.InAmount)
-					statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
-
-					amount_new := decimal.New(statistic.InAmount.Int64(), 0)
-					precision_new := decimal.New(int64(statistic.Token.Precision), 0)
-					price_new := decimal.New(statistic.Token.TokenBasic.Price, 0)
+					amount_new := decimal.New(in.InAmount.Int64(), 0)
+					precision_new := decimal.New(int64(in.Token.TokenBasic.Precision), 0)
+					price_new := decimal.New(in.Token.TokenBasic.Price, 0)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
-					statistic.InAmountUsd = models.NewBigInt(amount_usd.BigInt())
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price, 0))
-					statistic.InAmountBtc = models.NewBigInt(amount_btc.BigInt())
 
+					statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Mul(decimal.NewFromInt32(100)).BigInt()))
+					statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd,models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
+					statistic.InAmountBtc = addDecimalBigInt(statistic.InAmountBtc,models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
+					statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
 					statistic.LastInCheckId = nowInId
 					break
 				}
 			}
 			for _, out := range outTokenStatistics {
 				if statistic.ChainId == out.ChainId && statistic.Hash == out.Hash {
-					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, out.OutAmount)
-					statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
-
-					amount_new := decimal.New(statistic.OutAmount.Int64(), 0)
-					precision_new := decimal.New(int64(statistic.Token.Precision), 0)
-					price_new := decimal.New(statistic.Token.TokenBasic.Price, 0)
+					amount_new := decimal.New(out.OutAmount.Int64(), 0)
+					precision_new := decimal.New(int64(out.Token.TokenBasic.Precision), 0)
+					price_new := decimal.New(out.Token.TokenBasic.Price, 0)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
-					statistic.OutAmountUsd = models.NewBigInt(amount_usd.BigInt())
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price, 0))
-					statistic.OutAmountBtc = models.NewBigInt(amount_btc.BigInt())
 
+					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Mul(decimal.NewFromInt32(100)).BigInt()))
+					statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
+					statistic.OutAmountUsd = addDecimalBigInt(statistic.OutAmountUsd,models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
+					statistic.OutAmountBtc = addDecimalBigInt(statistic.OutAmountBtc,models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
 					statistic.LastOutCheckId = nowOutId
 					break
 				}
@@ -362,13 +357,7 @@ func (this *Stats) computeAssetStatistics() (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to CalculateAsset %w", err)
 	}
-	var tokenBasicBTC *models.TokenBasic
-	for _, transferStatistic := range newAssets {
-		if transferStatistic.TokenBasic.Name == "WBTC" {
-			tokenBasicBTC = transferStatistic.TokenBasic
-			break
-		}
-	}
+	tokenBasicBTC,err:=this.dao.GetBTCPrice()
 	newAssetsJson, _ := json.Marshal(newAssets)
 	fmt.Println("computeAssetStatistics newAssetsJson" + string(newAssetsJson))
 	logs.Info("computeAssetStatistics newAssetsJson" + string(newAssetsJson))

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"errors"
 	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
@@ -154,7 +155,6 @@ func migrateBridgeBasicTables(bri, db *gorm.DB) {
 }
 
 func migrateExplorerBasicTables(exp, db *gorm.DB) {
-	/*
 		{
 			logs.Info("Migrating table chains from explorer")
 			model := make([]*explorerdao.Chain, 0)
@@ -210,8 +210,6 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 			err = db.Save(tokenStatistics).Error
 			checkError(err, "Loading table")
 		}
-	*/
-
 }
 
 func createTables(db *gorm.DB) {
@@ -513,38 +511,42 @@ func verifyTables(bri, db *gorm.DB) {
 func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	logs.Info("Migrating table AssetStatistic")
 	oldAssetstatictics := make([]*explorerdao.AssetStatistic, 0)
-	err := exp.Table("asset_statistic").Find(&oldAssetstatictics).Error
+	err := exp.Raw("SELECT a.xname,a.amount,a.addressnum,a.amount_btc,a.amount_usd,a.txnum,b.`hash` from asset_statistic a LEFT JOIN chain_token b on a.xname=b.xtoken").
+		Find(&oldAssetstatictics).Error
 	checkError(err, "Loading table")
 	srcTransfer := new(models.SrcTransfer)
 	err = db.Last(srcTransfer).Error
 	checkError(err, "Loading table")
 	for _, oldAssetstatictic := range oldAssetstatictics {
-		if oldAssetstatictic.Xname == "" {
+		if oldAssetstatictic.Xname == ""||oldAssetstatictic.Hash=="" || oldAssetstatictic.Hash=="0000000000000000000000000000000000000000" {
 			continue
 		}
-		hash := struct {
-			Hash string
-		}{}
-		err = exp.Table("chain_token").Select("hash").
-			Where("xtoken = ?", oldAssetstatictic.Xname).
-			First(&hash).Error
-		if err != nil || hash.Hash == "0000000000000000000000000000000000000000" {
-			continue
-		}
-		token := new(models.Token)
-		err = db.Select("token_basic_name").Where("hash=?", hash.Hash).
+		token:=new(models.Token)
+		err = db.Select("token_basic_name").Where("hash=?", oldAssetstatictic.Hash).
 			First(token).Error
-		if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound){
 			continue
+		}else {
+			checkError(err, "Saving AssetStatistic table1")
 		}
 		newAssetstatictic := &models.AssetStatistic{}
+		err = db.Where("token_basic_name=?",token.TokenBasicName).
+			First(newAssetstatictic).Error
+		if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
+			checkError(err, "Saving AssetStatistic table2")
+		}
+		if newAssetstatictic.Amount!=models.NewBigIntFromInt(0)||newAssetstatictic.Amount==oldAssetstatictic.Amount{
+			continue
+		}
 		newAssetstatictic.Amount = oldAssetstatictic.Amount
 		newAssetstatictic.AmountUsd = oldAssetstatictic.AmountUsd
 		newAssetstatictic.AmountBtc = oldAssetstatictic.AmountBtc
 		newAssetstatictic.TokenBasicName = token.TokenBasicName
+		newAssetstatictic.Addressnum=uint64(oldAssetstatictic.Addressnum)
 		newAssetstatictic.Txnum = uint64(oldAssetstatictic.Txnum)
 		newAssetstatictic.LastCheckId = srcTransfer.Id
+
 		err = db.Save(newAssetstatictic).Error
-		checkError(err, "Saving AssetStatistic table")
+		checkError(err, "Saving AssetStatistic table3")
 	}
 }
