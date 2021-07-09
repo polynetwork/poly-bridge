@@ -517,36 +517,37 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	srcTransfer := new(models.SrcTransfer)
 	err = db.Last(srcTransfer).Error
 	checkError(err, "Loading table")
-	for _, oldAssetstatictic := range oldAssetstatictics {
-		if oldAssetstatictic.Xname == ""||oldAssetstatictic.Hash=="" || oldAssetstatictic.Hash=="0000000000000000000000000000000000000000" {
-			continue
-		}
-		token:=new(models.Token)
-		err = db.Debug().Select("token_basic_name").Where("hash=?", oldAssetstatictic.Hash).
-			First(token).Error
-		if errors.Is(err, gorm.ErrRecordNotFound){
-			continue
-		}else {
-			checkError(err, "Saving AssetStatistic table1")
-		}
-		newAssetstatictic := &models.AssetStatistic{}
-		//err = db.Debug().Where("token_basic_name=?",token.TokenBasicName).
-		//	First(newAssetstatictic).Error
-		//if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
-		//	checkError(err, "Saving AssetStatistic table2")
-		//}
-		//if err!=nil&&newAssetstatictic.Amount!=models.NewBigIntFromInt(0){
-		//	continue
-		//}
-		newAssetstatictic.Amount = oldAssetstatictic.Amount
-		newAssetstatictic.AmountUsd = oldAssetstatictic.AmountUsd
-		newAssetstatictic.AmountBtc = oldAssetstatictic.AmountBtc
-		newAssetstatictic.TokenBasicName = token.TokenBasicName
-		newAssetstatictic.Addressnum=uint64(oldAssetstatictic.Addressnum)
-		newAssetstatictic.Txnum = uint64(oldAssetstatictic.Txnum)
-		newAssetstatictic.LastCheckId = srcTransfer.Id
+	tokenBasics:=make([]*models.TokenBasic,0)
+	err=db.Select("Name").Find(&tokenBasics).Error
+	checkError(err, "Loading table")
 
-		err = db.Debug().Save(newAssetstatictic).Error
-		checkError(err, "Saving AssetStatistic table3")
+	for _,old:=range oldAssetstatictics{
+		err = db.Debug().Table("tokens").Select("token_basic_name").Where("hash=?", old.Hash).
+			First(&old).Error
+		if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
+			checkError(err, "Loading table")
+		}
 	}
+
+	assetStatistics:=make([]*models.AssetStatistic,0)
+	for _,tokenBasic:=range tokenBasics {
+		newAssetstatictic := &models.AssetStatistic{}
+		newAssetstatictic.TokenBasicName = tokenBasic.Name
+		for _, old := range oldAssetstatictics {
+			if old.TokenBasicName == tokenBasic.Name {
+				if newAssetstatictic.Amount.Uint64() != uint64(0) {
+					continue
+				}
+				newAssetstatictic.Amount = old.Amount
+				newAssetstatictic.AmountUsd = old.AmountUsd
+				newAssetstatictic.AmountBtc = old.AmountBtc
+				newAssetstatictic.Addressnum = uint64(old.Addressnum)
+				newAssetstatictic.Txnum = uint64(old.Txnum)
+				newAssetstatictic.LastCheckId = srcTransfer.Id
+			}
+		}
+		assetStatistics = append(assetStatistics, newAssetstatictic)
+	}
+	err = db.Debug().Save(assetStatistics).Error
+	checkError(err, "Saving AssetStatistic table3")
 }
