@@ -540,7 +540,7 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 				continue
 			}
 			if old.TokenBasicName == tokenBasic.Name {
-				if newAssetstatictic.Amount.Uint64() != uint64(0) {
+				if newAssetstatictic.Amount!=nil&&newAssetstatictic.Amount.Uint64() != uint64(0) {
 					continue
 				}
 				newAssetstatictic.Amount = old.Amount
