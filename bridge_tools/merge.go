@@ -535,7 +535,7 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
 			checkError(err, "Saving AssetStatistic table2")
 		}
-		if err!=nil&&newAssetstatictic.Amount==models.NewBigIntFromInt(0){
+		if err!=nil&&newAssetstatictic.Amount!=models.NewBigIntFromInt(0){
 			continue
 		}
 		newAssetstatictic.Amount = oldAssetstatictic.Amount
