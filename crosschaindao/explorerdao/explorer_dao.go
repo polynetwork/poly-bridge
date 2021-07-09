@@ -426,9 +426,10 @@ func (dao *ExplorerDao) Name() string {
 type AssetStatistic struct {
 	Xname      string
 	Addressnum uint32
-	Amount     *models.BigInt
-	AmountBtc  *models.BigInt
-	AmountUsd  *models.BigInt
+	Amount     *models.BigInt	`gorm:"type:varchar(64);not null"`
+	AmountBtc  *models.BigInt	`gorm:"type:varchar(64);not null"`
+	AmountUsd  *models.BigInt	`gorm:"type:varchar(64);not null"`
 	Txnum      uint32
 	Hash	string
+	TokenBasicName	string
 }
