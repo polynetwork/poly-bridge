@@ -530,14 +530,14 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 			checkError(err, "Saving AssetStatistic table1")
 		}
 		newAssetstatictic := &models.AssetStatistic{}
-		err = db.Debug().Where("token_basic_name=?",token.TokenBasicName).
-			First(newAssetstatictic).Error
-		if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
-			checkError(err, "Saving AssetStatistic table2")
-		}
-		if err!=nil&&newAssetstatictic.Amount!=models.NewBigIntFromInt(0){
-			continue
-		}
+		//err = db.Debug().Where("token_basic_name=?",token.TokenBasicName).
+		//	First(newAssetstatictic).Error
+		//if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
+		//	checkError(err, "Saving AssetStatistic table2")
+		//}
+		//if err!=nil&&newAssetstatictic.Amount!=models.NewBigIntFromInt(0){
+		//	continue
+		//}
 		newAssetstatictic.Amount = oldAssetstatictic.Amount
 		newAssetstatictic.AmountUsd = oldAssetstatictic.AmountUsd
 		newAssetstatictic.AmountBtc = oldAssetstatictic.AmountBtc
