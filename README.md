@@ -8,6 +8,7 @@ PolyBridge的API。
 * [POST tokens](#post-tokens)
 * [POST token](#post-token)
 * [POST tokenbasics](#post-tokenbasics)
+* [POST tokenbasicsinfo](#post-tokenbasicsinfo)
 * [POST tokenmap](#post-tokenmap)
 * [POST tokenmapreverse](#post-tokenmapreverse)
 * [POST getfee](#post-getfee)
@@ -307,6 +308,88 @@ Example Response
                     "TokenMaps": null
                 }
             ]
+        }
+    ]
+}
+```
+
+
+### POST tokenbasicsinfo
+
+获取目前可以跨链的资产信息和统计信息。
+
+TokenBasic是币的本位信息，各链上不同的usdt，都对应usdt为本位。
+Token为本位币在各个链上的详细信息，如eth上的usdt，bsc上的usdt。
+TokenMap为币之间的跨链映射关系，如eth上的usdt可以跨链到bsc上的usdt，则有eth的usdt到bsc的usdt的映射，如bsc上的usdt不可以跨链到eth上的usdt，则没有bsc的usdt到eth的usdt的映射。
+
+Request 
+```
+http://localhost:8080/v1/tokenbasicsinfo/
+```
+
+BODY raw
+```
+{
+  "PageSize":10,
+  "PageNo":5
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/tokenbasicsinfo/' \
+--data-raw '{
+}'
+```
+
+Example Response
+```
+{
+    "PageSize": 1,
+    "PageNo": 1,
+    "TotalPage": 2,
+    "TotalCount": 52,
+    "TokenBasics": [
+        {
+            "Name": "PKR",
+            "Precision": 18,
+            "Price": "1",
+            "Ind": 1,
+            "Time": 0,
+            "Property": 1,
+            "Meta": "",
+            "PriceMarkets": null,
+            "Tokens": [
+                {
+                    "Hash": "c05f2a6c6aac12bc662ed54a3a89f77ec7eef56d",
+                    "ChainId": 79,
+                    "Name": "PKR",
+                    "Property": 1,
+                    "TokenBasicName": "PKR",
+                    "Precision": 18,
+                    "AvailableAmount": "50015008100000000000",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                },
+                {
+                    "Hash": "e65ef1aea76e62ab030e98c962255f37294f1648",
+                    "ChainId": 2,
+                    "Name": "PKR",
+                    "Property": 1,
+                    "TokenBasicName": "PKR",
+                    "Precision": 18,
+                    "AvailableAmount": "1000049473771230000000000",
+                    "TokenBasic": null,
+                    "TokenMaps": null
+                }
+            ],
+            "TotalAmount": "999999981275279900016640",
+            "TotalVolume": "999999",
+            "TotalCount": 2,
+            "SocialTwitter": "",
+            "SocialTelegram": "",
+            "SocialWebsite": "",
+            "SocialOther": ""
         }
     ]
 }

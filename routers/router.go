@@ -29,6 +29,7 @@ func init() {
 		beego.NSRouter("/token/", &controllers.TokenController{}, "post:Token"),
 		beego.NSRouter("/tokens/", &controllers.TokenController{}, "post:Tokens"),
 		beego.NSRouter("/tokenbasics/", &controllers.TokenController{}, "post:TokenBasics"),
+		beego.NSRouter("/tokenbasicsinfo/", &controllers.TokenController{}, "post:TokenBasicsInfo"),
 		beego.NSRouter("/tokenmap/", &controllers.TokenMapController{}, "post:TokenMap"),
 		beego.NSRouter("/tokenmapreverse/", &controllers.TokenMapController{}, "post:TokenMapReverse"),
 		beego.NSRouter("/getfee/", &controllers.FeeController{}, "post:GetFee"),
