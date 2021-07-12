@@ -89,7 +89,12 @@ func (c *TokenController) TokenBasicsInfo() {
 	query := db.Model(&models.TokenBasic{}).Where("standard = 0 AND property = 1")
 	var totalCount int64
 	query.Count(&totalCount)
-	query.Limit(tokenBasicReq.PageSize).Offset(tokenBasicReq.PageSize * tokenBasicReq.PageNo).Order("total_amount, name").Preload("Tokens").Find(&tokenBasics)
+	orderBy := "total_count, name"
+	switch tokenBasicReq.Order {
+	case "total_amount", "total_count", "name", "price":
+		orderBy = tokenBasicReq.Order
+	}
+	query.Limit(tokenBasicReq.PageSize).Offset(tokenBasicReq.PageSize * tokenBasicReq.PageNo).Order(orderBy).Preload("Tokens").Find(&tokenBasics)
 	c.Data["json"] = models.MakeTokenBasicsInfoRsp(&tokenBasicReq, uint64(totalCount), tokenBasics)
 	c.ServeJSON()
 }
