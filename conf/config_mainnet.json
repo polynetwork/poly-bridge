@@ -55,6 +55,7 @@
       "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
       "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
       "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "NFTQueryContract": "B2265A122814dA516318F727183a5D8FeCA8BaCE",
       "SwapContract": "02e20ca05e38cbdf1a6235a7acdd34efc0434caa"
     },
     {
@@ -117,6 +118,7 @@
       "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
       "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "NFTQueryContract": "02015dBb2Dc25Cc7313D7EDb4785c2C46F3B7FD2",
       "SwapContract": "3ec481143d688442E581aD7116Bf1ECC76669cfa"
     },
     {
@@ -136,6 +138,7 @@
       "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
       "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "NFTQueryContract": "56C9491F2aC2Bc623AB890D2Db16C98E1aBd1FBd",
       "SwapContract": "70f4d1176f9276ab4B31658f58F7473858F2b550"
     },
     {
