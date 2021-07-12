@@ -106,6 +106,7 @@ func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
 type TokenBasicsInfoReq struct {
 	PageSize int
 	PageNo   int
+	Order    string
 }
 
 type TokenBasicsInfoRsp struct {
