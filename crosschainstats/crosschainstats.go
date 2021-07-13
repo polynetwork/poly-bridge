@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/polynetwork/poly/common/log"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"math/big"
@@ -205,20 +206,17 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			return fmt.Errorf("Failed to GetBTCPrice %w", err)
 		}
 		BTCPrice := decimal.NewFromInt(tokenBasicBTC.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
+		logs.Info("BTCPrice:",BTCPrice)
 		for _, statistic := range tokenStatistics {
 			for _, in := range inTokenStatistics {
 				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
-					price_new := decimal.New(in.Token.TokenBasic.Price, 0)
-					if in.Token.TokenBasic.Precision == uint64(0) {
-						price_new = decimal.NewFromInt32(1)
-					} else {
-						price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
-					}
+					price_new := decimal.New(in.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 					amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
 					if in.Token.TokenBasic.Precision == uint64(0) {
 						in.Token.TokenBasic.Precision = uint64(1)
 					}
 					precision_new := decimal.New(int64(in.Token.TokenBasic.Precision), 0)
+					log.Info("precision_new in",precision_new)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 					statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
@@ -231,15 +229,14 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			}
 			for _, out := range outTokenStatistics {
 				if statistic.ChainId == out.ChainId && statistic.Hash == out.Hash {
-					price_new := decimal.New(out.Token.TokenBasic.Price, 0)
-					if out.Token.TokenBasic.Precision == uint64(0) {
-						price_new = decimal.NewFromInt32(1)
-					} else {
-						price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
-					}
+					price_new := decimal.New(out.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 					amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
-
+					if out.Token.TokenBasic.Precision == uint64(0) {
+						out.Token.TokenBasic.Precision = uint64(1)
+					}
 					precision_new := decimal.New(int64(out.Token.TokenBasic.Precision), 0)
+					log.Info("precision_new out",precision_new)
+
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 
@@ -251,6 +248,8 @@ func (this *Stats) computeTokenStatistics() (err error) {
 					break
 				}
 			}
+			jsonstatistic,_:=json.Marshal(statistic)
+			log.Info("jsonstatistic:",jsonstatistic)
 			err = this.dao.SaveTokenStatistic(statistic)
 			if err != nil {
 				return fmt.Errorf("Failed to SaveTokenStatistic %w", err)
