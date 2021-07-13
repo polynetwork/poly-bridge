@@ -103,20 +103,80 @@ func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
 	return tokenBasicsRsp
 }
 
+type TokenBasicsInfoReq struct {
+	PageSize int
+	PageNo   int
+	Order    string
+}
+
+type TokenBasicsInfoRsp struct {
+	PageSize    int
+	PageNo      int
+	TotalPage   uint
+	TotalCount  uint64
+	TokenBasics []*TokenBasicInfoRsp
+}
+
+type TokenBasicInfoRsp struct {
+	TokenBasicRsp  `json:",inline"`
+	TotalAmount    string
+	TotalVolume    string
+	TotalCount     uint64
+	SocialTwitter  string
+	SocialTelegram string
+	SocialWebsite  string
+	SocialOther    string
+}
+
+func MakeTokenBasicsInfoRsp(req *TokenBasicsInfoReq, count uint64, tokenBasics []*TokenBasic) *TokenBasicsInfoRsp {
+	pages := int(count) / req.PageSize
+	if int(count)%req.PageSize != 0 {
+		pages++
+	}
+	tokenBasicsRsp := &TokenBasicsInfoRsp{
+		TotalCount: count,
+		PageSize:   len(tokenBasics),
+		PageNo:     req.PageNo,
+		TotalPage:  uint(pages),
+	}
+	for _, tokenBasic := range tokenBasics {
+		info := &TokenBasicInfoRsp{TokenBasicRsp: *MakeTokenBasicRsp(tokenBasic)}
+		if tokenBasic.TotalAmount == nil {
+			info.TotalAmount = "0"
+			info.TotalVolume = "0"
+		} else {
+			info.TotalAmount = tokenBasic.TotalAmount.String()
+			volume := new(big.Int).Mul(&tokenBasic.TotalAmount.Int, big.NewInt(tokenBasic.Price))
+			if tokenBasic.Precision > 0 {
+				volume = new(big.Int).Quo(volume, new(big.Int).SetInt64(basedef.Int64FromFigure(int(tokenBasic.Precision))))
+			}
+			info.TotalVolume = new(big.Int).Quo(volume, big.NewInt(basedef.PRICE_PRECISION)).String()
+		}
+		info.TotalCount = tokenBasic.TotalCount
+		info.SocialTwitter = tokenBasic.SocialTwitter
+		info.SocialTelegram = tokenBasic.SocialTelegram
+		info.SocialWebsite = tokenBasic.SocialWebsite
+		info.SocialOther = tokenBasic.SocialOther
+		tokenBasicsRsp.TokenBasics = append(tokenBasicsRsp.TokenBasics, info)
+	}
+	return tokenBasicsRsp
+}
+
 type TokenReq struct {
 	ChainId uint64
 	Hash    string
 }
 
 type TokenRsp struct {
-	Hash           string
-	ChainId        uint64
-	Name           string
-	Property       int64
-	TokenBasicName string
-	Precision      uint64
-	TokenBasic     *TokenBasicRsp
-	TokenMaps      []*TokenMapRsp
+	Hash            string
+	ChainId         uint64
+	Name            string
+	Property        int64
+	TokenBasicName  string
+	Precision       uint64
+	AvailableAmount string
+	TokenBasic      *TokenBasicRsp
+	TokenMaps       []*TokenMapRsp
 }
 
 func MakeTokenRsp(token *Token) *TokenRsp {
@@ -127,6 +187,9 @@ func MakeTokenRsp(token *Token) *TokenRsp {
 		TokenBasicName: token.TokenBasicName,
 		Property:       token.Property,
 		Precision:      token.Precision,
+	}
+	if token.AvailableAmount != nil {
+		tokenRsp.AvailableAmount = token.AvailableAmount.String()
 	}
 	if token.TokenBasic != nil {
 		tokenRsp.TokenBasic = MakeTokenBasicRsp(token.TokenBasic)
@@ -703,6 +766,16 @@ type TransactionsOfAddressReq struct {
 	Addresses []string
 	PageSize  int
 	PageNo    int
+}
+
+type TransactionsOfAddressWithFilterReq struct {
+	State      int // -1 表示查全部
+	Addresses  []string
+	SrcChainId int
+	DstChainId int
+	Assets     []string
+	PageSize   int
+	PageNo     int
 }
 
 type TransactionsOfAddressRsp struct {

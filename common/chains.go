@@ -1,7 +1,6 @@
-package controllers
+package common
 
 import (
-	"github.com/astaxie/beego"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -10,24 +9,23 @@ import (
 
 var (
 	ethereumSdk *chainsdk.EthereumSdkPro
-	bscSdk *chainsdk.EthereumSdkPro
-	hecoSdk *chainsdk.EthereumSdkPro
-	okSdk *chainsdk.EthereumSdkPro
-	neoSdk *chainsdk.NeoSdkPro
+	bscSdk      *chainsdk.EthereumSdkPro
+	hecoSdk     *chainsdk.EthereumSdkPro
+	okSdk       *chainsdk.EthereumSdkPro
+	neoSdk      *chainsdk.NeoSdkPro
 	ontologySdk *chainsdk.OntologySdkPro
-    config *conf.Config
+	config      *conf.Config
 )
 
-func init() {
-	newChainSdks()
+func SetupChainsSDK(cfg *conf.Config) {
+	if cfg == nil {
+		panic("Missing config")
+	}
+	config = cfg
+	newChainSdks(cfg)
 }
 
-func newChainSdks() {
-	configFile := beego.AppConfig.String("chain_config")
-	config = conf.NewConfig(configFile)
-	if config == nil {
-		panic("startServer - read config failed!")
-	}
+func newChainSdks(config *conf.Config) {
 	{
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
@@ -78,7 +76,7 @@ func newChainSdks() {
 	}
 }
 
-func getBalance(chainId uint64, hash string) (*big.Int, error) {
+func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
