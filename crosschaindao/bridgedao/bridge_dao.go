@@ -432,16 +432,15 @@ func (dao *BridgeDao) CalculateAsset(lastId, nowId int64) ([]*models.AssetStatis
 	fmt.Println("CalculateAsset assetStatistics:" + string(jsonAssetStatistics))
 	return assetStatistics, err
 }
-func (dao *BridgeDao) UpdateAssetStatistic(assetStatistic *models.AssetStatistic) (err error) {
-	tx := dao.db.Model(&models.AssetStatistic{}).
-		Where("token_basic_name = ? ", assetStatistic.TokenBasicName)
-	if tx.RowsAffected == 0 {
-		err = dao.db.Create(assetStatistic).Error
-	} else {
-		err = tx.Updates(map[string]interface{}{"amount": gorm.Expr("amount + ?", assetStatistic.Amount), "amount_usd": gorm.Expr("amount_usd + ?", assetStatistic.AmountUsd), "amount_btc": gorm.Expr("amount_btc + ?", assetStatistic.AmountBtc),
-			"txnum": gorm.Expr("txnum + ?", assetStatistic.Txnum), "last_check_id": assetStatistic.LastCheckId}).Error
-	}
-	return
+func (dao *BridgeDao) GetAssetStatistic() ([]*models.AssetStatistic, error) {
+	assetStatistics := make([]*models.AssetStatistic, 0)
+	err := dao.db.Find(&assetStatistics).Error
+	return assetStatistics, err
+}
+
+func (dao *BridgeDao) SaveAssetStatistic(assetStatistic *models.AssetStatistic) (err error) {
+	err = dao.db.Save(assetStatistic).Error
+	return err
 }
 func (dao *BridgeDao) CalculateAssetAdress() ([]*models.AssetStatistic, error) {
 	assetStatistics := make([]*models.AssetStatistic, 0)
@@ -455,8 +454,8 @@ func (dao *BridgeDao) UpdateAssetStatisticAdress(assetStatistic *models.AssetSta
 		Update("addressnum", assetStatistic.Addressnum).Error
 	return
 }
-func (dao *BridgeDao) GetBTCPrice() (*models.TokenBasic,error){
-	tokenBasicBTC:=new(models.TokenBasic)
-	err:=dao.db.Where("name='WBTC'").First(tokenBasicBTC).Error
-	return tokenBasicBTC,err
+func (dao *BridgeDao) GetBTCPrice() (*models.TokenBasic, error) {
+	tokenBasicBTC := new(models.TokenBasic)
+	err := dao.db.Where("name='WBTC'").First(tokenBasicBTC).Error
+	return tokenBasicBTC, err
 }

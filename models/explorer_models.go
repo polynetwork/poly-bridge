@@ -28,7 +28,6 @@
 package models
 
 import (
-	"fmt"
 	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
@@ -436,7 +435,7 @@ type CrossTxListResp struct {
 	CrossTxList []*CrossTxOutlineResp `json:"crosstxs"`
 }
 
-func MakeCrossTxListResp(txs []SrcPolyDstRelation) *CrossTxListResp {
+func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
 	crossTxListResp := &CrossTxListResp{}
 	crossTxListResp.CrossTxList = make([]*CrossTxOutlineResp, 0)
 	for _, tx := range txs {
@@ -534,6 +533,8 @@ func MakeAddressTxList(transactoins []*TransactionOnAddress, counter int64) *Add
 			TT:        uint32(transactoin.Time),
 			Direct:    transactoin.Direct,
 			TokenHash: transactoin.TokenHash,
+			TokenName: transactoin.TokenName,
+			TokenType: transactoin.TokenType,
 		})
 	}
 	return addressTxListResp
@@ -589,26 +590,24 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 	allTransferStatistic := new(AllTransferStatisticResp)
 	allTransferStatistic.ChainTransferStatistics = make([]*ChainTransferStatisticResp, 0)
 
-	allAmountUsdTotal := new(big.Int)
+	allAmountUsdTotal := new(big.Int).SetInt64(0)
 	allAddress := uint32(0)
 	allTransactions := uint32(0)
 	for _, chainStatistic := range chainStatistics {
-		amountBtcTotal := new(big.Int)
-		amountUsdTotal := new(big.Int)
+		amountBtcTotal := new(big.Int).SetInt64(0)
+		amountUsdTotal := new(big.Int).SetInt64(0)
 		totalHeight := uint64(0)
 		for _, chain := range chains {
 			if chainStatistic.ChainId == chain.ChainId {
 				totalHeight += chain.Height
 			}
 		}
-		fmt.Println("totalHeight:", totalHeight)
 		assetTransferStatisticResps := make([]*AssetTransferStatisticResp, 0)
 		for _, tokenStatistic := range tokenStatistics {
-			fmt.Println("tokenStatistic.ChainId:", tokenStatistic.ChainId, "chainStatistic.ChainId", chainStatistic.ChainId)
 			if tokenStatistic.ChainId == chainStatistic.ChainId {
-				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
-				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
-				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
+				amount := new(big.Int).Add(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
+				amountBtc := new(big.Int).Add(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
+				amountUsd := new(big.Int).Add(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
 
 				amountBtcTotal.Add(amountBtcTotal, amountBtc)
 				amountUsdTotal.Add(amountUsdTotal, amountUsd)

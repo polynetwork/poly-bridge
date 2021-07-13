@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"errors"
+	"fmt"
 	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
@@ -128,6 +128,8 @@ func merge() {
 		migrateExplorerBasicTables(exp, db)
 	case "migrateExplorerAssetStatisticTables":
 		migrateExplorerAssetStatisticTables(exp, db)
+	case "updateNullToZero":
+		updateNullToZero(db)
 	case "verifyTables":
 		verifyTables(bri, db)
 	default:
@@ -155,61 +157,61 @@ func migrateBridgeBasicTables(bri, db *gorm.DB) {
 }
 
 func migrateExplorerBasicTables(exp, db *gorm.DB) {
-		{
-			logs.Info("Migrating table chains from explorer")
-			model := make([]*explorerdao.Chain, 0)
-			err := exp.Find(&model).Error
-			checkError(err, "Loading table")
-			for _, chain := range model {
-				err = db.Table("chains").Where("chain_id=?", chain.ChainId).Update("name", chain.Name).Error
-				checkError(err, "Saving table")
-			}
+	{
+		logs.Info("Migrating table chains from explorer")
+		model := make([]*explorerdao.Chain, 0)
+		err := exp.Find(&model).Error
+		checkError(err, "Loading table")
+		for _, chain := range model {
+			err = db.Table("chains").Where("chain_id=?", chain.ChainId).Update("name", chain.Name).Error
+			checkError(err, "Saving table")
 		}
-		{
-			logs.Info("Migrating table tokens from explorer")
-			model := make([]*explorerdao.Token, 0)
-			err := exp.Find(&model).Error
-			checkError(err, "Loading table")
-			for _, token := range model {
-				err = db.Table("tokens").Where("chain_id=? AND hash=?", token.Id, token.Hash).Update("token_type", token.Type).Error
-				checkError(err, "Saving table")
-			}
+	}
+	{
+		logs.Info("Migrating table tokens from explorer")
+		model := make([]*explorerdao.Token, 0)
+		err := exp.Find(&model).Error
+		checkError(err, "Loading table")
+		for _, token := range model {
+			err = db.Table("tokens").Where("chain_id=? AND hash=?", token.Id, token.Hash).Update("token_type", token.Type).Error
+			checkError(err, "Saving table")
 		}
-		{
-			logs.Info("Filling chain ids in table token_basics from explorer chain_token_bind and chain_token")
-			type SourceBasic struct {
-				ChainId uint64
-				Name    string
-			}
-			sourceBasics := make([]*SourceBasic, 0)
-			err := exp.Raw("SELECT b.id as chainId,b.xname as name from chain_token_bind a join chain_token b on a.hash_src=b.hash Where a.hash_src=a.hash_dest and  b.hash != '0000000000000000000000000000000000000000'").
-				Find(&sourceBasics).Error
-			checkError(err, "Loading table")
-			for _, sourceBasic := range sourceBasics {
-				err = db.Model(&models.TokenBasic{}).
-					Where("name=?", sourceBasic.Name).
-					Update("chain_id", sourceBasic.ChainId).Error
-				checkError(err, "Updating table")
-			}
+	}
+	{
+		logs.Info("Filling chain ids in table token_basics from explorer chain_token_bind and chain_token")
+		type SourceBasic struct {
+			ChainId uint64
+			Name    string
 		}
-		{
-			logs.Info("initialization table chain_statistics")
-			chainStatistics := make([]*models.ChainStatistic, 0)
-			err := db.Raw("select chain_id from chains").
-				Find(&chainStatistics).Error
-			checkError(err, "Loading table")
-			err = db.Save(chainStatistics).Error
-			checkError(err, "Loading table")
+		sourceBasics := make([]*SourceBasic, 0)
+		err := exp.Raw("SELECT b.id as chainId,b.xname as name from chain_token_bind a join chain_token b on a.hash_src=b.hash Where a.hash_src=a.hash_dest and  b.hash != '0000000000000000000000000000000000000000'").
+			Find(&sourceBasics).Error
+		checkError(err, "Loading table")
+		for _, sourceBasic := range sourceBasics {
+			err = db.Model(&models.TokenBasic{}).
+				Where("name=?", sourceBasic.Name).
+				Update("chain_id", sourceBasic.ChainId).Error
+			checkError(err, "Updating table")
 		}
-		{
-			logs.Info("initialization table token_statistics")
-			tokenStatistics := make([]*models.TokenStatistic, 0)
-			err := db.Raw("select chain_id,hash from tokens").
-				Find(&tokenStatistics).Error
-			checkError(err, "Loading table")
-			err = db.Save(tokenStatistics).Error
-			checkError(err, "Loading table")
-		}
+	}
+	{
+		logs.Info("initialization table chain_statistics")
+		chainStatistics := make([]*models.ChainStatistic, 0)
+		err := db.Raw("select chain_id from chains").
+			Find(&chainStatistics).Error
+		checkError(err, "Loading table")
+		err = db.Save(chainStatistics).Error
+		checkError(err, "Loading table")
+	}
+	{
+		logs.Info("initialization table token_statistics")
+		tokenStatistics := make([]*models.TokenStatistic, 0)
+		err := db.Raw("select chain_id,hash from tokens").
+			Find(&tokenStatistics).Error
+		checkError(err, "Loading table")
+		err = db.Save(tokenStatistics).Error
+		checkError(err, "Loading table")
+	}
 }
 
 func createTables(db *gorm.DB) {
@@ -517,30 +519,30 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	srcTransfer := new(models.SrcTransfer)
 	err = db.Last(srcTransfer).Error
 	checkError(err, "Loading table")
-	tokenBasics:=make([]*models.TokenBasic,0)
-	err=db.Select("Name").Find(&tokenBasics).Error
+	tokenBasics := make([]*models.TokenBasic, 0)
+	err = db.Select("Name").Find(&tokenBasics).Error
 	checkError(err, "Loading table")
 
-	for _,old:=range oldAssetstatictics{
-		if old.Hash==""{
+	for _, old := range oldAssetstatictics {
+		if old.Hash == "" {
 			continue
 		}
-		err = db.Debug().Raw("SELECT `token_basic_name` FROM `tokens` WHERE hash=? limit 1",old.Hash).
+		err = db.Debug().Raw("SELECT `token_basic_name` FROM `tokens` WHERE hash=? limit 1", old.Hash).
 			Scan(&old).Error
-		if err!=nil&&!errors.Is(err, gorm.ErrRecordNotFound){
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			checkError(err, "Loading table")
 		}
 	}
-	assetStatistics:=make([]*models.AssetStatistic,0)
-	for _,tokenBasic:=range tokenBasics {
+	assetStatistics := make([]*models.AssetStatistic, 0)
+	for _, tokenBasic := range tokenBasics {
 		newAssetstatictic := &models.AssetStatistic{}
 		newAssetstatictic.TokenBasicName = tokenBasic.Name
 		for _, old := range oldAssetstatictics {
-			if old.Hash==""{
+			if old.Hash == "" {
 				continue
 			}
 			if old.TokenBasicName == tokenBasic.Name {
-				if newAssetstatictic.Amount!=nil&&newAssetstatictic.Amount.Uint64() != uint64(0) {
+				if newAssetstatictic.Amount != nil && newAssetstatictic.Amount.Uint64() != uint64(0) {
 					continue
 				}
 				newAssetstatictic.Amount = old.Amount
@@ -555,4 +557,31 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	}
 	err = db.Debug().Save(assetStatistics).Error
 	checkError(err, "Saving AssetStatistic table3")
+}
+func updateNullToZero(db *gorm.DB) {
+	assetStatistics := make([]*models.AssetStatistic, 0)
+	err := db.Find(&assetStatistics).Error
+	checkError(err, "Find AssetStatistic table")
+	for _, assetStatistic := range assetStatistics {
+		models.NullToZero(&assetStatistic.Amount)
+		models.NullToZero(&assetStatistic.AmountBtc)
+		models.NullToZero(&assetStatistic.AmountUsd)
+		err := db.Save(assetStatistic).Error
+		checkError(err, "Save AssetStatistic table")
+	}
+	tokenStatistics := make([]*models.TokenStatistic, 0)
+	err = db.Find(&tokenStatistics).Error
+	checkError(err, "Find TokenStatistic table")
+	for _, tokenStatistic := range tokenStatistics {
+		models.NullToZero(&tokenStatistic.InAmount)
+		models.NullToZero(&tokenStatistic.OutAmount)
+		models.NullToZero(&tokenStatistic.InAmountUsd)
+		models.NullToZero(&tokenStatistic.OutAmountUsd)
+		models.NullToZero(&tokenStatistic.InAmountBtc)
+		models.NullToZero(&tokenStatistic.InAmountBtc)
+		models.NullToZero(&tokenStatistic.OutAmountBtc)
+		err = db.Save(tokenStatistic).Error
+		checkError(err, "SAVE TokenStatistic table")
+
+	}
 }

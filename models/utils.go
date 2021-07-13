@@ -79,8 +79,11 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 }
 
 func FormatAmount(precision uint64, amount *BigInt) string {
+	if precision == uint64(0) {
+		precision = uint64(1)
+	}
 	precision_new := decimal.New(int64(precision), 0)
-	amount_new := decimal.New(amount.Int64(), 0)
+	amount_new := decimal.NewFromBigInt(&amount.Int, 0)
 	return amount_new.Div(precision_new).String()
 }
 
@@ -109,5 +112,11 @@ func TxType2Name(ty uint32) string {
 }
 func Precent(a uint64, b uint64) string {
 	c := float64(a) / float64(b)
-	return fmt.Sprintf("%.2f%%", c * 100)
+	return fmt.Sprintf("%.2f%%", c*100)
+}
+
+func NullToZero(a **BigInt) {
+	if *a == nil {
+		*a = NewBigInt(new(big.Int).SetInt64(0))
+	}
 }

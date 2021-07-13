@@ -207,7 +207,7 @@ type AssetStatistic struct {
 	Amount         *BigInt     `gorm:"type:varchar(64);not null"`
 	Txnum          uint64      `gorm:"type:bigint(20);not null"`
 	Addressnum     uint64      `gorm:"type:bigint(20);not null"`
-	TokenBasicName string      `gorm:"size:64;not null"`
+	TokenBasicName string      `gorm:"uniqueIndex;size:64;not null"`
 	AmountBtc      *BigInt     `gorm:"type:varchar(64);not null"`
 	AmountUsd      *BigInt     `gorm:"type:varchar(64);not null"`
 	LastCheckId    int64       `gorm:"type:int"`

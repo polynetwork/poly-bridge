@@ -167,19 +167,16 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
 	}
-	logs.Info("computeTokenStatistics.newDst:", newDst)
 	nowInId := newDst.Id
 	newSrc, err := this.dao.GetNewSrcTransfer()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
 	}
-	logs.Info("computeTokenStatistics.newSrc:", newSrc)
 	nowOutId := newSrc.Id
 	nowTokenStatistic, err := this.dao.GetNewTokenSta()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewTokenSta %w", err)
 	}
-	logs.Info("computeTokenStatistics.nowTokenStatistic:", nowTokenStatistic)
 	inTokenStatistics := make([]*models.TokenStatistic, 0)
 	if nowInId > nowTokenStatistic.LastInCheckId {
 		err = this.dao.CalculateInTokenStatistics(nowTokenStatistic.LastInCheckId, nowInId, &inTokenStatistics)
@@ -192,7 +189,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	if nowOutId > nowTokenStatistic.LastOutCheckId {
 		err = this.dao.CalculateOutTokenStatistics(nowTokenStatistic.LastOutCheckId, nowOutId, &outTokenStatistics)
 		logs.Info("nowOutId > nowTokenStatistic.LastOutCheckId and CalculateOutTokenStatistics success")
-
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
@@ -204,22 +200,24 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		if err != nil {
 			return fmt.Errorf("Failed to GetTokenStatistics %w", err)
 		}
-		tokenBasicBTC,err:=this.dao.GetBTCPrice()
-		if err!=nil{
+		tokenBasicBTC, err := this.dao.GetBTCPrice()
+		if err != nil {
 			return fmt.Errorf("Failed to GetBTCPrice %w", err)
 		}
 		for _, statistic := range tokenStatistics {
 			for _, in := range inTokenStatistics {
 				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
-					amount_new := decimal.New(in.InAmount.Int64(), 0)
+					amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
+					if in.Token.TokenBasic.Precision == uint64(0) {
+						in.Token.TokenBasic.Precision = uint64(1)
+					}
 					precision_new := decimal.New(int64(in.Token.TokenBasic.Precision), 0)
 					price_new := decimal.New(in.Token.TokenBasic.Price, 0)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price, 0))
-
 					statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Mul(decimal.NewFromInt32(100)).BigInt()))
-					statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd,models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
-					statistic.InAmountBtc = addDecimalBigInt(statistic.InAmountBtc,models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
+					statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
+					statistic.InAmountBtc = addDecimalBigInt(statistic.InAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
 					statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
 					statistic.LastInCheckId = nowInId
 					break
@@ -227,7 +225,10 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			}
 			for _, out := range outTokenStatistics {
 				if statistic.ChainId == out.ChainId && statistic.Hash == out.Hash {
-					amount_new := decimal.New(out.OutAmount.Int64(), 0)
+					amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
+					if out.Token.TokenBasic.Precision == uint64(0) {
+						out.Token.TokenBasic.Precision = uint64(1)
+					}
 					precision_new := decimal.New(int64(out.Token.TokenBasic.Precision), 0)
 					price_new := decimal.New(out.Token.TokenBasic.Price, 0)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
@@ -235,13 +236,12 @@ func (this *Stats) computeTokenStatistics() (err error) {
 
 					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Mul(decimal.NewFromInt32(100)).BigInt()))
 					statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
-					statistic.OutAmountUsd = addDecimalBigInt(statistic.OutAmountUsd,models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
-					statistic.OutAmountBtc = addDecimalBigInt(statistic.OutAmountBtc,models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
+					statistic.OutAmountUsd = addDecimalBigInt(statistic.OutAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
+					statistic.OutAmountBtc = addDecimalBigInt(statistic.OutAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
 					statistic.LastOutCheckId = nowOutId
 					break
 				}
 			}
-			logs.Info("tokenStatistic:", statistic)
 			err = this.dao.SaveTokenStatistic(statistic)
 			if err != nil {
 				return fmt.Errorf("Failed to SaveTokenStatistic %w", err)
@@ -283,8 +283,9 @@ func (this *Stats) computeChainStatistics() (err error) {
 		}
 	}
 	if nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId {
+		fmt.Println("nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
 		chainStatistics := make([]*models.ChainStatistic, 0)
-		err = this.dao.GetChainStatistic(chainStatistics)
+		err = this.dao.GetChainStatistic(&chainStatistics)
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
@@ -293,16 +294,15 @@ func (this *Stats) computeChainStatistics() (err error) {
 				if chainStatistic.ChainId == in.ChainId {
 					chainStatistic.In = addDecimalInt64(chainStatistic.In, in.In)
 					chainStatistic.LastInCheckId = nowInId
-					break
 				}
 			}
 			for _, out := range outChainStatistics {
 				if chainStatistic.ChainId == out.ChainId {
 					chainStatistic.Out = addDecimalInt64(chainStatistic.Out, out.Out)
 					chainStatistic.LastOutCheckId = nowOutId
-					break
 				}
 			}
+			fmt.Println(chainStatistic.In, chainStatistic.Out)
 			err = this.dao.SaveChainStatistic(chainStatistic)
 			if err != nil {
 				logs.Error("computeChainStatisticAssets SaveChainStatistic error", err)
@@ -357,30 +357,39 @@ func (this *Stats) computeAssetStatistics() (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to CalculateAsset %w", err)
 	}
-	tokenBasicBTC,err:=this.dao.GetBTCPrice()
-	newAssetsJson, _ := json.Marshal(newAssets)
-	fmt.Println("computeAssetStatistics newAssetsJson" + string(newAssetsJson))
+	tokenBasicBTC, err := this.dao.GetBTCPrice()
+	newAssetsJson, _ := json.Marshal(newAssets[:2])
 	logs.Info("computeAssetStatistics newAssetsJson" + string(newAssetsJson))
-	for _, assetStatistic := range newAssets {
+	oldAssetStatistics, err := this.dao.GetAssetStatistic()
+	if err != nil {
+		return fmt.Errorf("Failed to GetAssetStatistic %w", err)
+	}
+	for _, old := range oldAssetStatistics {
+		for _, assetStatistic := range newAssets {
+			if old.TokenBasicName == assetStatistic.TokenBasicName {
+				amount_new := decimal.NewFromBigInt(&assetStatistic.Amount.Int, 0)
+				if assetStatistic.TokenBasic.Precision == uint64(0) {
+					assetStatistic.TokenBasic.Precision = uint64(1)
+				}
+				precision_new := decimal.New(int64(assetStatistic.TokenBasic.Precision), 0)
+				real_amount := amount_new.Div(precision_new)
+				price_new := decimal.New(assetStatistic.TokenBasic.Price, 0)
+				amount_usd := real_amount.Mul(price_new)
+				amount_btc := amount_usd.Div(decimal.New(tokenBasicBTC.Price, 0))
 
-		amount_new := decimal.New(assetStatistic.Amount.Int64(), 0)
-		precision_new := decimal.New(int64(assetStatistic.TokenBasic.Precision), 0)
-		real_amount := amount_new.Div(precision_new)
-		price_new := decimal.New(assetStatistic.TokenBasic.Price, 0)
-		amount_usd := real_amount.Mul(price_new)
-		amount_btc := amount_usd.Div(decimal.New(tokenBasicBTC.Price, 0))
+				old.Amount = models.NewBigInt((real_amount.Mul(decimal.New(int64(100), 0)).Add(decimal.NewFromBigInt(&old.Amount.Int, 0))).BigInt())
+				old.AmountUsd = models.NewBigInt((amount_usd.Mul(decimal.New(int64(10000), 0)).Add(decimal.NewFromBigInt(&old.AmountUsd.Int, 0))).BigInt())
+				old.AmountBtc = models.NewBigInt((amount_btc.Mul(decimal.New(int64(10000), 0)).Add(decimal.NewFromBigInt(&old.AmountBtc.Int, 0))).BigInt())
+				old.LastCheckId = nowId
 
-		assetStatistic.Amount = models.NewBigInt((real_amount.Mul(decimal.New(int64(100), 0))).BigInt())
-		assetStatistic.AmountUsd = models.NewBigInt((amount_usd.Mul(decimal.New(int64(10000), 0))).BigInt())
-		assetStatistic.AmountBtc = models.NewBigInt((amount_btc.Mul(decimal.New(int64(10000), 0))).BigInt())
-		assetStatistic.LastCheckId = nowId
-
-		assetStatisticJson, _ := json.Marshal(assetStatistic)
-		fmt.Println("computeAssetStatistics newAssetsJson" + string(assetStatisticJson))
-		logs.Info("computeAssetStatistics newAssetsJson" + string(assetStatisticJson))
-		err := this.dao.UpdateAssetStatistic(assetStatistic)
-		if err != nil {
-			return fmt.Errorf("Failed to UpdateTransferStatistic %w", err)
+				oldJson, _ := json.Marshal(old)
+				logs.Info("computeAssetStatistics newAssetsJson" + string(oldJson))
+				err := this.dao.SaveAssetStatistic(old)
+				if err != nil {
+					return fmt.Errorf("Failed to UpdateTransferStatistic %w", err)
+				}
+				break
+			}
 		}
 	}
 	return nil
@@ -402,8 +411,8 @@ func (this *Stats) computeAssetStatisticAdress() (err error) {
 }
 
 func addDecimalBigInt(a, b *models.BigInt) *models.BigInt {
-	a_new := decimal.New(a.Int64(), 0)
-	b_new := decimal.New(b.Int64(), 0)
+	a_new := decimal.NewFromBigInt(&a.Int, 0)
+	b_new := decimal.NewFromBigInt(&b.Int, 0)
 	c := a_new.Add(b_new)
 	return models.NewBigInt(c.BigInt())
 }
