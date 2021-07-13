@@ -204,17 +204,23 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		if err != nil {
 			return fmt.Errorf("Failed to GetBTCPrice %w", err)
 		}
+		BTCPrice := decimal.NewFromInt(tokenBasicBTC.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 		for _, statistic := range tokenStatistics {
 			for _, in := range inTokenStatistics {
 				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
+					price_new := decimal.New(in.Token.TokenBasic.Price, 0)
+					if in.Token.TokenBasic.Precision == uint64(0) {
+						price_new = decimal.NewFromInt32(1)
+					} else {
+						price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
+					}
 					amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
 					if in.Token.TokenBasic.Precision == uint64(0) {
 						in.Token.TokenBasic.Precision = uint64(1)
 					}
 					precision_new := decimal.New(int64(in.Token.TokenBasic.Precision), 0)
-					price_new := decimal.New(in.Token.TokenBasic.Price, 0)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
-					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price, 0))
+					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 					statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 					statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
 					statistic.InAmountBtc = addDecimalBigInt(statistic.InAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
@@ -225,14 +231,17 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			}
 			for _, out := range outTokenStatistics {
 				if statistic.ChainId == out.ChainId && statistic.Hash == out.Hash {
-					amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
-					if out.Token.TokenBasic.Precision == uint64(0) {
-						out.Token.TokenBasic.Precision = uint64(1)
-					}
-					precision_new := decimal.New(int64(out.Token.TokenBasic.Precision), 0)
 					price_new := decimal.New(out.Token.TokenBasic.Price, 0)
+					if out.Token.TokenBasic.Precision == uint64(0) {
+						price_new = decimal.NewFromInt32(1)
+					} else {
+						price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
+					}
+					amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
+
+					precision_new := decimal.New(int64(out.Token.TokenBasic.Precision), 0)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
-					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price, 0))
+					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 
 					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 					statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
@@ -358,6 +367,10 @@ func (this *Stats) computeAssetStatistics() (err error) {
 		return fmt.Errorf("Failed to CalculateAsset %w", err)
 	}
 	tokenBasicBTC, err := this.dao.GetBTCPrice()
+	if err != nil {
+		return fmt.Errorf("Failed to GetBTCPrice %w", err)
+	}
+	BTCPrice := decimal.NewFromInt(tokenBasicBTC.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 	newAssetsJson, _ := json.Marshal(newAssets[:2])
 	logs.Info("computeAssetStatistics newAssetsJson" + string(newAssetsJson))
 	oldAssetStatistics, err := this.dao.GetAssetStatistic()
@@ -368,14 +381,16 @@ func (this *Stats) computeAssetStatistics() (err error) {
 		for _, assetStatistic := range newAssets {
 			if old.TokenBasicName == assetStatistic.TokenBasicName {
 				amount_new := decimal.NewFromBigInt(&assetStatistic.Amount.Int, 0)
+				price_new := decimal.NewFromInt(int64(assetStatistic.TokenBasic.Precision))
 				if assetStatistic.TokenBasic.Precision == uint64(0) {
-					assetStatistic.TokenBasic.Precision = uint64(1)
+					price_new = decimal.NewFromInt32(1)
+				} else {
+					price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 				}
 				precision_new := decimal.New(int64(assetStatistic.TokenBasic.Precision), 0)
 				real_amount := amount_new.Div(precision_new)
-				price_new := decimal.New(assetStatistic.TokenBasic.Price, 0)
 				amount_usd := real_amount.Mul(price_new)
-				amount_btc := amount_usd.Div(decimal.New(tokenBasicBTC.Price, 0))
+				amount_btc := amount_usd.Div(BTCPrice)
 
 				old.Amount = models.NewBigInt((real_amount.Mul(decimal.New(int64(100), 0)).Add(decimal.NewFromBigInt(&old.Amount.Int, 0))).BigInt())
 				old.AmountUsd = models.NewBigInt((amount_usd.Mul(decimal.New(int64(10000), 0)).Add(decimal.NewFromBigInt(&old.AmountUsd.Int, 0))).BigInt())
