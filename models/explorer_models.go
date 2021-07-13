@@ -605,9 +605,9 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		assetTransferStatisticResps := make([]*AssetTransferStatisticResp, 0)
 		for _, tokenStatistic := range tokenStatistics {
 			if tokenStatistic.ChainId == chainStatistic.ChainId {
-				amount := new(big.Int).Add(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
-				amountBtc := new(big.Int).Add(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
-				amountUsd := new(big.Int).Add(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
+				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
+				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
+				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
 
 				amountBtcTotal.Add(amountBtcTotal, amountBtc)
 				amountUsdTotal.Add(amountUsdTotal, amountUsd)

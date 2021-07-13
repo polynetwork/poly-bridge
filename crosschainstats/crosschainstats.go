@@ -215,7 +215,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 					price_new := decimal.New(in.Token.TokenBasic.Price, 0)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price, 0))
-					statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Mul(decimal.NewFromInt32(100)).BigInt()))
+					statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 					statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
 					statistic.InAmountBtc = addDecimalBigInt(statistic.InAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
 					statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
@@ -234,7 +234,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(decimal.New(tokenBasicBTC.Price, 0))
 
-					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Mul(decimal.NewFromInt32(100)).BigInt()))
+					statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 					statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
 					statistic.OutAmountUsd = addDecimalBigInt(statistic.OutAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
 					statistic.OutAmountBtc = addDecimalBigInt(statistic.OutAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))

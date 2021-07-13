@@ -223,6 +223,7 @@ func (c *ExplorerController) GetCrossTx() {
 		c.ServeJSON()
 	}
 	crossTxReq.TxHash = c.Ctx.Input.Query("txhash")
+	fmt.Println("crossTxReq.TxHash", crossTxReq.TxHash)
 	relations := make([]*models.PolyTxRelation, 0)
 	res := db.Model(&models.SrcTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, src_transfers.dst_chain_id as to_chain_id, src_transfers.dst_asset as to_token_hash, dst_transfers.chain_id as dst_chain_id, dst_transfers.asset as dst_token_hash").
@@ -318,9 +319,10 @@ func (c *ExplorerController) GetTransferStatistic() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-	if chainId, err := strconv.Atoi(c.Ctx.Input.Query("chain")); err != nil {
+	if chainId, err := strconv.Atoi(c.Ctx.Input.Query("chain")); err == nil {
 		transferStatisticReq.Chain = uint64(chainId)
 	}
+	fmt.Println("transferStatisticReq.Chain ", transferStatisticReq.Chain)
 	req, _ := json.Marshal(transferStatisticReq)
 	log.Info("GetTransferStatistic transferStatisticReq" + string(req))
 
