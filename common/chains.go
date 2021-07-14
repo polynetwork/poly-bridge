@@ -121,3 +121,49 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 	}
 	return new(big.Int).SetUint64(0), nil
 }
+
+func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
+	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
+		if ethereumConfig == nil {
+			panic("chain is invalid")
+		}
+		return ethereumSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.BSC_CROSSCHAIN_ID {
+		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
+		if bscConfig == nil {
+			panic("chain is invalid")
+		}
+		return bscSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.HECO_CROSSCHAIN_ID {
+		hecoConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
+		if hecoConfig == nil {
+			panic("chain is invalid")
+		}
+		return hecoSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.OK_CROSSCHAIN_ID {
+		okConfig := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
+		if okConfig == nil {
+			panic("chain is invalid")
+		}
+		return okSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.NEO_CROSSCHAIN_ID {
+		neoConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
+		if neoConfig == nil {
+			panic("chain is invalid")
+		}
+		return neoSdk.Nep5TotalSupply(hash)
+	}
+	if chainId == basedef.ONT_CROSSCHAIN_ID {
+		ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
+		if ontConfig == nil {
+			panic("chain is invalid")
+		}
+		return ontologySdk.Oep4TotalSupply(hash,ontConfig.ProxyContract)
+	}
+	return new(big.Int).SetUint64(0), nil
+}
