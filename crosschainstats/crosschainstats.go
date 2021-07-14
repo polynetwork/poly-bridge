@@ -261,8 +261,9 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
-	logs.Info("-----start computeChainStatistics computeChainStatistics")
+	logs.Info("qwertyuiop1-----start computeChainStatistics computeChainStatistics")
 	nowChainStatistic, err := this.dao.GetNewChainSta()
+	logs.Info("qwertyuiop4huilaiinStatistics")
 	jsonnowChainStatistic,_:=json.Marshal(nowChainStatistic)
 	log.Info("-----jsonnowChainStatistic:",string(jsonnowChainStatistic))
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {

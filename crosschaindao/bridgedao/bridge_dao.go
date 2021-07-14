@@ -390,8 +390,10 @@ func (dao *BridgeDao) GetNewTokenSta() (*models.TokenStatistic, error) {
 	return tokenStatistic, res.Error
 }
 func (dao *BridgeDao) GetNewChainSta() (*models.ChainStatistic, error) {
+	logs.Info("qwertyuiop2kaishichaChainStatistic-------")
 	chainStatistic := &models.ChainStatistic{}
-	res := dao.db.Last(chainStatistic)
+	res := dao.db.Debug().Last(chainStatistic)
+	logs.Info("qwertyuiop3chawanchaChainStatistic-------")
 	return chainStatistic, res.Error
 }
 func (dao *BridgeDao) CalculateChainStatisticAssets(chainStatistics interface{}) error {
