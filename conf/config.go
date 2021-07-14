@@ -32,6 +32,14 @@ type DBConfig struct {
 	Debug    bool
 }
 
+type ExpConfig struct {
+	URL      string
+	User     string
+	Password string
+	Scheme   string
+	Debug    bool
+}
+
 type Restful struct {
 	Url string
 	Key string

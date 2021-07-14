@@ -138,6 +138,14 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		startTransactions(config)
+	}else if cmd == 6 {
+		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		config := conf.NewTransactionsConfig(configFile)
+		if config == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		startTransactions(config)
 	}
 }
 
