@@ -261,17 +261,23 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
-	logs.Info("start computeChainStatistics")
+	logs.Info("-----start computeChainStatistics computeChainStatistics")
 	nowChainStatistic, err := this.dao.GetNewChainSta()
+	jsonnowChainStatistic,_:=json.Marshal(nowChainStatistic)
+	log.Info("-----jsonnowChainStatistic:",string(jsonnowChainStatistic))
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
 	}
 	nowIn, err := this.dao.GetNewDstTransfer()
+	json1,_:=json.Marshal(nowIn)
+	log.Info("------nowIn:",string(json1))
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
 	}
 	nowInId := nowIn.Id
 	nowOut, err := this.dao.GetNewSrcTransfer()
+	json1,_=json.Marshal(nowOut)
+	log.Info("------nowIn:",string(json1))
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
 	}
@@ -283,6 +289,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
+	log.Info("---qqq----")
 	outChainStatistics := make([]*models.ChainStatistic, 0)
 	if nowOutId > nowChainStatistic.LastOutCheckId {
 		err = this.dao.CalculateOutChainStatistics(nowChainStatistic.LastOutCheckId, nowOutId, &outChainStatistics)
