@@ -252,6 +252,8 @@ func (c *ExplorerController) GetCrossTx() {
 		return
 	}
 	relation := relations[0]
+	jsonrelation,_:=json.Marshal(relation)
+	fmt.Println("---1",string(jsonrelation))
 	token := new(models.Token)
 	err := db.Where("hash = ? and chain_id =?", relation.TokenHash, relation.ChainId).
 		Preload("TokenBasic").
@@ -288,6 +290,8 @@ func (c *ExplorerController) GetCrossTx() {
 	if err == nil {
 		relation.DstToken = dstToken
 	}
+	jsonrelation,_=json.Marshal(relation)
+	fmt.Println("---2",string(jsonrelation))
 	c.Data["json"] = models.MakeCrossTxResp(relation)
 	c.ServeJSON()
 }
