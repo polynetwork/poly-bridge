@@ -32,6 +32,7 @@ import (
 	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -619,9 +620,10 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
 				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
 				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
-
-				amountBtcTotal.Add(amountBtcTotal, amountBtc)
-				amountUsdTotal.Add(amountUsdTotal, amountUsd)
+				if amountUsd.Cmp(big.NewInt(0)) == 1 {
+					amountBtcTotal = new(big.Int).Add(amountBtcTotal, amountBtc)
+					amountUsdTotal = new(big.Int).Add(amountUsdTotal, amountUsd)
+				}
 				assetTransferStatisticResp := &AssetTransferStatisticResp{
 					Name:            tokenStatistic.Token.TokenBasicName,
 					Hash:            tokenStatistic.Hash,
@@ -637,7 +639,9 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		allAmountUsdTotal.Add(allAmountUsdTotal, amountUsdTotal)
 
 		for _, assetTransferStatisticResp := range assetTransferStatisticResps {
-			assetTransferStatisticResp.AmountUsdPrecent = Precent(assetTransferStatisticResp.AmountUsd1.Uint64(), amountUsdTotal.Uint64())
+			if assetTransferStatisticResp.AmountUsd1.Cmp(big.NewInt(0)) == 1 {
+				assetTransferStatisticResp.AmountUsdPrecent = Precent(assetTransferStatisticResp.AmountUsd1.Uint64(), amountUsdTotal.Uint64())
+			}
 		}
 		allAddress += uint32(chainStatistic.Addresses)
 
@@ -654,6 +658,14 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		}
 		allTransactions += uint32(chainStatistic.In) + uint32(chainStatistic.Out)
 		allTransferStatistic.ChainTransferStatistics = append(allTransferStatistic.ChainTransferStatistics, chainTransferStatisticResp)
+	}
+	sort.Slice(allTransferStatistic.ChainTransferStatistics, func(i, j int) bool {
+		return allTransferStatistic.ChainTransferStatistics[i].AmountUsd1.Cmp(allTransferStatistic.ChainTransferStatistics[j].AmountUsd1) == 1
+	})
+	for _, statis := range allTransferStatistic.ChainTransferStatistics {
+		sort.Slice(statis.AssetTransferStatistics, func(i, j int) bool {
+			return statis.AssetTransferStatistics[i].AmountUsd1.Cmp(statis.AssetTransferStatistics[j].AmountUsd1) == 1
+		})
 	}
 	allTransferStatistic.AmountUsd = FormatAmount(uint64(10000), NewBigInt(allAmountUsdTotal))
 	allTransferStatistic.Addresses = allAddress
