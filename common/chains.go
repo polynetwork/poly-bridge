@@ -163,7 +163,7 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		if ontConfig == nil {
 			panic("chain is invalid")
 		}
-		return ontologySdk.Oep4TotalSupply(hash,ontConfig.ProxyContract)
+		return ontologySdk.Oep4TotalSupply(hash)
 	}
 	return new(big.Int).SetUint64(0), nil
 }
