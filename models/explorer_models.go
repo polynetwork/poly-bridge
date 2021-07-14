@@ -403,8 +403,6 @@ func MakeCrossTxResp(srcPolyDst *PolyTxRelation) *CrossTxResp {
 		},
 	}
 	tx := srcPolyDst
-
-	log.Info("111-------MakeCrossTxResp tx.SrcTransaction: %v", tx.SrcTransaction)
 	log.Info("222-------MakeCrossTxResp tx.SrcTransaction != nil %v", tx.SrcTransaction != nil)
 	if tx.SrcTransaction != nil {
 		crosstx.Fchaintx_valid = true

@@ -281,12 +281,16 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.DstTransaction = dstTransaction
 	}
 	toToken := new(models.Token)
-	err = db.Where("hash = ? and chain_id =?", relation.ToTokenHash, relation.ToChainId).First(toToken).Error
+	err = db.Where("hash = ? and chain_id =?", relation.ToTokenHash, relation.ToChainId).
+		Preload("TokenBasic").
+		First(toToken).Error
 	if err == nil {
 		relation.ToToken = toToken
 	}
 	dstToken := new(models.Token)
-	err = db.Where("hash = ? and chain_id =?", relation.DstTokenHash, relation.DstChainId).First(dstToken).Error
+	err = db.Where("hash = ? and chain_id =?", relation.DstTokenHash, relation.DstChainId).
+		Preload("TokenBasic").
+		First(dstToken).Error
 	if err == nil {
 		relation.DstToken = dstToken
 	}
