@@ -128,7 +128,11 @@ func (c *ExplorerController) GetTokenTxList() {
 		c.ServeJSON()
 		return
 	}
-	c.Data["json"] = models.MakeTokenTxList(transactionOnTokens, counter.Counter)
+	token:=&models.Token{}
+	db.Where("chain_id=? and hash=?",tokenTxListReq.ChainId,tokenTxListReq.Token).
+		Preload("TokenBasic").
+		First(token)
+	c.Data["json"] = models.MakeTokenTxList(transactionOnTokens, counter.Counter,token)
 	c.ServeJSON()
 }
 
@@ -249,25 +253,18 @@ func (c *ExplorerController) GetCrossTx() {
 	}
 	relation := relations[0]
 	token := new(models.Token)
-	err := db.Where("hash = ? and chain_id =?", relation.TokenHash, relation.ChainId).First(token).Error
+	err := db.Where("hash = ? and chain_id =?", relation.TokenHash, relation.ChainId).
+		Preload("TokenBasic").
+		First(token).Error
 	if err == nil {
 		relation.Token = token
-		tokenBasic := new(models.TokenBasic)
-		err = db.Where("name=?", token.TokenBasicName).First(tokenBasic).Error
-		if err == nil {
-			relation.Token.TokenBasic = tokenBasic
-
-		}
 	}
 	srcTransaction := new(models.SrcTransaction)
-	err = db.Where("hash = ?", relation.SrcHash).First(srcTransaction).Error
+	err = db.Where("hash = ?", relation.SrcHash).
+		Preload("SrcTransfer").
+		First(srcTransaction).Error
 	if err == nil {
 		relation.SrcTransaction = srcTransaction
-		srcTransfer := new(models.SrcTransfer)
-		err = db.Where("tx_hash=?", srcTransaction.Hash).First(srcTransfer).Error
-		if err == nil {
-			relation.SrcTransaction.SrcTransfer = srcTransfer
-		}
 	}
 	polyTransaction := new(models.PolyTransaction)
 	err = db.Where("hash=?", relation.PolyHash).First(polyTransaction).Error
@@ -275,15 +272,11 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.PolyTransaction = polyTransaction
 	}
 	dstTransaction := new(models.DstTransaction)
-	err = db.Where("hash=?", relation.DstHash).First(dstTransaction).Error
+	err = db.Where("hash=?", relation.DstHash).
+		Preload("DstTransfer").
+		First(dstTransaction).Error
 	if err == nil {
 		relation.DstTransaction = dstTransaction
-		dstTransfer := new(models.DstTransfer)
-		err = db.Where("tx_hash=?", dstTransaction.Hash).First(dstTransfer).Error
-		if err == nil {
-			relation.DstTransaction.DstTransfer = dstTransfer
-
-		}
 	}
 	toToken := new(models.Token)
 	err = db.Where("hash = ? and chain_id =?", relation.ToTokenHash, relation.ToChainId).First(toToken).Error

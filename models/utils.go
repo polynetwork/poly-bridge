@@ -79,7 +79,7 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 }
 
 func FormatAmount(precision uint64, amount *BigInt) string {
-	if precision == uint64(0) {
+	if precision == uint64(0) || &precision == nil{
 		precision = uint64(1)
 	}
 	precision_new := decimal.New(int64(precision), 0)

@@ -290,8 +290,10 @@ func (this *Stats) computeChainStatistics() (err error) {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
+	log.Info("nowInId,nowChainStatistic.LastInCheckId,nowOutId,nowChainStatistic.LastOutCheckId:",nowInId,nowChainStatistic.LastInCheckId,nowOutId,nowChainStatistic.LastOutCheckId)
+
 	if nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId {
-		fmt.Println("nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
+		log.Info("nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
 		chainStatistics := make([]*models.ChainStatistic, 0)
 		err = this.dao.GetChainStatistic(&chainStatistics)
 		if err != nil {
@@ -310,7 +312,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 					chainStatistic.LastOutCheckId = nowOutId
 				}
 			}
-			fmt.Println(chainStatistic.In, chainStatistic.Out)
+			log.Info("chainStatistic.In, chainStatistic.Out:",chainStatistic.In, chainStatistic.Out)
 			err = this.dao.SaveChainStatistic(chainStatistic)
 			if err != nil {
 				logs.Error("computeChainStatisticAssets SaveChainStatistic error", err)

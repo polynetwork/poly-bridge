@@ -28,6 +28,7 @@
 package models
 
 import (
+	"encoding/json"
 	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
@@ -197,11 +198,13 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 			ToUser:      basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.DstUser),
 		}
 		fChainTxResp.Transfer.TokenHash = fChainTx.SrcTransfer.Asset
+		jsontoken,_:=json.Marshal(token)
+		log.Info("makeFChainTxResp jsontoken:",string(jsontoken))
 		if token != nil {
 			fChainTxResp.Transfer.TokenHash = token.Hash
 			fChainTxResp.Transfer.TokenName = token.Name
 			fChainTxResp.Transfer.TokenType = token.TokenType
-			fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
+			fChainTxResp.Transfer.Amount = FormatAmount(token.TokenBasic.Precision, fChainTx.SrcTransfer.Amount)
 		}
 		fChainTxResp.Transfer.ToTokenHash = fChainTx.SrcTransfer.DstAsset
 		if toToken != nil {
@@ -297,6 +300,8 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		Contract:   tChainTx.Contract,
 		RTxHash:    tChainTx.PolyHash,
 	}
+	jsonDstTransfer,_:=json.Marshal(tChainTx.DstTransfer)
+	log.Info("makeTChainTxResp.tChainTx.DstTransfer:",string(jsonDstTransfer))
 	if tChainTx.DstTransfer != nil {
 		tChainTxResp.Transfer = &TChainTransferResp{
 			From:   tChainTx.DstTransfer.From,
@@ -308,7 +313,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 			tChainTxResp.Transfer.TokenHash = toToken.Hash
 			tChainTxResp.Transfer.TokenName = toToken.Name
 			tChainTxResp.Transfer.TokenType = toToken.TokenType
-			tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
+			tChainTxResp.Transfer.Amount = FormatAmount(toToken.TokenBasic.Precision, tChainTx.DstTransfer.Amount)
 		}
 	}
 	if tChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
@@ -356,12 +361,14 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.ToChainId = uint32(transfer.DstChainId)
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
+	log.Info("yuan crossTransfer.Amount:",crossTransfer.Amount,"yuan token.TokenBasic.Precision:",token.TokenBasic.Precision)
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
 		crossTransfer.TokenType = token.TokenType
-		crossTransfer.Amount = FormatAmount(token.Precision, transfer.Amount)
+		crossTransfer.Amount = FormatAmount(token.TokenBasic.Precision, transfer.Amount)
 	}
+	log.Info("xian crossTransfer.Amount:",crossTransfer.Amount)
 	return crossTransfer
 }
 
@@ -476,16 +483,20 @@ type TokenTxListResp struct {
 	Total       int64          `json:"total"`
 }
 
-func MakeTokenTxList(transactoins []*TransactionOnToken, counter int64) *TokenTxListResp {
+func MakeTokenTxList(transactoins []*TransactionOnToken, counter int64,token *Token) *TokenTxListResp {
 	tokenTxListResp := &TokenTxListResp{}
 	tokenTxListResp.Total = counter
 	tokenTxListResp.TokenTxList = make([]*TokenTxResp, 0)
 	for _, transactoin := range transactoins {
+		amount:=transactoin.Amount.String()
+		if token!=nil{
+			amount=FormatAmount(token.TokenBasic.Precision,transactoin.Amount)
+		}
 		tokenTxListResp.TokenTxList = append(tokenTxListResp.TokenTxList, &TokenTxResp{
 			TxHash: transactoin.Hash,
 			From:   basedef.Hash2Address(transactoin.ChainId, transactoin.From),
 			To:     basedef.Hash2Address(transactoin.ChainId, transactoin.To),
-			Amount: transactoin.Amount.String(),
+			Amount: amount,
 			Height: uint32(transactoin.Height),
 			TT:     uint32(transactoin.Time),
 			Direct: transactoin.Direct,
