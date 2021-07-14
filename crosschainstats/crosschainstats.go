@@ -100,9 +100,11 @@ func (this *Stats) computeStats() (err error) {
 		return fmt.Errorf("Failed to fetch token basic list %w", err)
 	}
 	for _, basic := range tokens {
-		err := this.computeTokenBasicStats(basic)
-		if err != nil {
-			return err
+		if len(basic.Tokens) > 0 {
+			err := this.computeTokenBasicStats(basic)
+			if err != nil {
+				logs.Error("Failed to computeTokenBasicStats for %s err %v", basic.Name, err)
+			}
 		}
 	}
 	return
