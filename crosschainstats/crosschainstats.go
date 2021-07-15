@@ -349,10 +349,10 @@ func (this *Stats) computeChainStatisticAssets() (err error) {
 				break
 			}
 		}
-		err = this.dao.SaveChainStatistic(chainStatistic)
-		if err != nil {
-			logs.Error("computeChainStatisticAssets SaveChainStatistic error", err)
-		}
+	}
+	err = this.dao.SaveChainStatistics(chainStatistics)
+	if err != nil {
+		logs.Error("computeChainStatisticAssets SaveChainStatistics error", err)
 	}
 	return
 }

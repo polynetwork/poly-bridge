@@ -22,10 +22,10 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ontio/ontology-go-sdk"
 	"github.com/ontio/ontology-go-sdk/common"
+	common1 "github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/core/types"
 	"math/big"
 	"runtime/debug"
-	common1 "github.com/ontio/ontology/common"
 	"sync"
 	"time"
 )
