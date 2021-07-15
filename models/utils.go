@@ -80,7 +80,7 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 func FormatAmount(precision uint64, amount *BigInt) string {
 	precision_new := decimal.NewFromBigInt(big.NewInt(1), int32(precision))
 	amount_new := decimal.NewFromBigInt(&amount.Int, 0)
-	return amount_new.Div(precision_new).StringFixed(10)
+	return amount_new.Div(precision_new).StringFixed(18)
 }
 
 func FormatFee(chain uint64, fee *BigInt) string {
