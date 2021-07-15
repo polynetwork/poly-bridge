@@ -358,12 +358,19 @@ func (this *Stats) computeChainStatisticAssets() (err error) {
 	if err != nil {
 		logs.Error("computeChainStatisticAssets GetChainStatistic error", err)
 	}
+	polyAddress := int64(0)
 	for _, chainStatistic := range chainStatistics {
 		for _, chain := range computeChainStatistics {
-			if chainStatistic.ChainId == chain.ChainId {
+			if chainStatistic.ChainId == chain.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
 				chainStatistic.Addresses = chain.Addresses
+				polyAddress += chain.Addresses
 				break
 			}
+		}
+	}
+	for _, chainStatistic := range chainStatistics {
+		if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
+			chainStatistic.Addresses = polyAddress
 		}
 	}
 	err = this.dao.SaveChainStatistics(chainStatistics)
