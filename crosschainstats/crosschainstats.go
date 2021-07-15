@@ -206,7 +206,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			return fmt.Errorf("Failed to GetBTCPrice %w", err)
 		}
 		BTCPrice := decimal.NewFromInt(tokenBasicBTC.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
-		logs.Info("BTCPrice:",BTCPrice)
+		logs.Info("BTCPrice:", BTCPrice)
 		for _, statistic := range tokenStatistics {
 			for _, in := range inTokenStatistics {
 				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
@@ -216,7 +216,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 						in.Token.TokenBasic.Precision = uint64(1)
 					}
 					precision_new := decimal.New(int64(in.Token.TokenBasic.Precision), 0)
-					log.Info("precision_new in",precision_new)
+					log.Info("precision_new in", precision_new)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 					statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
@@ -235,7 +235,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 						out.Token.TokenBasic.Precision = uint64(1)
 					}
 					precision_new := decimal.New(int64(out.Token.TokenBasic.Precision), 0)
-					log.Info("precision_new out",precision_new)
+					log.Info("precision_new out", precision_new)
 
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
@@ -248,8 +248,8 @@ func (this *Stats) computeTokenStatistics() (err error) {
 					break
 				}
 			}
-			jsonstatistic,_:=json.Marshal(statistic)
-			log.Info("jsonstatistic:",jsonstatistic)
+			jsonstatistic, _ := json.Marshal(statistic)
+			log.Info("jsonstatistic:", jsonstatistic)
 			err = this.dao.SaveTokenStatistic(statistic)
 			if err != nil {
 				return fmt.Errorf("Failed to SaveTokenStatistic %w", err)
@@ -264,21 +264,21 @@ func (this *Stats) computeChainStatistics() (err error) {
 	logs.Info("qwertyuiop1-----start computeChainStatistics computeChainStatistics")
 	nowChainStatistic, err := this.dao.GetNewChainSta()
 	logs.Info("qwertyuiop4huilaiinStatistics")
-	jsonnowChainStatistic,_:=json.Marshal(nowChainStatistic)
-	log.Info("-----jsonnowChainStatistic:",string(jsonnowChainStatistic))
+	jsonnowChainStatistic, _ := json.Marshal(nowChainStatistic)
+	log.Info("-----jsonnowChainStatistic:", string(jsonnowChainStatistic))
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
 	}
 	nowIn, err := this.dao.GetNewDstTransfer()
-	json1,_:=json.Marshal(nowIn)
-	log.Info("------nowIn:",string(json1))
+	json1, _ := json.Marshal(nowIn)
+	log.Info("------nowIn:", string(json1))
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
 	}
 	nowInId := nowIn.Id
 	nowOut, err := this.dao.GetNewSrcTransfer()
-	json1,_=json.Marshal(nowOut)
-	log.Info("------nowIn:",string(json1))
+	json1, _ = json.Marshal(nowOut)
+	log.Info("------nowIn:", string(json1))
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
 	}
@@ -298,7 +298,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
-	log.Info("nowInId,nowChainStatistic.LastInCheckId,nowOutId,nowChainStatistic.LastOutCheckId:",nowInId,nowChainStatistic.LastInCheckId,nowOutId,nowChainStatistic.LastOutCheckId)
+	log.Info("nowInId,nowChainStatistic.LastInCheckId,nowOutId,nowChainStatistic.LastOutCheckId:", nowInId, nowChainStatistic.LastInCheckId, nowOutId, nowChainStatistic.LastOutCheckId)
 
 	if nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId {
 		log.Info("nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
@@ -320,11 +320,11 @@ func (this *Stats) computeChainStatistics() (err error) {
 					chainStatistic.LastOutCheckId = nowOutId
 				}
 			}
-			log.Info("chainStatistic.In, chainStatistic.Out:",chainStatistic.In, chainStatistic.Out)
-			err = this.dao.SaveChainStatistic(chainStatistic)
-			if err != nil {
-				logs.Error("computeChainStatisticAssets SaveChainStatistic error", err)
-			}
+			log.Info("chainStatistic.In, chainStatistic.Out:", chainStatistic.In, chainStatistic.Out)
+		}
+		err = this.dao.SaveChainStatistics(chainStatistics)
+		if err != nil {
+			logs.Error("computeChainStatisticAssets SaveChainStatistic error", err)
 		}
 
 	}

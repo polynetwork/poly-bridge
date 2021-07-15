@@ -415,7 +415,7 @@ func (dao *BridgeDao) CalculateOutChainStatistics(lastId, nowId int64, chainStat
 		Scan(chainStatistics)
 	return res.Error
 }
-func (dao *BridgeDao) SaveChainStatistic(chainStatistics *models.ChainStatistic) error {
+func (dao *BridgeDao) SaveChainStatistics(chainStatistics []*models.ChainStatistic) error {
 	res := dao.db.Save(chainStatistics)
 	return res.Error
 }

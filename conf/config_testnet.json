@@ -10,7 +10,7 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"123456",
+    "Password":"root123",
     "Scheme":"polyswap",
     "Debug": false
   },
@@ -188,11 +188,11 @@
   "StatsConfig": {
     "TokenBasicStatsInterval": 120,
     "TokenAmountCheckInterval": 120,
-    "TokenStatisticInterval": 60,
-    "ChainStatisticInterval": 60,
-    "ChainAddressCheckInterval": 60,
-    "AssetStatisticInterval": 20,
-    "AssetAdressInterval": 20
+    "TokenStatisticInterval": 600,
+    "ChainStatisticInterval": 20,
+    "ChainAddressCheckInterval": 600,
+    "AssetStatisticInterval": 600,
+    "AssetAdressInterval": 600
   },
   "EventEffectConfig": {
     "HowOld": 3600,
