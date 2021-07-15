@@ -697,14 +697,8 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 	txNumTotal := uint64(0)
 
 	for _, assetStatistic := range assetStatistics {
-
-		if assetStatistic.AmountBtc.Cmp(big.NewInt(0)) == 1 {
-			amountBtcTotal.Add(amountBtcTotal, &assetStatistic.AmountBtc.Int)
-		}
-		if assetStatistic.AmountUsd.Cmp(big.NewInt(0)) == 1 {
-			amountUsdTotal.Add(amountUsdTotal, &assetStatistic.AmountUsd.Int)
-		}
-
+		amountBtcTotal.Add(amountBtcTotal, &assetStatistic.AmountBtc.Int)
+		amountUsdTotal.Add(amountUsdTotal, &assetStatistic.AmountUsd.Int)
 		addressNumberTotal += assetStatistic.Addressnum
 		txNumTotal += assetStatistic.Txnum
 	}
@@ -713,23 +707,15 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 	assetInfo.AmountUsdTotal = FormatAmount(4, NewBigInt(amountUsdTotal))
 
 	for _, assetStatistic := range assetStatistics {
-		amountBtcPrecent := Precent(0, 100)
-		if assetStatistic.AmountBtc.Cmp(big.NewInt(0)) == 1 {
-			amountBtcPrecent = Precent(assetStatistic.AmountBtc.Uint64(), amountUsdTotal.Uint64())
-		}
-		amountUsdPrecent := Precent(0, 100)
-		if assetStatistic.AmountUsd.Cmp(big.NewInt(0)) == 1 {
-			amountBtcPrecent = Precent(assetStatistic.AmountUsd.Uint64(), amountUsdTotal.Uint64())
-		}
 		assetStatisticResp := &AssetStatisticResp{
 			Name:              assetStatistic.TokenBasicName,
 			AddressNum:        assetStatistic.Addressnum,
 			AddressNumPrecent: Precent(assetStatistic.Addressnum, addressNumberTotal),
 			Amount:            FormatAmount(2, assetStatistic.Amount),
 			AmountBtc:         FormatAmount(4, assetStatistic.AmountBtc),
-			AmountBtcPrecent:  amountBtcPrecent,
+			AmountBtcPrecent:  Precent(assetStatistic.AmountBtc.Uint64(), amountBtcTotal.Uint64()),
 			AmountUsd:         FormatAmount(4, assetStatistic.AmountUsd),
-			AmountUsdPrecent:  amountUsdPrecent,
+			AmountUsdPrecent:  Precent(assetStatistic.AmountUsd.Uint64(), amountUsdTotal.Uint64()),
 			TxNum:             assetStatistic.Txnum,
 			TxNumPrecent:      Precent(assetStatistic.Txnum, txNumTotal),
 		}
