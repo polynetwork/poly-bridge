@@ -387,8 +387,8 @@ func (this *Stats) computeAssetStatistics() (err error) {
 		for _, assetStatistic := range newAssets {
 			if old.TokenBasicName == assetStatistic.TokenBasicName {
 				amount_new := decimal.NewFromBigInt(&assetStatistic.Amount.Int, 0)
-				price_new := decimal.NewFromInt(int64(assetStatistic.TokenBasic.Precision))
-				if assetStatistic.TokenBasic.Precision == uint64(0) {
+				price_new := decimal.NewFromInt(assetStatistic.TokenBasic.Price)
+				if assetStatistic.TokenBasic.Price == int64(0) {
 					price_new = decimal.NewFromInt32(1)
 				} else {
 					price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))

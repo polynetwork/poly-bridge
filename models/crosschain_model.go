@@ -237,4 +237,5 @@ type TransactionOnAddress struct {
 	TokenName string
 	TokenType string
 	Direct    uint32
+	Precision uint64
 }

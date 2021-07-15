@@ -128,11 +128,11 @@ func (c *ExplorerController) GetTokenTxList() {
 		c.ServeJSON()
 		return
 	}
-	token:=&models.Token{}
-	db.Where("chain_id=? and hash=?",tokenTxListReq.ChainId,tokenTxListReq.Token).
+	token := &models.Token{}
+	db.Where("chain_id=? and hash=?", tokenTxListReq.ChainId, tokenTxListReq.Token).
 		Preload("TokenBasic").
 		First(token)
-	c.Data["json"] = models.MakeTokenTxList(transactionOnTokens, counter.Counter,token)
+	c.Data["json"] = models.MakeTokenTxList(transactionOnTokens, counter.Counter, token)
 	c.ServeJSON()
 }
 
@@ -146,8 +146,8 @@ func (c *ExplorerController) GetAddressTxList() {
 		c.ServeJSON()
 	}
 	transactionOnAddresses := make([]*models.TransactionOnAddress, 0)
-	res := db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.token_type, c.name as token_name, 1 as direct from src_transactions a inner join src_transfers b on a.hash = b.tx_hash inner join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and b.chain_id = ? 
-		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.token_type, f.name as token_name, 2 as direct from dst_transactions d inner join dst_transfers e on d.hash = e.tx_hash inner join tokens f on e.asset = f.hash and e.chain_id = f.chain_id where e.to = ? and e.chain_id = ? 
+	res := db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.token_type, c.name as token_name, 1 as direct, m.precision from src_transactions a inner join src_transfers b on a.hash = b.tx_hash inner join tokens c on b.asset = c.hash and b.chain_id = c.chain_id INNER JOIN token_basics m on c.token_basic_name = m.name where b.from = ? and b.chain_id = ? 
+		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.token_type, f.name as token_name, 2,n.precision as direct from dst_transactions d inner join dst_transfers e on d.hash = e.tx_hash inner join tokens f on e.asset = f.hash and e.chain_id = f.chain_id INNER JOIN token_basics n on f.token_basic_name = n.name where e.to = ? and e.chain_id = ? 
 		order by height desc limit ?,?`,
 		addressTxListReq.Address, addressTxListReq.ChainId, addressTxListReq.Address, addressTxListReq.ChainId, (addressTxListReq.PageNo-1)*addressTxListReq.PageSize, addressTxListReq.PageSize).
 		Find(&transactionOnAddresses)
@@ -252,8 +252,8 @@ func (c *ExplorerController) GetCrossTx() {
 		return
 	}
 	relation := relations[0]
-	jsonrelation,_:=json.Marshal(relation)
-	fmt.Println("---1",string(jsonrelation))
+	jsonrelation, _ := json.Marshal(relation)
+	fmt.Println("---1", string(jsonrelation))
 	token := new(models.Token)
 	err := db.Where("hash = ? and chain_id =?", relation.TokenHash, relation.ChainId).
 		Preload("TokenBasic").
@@ -294,8 +294,8 @@ func (c *ExplorerController) GetCrossTx() {
 	if err == nil {
 		relation.DstToken = dstToken
 	}
-	jsonrelation,_=json.Marshal(relation)
-	fmt.Println("---2",string(jsonrelation))
+	jsonrelation, _ = json.Marshal(relation)
+	fmt.Println("---2", string(jsonrelation))
 	c.Data["json"] = models.MakeCrossTxResp(relation)
 	c.ServeJSON()
 }

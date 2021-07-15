@@ -538,7 +538,7 @@ func MakeAddressTxList(transactoins []*TransactionOnAddress, counter int64) *Add
 			TxHash:    transactoin.Hash,
 			From:      basedef.Hash2Address(transactoin.ChainId, transactoin.From),
 			To:        basedef.Hash2Address(transactoin.ChainId, transactoin.To),
-			Amount:    transactoin.Amount.String(),
+			Amount:    FormatAmount(transactoin.Precision, transactoin.Amount),
 			Height:    uint32(transactoin.Height),
 			TT:        uint32(transactoin.Time),
 			Direct:    transactoin.Direct,
@@ -625,9 +625,9 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 				assetTransferStatisticResp := &AssetTransferStatisticResp{
 					Name:            tokenStatistic.Token.TokenBasicName,
 					Hash:            tokenStatistic.Hash,
-					Amount:          FormatAmount(uint64(100), NewBigInt(amount)),
-					AmountBtc:       FormatAmount(uint64(10000), NewBigInt(amountBtc)),
-					AmountUsd:       FormatAmount(uint64(10000), NewBigInt(amountUsd)),
+					Amount:          FormatAmount(2, NewBigInt(amount)),
+					AmountBtc:       FormatAmount(4, NewBigInt(amountBtc)),
+					AmountUsd:       FormatAmount(4, NewBigInt(amountUsd)),
 					AmountUsd1:      amountUsd,
 					SourceChainName: ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId),
 				}
@@ -646,8 +646,8 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		chainTransferStatisticResp := &ChainTransferStatisticResp{
 			Chain:                   uint32(chainStatistic.ChainId),
 			ChainName:               ChainId2Name(chainStatistic.ChainId),
-			AmountBtc:               FormatAmount(uint64(10000), NewBigInt(amountBtcTotal)),
-			AmountUsd:               FormatAmount(uint64(10000), NewBigInt(amountUsdTotal)),
+			AmountBtc:               FormatAmount(4, NewBigInt(amountBtcTotal)),
+			AmountUsd:               FormatAmount(4, NewBigInt(amountUsdTotal)),
 			In:                      uint32(chainStatistic.In),
 			Out:                     uint32(chainStatistic.Out),
 			Addresses:               uint32(chainStatistic.Addresses),
@@ -665,7 +665,7 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 			return statis.AssetTransferStatistics[i].AmountUsd1.Cmp(statis.AssetTransferStatistics[j].AmountUsd1) == 1
 		})
 	}
-	allTransferStatistic.AmountUsd = FormatAmount(uint64(10000), NewBigInt(allAmountUsdTotal))
+	allTransferStatistic.AmountUsd = FormatAmount(4, NewBigInt(allAmountUsdTotal))
 	allTransferStatistic.Addresses = allAddress
 	allTransferStatistic.Transactions = allTransactions
 	return allTransferStatistic
@@ -705,18 +705,18 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 		txNumTotal += assetStatistic.Txnum
 	}
 
-	assetInfo.AmountBtcTotal = FormatAmount(uint64(10000), NewBigInt(amountBtcTotal))
-	assetInfo.AmountUsdTotal = FormatAmount(uint64(10000), NewBigInt(amountUsdTotal))
+	assetInfo.AmountBtcTotal = FormatAmount(4, NewBigInt(amountBtcTotal))
+	assetInfo.AmountUsdTotal = FormatAmount(4, NewBigInt(amountUsdTotal))
 
 	for _, assetStatistic := range assetStatistics {
 		assetStatisticResp := &AssetStatisticResp{
 			Name:              assetStatistic.TokenBasicName,
 			AddressNum:        assetStatistic.Addressnum,
 			AddressNumPrecent: Precent(assetStatistic.Addressnum, addressNumberTotal),
-			Amount:            FormatAmount(uint64(100), assetStatistic.Amount),
-			AmountBtc:         FormatAmount(uint64(10000), assetStatistic.AmountBtc),
+			Amount:            FormatAmount(2, assetStatistic.Amount),
+			AmountBtc:         FormatAmount(4, assetStatistic.AmountBtc),
 			AmountBtcPrecent:  Precent(assetStatistic.AmountBtc.Uint64(), amountBtcTotal.Uint64()),
-			AmountUsd:         FormatAmount(uint64(10000), assetStatistic.AmountUsd),
+			AmountUsd:         FormatAmount(4, assetStatistic.AmountUsd),
 			AmountUsdPrecent:  Precent(assetStatistic.AmountUsd.Uint64(), amountUsdTotal.Uint64()),
 			TxNum:             assetStatistic.Txnum,
 			TxNumPrecent:      Precent(assetStatistic.Txnum, txNumTotal),
