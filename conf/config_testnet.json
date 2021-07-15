@@ -8,6 +8,13 @@
     "Scheme":"polyswap",
     "Debug": true
   },
+  "ExpConfig":{
+    "URL":"localhost:3306",
+    "User":"root",
+    "Password":"123456",
+    "Scheme":"cross_chain_explorer",
+    "Debug": true
+  },
   "ChainListenConfig":[
     {
       "ChainName":"Poly",
