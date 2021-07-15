@@ -405,16 +405,32 @@ func (dao *BridgeDao) GetChainStatistic(chainStatistic interface{}) error {
 	res := dao.db.Find(chainStatistic)
 	return res.Error
 }
+
+func (dao *BridgeDao) GetPolyTransaction() (*models.PolyTransaction, error) {
+	polyTransaction := new(models.PolyTransaction)
+	res := dao.db.Last(&polyTransaction)
+	return polyTransaction, res.Error
+}
+
 func (dao *BridgeDao) CalculateInChainStatistics(lastId, nowId int64, chainStatistics interface{}) error {
-	res := dao.db.Raw("select count(*) as `in`, chain_id from dst_transfers where id > ? and id <= ? group by chain_id", lastId, nowId).
+	res := dao.db.Raw("select count(*) as `in`, chain_id from dst_transactions where id > ? and id <= ? group by chain_id", lastId, nowId).
 		Scan(chainStatistics)
 	return res.Error
 }
 func (dao *BridgeDao) CalculateOutChainStatistics(lastId, nowId int64, chainStatistics interface{}) error {
-	res := dao.db.Raw("select count(*) as `out`, chain_id from src_transfers where id > ? and id <= ? group by chain_id", lastId, nowId).
+	res := dao.db.Raw("select count(*) as `out`, chain_id from src_transactions where id > ? and id <= ? group by chain_id", lastId, nowId).
 		Scan(chainStatistics)
 	return res.Error
 }
+func (dao *BridgeDao) CalculatePolyChainStatistic(lastId, nowId int64) (int64, error) {
+	counter := struct {
+		Counter int64
+	}{}
+	res := dao.db.Raw("select count(*) from poly_transactions where id > ? and id <= ?", lastId, nowId).
+		Scan(&counter)
+	return counter.Counter, res.Error
+}
+
 func (dao *BridgeDao) SaveChainStatistics(chainStatistics []*models.ChainStatistic) error {
 	res := dao.db.Save(chainStatistics)
 	return res.Error

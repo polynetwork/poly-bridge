@@ -295,7 +295,13 @@ func (this *Stats) computeChainStatistics() (err error) {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
-	log.Info("nowInId,nowChainStatistic.LastInCheckId,nowOutId,nowChainStatistic.LastOutCheckId:", nowInId, nowChainStatistic.LastInCheckId, nowOutId, nowChainStatistic.LastOutCheckId)
+	polyTransaction, err := this.dao.GetPolyTransaction()
+	if err != nil {
+		return fmt.Errorf("Failed to GetPolyTransaction %w", err)
+	}
+	polyCheckId := polyTransaction.Id
+
+	log.Info("nowInId,nowChainStatistic.LastInCheckId,nowOutId,nowChainStatistic.LastOutCheckId,polyCheckId:", nowInId, nowChainStatistic.LastInCheckId, nowOutId, nowChainStatistic.LastOutCheckId, polyCheckId)
 
 	if nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId {
 		log.Info("nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
@@ -306,24 +312,37 @@ func (this *Stats) computeChainStatistics() (err error) {
 		}
 		for _, chainStatistic := range chainStatistics {
 			for _, in := range inChainStatistics {
-				if chainStatistic.ChainId == in.ChainId {
+				if chainStatistic.ChainId == in.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
 					chainStatistic.In = addDecimalInt64(chainStatistic.In, in.In)
 					chainStatistic.LastInCheckId = nowInId
+					break
 				}
 			}
 			for _, out := range outChainStatistics {
-				if chainStatistic.ChainId == out.ChainId {
+				if chainStatistic.ChainId == out.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
 					chainStatistic.Out = addDecimalInt64(chainStatistic.Out, out.Out)
 					chainStatistic.LastOutCheckId = nowOutId
+					break
 				}
 			}
 			log.Info("chainStatistic.In, chainStatistic.Out:", chainStatistic.In, chainStatistic.Out)
+		}
+		for _, chainStatistic := range chainStatistics {
+			if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
+				counter, err := this.dao.CalculatePolyChainStatistic(chainStatistic.LastInCheckId, polyCheckId)
+				if err != nil {
+					chainStatistic.In = addDecimalInt64(counter, chainStatistic.In)
+					chainStatistic.Out = addDecimalInt64(counter, chainStatistic.Out)
+					chainStatistic.LastInCheckId = polyCheckId
+					chainStatistic.LastOutCheckId = polyCheckId
+				}
+				break
+			}
 		}
 		err = this.dao.SaveChainStatistics(chainStatistics)
 		if err != nil {
 			logs.Error("computeChainStatisticAssets SaveChainStatistic error", err)
 		}
-
 	}
 	return
 }

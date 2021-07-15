@@ -128,6 +128,8 @@ func merge() {
 		migrateExplorerBasicTables(exp, db)
 	case "migrateExplorerAssetStatisticTables":
 		migrateExplorerAssetStatisticTables(exp, db)
+	case "migrateExplorerChainStatisticTables":
+		migrateExplorerChainStatisticTables(exp, db)
 	case "verifyTables":
 		verifyTables(bri, db)
 	default:
@@ -568,4 +570,47 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	}
 	err = db.Debug().Save(assetStatistics).Error
 	checkError(err, "Saving AssetStatistic table3")
+}
+func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
+	logs.Info("Migrating table ChainStatistic")
+	chainInfos := make([]*explorerdao.ChainInfo, 0)
+	err := exp.Raw("select `id`, txin, txout from chain_info").
+		Scan(&chainInfos).Error
+	checkError(err, "Loading explorerdao.ChainInfo table")
+	polyTransaction := new(models.PolyTransaction)
+	err = db.Last(polyTransaction).
+		Error
+	checkError(err, "Laading polyTransaction table")
+	srcTransaction := new(models.SrcTransaction)
+	err = db.Last(srcTransaction).
+		Error
+	checkError(err, "Laading srcTransaction table")
+	dstTransaction := new(models.DstTransaction)
+	err = db.Last(dstTransaction).
+		Error
+	checkError(err, "Laading dstTransaction table")
+	chainStatistics := make([]*models.ChainStatistic, 0)
+	err = db.Find(&chainStatistics).
+		Error
+	checkError(err, "Loading chainStatistics table")
+	for _, chainStatistic := range chainStatistics {
+		for _, chainInfo := range chainInfos {
+			if chainInfo.Id == chainStatistic.ChainId {
+				chainStatistic.In = chainInfo.Txin
+				chainStatistic.Out = chainInfo.Txout
+				chainStatistic.LastInCheckId = dstTransaction.Id
+				chainStatistic.LastOutCheckId = srcTransaction.Id
+				break
+			}
+		}
+	}
+	for _, chainStatistic := range chainStatistics {
+		if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
+			chainStatistic.LastInCheckId = polyTransaction.Id
+			chainStatistic.LastOutCheckId = polyTransaction.Id
+			break
+		}
+	}
+	err = db.Save(chainStatistics).Error
+	checkError(err, "Saving chainStatistics table")
 }
