@@ -51,3 +51,8 @@ func (sdk *PolySDK) GetSmartContractEventByBlock(height uint64) ([]*common.Smart
 	event, err := sdk.sdk.GetSmartContractEventByBlock(uint32(height))
 	return event, err
 }
+
+func (sdk *PolySDK) GetSmartContractEvent(txHash string) (*common.SmartContactEvent, error) {
+	event, err := sdk.sdk.GetSmartContractEvent(txHash)
+	return event, err
+}

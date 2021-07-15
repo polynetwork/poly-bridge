@@ -133,6 +133,23 @@ func (pro *PolySDKPro) GetBlockByHeight(height uint64) (*types.Block, error) {
 	return nil, fmt.Errorf("all node is not working")
 }
 
+func (pro *PolySDKPro) GetSmartContractEvent(txHash string) (*common.SmartContactEvent, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		event, err := info.sdk.GetSmartContractEvent(txHash)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return event, nil
+		}
+	}
+	return nil, fmt.Errorf("all node is not working")
+}
+
 func (pro *PolySDKPro) GetSmartContractEventByBlock(height uint64) ([]*common.SmartContactEvent, error) {
 	info := pro.GetLatest()
 	if info == nil {
