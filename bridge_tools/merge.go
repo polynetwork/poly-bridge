@@ -128,8 +128,6 @@ func merge() {
 		migrateExplorerBasicTables(exp, db)
 	case "migrateExplorerAssetStatisticTables":
 		migrateExplorerAssetStatisticTables(exp, db)
-	case "updateNullToZero":
-		updateNullToZero(db)
 	case "verifyTables":
 		verifyTables(bri, db)
 	default:
@@ -209,6 +207,14 @@ func migrateExplorerBasicTables(exp, db *gorm.DB) {
 		err := db.Raw("select chain_id,hash from tokens").
 			Find(&tokenStatistics).Error
 		checkError(err, "Loading table")
+		for _, tokenStatistic := range tokenStatistics {
+			models.NullToZero(&tokenStatistic.InAmount)
+			models.NullToZero(&tokenStatistic.OutAmount)
+			models.NullToZero(&tokenStatistic.InAmountUsd)
+			models.NullToZero(&tokenStatistic.OutAmountUsd)
+			models.NullToZero(&tokenStatistic.InAmountBtc)
+			models.NullToZero(&tokenStatistic.OutAmountBtc)
+		}
 		err = db.Save(tokenStatistics).Error
 		checkError(err, "Loading table")
 	}
@@ -555,33 +561,11 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		}
 		assetStatistics = append(assetStatistics, newAssetstatictic)
 	}
-	err = db.Debug().Save(assetStatistics).Error
-	checkError(err, "Saving AssetStatistic table3")
-}
-func updateNullToZero(db *gorm.DB) {
-	assetStatistics := make([]*models.AssetStatistic, 0)
-	err := db.Find(&assetStatistics).Error
-	checkError(err, "Find AssetStatistic table")
 	for _, assetStatistic := range assetStatistics {
 		models.NullToZero(&assetStatistic.Amount)
 		models.NullToZero(&assetStatistic.AmountBtc)
 		models.NullToZero(&assetStatistic.AmountUsd)
-		err := db.Save(assetStatistic).Error
-		checkError(err, "Save AssetStatistic table")
 	}
-	tokenStatistics := make([]*models.TokenStatistic, 0)
-	err = db.Find(&tokenStatistics).Error
-	checkError(err, "Find TokenStatistic table")
-	for _, tokenStatistic := range tokenStatistics {
-		models.NullToZero(&tokenStatistic.InAmount)
-		models.NullToZero(&tokenStatistic.OutAmount)
-		models.NullToZero(&tokenStatistic.InAmountUsd)
-		models.NullToZero(&tokenStatistic.OutAmountUsd)
-		models.NullToZero(&tokenStatistic.InAmountBtc)
-		models.NullToZero(&tokenStatistic.InAmountBtc)
-		models.NullToZero(&tokenStatistic.OutAmountBtc)
-		err = db.Save(tokenStatistic).Error
-		checkError(err, "SAVE TokenStatistic table")
-
-	}
+	err = db.Debug().Save(assetStatistics).Error
+	checkError(err, "Saving AssetStatistic table3")
 }
