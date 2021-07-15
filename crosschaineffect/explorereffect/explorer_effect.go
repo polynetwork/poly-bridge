@@ -85,7 +85,7 @@ func (eff *ExplorerEffect) GetEffectSlot() int64 {
 
 func (eff *ExplorerEffect) updateHash() error {
 	polySrcRelations := make([]*explorerdao.PolySrcRelation, 0)
-	eff.db.Table("mchain_tx").Where("left(mchain_tx.ftxhash, 8) like ? and mchain_tx.fchain != ?", "00000000%", basedef.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("inner join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey and mchain_tx.fchain = fchain_tx.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+	eff.db.Table("mchain_tx").Where("mchain_tx.ftxhash like ? and mchain_tx.fchain != ?", "00000000%", basedef.ETHEREUM_CROSSCHAIN_ID).Select("mchain_tx.txhash as poly_hash, fchain_tx.txhash as src_hash").Joins("inner join fchain_tx on mchain_tx.ftxhash = fchain_tx.xkey and mchain_tx.fchain = fchain_tx.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	updatePolyTransactions := make([]*explorerdao.PolyTransaction, 0)
 	for _, polySrcRelation := range polySrcRelations {
 		if polySrcRelation.SrcTransaction != nil {
