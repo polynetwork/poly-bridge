@@ -212,10 +212,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 				if statistic.ChainId == in.ChainId && statistic.Hash == in.Hash {
 					price_new := decimal.New(in.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 					amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
-					if in.Token.TokenBasic.Precision == uint64(0) {
-						in.Token.TokenBasic.Precision = uint64(1)
-					}
-					precision_new := decimal.New(int64(in.Token.TokenBasic.Precision), 0)
+					precision_new := decimal.New(int64(1), int32(in.Token.TokenBasic.Precision))
 					log.Info("precision_new in", precision_new)
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
 					amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
@@ -234,7 +231,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 					if out.Token.TokenBasic.Precision == uint64(0) {
 						out.Token.TokenBasic.Precision = uint64(1)
 					}
-					precision_new := decimal.New(int64(out.Token.TokenBasic.Precision), 0)
+					precision_new := decimal.New(int64(1), int32(out.Token.TokenBasic.Precision))
 					log.Info("precision_new out", precision_new)
 
 					amount_usd := amount_new.Div(precision_new).Mul(price_new)
@@ -396,7 +393,7 @@ func (this *Stats) computeAssetStatistics() (err error) {
 				} else {
 					price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 				}
-				precision_new := decimal.New(int64(assetStatistic.TokenBasic.Precision), 0)
+				precision_new := decimal.New(int64(1), int32(assetStatistic.TokenBasic.Precision))
 				real_amount := amount_new.Div(precision_new)
 				amount_usd := real_amount.Mul(price_new)
 				amount_btc := amount_usd.Div(BTCPrice)

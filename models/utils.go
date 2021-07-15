@@ -21,7 +21,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"math/big"
-
 	"poly-bridge/basedef"
 	"poly-bridge/utils/decimal"
 )
@@ -79,12 +78,9 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 }
 
 func FormatAmount(precision uint64, amount *BigInt) string {
-	if precision == uint64(0) || &precision == nil{
-		precision = uint64(1)
-	}
-	precision_new := decimal.New(int64(precision), 0)
+	precision_new := decimal.NewFromBigInt(big.NewInt(1), int32(precision))
 	amount_new := decimal.NewFromBigInt(&amount.Int, 0)
-	return amount_new.Div(precision_new).String()
+	return amount_new.Div(precision_new).StringFixed(10)
 }
 
 func FormatFee(chain uint64, fee *BigInt) string {
