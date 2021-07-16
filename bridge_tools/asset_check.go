@@ -47,7 +47,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 	log.Info("q-w-e-r-t start to foreach tokenBasics")
 	for _, basic := range tokenBasics {
-		log.Info(" q-w-e-r-t for basicname: %v", basic.Name)
+		log.Info(fmt.Sprintf(" q-w-e-r-t for basicname: %v", basic.Name))
 		assetDetail := new(AssetDetail)
 		dstChainAssets := make([]*DstChainAsset, 0)
 		totalFlow := big.NewInt(0)
@@ -65,19 +65,19 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			if err != nil {
 				panic(fmt.Errorf("	q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
-			log.Info("	q-w-e-r-t chainId: %v, Hash: %v, totalSupply: &v", token.ChainId, token.Hash, totalSupply)
+			log.Info(fmt.Sprintf("	q-w-e-r-t chainId: %v, Hash: %v, totalSupply: &v", token.ChainId, token.Hash, totalSupply))
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.flow = new(big.Int).Sub(totalSupply, balance)
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.flow)
 			dstChainAssets = append(dstChainAssets, chainAsset)
 		}
 		assetDetail.TokenAsset = dstChainAssets
-		log.Info(" q-w-e-r-t basic: %v,totalFlow: %v", basic.Name, totalFlow)
+		log.Info(fmt.Sprintf(" q-w-e-r-t basic: %v,totalFlow: %v", basic.Name, totalFlow))
 		assetDetail.Difference = totalFlow
 		assetDetail.BasicName = basic.Name
 		resAssetDetails = append(resAssetDetails, assetDetail)
 	}
 	jsonCheckAsset, _ := json.Marshal(resAssetDetails)
-	log.Info("q-w-e-r-t" + string(jsonCheckAsset))
+	log.Info(fmt.Sprintf("q-w-e-r-t" + string(jsonCheckAsset)))
 	fmt.Println("q-w-e-r-t" + string(jsonCheckAsset))
 }

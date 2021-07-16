@@ -192,11 +192,7 @@ func (pro *OntologySdkPro) Oep4TotalSupply(hash string) (*big.Int, error) {
 		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 	}
 	if pro.IsOngAddress(hash) {
-		totalSupply, err := info.sdk.Native.Ong.TotalSupply()
-		if err != nil {
-			return new(big.Int).SetUint64(0), err
-		}
-		return new(big.Int).SetUint64(totalSupply), nil
+		return new(big.Int).SetUint64(0), nil
 	} else {
 		contractAddr, err := common1.AddressFromHexString(hash)
 		if err != nil {
