@@ -18,7 +18,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/polynetwork/poly-io-test/log"
 	"github.com/urfave/cli"
 	"os"
 	"poly-bridge/bridge_tools/conf"
@@ -156,6 +158,8 @@ func startServer(ctx *cli.Context) {
 		startExploerToThere(config.ExpConfig, config.DBConfig)
 	} else if cmd == 8 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
+		jsonconf, _ := json.Marshal(configFile)
+		log.Info("jsonconf" + string(jsonconf))
 		config := conf.NewDbConfig(configFile)
 		if config == nil {
 			fmt.Printf("startServer - read config failed!")
