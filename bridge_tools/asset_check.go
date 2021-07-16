@@ -40,6 +40,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	resAssetDetails := make([]*AssetDetail, 0)
 	tokenBasics := make([]*models.TokenBasic, 0)
 	res := db.
+		Where("property = ?", 1).
 		Preload("Tokens").
 		Find(&tokenBasics)
 	if res.Error != nil {
