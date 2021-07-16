@@ -103,10 +103,11 @@ func NewTransactionsConfig(filePath string) *TransactionsConfig {
 	return config
 }
 
- type ExploerToThereConfig struct{
-	DBConfig		*conf.DBConfig
-	ExpConfig		*conf.ExpConfig
+type ExploerToThereConfig struct {
+	DBConfig  *conf.DBConfig
+	ExpConfig *conf.ExpConfig
 }
+
 func NewExploerToThereConfig(filePath string) *ExploerToThereConfig {
 	fileContent, err := basedef.ReadFile(filePath)
 	if err != nil {
@@ -114,6 +115,21 @@ func NewExploerToThereConfig(filePath string) *ExploerToThereConfig {
 		return nil
 	}
 	config := &ExploerToThereConfig{}
+	err = json.Unmarshal(fileContent, config)
+	if err != nil {
+		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
+		return nil
+	}
+	return config
+}
+
+func NewDbConfig(filePath string) *conf.DBConfig {
+	fileContent, err := basedef.ReadFile(filePath)
+	if err != nil {
+		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
+		return nil
+	}
+	config := &conf.DBConfig{}
 	err = json.Unmarshal(fileContent, config)
 	if err != nil {
 		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
