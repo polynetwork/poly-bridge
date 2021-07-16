@@ -20,10 +20,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/polynetwork/poly-io-test/log"
+	"github.com/astaxie/beego/logs"
 	"github.com/urfave/cli"
 	"os"
 	"poly-bridge/bridge_tools/conf"
+	"poly-bridge/common"
+	conf1 "poly-bridge/conf"
 	"runtime"
 	"strings"
 )
@@ -158,14 +160,17 @@ func startServer(ctx *cli.Context) {
 		startExploerToThere(config.ExpConfig, config.DBConfig)
 	} else if cmd == 8 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		jsonconf, _ := json.Marshal(configFile)
-		log.Info("jsonconf" + string(jsonconf))
-		config := conf.NewDbConfig(configFile)
+		config := conf1.NewConfig(configFile)
 		if config == nil {
-			fmt.Printf("startServer - read config failed!")
+			logs.Error("startServer - read config failed!")
 			return
 		}
-		startCheckAsset(config)
+		{
+			conf, _ := json.Marshal(config)
+			logs.Info("%s\n", string(conf))
+		}
+		common.SetupChainsSDK(config)
+		startCheckAsset(config.DBConfig)
 	}
 }
 
