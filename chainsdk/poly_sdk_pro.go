@@ -191,3 +191,11 @@ func (pro *PolySDKPro) GetTransaction(txHash string) (tx *types.Transaction, err
 	})
 	return
 }
+
+func (pro *PolySDKPro) GetStorage(contractAddress string, key []byte) (data []byte, err error) {
+	err = pro.wrap(func(sdk *PolySDK) error {
+		data, err = sdk.GetStorage(contractAddress, key)
+		return err
+	})
+	return
+}
