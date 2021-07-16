@@ -135,5 +135,7 @@ func NewDbConfig(filePath string) *conf.DBConfig {
 		fmt.Errorf("NewServiceConfig: failed, err: %s", err)
 		return nil
 	}
+	jsonconfig, _ := json.Marshal(config)
+	fmt.Printf("jsonconfig0", string(jsonconfig))
 	return config
 }
