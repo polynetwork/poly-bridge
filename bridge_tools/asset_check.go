@@ -57,13 +57,18 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			chainAsset.ChainId = token.ChainId
 			balance, err := common.GetBalance(token.ChainId, token.Hash)
 			if err != nil {
-				panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
+				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance not found", token.ChainId, token.Hash))
+				balance = big.NewInt(0)
+				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
 			log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
 			chainAsset.Balance = balance
 			totalSupply, err := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
-				panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
+				totalSupply = big.NewInt(0)
+				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, totalSupply not found", token.ChainId, token.Hash))
+
+				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
 			log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, totalSupply: %v", token.ChainId, token.Hash, totalSupply.String()))
 			chainAsset.TotalSupply = totalSupply
