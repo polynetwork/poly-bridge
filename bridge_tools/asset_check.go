@@ -72,6 +72,11 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.flow)
 			dstChainAssets = append(dstChainAssets, chainAsset)
 		}
+		jsonassetDetail, _ := json.Marshal(assetDetail)
+		log.Info("jsonassetDetail:" + string(jsonassetDetail))
+		if assetDetail == nil {
+			continue
+		}
 		assetDetail.TokenAsset = dstChainAssets
 		log.Info(fmt.Sprintf("	basic: %v,totalFlow: %v", basic.Name, totalFlow.String()))
 		assetDetail.Difference = totalFlow
