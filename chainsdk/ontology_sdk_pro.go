@@ -18,14 +18,12 @@
 package chainsdk
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego/logs"
 	"github.com/ontio/ontology-go-sdk"
 	"github.com/ontio/ontology-go-sdk/common"
 	common1 "github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/core/types"
-	"github.com/polynetwork/poly-io-test/log"
 	"math/big"
 	"runtime/debug"
 	"sync"
@@ -209,8 +207,6 @@ func (pro *OntologySdkPro) Oep4TotalSupply(hash string, addr string) (*big.Int, 
 		if err != nil {
 			return new(big.Int).SetUint64(0), err
 		}
-		jsonpreResult, _ := json.Marshal(preResult)
-		log.Info("jsonpreResult" + string(jsonpreResult))
 		totalSupply, err := preResult.Result.ToInteger()
 		if err != nil {
 			return new(big.Int).SetUint64(0), err
