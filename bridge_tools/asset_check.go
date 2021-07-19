@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/polynetwork/poly-io-test/log"
 	"gorm.io/driver/mysql"
