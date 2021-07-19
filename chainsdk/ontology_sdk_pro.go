@@ -206,6 +206,9 @@ func (pro *OntologySdkPro) Oep4TotalSupply(hash string, addr string) (*big.Int, 
 		}
 		preResult, err := info.sdk.NeoVM.PreExecInvokeNeoVMContract(contractAddr,
 			[]interface{}{"totalSupply", []interface{}{address[:]}})
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
 		jsonpreResult, _ := json.Marshal(preResult)
 		log.Info("jsonpreResult" + string(jsonpreResult))
 		totalSupply, err := preResult.Result.ToInteger()
