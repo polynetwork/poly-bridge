@@ -83,7 +83,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 		assetDetail.BasicName = basic.Name
 		resAssetDetails = append(resAssetDetails, assetDetail)
 	}
-	jsonCheckAsset, _ := json.Marshal(resAssetDetails)
-	log.Info(fmt.Sprintf("q-w-e-r-t" + string(jsonCheckAsset)))
+	//jsonCheckAsset, _ := json.Marshal(resAssetDetails)
+	//log.Info(fmt.Sprintf("q-w-e-r-t" + string(jsonCheckAsset)))
 	fmt.Println("q-w-e-r-t" + string(jsonCheckAsset))
 }
