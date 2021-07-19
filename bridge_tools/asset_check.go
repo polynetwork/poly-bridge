@@ -84,5 +84,5 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 	//jsonCheckAsset, _ := json.Marshal(resAssetDetails)
 	//log.Info(fmt.Sprintf("q-w-e-r-t" + string(jsonCheckAsset)))
-	fmt.Println("q-w-e-r-t" + string(jsonCheckAsset))
+	//fmt.Println("q-w-e-r-t" + string(jsonCheckAsset))
 }
