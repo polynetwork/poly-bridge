@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/polynetwork/poly-io-test/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"io/ioutil"
 	"math/big"
+	"net/http"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -37,6 +40,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 
 	resAssetDetails := make([]*AssetDetail, 0)
+	extraAssetDetails := make([]*AssetDetail, 0)
 	tokenBasics := make([]*models.TokenBasic, 0)
 	res := db.
 		Where("property = ?", 1).
@@ -80,9 +84,45 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 		log.Info(fmt.Sprintf("	basic: %v,totalFlow: %v", basic.Name, totalFlow.String()))
 		assetDetail.Difference = totalFlow
 		assetDetail.BasicName = basic.Name
+		if inExtraBasic(assetDetail.BasicName) {
+			extraAssetDetails = append(extraAssetDetails, assetDetail)
+			continue
+		}
+		if assetDetail.BasicName == "WBTC" {
+			chainAsset := new(DstChainAsset)
+			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+			response, err := http.Get("http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad")
+			defer response.Body.Close()
+			if err != nil || response.StatusCode != 200 {
+				log.Error("Get o3 WBTC err:", err)
+				continue
+			}
+			body, _ := ioutil.ReadAll(response.Body)
+			o3WBTC := struct {
+				balance *big.Int
+			}{}
+			json.Unmarshal(body, o3WBTC)
+			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+			chainAsset.flow = o3WBTC.balance
+			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
+			assetDetail.Difference.Add(assetDetail.Difference, chainAsset.flow)
+		}
 		resAssetDetails = append(resAssetDetails, assetDetail)
 	}
-	//jsonCheckAsset, _ := json.Marshal(resAssetDetails)
-	//log.Info(fmt.Sprintf("q-w-e-r-t" + string(jsonCheckAsset)))
-	//fmt.Println("q-w-e-r-t" + string(jsonCheckAsset))
+	fmt.Println("---准确数据---")
+	for _, assetDetail := range resAssetDetails {
+		fmt.Println(assetDetail.BasicName, assetDetail.Difference)
+		for _, tokenAsset := range assetDetail.TokenAsset {
+			fmt.Println(tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
+		}
+	}
+}
+func inExtraBasic(name string) bool {
+	extraBasics := []string{"BLES", "COPR", "DAO", "DigiCol ERC-721", "DMOD", "GOF", "LEV", "mBTM", "MOZ", "O3", "SIL", "STN", "USDT", "XMPT"}
+	for _, basic := range extraBasics {
+		if name == basic {
+			return true
+		}
+	}
+	return false
 }
