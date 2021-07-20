@@ -103,12 +103,12 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			}
 			body, _ := ioutil.ReadAll(response.Body)
 			o3WBTC := struct {
-				balance *big.Int
+				Balance *big.Int
 			}{}
 			json.Unmarshal(body, &o3WBTC)
-			fmt.Println(o3WBTC.balance)
+			fmt.Println(o3WBTC.Balance)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
-			chainAsset.flow = o3WBTC.balance
+			chainAsset.flow = o3WBTC.Balance
 			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 			assetDetail.Difference.Add(assetDetail.Difference, chainAsset.flow)
 		}
