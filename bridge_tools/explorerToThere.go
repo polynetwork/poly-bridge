@@ -34,22 +34,25 @@ func startExploerToThere(expcfg *conf.ExpConfig, dbcfg *conf.DBConfig) {
 	}
 
 	tokenBasics := make([]*models.TokenBasic, 0)
-	err = db.Preload("Tokens").
+	err = db.
 		Find(&tokenBasics).Error
 	if err != nil {
 		panic(err)
 	}
 	chainTokenBinds := make([]*ChainTokenBind, 0)
-	err = exp.Raw(`SELECT b.id as chainId,b.xname as name from chain_token_bind a join chain_token b on a.hash_src=b.hash Where a.hash_src=a.hash_dest and  b.hash != '0000000000000000000000000000000000000000'`).
+	err = exp.Raw(`SELECT b.id as chain_id ,b.xname as name from chain_token_bind a join chain_token b on a.hash_src=b.hash Where a.hash_src=a.hash_dest and  b.hash != '0000000000000000000000000000000000000000'`).
 		Scan(&chainTokenBinds).Error
+	for _, x := range chainTokenBinds {
+		fmt.Println(*x)
+	}
 	if err != nil {
 		panic(fmt.Sprint("select exp ChainTokenBind err :", err))
 	}
-	mapTokenBinds := make(map[*ChainTokenBind]int)
+	mapTokenBinds := make(map[ChainTokenBind]int)
 	for _, tokenBind := range chainTokenBinds {
-		mapTokenBinds[tokenBind]++
+		mapTokenBinds[*tokenBind]++
 	}
-	tokenBinds := make([]*ChainTokenBind, 0)
+	tokenBinds := make([]ChainTokenBind, 0)
 	for k, v := range mapTokenBinds {
 		if v == 1 {
 			tokenBinds = append(tokenBinds, k)
@@ -58,10 +61,15 @@ func startExploerToThere(expcfg *conf.ExpConfig, dbcfg *conf.DBConfig) {
 	for _, basic := range tokenBasics {
 		for _, tokenBind := range tokenBinds {
 			if tokenBind.Name == basic.Name {
-				err := db.Model(&models.TokenBasic{}).
+				err := db.Debug().Model(&models.TokenBasic{}).
 					Where("name = ?", basic.Name).
-					Update("chain_id = ?", tokenBind.ChainId).Error
-				panic(fmt.Sprint("Update tokenBasic err :", err))
+					Update("chain_id", tokenBind.ChainId).
+					Error
+				if err != nil {
+					panic(fmt.Sprint("Update tokenBasic err :", err))
+				}
+				fmt.Println(tokenBind)
+				break
 			}
 		}
 	}

@@ -4,14 +4,14 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"123456",
+    "Password":"root123",
     "Scheme":"polyswap",
     "Debug": true
   },
   "ExpConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"123456",
+    "Password":"root123",
     "Scheme":"cross_chain_explorer",
     "Debug": true
   },
