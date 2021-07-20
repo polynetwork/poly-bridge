@@ -14,6 +14,7 @@ import (
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"time"
 )
 
 type AssetDetail struct {
@@ -52,6 +53,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 	//log.Info("q-w-e-r-t start to foreach tokenBasics")
 	for _, basic := range tokenBasics {
+		time.Sleep(time.Second)
 		//log.Info(fmt.Sprintf("	for basicname: %v", basic.Name))
 		assetDetail := new(AssetDetail)
 		dstChainAssets := make([]*DstChainAsset, 0)
@@ -61,7 +63,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			chainAsset.ChainId = token.ChainId
 			balance, err := common.GetBalance(token.ChainId, token.Hash)
 			if err != nil {
-				//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
+				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
 				balance = big.NewInt(0)
 				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
@@ -70,7 +72,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				totalSupply = big.NewInt(0)
-				//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err))
+				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err))
 
 				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
@@ -118,14 +120,14 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	for _, assetDetail := range resAssetDetails {
 		fmt.Println(assetDetail.BasicName, assetDetail.Difference)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			fmt.Println(tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
+			fmt.Printf("%2v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
 		}
 	}
 	fmt.Println("---BU准确数据---")
 	for _, assetDetail := range extraAssetDetails {
 		fmt.Println(assetDetail.BasicName, assetDetail.Difference)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			fmt.Println(tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
+			fmt.Printf("%2v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
 		}
 	}
 }
