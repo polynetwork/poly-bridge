@@ -110,8 +110,6 @@ func startExploerToThere(expcfg *conf.ExpConfig, dbcfg *conf.DBConfig) {
 				if err != nil {
 					panic(fmt.Sprint("Update tokenBasic err :", err))
 				}
-				fmt.Println(tokenBind)
-				break
 			}
 		}
 	}
