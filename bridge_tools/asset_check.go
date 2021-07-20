@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/models"
