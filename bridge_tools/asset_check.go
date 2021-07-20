@@ -50,9 +50,9 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	if res.Error != nil {
 		panic(fmt.Errorf("load chainBasics faild, err: %v", res.Error))
 	}
-	log.Info("q-w-e-r-t start to foreach tokenBasics")
+	//log.Info("q-w-e-r-t start to foreach tokenBasics")
 	for _, basic := range tokenBasics {
-		log.Info(fmt.Sprintf("	for basicname: %v", basic.Name))
+		//log.Info(fmt.Sprintf("	for basicname: %v", basic.Name))
 		assetDetail := new(AssetDetail)
 		dstChainAssets := make([]*DstChainAsset, 0)
 		totalFlow := big.NewInt(0)
@@ -61,23 +61,26 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			chainAsset.ChainId = token.ChainId
 			balance, err := common.GetBalance(token.ChainId, token.Hash)
 			if err != nil {
-				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
+				//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
 				balance = big.NewInt(0)
 				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
-			log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
+			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
 			chainAsset.Balance = balance
-			totalSupply, err := common.GetTotalSupply(token.ChainId, token.Hash)
+			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				totalSupply = big.NewInt(0)
-				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err))
+				//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err))
 
 				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
-			log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, totalSupply: %v", token.ChainId, token.Hash, totalSupply.String()))
+			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
+				totalSupply = big.NewInt(0)
+			}
+			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, totalSupply: %v", token.ChainId, token.Hash, totalSupply.String()))
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.flow = new(big.Int).Sub(totalSupply, balance)
-			log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, flow: %v", token.ChainId, token.Hash, chainAsset.flow.String()))
+			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, flow: %v", token.ChainId, token.Hash, chainAsset.flow.String()))
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.flow)
 			dstChainAssets = append(dstChainAssets, chainAsset)
 		}
@@ -112,6 +115,13 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 	fmt.Println("---准确数据---")
 	for _, assetDetail := range resAssetDetails {
+		fmt.Println(assetDetail.BasicName, assetDetail.Difference)
+		for _, tokenAsset := range assetDetail.TokenAsset {
+			fmt.Println(tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
+		}
+	}
+	fmt.Println("---BU准确数据---")
+	for _, assetDetail := range extraAssetDetails {
 		fmt.Println(assetDetail.BasicName, assetDetail.Difference)
 		for _, tokenAsset := range assetDetail.TokenAsset {
 			fmt.Println(tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
