@@ -231,7 +231,7 @@ func sendDing(assetDetail []*AssetDetail) error {
 	title := "[poly_NB]"
 	var ss string
 	for _, assetDetail := range assetDetail {
-		if assetDetail.Amount_usd.Cmp(big.NewInt(10000)) == 1 {
+		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 && assetDetail.Amount_usd.Cmp(big.NewInt(10000)) == 1 {
 			ss += fmt.Sprintf("\n### %v totalflow:%v $%v\n", assetDetail.BasicName, assetDetail.Difference, assetDetail.Amount_usd)
 			ss += "ChainId | Hash | TotalSupply | Balance | flow \n"
 			ss += ":-: | :-: | :-: | :-: | :-: \n"
