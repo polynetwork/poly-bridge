@@ -166,20 +166,21 @@ func inExtraBasic(name string) bool {
 }
 func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 	presion, _ := new(big.Int).SetString("1000000000000000000", 10)
+
 	if token.TokenBasicName == "YNI" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		return big.NewInt(0)
 	}
 	if token.TokenBasicName == "YNI" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("1000000000000000000", 10)
-		return x
+		x, _ := new(big.Int).SetString("1", 10)
+		return new(big.Int).Mul(x, presion)
 	}
 	if token.TokenBasicName == "DAO" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("1000000000000000000000", 10)
-		return x
+		x, _ := new(big.Int).SetString("1000", 10)
+		return new(big.Int).Mul(x, presion)
 	}
 	if token.TokenBasicName == "DAO" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("1000000000000000000000", 10)
-		return x
+		x, _ := new(big.Int).SetString("1000", 10)
+		return new(big.Int).Mul(x, presion)
 	}
 	if token.TokenBasicName == "COPR" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("274400000", 10)
@@ -203,11 +204,11 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 	}
 	if token.TokenBasicName == "SIL" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("1487520675265330391631", 10)
-		return new(big.Int).Mul(x, presion)
+		return x
 	}
 	if token.TokenBasicName == "SIL" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("5001", 10)
-		return x
+		return new(big.Int).Mul(x, presion)
 	}
 	if token.TokenBasicName == "DOGK" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("0", 10)
