@@ -20,7 +20,7 @@ import (
 
 type AssetDetail struct {
 	BasicName   string
-	TokenAsset  []*DstChainAsset
+	TokenAsset  []DstChainAsset
 	Difference  *big.Int
 	Precision   uint64
 	Price       int64
@@ -63,7 +63,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	for _, basic := range tokenBasics {
 		//log.Info(fmt.Sprintf("	for basicname: %v", basic.Name))
 		assetDetail := new(AssetDetail)
-		dstChainAssets := make([]*DstChainAsset, 0)
+		dstChainAssets := make([]DstChainAsset, 0)
 		totalFlow := big.NewInt(0)
 		for _, token := range basic.Tokens {
 			chainAsset := new(DstChainAsset)
@@ -95,7 +95,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			chainAsset.flow = new(big.Int).Sub(totalSupply, balance)
 			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, flow: %v", token.ChainId, token.Hash, chainAsset.flow.String()))
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.flow)
-			dstChainAssets = append(dstChainAssets, chainAsset)
+			dstChainAssets = append(dstChainAssets, *chainAsset)
 		}
 		assetDetail.Price = basic.Price
 		assetDetail.Precision = basic.Precision
@@ -124,7 +124,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			fmt.Println(o3WBTC.Balance)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 			chainAsset.flow = o3WBTC.Balance
-			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
+			assetDetail.TokenAsset = append(assetDetail.TokenAsset, *chainAsset)
 			assetDetail.Difference.Add(assetDetail.Difference, chainAsset.flow)
 		}
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
@@ -241,7 +241,7 @@ func test() {
 	chainAsset := new(DstChainAsset)
 	chainAsset.Balance = balance
 	chainAsset.TotalSupply = totalSupply
-	assetDetail1.TokenAsset = append(assetDetail1.TokenAsset, chainAsset)
+	assetDetail1.TokenAsset = append(assetDetail1.TokenAsset, *chainAsset)
 	chainId = uint64(2)
 	hash = "cb46c550539ac3db72dc7af7c89b11c306c727c2,"
 	balance, err = common.GetBalance(chainId, hash)
@@ -264,7 +264,7 @@ func test() {
 	chainAsset = new(DstChainAsset)
 	chainAsset.Balance = balance
 	chainAsset.TotalSupply = totalSupply
-	assetDetail2.TokenAsset = append(assetDetail2.TokenAsset, chainAsset)
+	assetDetail2.TokenAsset = append(assetDetail2.TokenAsset, *chainAsset)
 
 	title := "[poly_NB]"
 	body := make(map[string]interface{})
