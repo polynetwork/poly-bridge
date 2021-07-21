@@ -15,29 +15,25 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
-	"time"
 )
 
 type AssetDetail struct {
-	BasicName   string
-	TokenAsset  []DstChainAsset
-	Difference  *big.Int
-	Precision   uint64
-	Price       int64
-	Amount_usd  *big.Int
-	Amount_usd1 *big.Int
+	BasicName  string
+	TokenAsset []*DstChainAsset
+	Difference *big.Int
+	Precision  uint64
+	Price      int64
+	Amount_usd *big.Int
 }
 type DstChainAsset struct {
 	ChainId     uint64
+	Hash        string
 	TotalSupply *big.Int
 	Balance     *big.Int
 	flow        *big.Int
 }
 
 func startCheckAsset(dbCfg *conf.DBConfig) {
-	test()
-	return
-
 	log.Info("q-w-e-r-t start startCheckAsset")
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -63,11 +59,15 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	for _, basic := range tokenBasics {
 		//log.Info(fmt.Sprintf("	for basicname: %v", basic.Name))
 		assetDetail := new(AssetDetail)
-		dstChainAssets := make([]DstChainAsset, 0)
+		dstChainAssets := make([]*DstChainAsset, 0)
 		totalFlow := big.NewInt(0)
 		for _, token := range basic.Tokens {
+			if notToken(token) {
+				continue
+			}
 			chainAsset := new(DstChainAsset)
 			chainAsset.ChainId = token.ChainId
+			chainAsset.Hash = token.Hash
 			balance, err := common.GetBalance(token.ChainId, token.Hash)
 			if err != nil {
 				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
@@ -77,8 +77,6 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
 			chainAsset.Balance = balance
 			//time sleep
-			time.Sleep(time.Second)
-
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				totalSupply = big.NewInt(0)
@@ -95,7 +93,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			chainAsset.flow = new(big.Int).Sub(totalSupply, balance)
 			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, flow: %v", token.ChainId, token.Hash, chainAsset.flow.String()))
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.flow)
-			dstChainAssets = append(dstChainAssets, *chainAsset)
+			dstChainAssets = append(dstChainAssets, chainAsset)
 		}
 		assetDetail.Price = basic.Price
 		assetDetail.Precision = basic.Precision
@@ -124,30 +122,23 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			fmt.Println(o3WBTC.Balance)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 			chainAsset.flow = o3WBTC.Balance
-			assetDetail.TokenAsset = append(assetDetail.TokenAsset, *chainAsset)
+			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 			assetDetail.Difference.Add(assetDetail.Difference, chainAsset.flow)
 		}
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
 			amount_usd := decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.NewFromInt(int64(assetDetail.Precision))).Mul(decimal.New(assetDetail.Price, -8))
 			assetDetail.Amount_usd = amount_usd.BigInt()
-			if amount_usd.Cmp(decimal.NewFromInt32(10000)) == 1 {
-				assetDetail.Amount_usd1 = amount_usd.BigInt()
-			}
 		}
 
 		resAssetDetails = append(resAssetDetails, assetDetail)
 	}
+
+	err = sendDing(resAssetDetails)
+	if err != nil {
+		fmt.Println("------------发送钉钉错误,错误---------")
+	}
 	fmt.Println("---准确数据---")
 	for _, assetDetail := range resAssetDetails {
-		if assetDetail.Amount_usd1.Cmp(big.NewInt(0)) == 1 {
-			title := "[poly_NB]"
-			body := make(map[string]interface{})
-			body[assetDetail.BasicName] = assetDetail
-			err := common.PostDingCardSimple(title, body, []map[string]string{})
-			if err != nil {
-				fmt.Println("------------发送钉钉错误,错误---------")
-			}
-		}
 		fmt.Println(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd, assetDetail.Amount_usd1)
 		for _, tokenAsset := range assetDetail.TokenAsset {
 			fmt.Printf("%2v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
@@ -215,63 +206,41 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 		x, _ := new(big.Int).SetString("5001", 10)
 		return x
 	}
+	if token.TokenBasicName == "O3" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("0", 10)
+		return x
+	}
+	if token.TokenBasicName == "O3" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("0", 10)
+		return x
+	}
+	if token.TokenBasicName == "O3" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+
 	return totalSupply
 }
-
-func test() {
-	chainId := uint64(2)
-	hash := "42d9fef0cbd9c3000cece9764d99a4a6fe9e1b34"
-	balance, err := common.GetBalance(chainId, hash)
-	if err != nil {
-		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", chainId, hash, err))
-		balance = big.NewInt(0)
-		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
+func notToken(token *models.Token) bool {
+	if token.TokenBasicName == "USDT" && token.Precision != 6 {
+		return true
 	}
-	totalSupply, _ := common.GetTotalSupply(chainId, hash)
-	if err != nil {
-		totalSupply = big.NewInt(0)
-		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", chainId, hash, err))
+	return false
+}
 
-		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
-	}
-	//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
-
-	assetDetail1 := new(AssetDetail)
-	assetDetail1.BasicName = "O3"
-	chainAsset := new(DstChainAsset)
-	chainAsset.Balance = balance
-	chainAsset.TotalSupply = totalSupply
-	assetDetail1.TokenAsset = append(assetDetail1.TokenAsset, *chainAsset)
-	chainId = uint64(2)
-	hash = "cb46c550539ac3db72dc7af7c89b11c306c727c2,"
-	balance, err = common.GetBalance(chainId, hash)
-	if err != nil {
-		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", chainId, hash, err))
-		balance = big.NewInt(0)
-		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
-	}
-	totalSupply, _ = common.GetTotalSupply(chainId, hash)
-	if err != nil {
-		totalSupply = big.NewInt(0)
-		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", chainId, hash, err))
-
-		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
-	}
-	//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
-
-	assetDetail2 := new(AssetDetail)
-	assetDetail2.BasicName = "ONG"
-	chainAsset = new(DstChainAsset)
-	chainAsset.Balance = balance
-	chainAsset.TotalSupply = totalSupply
-	assetDetail2.TokenAsset = append(assetDetail2.TokenAsset, *chainAsset)
-
+func sendDing(assetDetail []*AssetDetail) error {
 	title := "[poly_NB]"
-	body := make(map[string]interface{})
-	body[assetDetail1.BasicName] = *assetDetail1
-	body[assetDetail2.BasicName] = *assetDetail2
-	err = common.PostDingCardSimple(title, body, []map[string]string{})
-	if err != nil {
-		fmt.Println("------------发送钉钉错误,错误---------")
+	var ss string
+	for _, assetDetail := range assetDetail {
+		if assetDetail.Amount_usd.Cmp(big.NewInt(10000)) == 1 {
+			ss += fmt.Sprintf("\n### %v totalflow:%v $%v\n", assetDetail.BasicName, assetDetail.Difference, assetDetail.Amount_usd)
+			ss += "ChainId | Hash | TotalSupply | Balance | flow \n"
+			ss += ":-: | :-: | :-: | :-: | :-: \n"
+			for _, x := range assetDetail.TokenAsset {
+				ss += fmt.Sprintf("%v|%v|%v|%v|%v \n", x.ChainId, x.Hash, x.TotalSupply, x.Balance, x.flow)
+			}
+		}
 	}
+	err := common.PostDingmarkdown(title, ss)
+	return err
+
 }

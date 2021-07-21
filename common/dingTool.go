@@ -36,6 +36,16 @@ func PostDingCard(title, body string, btns interface{}) error {
 	payload["actionCard"] = card
 	return PostJson(DingUrl, payload)
 }
+func PostDingmarkdown(title, body string) error {
+	payload := map[string]interface{}{}
+	payload["msgtype"] = "markdown"
+	card := map[string]interface{}{}
+	card["title"] = title
+	card["text"] = body
+	payload["markdown"] = card
+	return PostJson(DingUrl, payload)
+
+}
 
 func PostJson(url string, payload interface{}) error {
 	data, err := json.Marshal(payload)
