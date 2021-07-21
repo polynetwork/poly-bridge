@@ -24,6 +24,7 @@ type AssetDetail struct {
 	Precision  uint64
 	Price      int64
 	Amount_usd string
+	Reason     string
 }
 type DstChainAsset struct {
 	ChainId     uint64
@@ -70,6 +71,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			chainAsset.Hash = token.Hash
 			balance, err := common.GetBalance(token.ChainId, token.Hash)
 			if err != nil {
+				assetDetail.Reason = err.Error()
 				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
 				balance = big.NewInt(0)
 				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
@@ -79,6 +81,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			//time sleep
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
+				assetDetail.Reason = err.Error()
 				totalSupply = big.NewInt(0)
 				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err))
 
@@ -231,6 +234,9 @@ func sendDing(assetDetail []*AssetDetail) error {
 			if usd.Cmp(decimal.NewFromInt32(10000)) == 1 {
 				flag = true
 				ss += fmt.Sprintf("【%v】totalflow:%v $%v\n", assetDetail.BasicName, decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2), assetDetail.Amount_usd)
+				if assetDetail.Reason != "" {
+					ss += "err Reason:" + assetDetail.Reason + "\n"
+				}
 				for _, x := range assetDetail.TokenAsset {
 					ss += "ChainId: " + fmt.Sprintf("%v", x.ChainId) + "\n"
 					ss += "Hash: " + fmt.Sprintf("%v", x.Hash) + "\n"
