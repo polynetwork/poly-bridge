@@ -15,6 +15,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
+	"time"
 )
 
 type AssetDetail struct {
@@ -79,6 +80,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
 			chainAsset.Balance = balance
 			//time sleep
+			time.Sleep(time.Second)
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				assetDetail.Reason = err.Error()
