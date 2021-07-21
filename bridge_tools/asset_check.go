@@ -63,7 +63,6 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 		dstChainAssets := make([]*DstChainAsset, 0)
 		totalFlow := big.NewInt(0)
 		for _, token := range basic.Tokens {
-			time.Sleep(time.Second)
 			chainAsset := new(DstChainAsset)
 			chainAsset.ChainId = token.ChainId
 			balance, err := common.GetBalance(token.ChainId, token.Hash)
@@ -74,6 +73,9 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			}
 			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
 			chainAsset.Balance = balance
+			//time sleep
+			time.Sleep(time.Second)
+
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				totalSupply = big.NewInt(0)
@@ -84,6 +86,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
 				totalSupply = big.NewInt(0)
 			}
+			//specialBasic
 			totalSupply = specialBasic(token, totalSupply)
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.flow = new(big.Int).Sub(totalSupply, balance)
@@ -147,7 +150,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 }
 func inExtraBasic(name string) bool {
-	extraBasics := []string{"BLES", "COPR", "DAO", "DigiCol ERC-721", "DMOD", "GOF", "LEV", "mBTM", "MOZ", "O3", "SIL", "STN", "USDT", "XMPT"}
+	extraBasics := []string{"BLES", "GOF", "LEV", "mBTM", "MOZ", "O3", "STN", "USDT", "XMPT"}
 	for _, basic := range extraBasics {
 		if name == basic {
 			return true
@@ -156,11 +159,48 @@ func inExtraBasic(name string) bool {
 	return false
 }
 func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
+	presion, _ := new(big.Int).SetString("1000000000000000000", 10)
 	if token.TokenBasicName == "YNI" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		return big.NewInt(0)
 	}
 	if token.TokenBasicName == "YNI" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("1000000000000000000", 10)
+		return x
+	}
+	if token.TokenBasicName == "DAO" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("1000000000000000000000", 10)
+		return x
+	}
+	if token.TokenBasicName == "DAO" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("1000000000000000000000", 10)
+		return x
+	}
+	if token.TokenBasicName == "COPR" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("274400000", 10)
+		return new(big.Int).Mul(x, presion)
+	}
+	if token.TokenBasicName == "COPR" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("0", 10)
+		return x
+	}
+	if token.TokenBasicName == "DigiCol ERC-721" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DigiCol ERC-721" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DMOD" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DMOD" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		return new(big.Int).Mul(big.NewInt(15000000), presion)
+	}
+	if token.TokenBasicName == "SIL" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("1487520675265330391631", 10)
+		return x
+	}
+	if token.TokenBasicName == "SIL" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("5001", 10)
 		return x
 	}
 	return totalSupply
