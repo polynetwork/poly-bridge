@@ -136,6 +136,15 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 	fmt.Println("---准确数据---")
 	for _, assetDetail := range resAssetDetails {
+		if assetDetail.Amount_usd1.Cmp(big.NewInt(0)) == 1 {
+			title := "[poly_NB]"
+			body := make(map[string]interface{})
+			body[assetDetail.BasicName] = assetDetail
+			err := common.PostDingCardSimple(title, body, []map[string]string{})
+			if err != nil {
+				fmt.Println("------------发送钉钉错误,错误---------")
+			}
+		}
 		fmt.Println(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd, assetDetail.Amount_usd1)
 		for _, tokenAsset := range assetDetail.TokenAsset {
 			fmt.Printf("%2v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.flow)
