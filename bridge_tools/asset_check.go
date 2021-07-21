@@ -131,7 +131,6 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 
 		resAssetDetails = append(resAssetDetails, assetDetail)
 	}
-
 	err = sendDing(resAssetDetails)
 	if err != nil {
 		fmt.Println("------------发送钉钉错误,错误---------")
@@ -199,7 +198,7 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 	}
 	if token.TokenBasicName == "SIL" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("1487520675265330391631", 10)
-		return x
+		return new(big.Int).Mul(x, presion)
 	}
 	if token.TokenBasicName == "SIL" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("5001", 10)
@@ -225,10 +224,12 @@ func notToken(token *models.Token) bool {
 
 func sendDing(assetDetail []*AssetDetail) error {
 	ss := "[poly_NB]\n"
+	flag := false
 	for _, assetDetail := range assetDetail {
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
 			usd, _ := decimal.NewFromString(assetDetail.Amount_usd)
 			if usd.Cmp(decimal.NewFromInt32(10000)) == 1 {
+				flag = true
 				ss += fmt.Sprintf("【%v】totalflow:%v $%v\n", assetDetail.BasicName, decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2), assetDetail.Amount_usd)
 				for _, x := range assetDetail.TokenAsset {
 					ss += "ChainId: " + fmt.Sprintf("%v", x.ChainId) + "\n"
@@ -240,6 +241,9 @@ func sendDing(assetDetail []*AssetDetail) error {
 			}
 		}
 	}
-	err := common.PostDingtext(ss)
-	return err
+	if flag {
+		err := common.PostDingtext(ss)
+		return err
+	}
+	return nil
 }
