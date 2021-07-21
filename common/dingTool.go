@@ -47,6 +47,15 @@ func PostDingmarkdown(title, body string) error {
 
 }
 
+func PostDingtext(body string) error {
+	payload := map[string]interface{}{}
+	payload["msgtype"] = "text"
+	card := map[string]interface{}{}
+	card["content"] = body
+	payload["text"] = card
+	return PostJson(DingUrl, payload)
+}
+
 func PostJson(url string, payload interface{}) error {
 	data, err := json.Marshal(payload)
 	if err != nil {

@@ -23,14 +23,14 @@ type AssetDetail struct {
 	Difference *big.Int
 	Precision  uint64
 	Price      int64
-	Amount_usd *big.Int
+	Amount_usd string
 }
 type DstChainAsset struct {
 	ChainId     uint64
 	Hash        string
 	TotalSupply *big.Int
 	Balance     *big.Int
-	flow        *big.Int
+	Flow        *big.Int
 }
 
 func startCheckAsset(dbCfg *conf.DBConfig) {
@@ -90,9 +90,9 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			//specialBasic
 			totalSupply = specialBasic(token, totalSupply)
 			chainAsset.TotalSupply = totalSupply
-			chainAsset.flow = new(big.Int).Sub(totalSupply, balance)
+			chainAsset.Flow = new(big.Int).Sub(totalSupply, balance)
 			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, flow: %v", token.ChainId, token.Hash, chainAsset.flow.String()))
-			totalFlow = new(big.Int).Add(totalFlow, chainAsset.flow)
+			totalFlow = new(big.Int).Add(totalFlow, chainAsset.Flow)
 			dstChainAssets = append(dstChainAssets, chainAsset)
 		}
 		assetDetail.Price = basic.Price
@@ -121,13 +121,12 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			json.Unmarshal(body, &o3WBTC)
 			fmt.Println(o3WBTC.Balance)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
-			chainAsset.flow = o3WBTC.Balance
+			chainAsset.Flow = o3WBTC.Balance
 			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
-			assetDetail.Difference.Add(assetDetail.Difference, chainAsset.flow)
+			assetDetail.Difference.Add(assetDetail.Difference, chainAsset.Flow)
 		}
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
-			amount_usd := decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.NewFromInt(int64(assetDetail.Precision))).Mul(decimal.New(assetDetail.Price, -8))
-			assetDetail.Amount_usd = amount_usd.BigInt()
+			assetDetail.Amount_usd = decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).Mul(decimal.New(assetDetail.Price, -8)).StringFixed(0)
 		}
 
 		resAssetDetails = append(resAssetDetails, assetDetail)
@@ -206,16 +205,13 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 		x, _ := new(big.Int).SetString("5001", 10)
 		return x
 	}
-	if token.TokenBasicName == "O3" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+	if token.TokenBasicName == "DOGK" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("0", 10)
 		return x
 	}
-	if token.TokenBasicName == "O3" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("0", 10)
-		return x
-	}
-	if token.TokenBasicName == "O3" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		return big.NewInt(0)
+	if token.TokenBasicName == "DOGK" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("285000000000", 10)
+		return new(big.Int).Mul(x, presion)
 	}
 
 	return totalSupply
@@ -228,19 +224,22 @@ func notToken(token *models.Token) bool {
 }
 
 func sendDing(assetDetail []*AssetDetail) error {
-	title := "[poly_NB]"
-	var ss string
+	ss := "[poly_NB]\n"
 	for _, assetDetail := range assetDetail {
-		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 && assetDetail.Amount_usd.Cmp(big.NewInt(10000)) == 1 {
-			ss += fmt.Sprintf("\n### %v totalflow:%v $%v\n", assetDetail.BasicName, assetDetail.Difference, assetDetail.Amount_usd)
-			ss += "ChainId | Hash | TotalSupply | Balance | flow \n"
-			ss += ":-: | :-: | :-: | :-: | :-: \n"
-			for _, x := range assetDetail.TokenAsset {
-				ss += fmt.Sprintf("%v|%v|%v|%v|%v \n", x.ChainId, x.Hash, x.TotalSupply, x.Balance, x.flow)
+		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
+			usd, _ := decimal.NewFromString(assetDetail.Amount_usd)
+			if usd.Cmp(decimal.NewFromInt32(10000)) == 1 {
+				ss += fmt.Sprintf("【%v】totalflow:%v $%v\n", assetDetail.BasicName, decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2), assetDetail.Amount_usd)
+				for _, x := range assetDetail.TokenAsset {
+					ss += "ChainId: " + fmt.Sprintf("%v", x.ChainId) + "\n"
+					ss += "Hash: " + fmt.Sprintf("%v", x.Hash) + "\n"
+					ss += "TotalSupply: " + decimal.NewFromBigInt(x.TotalSupply, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + " "
+					ss += "Balance: " + decimal.NewFromBigInt(x.Balance, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + " "
+					ss += "Flow: " + decimal.NewFromBigInt(x.Flow, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + "\n"
+				}
 			}
 		}
 	}
-	err := common.PostDingmarkdown(title, ss)
+	err := common.PostDingtext(ss)
 	return err
-
 }
