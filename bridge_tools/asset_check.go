@@ -35,6 +35,9 @@ type DstChainAsset struct {
 }
 
 func startCheckAsset(dbCfg *conf.DBConfig) {
+	test()
+	return
+
 	log.Info("q-w-e-r-t start startCheckAsset")
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -213,4 +216,62 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 		return x
 	}
 	return totalSupply
+}
+
+func test() {
+	chainId := uint64(2)
+	hash := "42d9fef0cbd9c3000cece9764d99a4a6fe9e1b34"
+	balance, err := common.GetBalance(chainId, hash)
+	if err != nil {
+		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", chainId, hash, err))
+		balance = big.NewInt(0)
+		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
+	}
+	totalSupply, _ := common.GetTotalSupply(chainId, hash)
+	if err != nil {
+		totalSupply = big.NewInt(0)
+		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", chainId, hash, err))
+
+		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
+	}
+	//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
+
+	assetDetail1 := new(AssetDetail)
+	assetDetail1.BasicName = "O3"
+	chainAsset := new(DstChainAsset)
+	chainAsset.Balance = balance
+	chainAsset.TotalSupply = totalSupply
+	assetDetail1.TokenAsset = append(assetDetail1.TokenAsset, chainAsset)
+	chainId = uint64(2)
+	hash = "cb46c550539ac3db72dc7af7c89b11c306c727c2,"
+	balance, err = common.GetBalance(chainId, hash)
+	if err != nil {
+		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", chainId, hash, err))
+		balance = big.NewInt(0)
+		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
+	}
+	totalSupply, _ = common.GetTotalSupply(chainId, hash)
+	if err != nil {
+		totalSupply = big.NewInt(0)
+		log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", chainId, hash, err))
+
+		//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
+	}
+	//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
+
+	assetDetail2 := new(AssetDetail)
+	assetDetail2.BasicName = "O3"
+	chainAsset = new(DstChainAsset)
+	chainAsset.Balance = balance
+	chainAsset.TotalSupply = totalSupply
+	assetDetail2.TokenAsset = append(assetDetail2.TokenAsset, chainAsset)
+
+	title := "[poly_NB]"
+	body := make(map[string]interface{})
+	body[assetDetail1.BasicName] = assetDetail1
+	body[assetDetail2.BasicName] = assetDetail2
+	err = common.PostDingCardSimple(title, body, []map[string]string{})
+	if err != nil {
+		fmt.Println("------------发送钉钉错误,错误---------")
+	}
 }
