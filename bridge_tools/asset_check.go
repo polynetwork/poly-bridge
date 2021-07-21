@@ -260,7 +260,7 @@ func test() {
 	//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
 
 	assetDetail2 := new(AssetDetail)
-	assetDetail2.BasicName = "O3"
+	assetDetail2.BasicName = "ONG"
 	chainAsset = new(DstChainAsset)
 	chainAsset.Balance = balance
 	chainAsset.TotalSupply = totalSupply
@@ -268,8 +268,8 @@ func test() {
 
 	title := "[poly_NB]"
 	body := make(map[string]interface{})
-	body[assetDetail1.BasicName] = assetDetail1
-	body[assetDetail2.BasicName] = assetDetail2
+	body[assetDetail1.BasicName] = *assetDetail1
+	body[assetDetail2.BasicName] = *assetDetail2
 	err = common.PostDingCardSimple(title, body, []map[string]string{})
 	if err != nil {
 		fmt.Println("------------发送钉钉错误,错误---------")
