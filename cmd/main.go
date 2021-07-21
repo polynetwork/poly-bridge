@@ -32,8 +32,10 @@ import (
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
 	"poly-bridge/crosschainstats"
+	"poly-bridge/http/tools"
 
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/urfave/cli"
 )
 
@@ -80,6 +82,7 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
+	tools.Init()
 	common.SetupChainsSDK(config)
 	crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
 	if config.Backup {
@@ -89,6 +92,22 @@ func startServer(ctx *cli.Context) {
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig,config.IPPortConfig)
 	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig)
+
+	// register http routers
+	web.AddNamespace(
+		web.NewNamespace("/v1",
+			tools.GetRouter(),
+		),
+	)
+
+	// Insert web config
+	web.BConfig.Listen.HTTPAddr = config.HttpConfig.Address
+	web.BConfig.Listen.HTTPPort = config.HttpConfig.Port
+	web.BConfig.RunMode = config.RunMode
+	web.BConfig.AppName = "bridge-server"
+	web.BConfig.CopyRequestBody = true
+	web.BConfig.EnableErrorsRender = false
+	go web.Run()
 }
 
 func waitSignal() os.Signal {

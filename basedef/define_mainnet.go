@@ -32,4 +32,6 @@ var (
 	OK_CROSSCHAIN_ID       = uint64(12)
 	MATIC_CROSSCHAIN_ID    = uint64(17)
 	NEO3_CROSSCHAIN_ID     = uint64(88)
+
+	ENV = "mainnet"
 )

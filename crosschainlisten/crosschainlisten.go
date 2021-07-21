@@ -30,6 +30,7 @@ import (
 	"poly-bridge/crosschainlisten/ontologylisten"
 	"poly-bridge/crosschainlisten/polylisten"
 	"poly-bridge/crosschainlisten/switcheolisten"
+	"poly-bridge/http/tools"
 	"poly-bridge/models"
 	"runtime/debug"
 	"time"
@@ -199,6 +200,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			} else if extendHeight >= height+21 {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
+			tools.Record(height, "%v.lastest_height", chain.ChainId)
+			tools.Record(extendHeight, "%v.watch_height", chain.ChainId)
+			tools.Record(chain.Height, "%v.height", chain.ChainId)
 			if chain.Height >= height-ccl.handle.GetDefer() {
 				continue
 			}
@@ -216,6 +220,8 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					chain.Height -= 1
 					break
 				}
+				tools.Record(len(srcTransactions), "%v.locks", chain.ChainId)
+				tools.Record(len(dstTransactions), "%v.unlocks", chain.ChainId)
 			}
 		case <-ccl.exit:
 			logs.Info("cross chain listen exit, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
