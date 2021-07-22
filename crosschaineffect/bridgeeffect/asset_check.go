@@ -1,4 +1,4 @@
-package main
+package bridgeeffect
 
 import (
 	"encoding/json"
@@ -35,7 +35,7 @@ type DstChainAsset struct {
 	Flow        *big.Int
 }
 
-func startCheckAsset(dbCfg *conf.DBConfig) {
+func StartCheckAsset(dbCfg *conf.DBConfig) {
 	log.Info("q-w-e-r-t start startCheckAsset")
 	Logger := logger.Default
 	if dbCfg.Debug == true {

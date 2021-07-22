@@ -26,6 +26,7 @@ import (
 	"poly-bridge/bridge_tools/conf"
 	"poly-bridge/common"
 	conf1 "poly-bridge/conf"
+	"poly-bridge/crosschaineffect/bridgeeffect"
 	"runtime"
 	"strings"
 )
@@ -170,7 +171,7 @@ func startServer(ctx *cli.Context) {
 			logs.Info("%s\n", string(conf))
 		}
 		common.SetupChainsSDK(config)
-		startCheckAsset(config.DBConfig)
+		bridgeeffect.startCheckAsset(config.DBConfig)
 	}
 }
 

@@ -24,8 +24,10 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
+	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
+	"poly-bridge/crosschaineffect/bridgeeffect"
 	"runtime"
 	"strings"
 	"syscall"
@@ -80,6 +82,7 @@ func setupApp() *cli.App {
 }
 
 func StartServer(ctx *cli.Context) {
+	go()
 	for true {
 		startServer(ctx)
 		sig := waitSignal()
@@ -105,6 +108,21 @@ func startServer(ctx *cli.Context) {
 		logs.Info("%s\n", string(conf))
 	}
 	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig)
+}
+func startAssetCheck(ctx *cli.Context){
+	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/assetCheck.log"}`)
+	configFile := ctx.GlobalString(getFlagName(configPathFlag))
+	config := conf.NewConfig(configFile)
+	if config == nil {
+		logs.Error("startServer - read config failed!")
+		return
+	}
+	{
+		conf, _ := json.Marshal(config)
+		logs.Info("%s\n", string(conf))
+	}
+	common.SetupChainsSDK(config)
+	bridgeeffect.StartCheckAsset(config.DBConfig)
 }
 
 func waitSignal() os.Signal {
