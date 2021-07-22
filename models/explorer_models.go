@@ -362,7 +362,8 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.ToChainId = uint32(transfer.DstChainId)
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
-	log.Info("yuan crossTransfer.Amount:", transfer.Amount, "yuan token.TokenBasic.Precision:", token.TokenBasic.Precision)
+	jsonToken,_:=json.Marshal(token)
+	log.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
@@ -457,6 +458,9 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
 			TChainName: ChainId2Name(tx.PolyTransaction.DstChainId),
 		})
 	}
+	sort.Slice(crossTxListResp.CrossTxList, func(i, j int) bool {
+		return crossTxListResp.CrossTxList[i].TT>crossTxListResp.CrossTxList[j].TT
+	})
 	return crossTxListResp
 }
 
