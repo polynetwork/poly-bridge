@@ -266,14 +266,14 @@ func (this *Stats) computeChainStatistics() (err error) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
 	}
-	nowIn, err := this.dao.GetNewDstTransfer()
+	nowIn, err := this.dao.GetNewDstTransaction()
 	json1, _ := json.Marshal(nowIn)
 	log.Info("------nowIn:", string(json1))
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
 	}
 	nowInId := nowIn.Id
-	nowOut, err := this.dao.GetNewSrcTransfer()
+	nowOut, err := this.dao.GetNewSrcTransaction()
 	json1, _ = json.Marshal(nowOut)
 	log.Info("------nowIn:", string(json1))
 	if err != nil {

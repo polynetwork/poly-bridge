@@ -378,11 +378,22 @@ func (dao *BridgeDao) GetNewDstTransfer() (*models.DstTransfer, error) {
 	res := dao.db.Last(transfer)
 	return transfer, res.Error
 }
+func (dao *BridgeDao) GetNewDstTransaction() (*models.DstTransaction, error) {
+	transaction := &models.DstTransaction{}
+	res := dao.db.Last(transaction)
+	return transaction, res.Error
+}
 func (dao *BridgeDao) GetNewSrcTransfer() (*models.SrcTransfer, error) {
 	srcTransfer := &models.SrcTransfer{}
 	res := dao.db.Debug().Last(srcTransfer)
 	fmt.Println("GetNewSrcTransfer:", *srcTransfer)
 	return srcTransfer, res.Error
+}
+func (dao *BridgeDao) GetNewSrcTransaction() (*models.SrcTransaction, error) {
+	transaction := &models.SrcTransaction{}
+	res := dao.db.Debug().Last(transaction)
+	fmt.Println("GetNewSrcTransfer:", *transaction)
+	return transaction, res.Error
 }
 func (dao *BridgeDao) GetNewTokenSta() (*models.TokenStatistic, error) {
 	tokenStatistic := &models.TokenStatistic{}
