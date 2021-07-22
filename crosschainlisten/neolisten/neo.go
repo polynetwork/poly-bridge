@@ -90,13 +90,13 @@ func (this *NeoChainListen) isListeningContract(contract string, contracts []str
 	return false
 }
 
-func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
+func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, fmt.Errorf("can not get neo block!")
+		return nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get neo block!")
 	}
 	tt := block.Time
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
@@ -286,7 +286,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 			}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
 }
 
 type Error struct {

@@ -97,7 +97,7 @@ func (eff *BridgeEffect) GetEffectSlot() int64 {
 
 func (eff *BridgeEffect) updateHash() error {
 	polySrcRelations := make([]*models.PolySrcRelation, 0)
-	eff.db.Table("poly_transactions").Where("left(poly_transactions.src_hash, 8) = ?", "00000000").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key and poly_transactions.src_chain_id = src_transactions.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
+	eff.db.Table("poly_transactions").Where("poly_transactions.src_hash like ?", "00000000%").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key and poly_transactions.src_chain_id = src_transactions.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
 	updatePolyTransactions := make([]*models.PolyTransaction, 0)
 	for _, polySrcRelation := range polySrcRelations {
 		if polySrcRelation.SrcTransaction != nil {
@@ -210,13 +210,11 @@ func (eff *BridgeEffect) checkChainListening() error {
 	return nil
 }
 
-
 type TimeStatistic struct {
-	SrcChainId   uint64
+	SrcChainId uint64
 	DstChainId uint64
-	Time  float64
+	Time       float64
 }
-
 
 func (eff *BridgeEffect) doStatistic() error {
 	timeStatistics := make([]*TimeStatistic, 0)

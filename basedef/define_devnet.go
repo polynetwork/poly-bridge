@@ -28,4 +28,5 @@ var (
 	HECO_CROSSCHAIN_ID     = uint64(7)
 	O3_CROSSCHAIN_ID       = uint64(80)
 	OK_CROSSCHAIN_ID       = uint64(90)
+	MATIC_CROSSCHAIN_ID    = uint64(13)
 )

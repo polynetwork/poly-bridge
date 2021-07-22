@@ -331,8 +331,11 @@ BODY raw
 ```
 {
   "PageSize":10,
-  "PageNo":5
+  "PageNo":5,
+  "Order": "total_count"
 }
+
+# Valid order keys: "total_amount", "total_count", "name", "price"
 ```
 
 Example Request
