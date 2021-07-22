@@ -392,7 +392,7 @@ func (dao *BridgeDao) GetNewSrcTransfer() (*models.SrcTransfer, error) {
 func (dao *BridgeDao) GetNewSrcTransaction() (*models.SrcTransaction, error) {
 	transaction := &models.SrcTransaction{}
 	res := dao.db.Debug().Last(transaction)
-	fmt.Println("GetNewSrcTransfer:", *transaction)
+	fmt.Println("GetNewSrcTransaction:", *transaction)
 	return transaction, res.Error
 }
 func (dao *BridgeDao) GetNewTokenSta() (*models.TokenStatistic, error) {
@@ -401,10 +401,8 @@ func (dao *BridgeDao) GetNewTokenSta() (*models.TokenStatistic, error) {
 	return tokenStatistic, res.Error
 }
 func (dao *BridgeDao) GetNewChainSta() (*models.ChainStatistic, error) {
-	logs.Info("qwertyuiop2kaishichaChainStatistic-------")
 	chainStatistic := &models.ChainStatistic{}
 	res := dao.db.Debug().Last(chainStatistic)
-	logs.Info("qwertyuiop3chawanchaChainStatistic-------")
 	return chainStatistic, res.Error
 }
 func (dao *BridgeDao) CalculateChainStatisticAssets(chainStatistics interface{}) error {
@@ -443,7 +441,9 @@ func (dao *BridgeDao) CalculatePolyChainStatistic(lastId, nowId int64) (int64, e
 }
 
 func (dao *BridgeDao) SaveChainStatistics(chainStatistics []*models.ChainStatistic) error {
-	res := dao.db.Save(chainStatistics)
+	fmt.Println("baocunsave----------")
+	res := dao.db.Debug().Save(chainStatistics)
+	fmt.Println("baocunjieshu")
 	return res.Error
 }
 func (dao *BridgeDao) GetNewAssetSta() (*models.AssetStatistic, error) {

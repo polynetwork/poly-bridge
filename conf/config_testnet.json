@@ -186,13 +186,13 @@
     }
   ],
   "StatsConfig": {
-    "TokenBasicStatsInterval": 120,
-    "TokenAmountCheckInterval": 120,
-    "TokenStatisticInterval": 600,
-    "ChainStatisticInterval": 20,
-    "ChainAddressCheckInterval": 600,
-    "AssetStatisticInterval": 600,
-    "AssetAdressInterval": 600
+    "TokenBasicStatsInterval": 1200,
+    "TokenAmountCheckInterval": 1200,
+    "TokenStatisticInterval": 6000,
+    "ChainStatisticInterval": 30,
+    "ChainAddressCheckInterval": 6000,
+    "AssetStatisticInterval": 6000,
+    "AssetAdressInterval": 6000
   },
   "EventEffectConfig": {
     "HowOld": 3600,

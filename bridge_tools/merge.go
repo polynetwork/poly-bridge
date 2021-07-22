@@ -558,9 +558,9 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 				newAssetstatictic.AmountBtc = old.AmountBtc
 				newAssetstatictic.Addressnum = uint64(old.Addressnum)
 				newAssetstatictic.Txnum = uint64(old.Txnum)
-				newAssetstatictic.LastCheckId = srcTransfer.Id
 			}
 		}
+		newAssetstatictic.LastCheckId = srcTransfer.Id
 		assetStatistics = append(assetStatistics, newAssetstatictic)
 	}
 	for _, assetStatistic := range assetStatistics {
@@ -598,11 +598,11 @@ func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
 			if chainInfo.Id == chainStatistic.ChainId {
 				chainStatistic.In = chainInfo.Txin
 				chainStatistic.Out = chainInfo.Txout
-				chainStatistic.LastInCheckId = dstTransaction.Id
-				chainStatistic.LastOutCheckId = srcTransaction.Id
 				break
 			}
 		}
+		chainStatistic.LastInCheckId = dstTransaction.Id
+		chainStatistic.LastOutCheckId = srcTransaction.Id
 	}
 	for _, chainStatistic := range chainStatistics {
 		if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {

@@ -27,7 +27,6 @@ import (
 
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/coinpricelisten"
-	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
@@ -80,14 +79,14 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
-	common.SetupChainsSDK(config)
-	crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
-	if config.Backup {
-		return
-	}
-	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
-	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
-	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig)
+	//common.SetupChainsSDK(config)
+	//crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
+	//if config.Backup {
+	//	return
+	//}
+	//coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
+	//chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
+	//crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig)
 	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig)
 }
 
