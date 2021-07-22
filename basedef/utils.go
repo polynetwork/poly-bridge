@@ -156,3 +156,11 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	}
 	return value, nil
 }
+
+func AddressAsHash(chainId uint64, value string) string {
+	if chainId == NEO_CROSSCHAIN_ID && strings.HasPrefix(value, "swth") {
+		chainId = SWITCHEO_CROSSCHAIN_ID
+	}
+	hash, _ := Address2Hash(chainId, value)
+	return hash
+}
