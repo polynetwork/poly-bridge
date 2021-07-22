@@ -57,9 +57,7 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	if res.Error != nil {
 		panic(fmt.Errorf("load chainBasics faild, err: %v", res.Error))
 	}
-	//log.Info("q-w-e-r-t start to foreach tokenBasics")
 	for _, basic := range tokenBasics {
-		//log.Info(fmt.Sprintf("	for basicname: %v", basic.Name))
 		assetDetail := new(AssetDetail)
 		dstChainAssets := make([]*DstChainAsset, 0)
 		totalFlow := big.NewInt(0)
@@ -75,19 +73,14 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 				assetDetail.Reason = err.Error()
 				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
 				balance = big.NewInt(0)
-				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetBalance faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
-			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, balance: %v", token.ChainId, token.Hash, balance.String()))
 			chainAsset.Balance = balance
-			//time sleep
 			time.Sleep(time.Second)
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				assetDetail.Reason = err.Error()
 				totalSupply = big.NewInt(0)
 				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err))
-
-				//panic(fmt.Errorf("q-w-e-r-t In CheckAsset Chain: %v,hash: %v , GetTotalSupply faild, err: %v", token.ChainId, token.Hash, res.Error))
 			}
 			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
 				totalSupply = big.NewInt(0)
@@ -96,14 +89,12 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 			totalSupply = specialBasic(token, totalSupply)
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.Flow = new(big.Int).Sub(totalSupply, balance)
-			//log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, flow: %v", token.ChainId, token.Hash, chainAsset.flow.String()))
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.Flow)
 			dstChainAssets = append(dstChainAssets, chainAsset)
 		}
 		assetDetail.Price = basic.Price
 		assetDetail.Precision = basic.Precision
 		assetDetail.TokenAsset = dstChainAssets
-		log.Info(fmt.Sprintf("	basic: %v,totalFlow: %v", basic.Name, totalFlow.String()))
 		assetDetail.Difference = totalFlow
 		assetDetail.BasicName = basic.Name
 		if inExtraBasic(assetDetail.BasicName) {
@@ -124,7 +115,6 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 				Balance *big.Int
 			}{}
 			json.Unmarshal(body, &o3WBTC)
-			fmt.Println(o3WBTC.Balance)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 			chainAsset.Flow = o3WBTC.Balance
 			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
@@ -138,25 +128,44 @@ func startCheckAsset(dbCfg *conf.DBConfig) {
 	}
 	err = sendDing(resAssetDetails)
 	if err != nil {
-		fmt.Println("------------发送钉钉错误,错误---------")
+		log.Error("------------sendDingDINg err---------")
 	}
-	fmt.Println("---准确数据---")
+	log.Info("---rightdata---")
 	for _, assetDetail := range resAssetDetails {
-		fmt.Println(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
+		log.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			fmt.Printf("%2v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
+			log.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
 		}
 	}
-	fmt.Println("---BU准确数据---")
+	fmt.Println("---wrongdata---")
 	for _, assetDetail := range extraAssetDetails {
-		fmt.Println(assetDetail.BasicName, assetDetail.Difference)
+		if assetDetail.BasicName == "USDT" {
+			chainAsset := new(DstChainAsset)
+			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+			response, err := http.Get("http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66")
+			defer response.Body.Close()
+			if err != nil || response.StatusCode != 200 {
+				log.Error("Get o3 USDT err:", err)
+				continue
+			}
+			body, _ := ioutil.ReadAll(response.Body)
+			o3USDT := struct {
+				Balance *big.Int
+			}{}
+			json.Unmarshal(body, &o3USDT)
+			fmt.Println(o3USDT.Balance)
+			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+			chainAsset.Balance = o3USDT.Balance
+			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
+		}
+		log.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			fmt.Printf("%2v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
+			log.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
 		}
 	}
 }
 func inExtraBasic(name string) bool {
-	extraBasics := []string{"BLES", "GOF", "LEV", "mBTM", "MOZ", "O3", "STN", "USDT", "XMPT"}
+	extraBasics := []string{"BLES", "GOF", "LEV", "mBTM", "MOZ", "O3", "USDT", "STN", "XMPT"}
 	for _, basic := range extraBasics {
 		if name == basic {
 			return true
