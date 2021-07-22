@@ -29,6 +29,8 @@ import (
 	"time"
 )
 
+var checkTime int = 0
+
 type BridgeEffect struct {
 	dbCfg  *conf.DBConfig
 	cfg    *conf.EventEffectConfig
@@ -84,6 +86,14 @@ func (eff *BridgeEffect) Effect() error {
 	err = eff.checkChainListening()
 	if err != nil {
 		logs.Error("check chain listening- err: %s", err)
+	}
+	checkTime++
+	if checkTime > 600 {
+		checkTime = 0
+		err = StartCheckAsset(eff.dbCfg)
+		if err != nil {
+			logs.Error("check asset- err: %s", err)
+		}
 	}
 	return nil
 }
@@ -210,13 +220,11 @@ func (eff *BridgeEffect) checkChainListening() error {
 	return nil
 }
 
-
 type TimeStatistic struct {
-	SrcChainId   uint64
+	SrcChainId uint64
 	DstChainId uint64
-	Time  float64
+	Time       float64
 }
-
 
 func (eff *BridgeEffect) doStatistic() error {
 	timeStatistics := make([]*TimeStatistic, 0)

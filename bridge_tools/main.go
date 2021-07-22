@@ -18,15 +18,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"github.com/urfave/cli"
 	"os"
 	"poly-bridge/bridge_tools/conf"
-	"poly-bridge/common"
-	conf1 "poly-bridge/conf"
-	"poly-bridge/crosschaineffect/bridgeeffect"
 	"runtime"
 	"strings"
 )
@@ -159,19 +154,6 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		startExploerToThere(config.ExpConfig, config.DBConfig)
-	} else if cmd == 8 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf1.NewConfig(configFile)
-		if config == nil {
-			logs.Error("startServer - read config failed!")
-			return
-		}
-		{
-			conf, _ := json.Marshal(config)
-			logs.Info("%s\n", string(conf))
-		}
-		common.SetupChainsSDK(config)
-		bridgeeffect.startCheckAsset(config.DBConfig)
 	}
 }
 

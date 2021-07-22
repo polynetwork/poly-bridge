@@ -35,7 +35,7 @@ type DstChainAsset struct {
 	Flow        *big.Int
 }
 
-func StartCheckAsset(dbCfg *conf.DBConfig) {
+func StartCheckAsset(dbCfg *conf.DBConfig) error {
 	log.Info("q-w-e-r-t start startCheckAsset")
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -163,6 +163,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig) {
 			log.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
 		}
 	}
+	return nil
 }
 func inExtraBasic(name string) bool {
 	extraBasics := []string{"BLES", "GOF", "LEV", "mBTM", "MOZ", "O3", "USDT", "STN", "XMPT"}
