@@ -136,7 +136,7 @@
       "CCMContract":"2A4cF474Aef33F0046434E4916Ac6b2fef4e5B78",
       "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
     },
-        {
+    {
       "ChainName":"NEO3",
       "ChainId":11,
       "ListenSlot":1,
@@ -157,6 +157,22 @@
       "WrapperContract":[],
       "CCMContract":"fdd6c536f59bfd1149e818635d46dcc6faf1ba44",
       "ProxyContract":"97758f7e9c11e79423453e5acd925989ff7d3ade"
+    },
+    {
+      "ChainName":"MATIC",
+      "ChainId":128,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "http://124.156.238.97:8545"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"],
+      "CCMContract":"3f17e8DCb0D762e2bFCb437aD2C4ffe24BCF25ee",
+      "ProxyContract":"4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446"
     }
   ],
   "StatsConfig": {
