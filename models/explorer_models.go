@@ -29,6 +29,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
@@ -362,7 +363,7 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.ToChainId = uint32(transfer.DstChainId)
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
-	jsonToken,_:=json.Marshal(token)
+	jsonToken, _ := json.Marshal(token)
 	log.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
@@ -459,8 +460,11 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
 		})
 	}
 	sort.Slice(crossTxListResp.CrossTxList, func(i, j int) bool {
-		return crossTxListResp.CrossTxList[i].TT>crossTxListResp.CrossTxList[j].TT
+		return crossTxListResp.CrossTxList[i].TT > crossTxListResp.CrossTxList[j].TT
 	})
+	for _, v := range crossTxListResp.CrossTxList {
+		fmt.Println(v.TT)
+	}
 	return crossTxListResp
 }
 
