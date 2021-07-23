@@ -260,13 +260,13 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
-	logs.Info("qwertyuiop1-----start computeChainStatistics computeChainStatistics")
+	logs.Info("qwertyuiop11-----start computeChainStatistics computeChainStatistics")
 	nowChainStatistic, err := this.dao.GetNewChainSta()
-	jsonnowChainStatistic, _ := json.Marshal(nowChainStatistic)
-	log.Info("jsonnowChainStatistic:", string(jsonnowChainStatistic))
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	logs.Info("qwertyuiop14-----", err)
+	if err != nil {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
 	}
+	logs.Info("qwertyuiop15-----")
 	nowIn, err := this.dao.GetNewDstTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
