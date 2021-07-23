@@ -435,14 +435,12 @@ func (dao *BridgeDao) CalculateOutChainStatistics(lastId, nowId int64, chainStat
 	return res.Error
 }
 func (dao *BridgeDao) CalculatePolyChainStatistic(lastId, nowId int64) (int64, error) {
-	counter := struct {
-		Counter int64
-	}{}
-	logs.Info("qChainStatistic,sql,counter1", counter.Counter)
-	res := dao.db.Raw("select count(*) from poly_transactions where id > ? and id <= ?", lastId, nowId).
+	var counter int64
+	logs.Info("lastId:", lastId, "nowId:", nowId)
+	res := dao.db.Debug().Raw("select count(*) as counter from poly_transactions where id > ? and id <= ?", lastId, nowId).
 		Scan(&counter)
-	logs.Info("qChainStatistic,sql,counter2", counter.Counter)
-	return counter.Counter, res.Error
+	logs.Info("qChainStatistic,sql,counter2", counter)
+	return counter, res.Error
 }
 
 func (dao *BridgeDao) SaveChainStatistics(chainStatistics []*models.ChainStatistic) error {

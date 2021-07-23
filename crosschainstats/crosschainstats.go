@@ -336,9 +336,10 @@ func (this *Stats) computeChainStatistics() (err error) {
 				logs.Info("qChainStatistic,chainStatistic.Out2", chainStatistic.Out, "chainStatistic.LastOutCheckId2:", chainStatistic.LastOutCheckId, "nowOutId:", nowOutId)
 			}
 		}
-		logs.Info("qChainStatistic,poly_polyCheckId", polyCheckId)
+		logs.Info("qChainStatistic---,poly_polyCheckId", polyCheckId)
 		for _, chainStatistic := range chainStatistics {
 			if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
+				logs.Info("qChainStatistic---,poly.LastInCheckId:", chainStatistic.LastInCheckId)
 				counter, err := this.dao.CalculatePolyChainStatistic(chainStatistic.LastInCheckId, polyCheckId)
 				logs.Info("qChainStatistic,POLY_CROSSCHAIN_ID_counter:", counter)
 				if err == nil {
