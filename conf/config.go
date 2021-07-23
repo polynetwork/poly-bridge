@@ -151,6 +151,12 @@ type EventEffectConfig struct {
 	TimeStatisticSlot int64
 }
 
+type IPPortConfig struct {
+	WBTCIP	string
+	USDTIP	string
+	DingIP	string
+}
+
 type Config struct {
 	Server                string
 	Backup                bool
@@ -162,6 +168,7 @@ type Config struct {
 	EventEffectConfig     *EventEffectConfig
 	StatsConfig           *StatsConfig
 	DBConfig              *DBConfig
+	IPPortConfig		  *IPPortConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

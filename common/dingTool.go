@@ -9,9 +9,7 @@ import (
 	"net/http"
 )
 
-var (
-	DingUrl = "https://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
-)
+var DingUrl string
 
 func PostDingCardSimple(title string, body map[string]interface{}, btns []map[string]string) error {
 	content := fmt.Sprintf("## %s", title)
@@ -47,7 +45,8 @@ func PostDingmarkdown(title, body string) error {
 
 }
 
-func PostDingtext(body string) error {
+func PostDingtext(body string,dingURL string) error {
+	DingUrl=dingURL
 	payload := map[string]interface{}{}
 	payload["msgtype"] = "text"
 	card := map[string]interface{}{}

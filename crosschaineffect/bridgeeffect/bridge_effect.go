@@ -35,14 +35,16 @@ type BridgeEffect struct {
 	dbCfg  *conf.DBConfig
 	cfg    *conf.EventEffectConfig
 	db     *gorm.DB
+	ipCfg	*conf.IPPortConfig
 	chains []*models.Chain
 	time   int64
 }
 
-func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) *BridgeEffect {
+func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) *BridgeEffect {
 	swapEffect := &BridgeEffect{
 		dbCfg:  dbCfg,
 		cfg:    cfg,
+		ipCfg:	ipCfg,
 		chains: nil,
 		time:   0,
 	}
@@ -90,7 +92,7 @@ func (eff *BridgeEffect) Effect() error {
 	checkTime++
 	if checkTime > 600 {
 		checkTime = 0
-		err = StartCheckAsset(eff.dbCfg)
+		err = StartCheckAsset(eff.dbCfg,eff.ipCfg)
 		if err != nil {
 			logs.Error("check asset- err: %s", err)
 		}

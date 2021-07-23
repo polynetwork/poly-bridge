@@ -3,7 +3,7 @@ package bridgeeffect
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/polynetwork/poly-io-test/log"
+	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -35,8 +35,8 @@ type DstChainAsset struct {
 	Flow        *big.Int
 }
 
-func StartCheckAsset(dbCfg *conf.DBConfig) error {
-	log.Info("q-w-e-r-t start startCheckAsset")
+func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
+	logs.Info("StartCheckAsset,start startCheckAsset")
 	Logger := logger.Default
 	if dbCfg.Debug == true {
 		Logger = Logger.LogMode(logger.Info)
@@ -44,9 +44,8 @@ func StartCheckAsset(dbCfg *conf.DBConfig) error {
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
 	if err != nil {
-		panic(err)
+		logs.Error("gorm.Open err",err)
 	}
-
 	resAssetDetails := make([]*AssetDetail, 0)
 	extraAssetDetails := make([]*AssetDetail, 0)
 	tokenBasics := make([]*models.TokenBasic, 0)
@@ -71,7 +70,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig) error {
 			balance, err := common.GetBalance(token.ChainId, token.Hash)
 			if err != nil {
 				assetDetail.Reason = err.Error()
-				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err))
+				logs.Info("chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err)
 				balance = big.NewInt(0)
 			}
 			chainAsset.Balance = balance
@@ -80,7 +79,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig) error {
 			if err != nil {
 				assetDetail.Reason = err.Error()
 				totalSupply = big.NewInt(0)
-				log.Info(fmt.Sprintf("	chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err))
+				logs.Info("chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err)
 			}
 			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
 				totalSupply = big.NewInt(0)
@@ -104,10 +103,10 @@ func StartCheckAsset(dbCfg *conf.DBConfig) error {
 		if assetDetail.BasicName == "WBTC" {
 			chainAsset := new(DstChainAsset)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
-			response, err := http.Get("http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad")
+			response, err := http.Get(ipCfg.WBTCIP)
 			defer response.Body.Close()
 			if err != nil || response.StatusCode != 200 {
-				log.Error("Get o3 WBTC err:", err)
+				logs.Error("Get o3 WBTC err:", err)
 				continue
 			}
 			body, _ := ioutil.ReadAll(response.Body)
@@ -126,26 +125,26 @@ func StartCheckAsset(dbCfg *conf.DBConfig) error {
 
 		resAssetDetails = append(resAssetDetails, assetDetail)
 	}
-	err = sendDing(resAssetDetails)
+	err = sendDing(resAssetDetails,ipCfg.DingIP)
 	if err != nil {
-		log.Error("------------sendDingDINg err---------")
+		logs.Error("------------sendDingDINg err---------")
 	}
-	log.Info("---rightdata---")
+	logs.Info("rightdata___")
 	for _, assetDetail := range resAssetDetails {
-		log.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
+		logs.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			log.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
+			logs.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
 		}
 	}
-	fmt.Println("---wrongdata---")
+	fmt.Println("wrongdata___")
 	for _, assetDetail := range extraAssetDetails {
 		if assetDetail.BasicName == "USDT" {
 			chainAsset := new(DstChainAsset)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
-			response, err := http.Get("http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66")
+			response, err := http.Get(ipCfg.USDTIP)
 			defer response.Body.Close()
 			if err != nil || response.StatusCode != 200 {
-				log.Error("Get o3 USDT err:", err)
+				logs.Error("Get o3 USDT err:", err)
 				continue
 			}
 			body, _ := ioutil.ReadAll(response.Body)
@@ -153,14 +152,12 @@ func StartCheckAsset(dbCfg *conf.DBConfig) error {
 				Balance *big.Int
 			}{}
 			json.Unmarshal(body, &o3USDT)
-			fmt.Println(o3USDT.Balance)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 			chainAsset.Balance = o3USDT.Balance
 			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 		}
-		log.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			log.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
+			logs.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
 		}
 	}
 	return nil
@@ -238,7 +235,7 @@ func notToken(token *models.Token) bool {
 	return false
 }
 
-func sendDing(assetDetail []*AssetDetail) error {
+func sendDing(assetDetail []*AssetDetail,dingUrl string) error {
 	ss := "[poly_NB]\n"
 	flag := false
 	for _, assetDetail := range assetDetail {
@@ -261,7 +258,7 @@ func sendDing(assetDetail []*AssetDetail) error {
 		}
 	}
 	if flag {
-		err := common.PostDingtext(ss)
+		err := common.PostDingtext(ss,dingUrl)
 		return err
 	}
 	return nil
