@@ -259,56 +259,42 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
-	logs.Info("qChainStatistic-----start computeChainStatistics computeChainStatistics")
+	logs.Info("computeChainStatistics,start_computeChainStatistics_computeChainStatistics")
 	nowChainStatistic, err := this.dao.GetNewChainSta()
-	logs.Info("qChainStatistic-----", err)
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
 	}
-	logs.Info("qChainStatistic,GetNewDstTransaction_start-----")
 	nowIn, err := this.dao.GetNewDstTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
 	}
-	logs.Info("qChainStatistic,GetNewDstTransaction_end-----")
 	nowInId := nowIn.Id
-	logs.Info("qChainStatistic,GetNewDstTransaction_end_nowInId-----", nowInId)
-	logs.Info("qChainStatistic,GetNewSrcTransaction_start-----")
 	nowOut, err := this.dao.GetNewSrcTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
 	}
-	logs.Info("qChainStatistic,GetNewSrcTransaction_end-----", err)
 	nowOutId := nowOut.Id
-	logs.Info("qChainStatistic,GetNewSrcTransaction_end_nowOutId-----", nowOutId)
 	inChainStatistics := make([]*models.ChainStatistic, 0)
-	logs.Info("qChainStatistic,nowInId:", nowInId, "nowChainStatistic.LastInCheckId:", nowChainStatistic.LastInCheckId)
 	if nowInId > nowChainStatistic.LastInCheckId {
 		err = this.dao.CalculateInChainStatistics(nowChainStatistic.LastInCheckId, nowInId, &inChainStatistics)
 		if err != nil {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
-	logs.Info("qChainStatistic,CalculateInChainStatistics_inChainStatistics", inChainStatistics)
 	outChainStatistics := make([]*models.ChainStatistic, 0)
-	logs.Info("qChainStatistic,nowOutId:", nowOutId, "nowChainStatistic.LastOutCheckId:", nowChainStatistic.LastOutCheckId)
 	if nowOutId > nowChainStatistic.LastOutCheckId {
 		err = this.dao.CalculateOutChainStatistics(nowChainStatistic.LastOutCheckId, nowOutId, &outChainStatistics)
 		if err != nil {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
-	logs.Info("qChainStatistic,CalculateOutChainStatistics_outChainStatistics", outChainStatistics)
 	polyTransaction, err := this.dao.GetPolyTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetPolyTransaction %w", err)
 	}
 	polyCheckId := polyTransaction.Id
-
-	logs.Info("qChainStatistic,polyCheckId:", polyCheckId)
-
 	if nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId {
-		logs.Info("qChainStatistic,nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
+		logs.Info("computeChainStatistics,nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
 		chainStatistics := make([]*models.ChainStatistic, 0)
 		err = this.dao.GetChainStatistic(&chainStatistics)
 		if err != nil {
@@ -317,38 +303,31 @@ func (this *Stats) computeChainStatistics() (err error) {
 		for _, chainStatistic := range chainStatistics {
 			for _, in := range inChainStatistics {
 				if chainStatistic.ChainId == in.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
-					logs.Info("qChainStatistic,chainid:", chainStatistic.ChainId, "chainStatistic.In1 ", chainStatistic.In, " in.In", in.In, "chainStatistic.LastInCheckId1:", chainStatistic.LastInCheckId)
 					chainStatistic.In = addDecimalInt64(chainStatistic.In, in.In)
 					break
 				}
 			}
 			for _, out := range outChainStatistics {
 				if chainStatistic.ChainId == out.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
-					logs.Info("qChainStatistic,chainid:", chainStatistic.ChainId, "chainStatistic.Out1", chainStatistic.Out, "out.Out:", out.Out, "chainStatistic.LastOutCheckId1:", chainStatistic.LastOutCheckId)
 					chainStatistic.Out = addDecimalInt64(chainStatistic.Out, out.Out)
 					break
 				}
 			}
 			if chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
 				chainStatistic.LastInCheckId = nowInId
-				logs.Info("qChainStatistic,chainStatistic.In2", chainStatistic.In, "chainStatistic.LastInCheckId2:", chainStatistic.LastInCheckId, "nowInId:", nowInId)
 				chainStatistic.LastOutCheckId = nowOutId
-				logs.Info("qChainStatistic,chainStatistic.Out2", chainStatistic.Out, "chainStatistic.LastOutCheckId2:", chainStatistic.LastOutCheckId, "nowOutId:", nowOutId)
 			}
 		}
-		logs.Info("qChainStatistic---,poly_polyCheckId", polyCheckId)
+		logs.Info("computeChainStatistics,poly_polyCheckId", polyCheckId)
 		for _, chainStatistic := range chainStatistics {
 			if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
-				logs.Info("qChainStatistic---,poly.LastInCheckId:", chainStatistic.LastInCheckId)
 				counter, err := this.dao.CalculatePolyChainStatistic(chainStatistic.LastInCheckId, polyCheckId)
-				logs.Info("qChainStatistic,POLY_CROSSCHAIN_ID_counter:", counter)
 				if err == nil {
-					logs.Info("qChainStatistic,chainid:", chainStatistic.ChainId, "chainStatistic.In:", chainStatistic.In, "chainStatistic.Out:", chainStatistic.Out, "chainStatistic.LastInCheckId1", chainStatistic.LastInCheckId)
+					logs.Info("computeChainStatistics,polychainid:", chainStatistic.ChainId, "poly.In:", chainStatistic.In, "poly.Out:", chainStatistic.Out, "poly.LastInCheckId1", chainStatistic.LastInCheckId, "polycounter:", counter)
 					chainStatistic.In = addDecimalInt64(counter, chainStatistic.In)
 					chainStatistic.Out = addDecimalInt64(counter, chainStatistic.Out)
 					chainStatistic.LastInCheckId = polyCheckId
 					chainStatistic.LastOutCheckId = polyCheckId
-					logs.Info("qChainStatistic,chainStatistic.LastInCheckId", chainStatistic.LastInCheckId, "polyCheckId", polyCheckId)
 				}
 				break
 			}
@@ -364,8 +343,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 	return
 }
 func (this *Stats) computeChainStatisticAssets() (err error) {
-	fmt.Println("start computeChainStatisticAssets")
-	logs.Info("start computeChainStatisticAssets")
+	logs.Info("computeChainStatisticAssets,start computeChainStatisticAssets")
 	computeChainStatistics := make([]*models.ChainStatistic, 0)
 	err = this.dao.CalculateChainStatisticAssets(&computeChainStatistics)
 	if err != nil {
@@ -395,11 +373,13 @@ func (this *Stats) computeChainStatisticAssets() (err error) {
 	if err != nil {
 		logs.Error("computeChainStatisticAssets SaveChainStatistics error", err)
 	}
+	logs.Info("computeChainStatisticAssets,end computeChainStatisticAssets")
+
 	return
 }
 
 func (this *Stats) computeAssetStatistics() (err error) {
-	logs.Info("start computeAssetStatistics")
+	logs.Info("computeAssetStatistics,start computeAssetStatistics")
 	nowAssetStatistic, err := this.dao.GetNewAssetSta()
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("Failed to GetNewAssetSta %w", err)
@@ -421,8 +401,6 @@ func (this *Stats) computeAssetStatistics() (err error) {
 		return fmt.Errorf("Failed to GetBTCPrice %w", err)
 	}
 	BTCPrice := decimal.NewFromInt(tokenBasicBTC.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
-	newAssetsJson, _ := json.Marshal(newAssets[:2])
-	logs.Info("computeAssetStatistics newAssetsJson" + string(newAssetsJson))
 	oldAssetStatistics, err := this.dao.GetAssetStatistic()
 	if err != nil {
 		return fmt.Errorf("Failed to GetAssetStatistic %w", err)
@@ -446,8 +424,6 @@ func (this *Stats) computeAssetStatistics() (err error) {
 				old.AmountUsd = models.NewBigInt((amount_usd.Mul(decimal.New(int64(10000), 0)).Add(decimal.NewFromBigInt(&old.AmountUsd.Int, 0))).BigInt())
 				old.AmountBtc = models.NewBigInt((amount_btc.Mul(decimal.New(int64(10000), 0)).Add(decimal.NewFromBigInt(&old.AmountBtc.Int, 0))).BigInt())
 
-				oldJson, _ := json.Marshal(old)
-				logs.Info("computeAssetStatistics newAssetsJson" + string(oldJson))
 				err := this.dao.SaveAssetStatistic(old)
 				if err != nil {
 					return fmt.Errorf("Failed to UpdateTransferStatistic %w", err)
@@ -457,6 +433,8 @@ func (this *Stats) computeAssetStatistics() (err error) {
 		}
 		old.LastCheckId = nowId
 	}
+	logs.Info("computeAssetStatistics,end computeAssetStatistics")
+
 	return nil
 }
 

@@ -200,8 +200,6 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 			ToUser:      basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.DstUser),
 		}
 		fChainTxResp.Transfer.TokenHash = fChainTx.SrcTransfer.Asset
-		jsontoken, _ := json.Marshal(token)
-		log.Info("makeFChainTxResp jsontoken:", string(jsontoken))
 		if token != nil {
 			fChainTxResp.Transfer.TokenHash = token.Hash
 			fChainTxResp.Transfer.TokenName = token.Name
@@ -302,8 +300,6 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		Contract:   tChainTx.Contract,
 		RTxHash:    tChainTx.PolyHash,
 	}
-	jsonDstTransfer, _ := json.Marshal(tChainTx.DstTransfer)
-	log.Info("makeTChainTxResp.tChainTx.DstTransfer:", string(jsonDstTransfer))
 	if tChainTx.DstTransfer != nil {
 		tChainTxResp.Transfer = &TChainTransferResp{
 			From:   tChainTx.DstTransfer.From,
@@ -405,7 +401,6 @@ func MakeCrossTxResp(srcPolyDst *PolyTxRelation) *CrossTxResp {
 		},
 	}
 	tx := srcPolyDst
-	log.Info("222-------MakeCrossTxResp tx.SrcTransaction != nil %v", tx.SrcTransaction != nil)
 	if tx.SrcTransaction != nil {
 		crosstx.Fchaintx_valid = true
 		crosstx.Fchaintx = makeFChainTxResp(tx.SrcTransaction, tx.Token, tx.ToToken)

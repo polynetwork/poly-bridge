@@ -255,8 +255,6 @@ func (c *ExplorerController) GetCrossTx() {
 		return
 	}
 	relation := relations[0]
-	jsonrelation, _ := json.Marshal(relation)
-	fmt.Println("---1", string(jsonrelation))
 	token := new(models.Token)
 	err := db.Where("hash = ? and chain_id =?", relation.TokenHash, relation.ChainId).
 		Preload("TokenBasic").
@@ -297,8 +295,6 @@ func (c *ExplorerController) GetCrossTx() {
 	if err == nil {
 		relation.DstToken = dstToken
 	}
-	jsonrelation, _ = json.Marshal(relation)
-	fmt.Println("---2", string(jsonrelation))
 	c.Data["json"] = models.MakeCrossTxResp(relation)
 	c.ServeJSON()
 }
@@ -326,7 +322,6 @@ func (c *ExplorerController) GetTransferStatistic() {
 	if chainId, err := strconv.Atoi(c.Ctx.Input.Query("chain")); err == nil {
 		transferStatisticReq.Chain = uint64(chainId)
 	}
-	fmt.Println("transferStatisticReq.Chain ", transferStatisticReq.Chain)
 	req, _ := json.Marshal(transferStatisticReq)
 	log.Info("GetTransferStatistic transferStatisticReq" + string(req))
 
@@ -383,12 +378,6 @@ func (c *ExplorerController) GetTransferStatistic() {
 			return
 		}
 	}
-	toksta, _ := json.Marshal(tokenStatistics[0])
-	log.Info("GetTransferStatistic tokenStatistics" + string(toksta))
-	chasta, _ := json.Marshal(chainStatistics[0])
-	log.Info("GetTransferStatistic chainStatistics" + string(chasta))
-	cha, _ := json.Marshal(chains[0])
-	log.Info("GetTransferStatistic chains" + string(cha))
 	c.Data["json"] = models.MakeTransferInfoResp(tokenStatistics, chainStatistics, chains)
 	c.ServeJSON()
 }

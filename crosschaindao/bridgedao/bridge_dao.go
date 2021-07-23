@@ -18,7 +18,6 @@
 package bridgedao
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
@@ -403,9 +402,7 @@ func (dao *BridgeDao) GetNewTokenSta() (*models.TokenStatistic, error) {
 }
 func (dao *BridgeDao) GetNewChainSta() (*models.ChainStatistic, error) {
 	chainStatistic := &models.ChainStatistic{}
-	logs.Info("qwertyuiop12-----")
 	res := dao.db.Debug().Last(chainStatistic)
-	logs.Info("qwertyuiop13-----")
 	return chainStatistic, res.Error
 }
 func (dao *BridgeDao) CalculateChainStatisticAssets(chainStatistics interface{}) error {
@@ -436,32 +433,25 @@ func (dao *BridgeDao) CalculateOutChainStatistics(lastId, nowId int64, chainStat
 }
 func (dao *BridgeDao) CalculatePolyChainStatistic(lastId, nowId int64) (int64, error) {
 	var counter int64
-	logs.Info("lastId:", lastId, "nowId:", nowId)
 	res := dao.db.Debug().Raw("select count(*) as counter from poly_transactions where id > ? and id <= ?", lastId, nowId).
 		Scan(&counter)
-	logs.Info("qChainStatistic,sql,counter2", counter)
 	return counter, res.Error
 }
 
 func (dao *BridgeDao) SaveChainStatistics(chainStatistics []*models.ChainStatistic) error {
-	fmt.Println("baocunsave----------")
 	res := dao.db.Debug().Save(chainStatistics)
-	fmt.Println("baocunjieshu")
 	return res.Error
 }
 func (dao *BridgeDao) GetNewAssetSta() (*models.AssetStatistic, error) {
 	assetStatistic := new(models.AssetStatistic)
 	err := dao.db.Debug().First(assetStatistic).
 		Error
-	fmt.Println("GetNewAssetSta assetStatistic:", assetStatistic)
 	return assetStatistic, err
 }
 func (dao *BridgeDao) CalculateAsset(lastId, nowId int64) ([]*models.AssetStatistic, error) {
 	assetStatistics := make([]*models.AssetStatistic, 0)
 	err := dao.db.Debug().Raw("select CONVERT(sum(amount), DECIMAL(37, 0)) as amount, count(*) as txnum, b.token_basic_name  from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash where a.id > ? and a.id <= ? group by token_basic_name", lastId, nowId).
 		Preload("TokenBasic").Find(&assetStatistics).Error
-	jsonAssetStatistics, _ := json.Marshal(assetStatistics[0])
-	fmt.Println("CalculateAsset assetStatistics:" + string(jsonAssetStatistics))
 	return assetStatistics, err
 }
 func (dao *BridgeDao) GetAssetStatistic() ([]*models.AssetStatistic, error) {
