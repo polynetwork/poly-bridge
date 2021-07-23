@@ -380,8 +380,10 @@ func (dao *BridgeDao) GetNewDstTransfer() (*models.DstTransfer, error) {
 	return transfer, res.Error
 }
 func (dao *BridgeDao) GetNewDstTransaction() (*models.DstTransaction, error) {
+	logs.Info("qChainStatistic,sqlGetNewDstTransaction-----")
 	transaction := &models.DstTransaction{}
 	res := dao.db.Last(transaction)
+	logs.Info("qChainStatistic,sqlGetNewDstTransaction,res.Error-----", res.Error)
 	return transaction, res.Error
 }
 func (dao *BridgeDao) GetNewSrcTransfer() (*models.SrcTransfer, error) {

@@ -266,17 +266,22 @@ func (this *Stats) computeChainStatistics() (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
 	}
-	logs.Info("qChainStatistic-----")
+	logs.Info("qChainStatistic,GetNewDstTransaction_start-----")
 	nowIn, err := this.dao.GetNewDstTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
 	}
+	logs.Info("qChainStatistic,GetNewDstTransaction_end-----")
 	nowInId := nowIn.Id
+	logs.Info("qChainStatistic,GetNewDstTransaction_end_nowInId-----", nowInId)
+	logs.Info("qChainStatistic,GetNewSrcTransaction_start-----")
 	nowOut, err := this.dao.GetNewSrcTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewSrcTransfer %w", err)
 	}
+	logs.Info("qChainStatistic,GetNewSrcTransaction_end-----", err)
 	nowOutId := nowOut.Id
+	logs.Info("qChainStatistic,GetNewSrcTransaction_end_nowOutId-----", nowOutId)
 	inChainStatistics := make([]*models.ChainStatistic, 0)
 	log.Info("qChainStatistic,nowInId:", nowInId, "nowChainStatistic.LastInCheckId:", nowChainStatistic.LastInCheckId)
 	if nowInId > nowChainStatistic.LastInCheckId {
@@ -285,6 +290,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
+	logs.Info("qChainStatistic,CalculateInChainStatistics_inChainStatistics", inChainStatistics)
 	outChainStatistics := make([]*models.ChainStatistic, 0)
 	log.Info("qChainStatistic,nowOutId:", nowOutId, "nowChainStatistic.LastOutCheckId:", nowChainStatistic.LastOutCheckId)
 	if nowOutId > nowChainStatistic.LastOutCheckId {
@@ -293,6 +299,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
 		}
 	}
+	logs.Info("qChainStatistic,CalculateOutChainStatistics_outChainStatistics", outChainStatistics)
 	polyTransaction, err := this.dao.GetPolyTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetPolyTransaction %w", err)
@@ -330,6 +337,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 				log.Info("qChainStatistic,chainStatistic.Out2", chainStatistic.Out, "chainStatistic.LastOutCheckId2:", chainStatistic.LastOutCheckId, "nowOutId:", nowOutId)
 			}
 		}
+		logs.Info("qChainStatistic,poly_polyCheckId", polyCheckId)
 		for _, chainStatistic := range chainStatistics {
 			if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
 				counter, err := this.dao.CalculatePolyChainStatistic(chainStatistic.LastInCheckId, polyCheckId)
