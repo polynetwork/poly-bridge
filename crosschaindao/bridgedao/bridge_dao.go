@@ -21,17 +21,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/polynetwork/poly/common/log"
+	"github.com/beego/beego/v2/core/logs"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
-
-	"github.com/beego/beego/v2/core/logs"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type BridgeDao struct {
@@ -440,10 +438,10 @@ func (dao *BridgeDao) CalculatePolyChainStatistic(lastId, nowId int64) (int64, e
 	counter := struct {
 		Counter int64
 	}{}
-	log.Info("qChainStatistic,sql,counter1", counter.Counter)
+	logs.Info("qChainStatistic,sql,counter1", counter.Counter)
 	res := dao.db.Raw("select count(*) from poly_transactions where id > ? and id <= ?", lastId, nowId).
 		Scan(&counter)
-	log.Info("qChainStatistic,sql,counter2", counter.Counter)
+	logs.Info("qChainStatistic,sql,counter2", counter.Counter)
 	return counter.Counter, res.Error
 }
 

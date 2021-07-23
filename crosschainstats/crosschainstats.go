@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/polynetwork/poly/common/log"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"math/big"
