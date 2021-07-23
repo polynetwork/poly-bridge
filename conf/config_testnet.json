@@ -10,7 +10,7 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"root123",
+    "Password":"123456",
     "Scheme":"polyswap",
     "Debug": false
   },

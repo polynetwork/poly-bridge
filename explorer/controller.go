@@ -146,7 +146,7 @@ func (c *ExplorerController) GetAddressTxList() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-	addressTxListReq.Address = basedef.AddressAsHash(addressTxListReq.ChainId, addressTxListReq.Address)
+	addressTxListReq.Address, _ = basedef.Address2Hash(addressTxListReq.ChainId, addressTxListReq.Address)
 	transactionOnAddresses := make([]*models.TransactionOnAddress, 0)
 	res := db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.token_type, c.name as token_name, 1 as direct, m.precision from src_transactions a inner join src_transfers b on a.hash = b.tx_hash inner join tokens c on b.asset = c.hash and b.chain_id = c.chain_id INNER JOIN token_basics m on c.token_basic_name = m.name where b.from = ? and b.chain_id = ? 
 		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.token_type, f.name as token_name, 2,n.precision as direct from dst_transactions d inner join dst_transfers e on d.hash = e.tx_hash inner join tokens f on e.asset = f.hash and e.chain_id = f.chain_id INNER JOIN token_basics n on f.token_basic_name = n.name where e.to = ? and e.chain_id = ? 

@@ -313,8 +313,6 @@ func (this *Stats) computeChainStatistics() (err error) {
 				if chainStatistic.ChainId == in.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
 					log.Info("chainid:", chainStatistic.ChainId, "chainStatistic.In1 ", chainStatistic.In, " in.In", in.In, "chainStatistic.LastInCheckId1:", chainStatistic.LastInCheckId)
 					chainStatistic.In = addDecimalInt64(chainStatistic.In, in.In)
-					log.Info("chainStatistic.In2", chainStatistic.In, "chainStatistic.LastInCheckId2:", chainStatistic.LastInCheckId, "nowInId:", nowInId)
-
 					break
 				}
 			}
@@ -322,18 +320,20 @@ func (this *Stats) computeChainStatistics() (err error) {
 				if chainStatistic.ChainId == out.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
 					log.Info("chainid:", chainStatistic.ChainId, "chainStatistic.Out1", chainStatistic.Out, "out.Out:", out.Out, "chainStatistic.LastOutCheckId1:", chainStatistic.LastOutCheckId)
 					chainStatistic.Out = addDecimalInt64(chainStatistic.Out, out.Out)
-
-					log.Info("chainStatistic.Out2", chainStatistic.Out, "chainStatistic.LastOutCheckId2:", chainStatistic.LastOutCheckId, "nowOutId:", nowOutId)
 					break
 				}
 			}
-			chainStatistic.LastInCheckId = nowInId
-			chainStatistic.LastOutCheckId = nowOutId
+			if chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
+				chainStatistic.LastInCheckId = nowInId
+				log.Info("chainStatistic.In2", chainStatistic.In, "chainStatistic.LastInCheckId2:", chainStatistic.LastInCheckId, "nowInId:", nowInId)
+				chainStatistic.LastOutCheckId = nowOutId
+				log.Info("chainStatistic.Out2", chainStatistic.Out, "chainStatistic.LastOutCheckId2:", chainStatistic.LastOutCheckId, "nowOutId:", nowOutId)
+			}
 		}
 		for _, chainStatistic := range chainStatistics {
 			if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
 				counter, err := this.dao.CalculatePolyChainStatistic(chainStatistic.LastInCheckId, polyCheckId)
-				if err != nil {
+				if err == nil {
 					log.Info("chainid:", chainStatistic.ChainId, "chainStatistic.In:", chainStatistic.In, "chainStatistic.Out:", chainStatistic.Out, "chainStatistic.LastInCheckId1", chainStatistic.LastInCheckId)
 					chainStatistic.In = addDecimalInt64(counter, chainStatistic.In)
 					chainStatistic.Out = addDecimalInt64(counter, chainStatistic.Out)
