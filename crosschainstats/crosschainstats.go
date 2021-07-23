@@ -260,13 +260,13 @@ func (this *Stats) computeTokenStatistics() (err error) {
 }
 
 func (this *Stats) computeChainStatistics() (err error) {
-	logs.Info("qwertyuiop11-----start computeChainStatistics computeChainStatistics")
+	logs.Info("qChainStatistic-----start computeChainStatistics computeChainStatistics")
 	nowChainStatistic, err := this.dao.GetNewChainSta()
-	logs.Info("qwertyuiop14-----", err)
+	logs.Info("qChainStatistic-----", err)
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewChainSta %w", err)
 	}
-	logs.Info("qwertyuiop15-----")
+	logs.Info("qChainStatistic-----")
 	nowIn, err := this.dao.GetNewDstTransaction()
 	if err != nil {
 		return fmt.Errorf("Failed to GetNewDstTransfer %w", err)
@@ -278,7 +278,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 	}
 	nowOutId := nowOut.Id
 	inChainStatistics := make([]*models.ChainStatistic, 0)
-	log.Info("nowInId:", nowInId, "nowChainStatistic.LastInCheckId:", nowChainStatistic.LastInCheckId)
+	log.Info("qChainStatistic,nowInId:", nowInId, "nowChainStatistic.LastInCheckId:", nowChainStatistic.LastInCheckId)
 	if nowInId > nowChainStatistic.LastInCheckId {
 		err = this.dao.CalculateInChainStatistics(nowChainStatistic.LastInCheckId, nowInId, &inChainStatistics)
 		if err != nil {
@@ -286,7 +286,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 		}
 	}
 	outChainStatistics := make([]*models.ChainStatistic, 0)
-	log.Info("nowOutId:", nowOutId, "nowChainStatistic.LastOutCheckId:", nowChainStatistic.LastOutCheckId)
+	log.Info("qChainStatistic,nowOutId:", nowOutId, "nowChainStatistic.LastOutCheckId:", nowChainStatistic.LastOutCheckId)
 	if nowOutId > nowChainStatistic.LastOutCheckId {
 		err = this.dao.CalculateOutChainStatistics(nowChainStatistic.LastOutCheckId, nowOutId, &outChainStatistics)
 		if err != nil {
@@ -299,10 +299,10 @@ func (this *Stats) computeChainStatistics() (err error) {
 	}
 	polyCheckId := polyTransaction.Id
 
-	log.Info("polyCheckId:", polyCheckId)
+	log.Info("qChainStatistic,polyCheckId:", polyCheckId)
 
 	if nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId {
-		log.Info("nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
+		log.Info("qChainStatistic,nowInId > nowChainStatistic.LastInCheckId || nowOutId > nowChainStatistic.LastOutCheckId")
 		chainStatistics := make([]*models.ChainStatistic, 0)
 		err = this.dao.GetChainStatistic(&chainStatistics)
 		if err != nil {
@@ -311,35 +311,36 @@ func (this *Stats) computeChainStatistics() (err error) {
 		for _, chainStatistic := range chainStatistics {
 			for _, in := range inChainStatistics {
 				if chainStatistic.ChainId == in.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
-					log.Info("chainid:", chainStatistic.ChainId, "chainStatistic.In1 ", chainStatistic.In, " in.In", in.In, "chainStatistic.LastInCheckId1:", chainStatistic.LastInCheckId)
+					log.Info("qChainStatistic,chainid:", chainStatistic.ChainId, "chainStatistic.In1 ", chainStatistic.In, " in.In", in.In, "chainStatistic.LastInCheckId1:", chainStatistic.LastInCheckId)
 					chainStatistic.In = addDecimalInt64(chainStatistic.In, in.In)
 					break
 				}
 			}
 			for _, out := range outChainStatistics {
 				if chainStatistic.ChainId == out.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
-					log.Info("chainid:", chainStatistic.ChainId, "chainStatistic.Out1", chainStatistic.Out, "out.Out:", out.Out, "chainStatistic.LastOutCheckId1:", chainStatistic.LastOutCheckId)
+					log.Info("qChainStatistic,chainid:", chainStatistic.ChainId, "chainStatistic.Out1", chainStatistic.Out, "out.Out:", out.Out, "chainStatistic.LastOutCheckId1:", chainStatistic.LastOutCheckId)
 					chainStatistic.Out = addDecimalInt64(chainStatistic.Out, out.Out)
 					break
 				}
 			}
 			if chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
 				chainStatistic.LastInCheckId = nowInId
-				log.Info("chainStatistic.In2", chainStatistic.In, "chainStatistic.LastInCheckId2:", chainStatistic.LastInCheckId, "nowInId:", nowInId)
+				log.Info("qChainStatistic,chainStatistic.In2", chainStatistic.In, "chainStatistic.LastInCheckId2:", chainStatistic.LastInCheckId, "nowInId:", nowInId)
 				chainStatistic.LastOutCheckId = nowOutId
-				log.Info("chainStatistic.Out2", chainStatistic.Out, "chainStatistic.LastOutCheckId2:", chainStatistic.LastOutCheckId, "nowOutId:", nowOutId)
+				log.Info("qChainStatistic,chainStatistic.Out2", chainStatistic.Out, "chainStatistic.LastOutCheckId2:", chainStatistic.LastOutCheckId, "nowOutId:", nowOutId)
 			}
 		}
 		for _, chainStatistic := range chainStatistics {
 			if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
 				counter, err := this.dao.CalculatePolyChainStatistic(chainStatistic.LastInCheckId, polyCheckId)
+				log.Info("qChainStatistic,POLY_CROSSCHAIN_ID_counter:", counter)
 				if err == nil {
-					log.Info("chainid:", chainStatistic.ChainId, "chainStatistic.In:", chainStatistic.In, "chainStatistic.Out:", chainStatistic.Out, "chainStatistic.LastInCheckId1", chainStatistic.LastInCheckId)
+					log.Info("qChainStatistic,chainid:", chainStatistic.ChainId, "chainStatistic.In:", chainStatistic.In, "chainStatistic.Out:", chainStatistic.Out, "chainStatistic.LastInCheckId1", chainStatistic.LastInCheckId)
 					chainStatistic.In = addDecimalInt64(counter, chainStatistic.In)
 					chainStatistic.Out = addDecimalInt64(counter, chainStatistic.Out)
 					chainStatistic.LastInCheckId = polyCheckId
 					chainStatistic.LastOutCheckId = polyCheckId
-					log.Info("chainStatistic.LastInCheckId", chainStatistic.LastInCheckId, "polyCheckId", polyCheckId)
+					log.Info("qChainStatistic,chainStatistic.LastInCheckId", chainStatistic.LastInCheckId, "polyCheckId", polyCheckId)
 				}
 				break
 			}
@@ -349,7 +350,7 @@ func (this *Stats) computeChainStatistics() (err error) {
 		}
 		err = this.dao.SaveChainStatistics(chainStatistics)
 		if err != nil {
-			logs.Error("computeChainStatisticAssets SaveChainStatistic error", err)
+			logs.Error("qChainStatistic,computeChainStatisticAssets SaveChainStatistic error", err)
 		}
 	}
 	return

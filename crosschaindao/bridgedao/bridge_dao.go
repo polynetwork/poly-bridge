@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/polynetwork/poly/common/log"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
@@ -437,8 +438,10 @@ func (dao *BridgeDao) CalculatePolyChainStatistic(lastId, nowId int64) (int64, e
 	counter := struct {
 		Counter int64
 	}{}
+	log.Info("qChainStatistic,sql,counter1", counter.Counter)
 	res := dao.db.Raw("select count(*) from poly_transactions where id > ? and id <= ?", lastId, nowId).
 		Scan(&counter)
+	log.Info("qChainStatistic,sql,counter2", counter.Counter)
 	return counter.Counter, res.Error
 }
 
