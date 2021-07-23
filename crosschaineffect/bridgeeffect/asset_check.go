@@ -44,7 +44,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
 	if err != nil {
-		logs.Error("gorm.Open err",err)
+		return err
 	}
 	resAssetDetails := make([]*AssetDetail, 0)
 	extraAssetDetails := make([]*AssetDetail, 0)
@@ -54,7 +54,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
 		Preload("Tokens").
 		Find(&tokenBasics)
 	if res.Error != nil {
-		panic(fmt.Errorf("load chainBasics faild, err: %v", res.Error))
+		return err
 	}
 	for _, basic := range tokenBasics {
 		assetDetail := new(AssetDetail)
