@@ -219,6 +219,9 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddrs []string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
 	txs := make([]*models.WrapperTransaction, 0)
 	for i, contract := range contractAddrs {
+		if contract == "" {
+			continue
+		}
 		aaa, err := this.getWrapperEventByBlockNumber1(contract, startHeight, endHeight, i)
 		if err != nil {
 			return nil, err
