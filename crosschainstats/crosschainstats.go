@@ -111,6 +111,10 @@ func (this *Stats) computeStats() (err error) {
 }
 
 func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) {
+	logs.Info("Computing token basic stats for %s", token.Name)
+	if len(token.Tokens) == 0 {
+		return
+	}
 	assets := make([][]interface{}, len(token.Tokens))
 	for i, t := range token.Tokens {
 		assets[i] = []interface{}{t.ChainId, t.Hash}
@@ -118,6 +122,9 @@ func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) 
 	checkPoint := token.StatsUpdateTime
 	last, err := this.dao.GetLastSrcTransferForToken(assets)
 	if err != nil || last == nil || checkPoint == last.Time {
+		if err != nil || last == nil {
+			logs.Error("Failed to get last src transfers for %s %+v err %v", *token, assets, err)
+		}
 		return err
 	}
 	totalAmount, totalCount, err := this.dao.AggregateTokenBasicSrcTransfers(assets, checkPoint, last.Time)

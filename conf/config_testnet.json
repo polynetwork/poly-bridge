@@ -33,6 +33,9 @@
       "Nodes": [
         {
           "Url": "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea"
+        },
+        {
+                "Url": "https://ropsten.infura.io/v3/ac76b202a4de4f768bef4b7a81067da1"
         }
       ],
       "ExtendNodes": [
@@ -76,7 +79,7 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/" 
+          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/"
         }
       ],
       "ExtendNodes": [
@@ -162,7 +165,7 @@
       "ChainName":"MATIC",
       "ChainId":202,
       "ListenSlot":5,
-      "Defer": 128,
+      "Defer": 10,
       "Nodes": [
         {
           "Url": "http://10.203.0.22:8545"
@@ -170,7 +173,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"],
+      "WrapperContract":["", "D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"],
       "CCMContract":"3f17e8DCb0D762e2bFCb437aD2C4ffe24BCF25ee",
       "ProxyContract":"4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446"
     }

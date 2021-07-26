@@ -29,5 +29,5 @@ var (
 	O3_CROSSCHAIN_ID       = uint64(10)
 	NEO3_CROSSCHAIN_ID     = uint64(11)
 	OK_CROSSCHAIN_ID       = uint64(12)
-	MATIC_CROSSCHAIN_ID    = uint64(13)
+	MATIC_CROSSCHAIN_ID    = uint64(16)
 )
