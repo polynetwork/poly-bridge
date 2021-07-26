@@ -102,6 +102,4 @@ func fetchBlock(config *conf.Config) {
 	for i, tx := range dstTransactions {
 		fmt.Printf("dst %d: %+v\n", i, *tx)
 	}
-
-	fmt.Printf("Success chain %d height %d:\n wrappper tx %+v\nsrc tx %+v\npoly tx %+v\n dst tx %+v", chain, height, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 }

@@ -139,7 +139,7 @@
       "CCMContract":"2A4cF474Aef33F0046434E4916Ac6b2fef4e5B78",
       "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
     },
-        {
+    {
       "ChainName":"NEO3",
       "ChainId":11,
       "ListenSlot":1,
@@ -282,7 +282,7 @@
       "ProxyFee":120,
       "MinFee": 20
     },
-        {
+    {
       "ChainId":11,
       "ChainName":"NEO3",
       "Nodes": [
