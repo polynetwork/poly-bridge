@@ -141,25 +141,25 @@
     },
     {
       "ChainName":"NEO3",
-      "ChainId":11,
+      "ChainId":88,
       "ListenSlot":1,
       "Defer": 1,
       "Nodes": [
         {
-          "Url": "http://seed1t.neo.org:20332"
+          "Url": "http://seed1t4.neo.org:20332"
         },
         {
-          "Url": "http://seed2t.neo.org:20332"
+          "Url": "http://seed2t4.neo.org:20332"
         },
         {
-          "Url": "http://seed3t.neo.org:20332"
+          "Url": "http://seed3t4.neo.org:20332"
         }
       ],
       "ExtendNodes": [
       ],
       "WrapperContract":[],
-      "CCMContract":"fdd6c536f59bfd1149e818635d46dcc6faf1ba44",
-      "ProxyContract":"97758f7e9c11e79423453e5acd925989ff7d3ade"
+      "CCMContract":"618d44dc3af16c6120dbf65402024f40a04f772a",
+      "ProxyContract":"4487494dac2f7eb68bdae009cacd6de88243e542"
     },
     {
       "ChainName":"MATIC",
@@ -283,7 +283,7 @@
       "MinFee": 20
     },
     {
-      "ChainId":11,
+      "ChainId":88,
       "ChainName":"NEO3",
       "Nodes": [
       ],
