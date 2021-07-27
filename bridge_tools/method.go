@@ -74,7 +74,7 @@ func fetchBlock(config *conf.Config) {
 	if handle == nil {
 		panic(fmt.Sprintf("chain %d handler is invalid", chain))
 	}
-	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := handle.HandleNewBlock(uint64(height))
+	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handle.HandleNewBlock(uint64(height))
 	if err != nil {
 		panic(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
 	}
@@ -87,8 +87,8 @@ func fetchBlock(config *conf.Config) {
 	}
 
 	fmt.Printf(
-		"Fetch block events success chain %d height %d wrapper %d src %d poly %d dst %d \n",
-		chain, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions),
+		"Fetch block events success chain %d height %d wrapper %d src %d poly %d dst %d  locks %d unlocks %d \n",
+		chain, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), locks, unlocks,
 	)
 	for i, tx := range wrapperTransactions {
 		fmt.Printf("wrapper %d: %+v\n", i, *tx)
