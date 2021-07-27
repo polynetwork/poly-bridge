@@ -515,6 +515,10 @@ type TransactionRsp struct {
 }
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
+	if transaction.WrapperTransaction == nil || transaction.SrcTransaction == nil {
+		return nil
+	}
+
 	feeAmount := ""
 	if transaction.WrapperTransaction != nil {
 		aaa := new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int)
