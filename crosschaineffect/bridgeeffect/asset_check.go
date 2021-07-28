@@ -105,25 +105,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 			extraAssetDetails = append(extraAssetDetails, assetDetail)
 			continue
 		}
-		if assetDetail.BasicName == "WBTC" {
-			chainAsset := new(DstChainAsset)
-			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
-			response, err := http.Get(ipCfg.WBTCIP)
-			defer response.Body.Close()
-			if err != nil || response.StatusCode != 200 {
-				logs.Error("Get o3 WBTC err:", err)
-				continue
-			}
-			body, _ := ioutil.ReadAll(response.Body)
-			o3WBTC := struct {
-				Balance *big.Int
-			}{}
-			json.Unmarshal(body, &o3WBTC)
-			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
-			chainAsset.Flow = o3WBTC.Balance
-			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
-			assetDetail.Difference.Add(assetDetail.Difference, chainAsset.Flow)
-		}
+		getO3Data(assetDetail)
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
 			assetDetail.Amount_usd = decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).Mul(decimal.New(assetDetail.Price, -8)).StringFixed(0)
 		}
@@ -162,6 +144,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 		}
 		for _, tokenAsset := range assetDetail.TokenAsset {
+			fmt.Printf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
 	}
@@ -238,6 +221,45 @@ func notToken(token *models.Token) bool {
 		return true
 	}
 	return false
+}
+func getO3Data(assetDetail *AssetDetail) {
+	switch assetDetail.BasicName {
+	case "WBTC":
+		chainAsset := new(DstChainAsset)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		response, err := http.Get(ipCfg.WBTCIP)
+		defer response.Body.Close()
+		if err != nil || response.StatusCode != 200 {
+			logs.Error("Get o3 WBTC err:", err)
+			return
+		}
+		body, _ := ioutil.ReadAll(response.Body)
+		o3WBTC := struct {
+			Balance *big.Int
+		}{}
+		json.Unmarshal(body, &o3WBTC)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		chainAsset.Flow = o3WBTC.Balance
+		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
+		assetDetail.Difference.Add(assetDetail.Difference, chainAsset.Flow)
+	case "USDT":
+		chainAsset := new(DstChainAsset)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		response, err := http.Get(ipCfg.USDTIP)
+		defer response.Body.Close()
+		if err != nil || response.StatusCode != 200 {
+			logs.Error("Get o3 USDT err:", err)
+			return
+		}
+		body, _ := ioutil.ReadAll(response.Body)
+		o3USDT := struct {
+			Balance *big.Int
+		}{}
+		json.Unmarshal(body, &o3USDT)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		chainAsset.Balance = o3USDT.Balance
+		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
+	}
 }
 
 func sendDing(assetDetails []*AssetDetail, dingUrl string) error {
