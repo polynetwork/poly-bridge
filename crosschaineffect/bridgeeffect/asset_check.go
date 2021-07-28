@@ -120,14 +120,14 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 	logs.Info("rightdata___")
 	fmt.Println("rightdata___")
 	for _, assetDetail := range resAssetDetails {
-		logs.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
+		logs.Info("CheckAsset:", assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		for _, tokenAsset := range assetDetail.TokenAsset {
 			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
 	}
 	fmt.Println("wrongdata___")
 	for _, assetDetail := range extraAssetDetails {
-		logs.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price)
+		logs.Info("CheckAsset:", assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price)
 		for _, tokenAsset := range assetDetail.TokenAsset {
 			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
