@@ -1100,3 +1100,7 @@ func MakeExpectTimeRsp(srcchainId uint64, dstchainid uint64, time uint64) *Expec
 	}
 	return expectTimeRsp
 }
+
+type TokenAssetReq struct {
+	NameOrHash string
+}
