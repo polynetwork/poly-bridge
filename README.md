@@ -2778,3 +2778,53 @@ Example Response
     "Time": 90
 }
 ```
+### POST gettokenasset
+
+ 查资产balance与totalsupply(根据token或name)
+
+Request
+```
+http://localhost:8080/v1/gettokenasset/
+```
+
+BODY raw
+```
+{
+    "nameOrHash":"HKR"
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/gettokenasset/' \
+--data-raw '{
+    "nameOrHash":"HKR"
+}'
+```
+
+Example Response
+```
+[
+    {
+        "BasicName": "HKR",
+        "TokenAsset": [
+            {
+                "ChainName": "",
+                "Hash": "0",
+                "TotalSupply": 0,
+                "Balance": 0,
+                "ErrReason": ""
+            },
+            {
+                "ChainName": "",
+                "Hash": "0",
+                "TotalSupply": 0,
+                "Balance": 0,
+                "ErrReason": ""
+            }
+        ],
+        "Precision": 18
+    }
+]
+```
+
