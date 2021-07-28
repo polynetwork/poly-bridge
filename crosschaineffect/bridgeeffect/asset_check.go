@@ -128,6 +128,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 	}
 	fmt.Println("wrongdata___")
 	for _, assetDetail := range extraAssetDetails {
+		fmt.Println(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		if assetDetail.BasicName == "USDT" {
 			chainAsset := new(DstChainAsset)
 			chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
