@@ -8,13 +8,6 @@
     "Scheme":"polyswap",
     "Debug": false
   },
-  "ExpConfig":{
-    "URL":"localhost:3306",
-    "User":"root",
-    "Password":"123456",
-    "Scheme":"cross_chain_explorer",
-    "Debug": true
-  },
   "IPPortConfig":{
     "WBTCIP":"http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
     "USDTIP":"http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
