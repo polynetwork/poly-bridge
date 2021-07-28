@@ -56,8 +56,6 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 	if res.Error != nil {
 		return err
 	}
-	jsontokenBasics, _ := json.Marshal(tokenBasics)
-	fmt.Println("这里jsontokenBasics" + string(jsontokenBasics))
 	for _, basic := range tokenBasics {
 		assetDetail := new(AssetDetail)
 		dstChainAssets := make([]*DstChainAsset, 0)
@@ -66,7 +64,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 			if notToken(token) {
 				continue
 			}
-			if token.Precision != uint64(1) {
+			if token.Property != int64(1) {
 				continue
 			}
 			chainAsset := new(DstChainAsset)
@@ -78,7 +76,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 				logs.Info("chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err)
 				balance = big.NewInt(0)
 			}
-			fmt.Println(basic.Name, balance)
+			fmt.Println(basic.Name, balance, err)
 			chainAsset.Balance = balance
 			time.Sleep(time.Second)
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
@@ -92,7 +90,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 			}
 			//specialBasic
 			totalSupply = specialBasic(token, totalSupply)
-			fmt.Println(basic.Name, totalSupply)
+			fmt.Println(basic.Name, totalSupply, err)
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.Flow = new(big.Int).Sub(totalSupply, balance)
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.Flow)
