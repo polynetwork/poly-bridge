@@ -19,6 +19,9 @@ package main
 
 import (
 	"encoding/json"
+
+	"poly-bridge/common"
+	"poly-bridge/conf"
 	_ "poly-bridge/routers"
 
 	"github.com/astaxie/beego"
@@ -28,7 +31,13 @@ import (
 )
 
 func main() {
+
+	// Initialize
 	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_http.log"}`)
+	configFile := beego.AppConfig.String("chain_config")
+	config := conf.NewConfig(configFile)
+	common.SetupChainsSDK(config)
+
 	mode := beego.AppConfig.String("runmode")
 	if mode == "dev" {
 		var FilterLog = func(ctx *context.Context) {

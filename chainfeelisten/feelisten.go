@@ -23,6 +23,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainfeedao"
 	"poly-bridge/chainfeelisten/ethereumfee"
+	"poly-bridge/chainfeelisten/neo3fee"
 	"poly-bridge/chainfeelisten/neofee"
 	"poly-bridge/chainfeelisten/ontologyfee"
 	"poly-bridge/conf"
@@ -75,6 +76,10 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 	} else if cfg.ChainId == basedef.ONT_CROSSCHAIN_ID {
 		return ontologyfee.NewOntologyFee(cfg, feeUpdateSlot)
 	} else if cfg.ChainId == basedef.OK_CROSSCHAIN_ID {
+		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
+	} else if cfg.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+		return neo3fee.NewNeo3Fee(cfg, feeUpdateSlot)
+	} else if cfg.ChainId == basedef.MATIC_CROSSCHAIN_ID {
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	} else {
 		return nil

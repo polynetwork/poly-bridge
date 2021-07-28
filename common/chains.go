@@ -1,7 +1,6 @@
-package controllers
+package common
 
 import (
-	"github.com/astaxie/beego"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -10,24 +9,24 @@ import (
 
 var (
 	ethereumSdk *chainsdk.EthereumSdkPro
-	bscSdk *chainsdk.EthereumSdkPro
-	hecoSdk *chainsdk.EthereumSdkPro
-	okSdk *chainsdk.EthereumSdkPro
-	neoSdk *chainsdk.NeoSdkPro
+	bscSdk      *chainsdk.EthereumSdkPro
+	hecoSdk     *chainsdk.EthereumSdkPro
+	okSdk       *chainsdk.EthereumSdkPro
+	neoSdk      *chainsdk.NeoSdkPro
 	ontologySdk *chainsdk.OntologySdkPro
-    config *conf.Config
+	maticSdk    *chainsdk.EthereumSdkPro
+	config      *conf.Config
 )
 
-func init() {
-	newChainSdks()
+func SetupChainsSDK(cfg *conf.Config) {
+	if cfg == nil {
+		panic("Missing config")
+	}
+	config = cfg
+	newChainSdks(cfg)
 }
 
-func newChainSdks() {
-	configFile := beego.AppConfig.String("chain_config")
-	config = conf.NewConfig(configFile)
-	if config == nil {
-		panic("startServer - read config failed!")
-	}
+func newChainSdks(config *conf.Config) {
 	{
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
@@ -35,6 +34,14 @@ func newChainSdks() {
 		}
 		urls := ethereumConfig.GetNodesUrl()
 		ethereumSdk = chainsdk.NewEthereumSdkPro(urls, ethereumConfig.ListenSlot, ethereumConfig.ChainId)
+	}
+	{
+		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+		if maticConfig == nil {
+			panic("chain is invalid")
+		}
+		urls := maticConfig.GetNodesUrl()
+		maticSdk = chainsdk.NewEthereumSdkPro(urls, maticConfig.ListenSlot, maticConfig.ChainId)
 	}
 	{
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
@@ -78,13 +85,20 @@ func newChainSdks() {
 	}
 }
 
-func getBalance(chainId uint64, hash string) (*big.Int, error) {
+func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
 			panic("chain is invalid")
 		}
 		return ethereumSdk.Erc20Balance(hash, ethereumConfig.ProxyContract)
+	}
+	if chainId == basedef.MATIC_CROSSCHAIN_ID {
+		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+		if maticConfig == nil {
+			panic("chain is invalid")
+		}
+		return maticSdk.Erc20Balance(hash, maticConfig.ProxyContract)
 	}
 	if chainId == basedef.BSC_CROSSCHAIN_ID {
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)

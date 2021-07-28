@@ -20,18 +20,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/urfave/cli"
 	"os"
 	"os/signal"
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/coinpricelisten"
+	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
+	"poly-bridge/crosschainstats"
 	"runtime"
 	"strings"
 	"syscall"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/urfave/cli"
 )
 
 var (
@@ -107,6 +110,7 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
+	common.SetupChainsSDK(config)
 	crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
 	if config.Backup {
 		return
@@ -114,6 +118,7 @@ func startServer(ctx *cli.Context) {
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig)
+	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig)
 }
 
 func waitSignal() os.Signal {
@@ -138,6 +143,7 @@ func stopServer() {
 	coinpricelisten.StopCoinPriceListen()
 	chainfeelisten.StopFeeListen()
 	crosschaineffect.StopCrossChainEffect()
+	crosschainstats.StopCrossChainStats()
 }
 
 func main() {

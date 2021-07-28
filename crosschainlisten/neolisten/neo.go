@@ -83,20 +83,20 @@ func (this *NeoChainListen) GetDefer() uint64 {
 
 func (this *NeoChainListen) isListeningContract(contract string, contracts []string) bool {
 	for _, item := range contracts {
-		if contract == item  {
+		if contract == item {
 			return true
 		}
 	}
 	return false
 }
 
-func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
+func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, fmt.Errorf("can not get neo block!")
+		return nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get neo block!")
 	}
 	tt := block.Time
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
@@ -130,6 +130,10 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 						} else {
 							tchainId, _ = new(big.Int).SetString(basedef.HexStringReverse(value[3].Value), 16)
 						}
+						if tchainId == nil {
+							logs.Error("Invalid to chain id %+v tx %s", value, tx.Txid[2:])
+							continue
+						}
 						serverId := big.NewInt(0)
 						if value[7].Type == "Integer" {
 							serverId, _ = new(big.Int).SetString(value[7].Value, 10)
@@ -145,6 +149,9 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							amount, _ = new(big.Int).SetString(value[6].Value, 10)
 						} else {
 							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(value[6].Value), 16)
+						}
+						if amount == nil {
+							amount = big.NewInt(0)
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 							Hash:         tx.Txid[2:],
@@ -279,7 +286,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 			}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
 }
 
 type Error struct {

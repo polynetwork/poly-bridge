@@ -28,6 +28,8 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
+	"github.com/joeqian10/neo3-gogogo/crypto"
+	neo3_helper "github.com/joeqian10/neo3-gogogo/helper"
 	ontcommon "github.com/ontio/ontology/common"
 )
 
@@ -70,6 +72,11 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == OK_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == NEO3_CROSSCHAIN_ID {
+		addrHex, _ := hex.DecodeString(value)
+		addr := neo3_helper.UInt160FromBytes(addrHex)
+		address := crypto.ScriptHashToAddress(addr, neo3_helper.DefaultAddressVersion)
+		return address
 	}
 	return value
 }
@@ -123,6 +130,8 @@ func GetChainName(id uint64) string {
 		return "O3"
 	case OK_CROSSCHAIN_ID:
 		return "OK"
+	case MATIC_CROSSCHAIN_ID:
+		return "Polygon"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}

@@ -61,18 +61,18 @@ func (this *PolyChainListen) GetDefer() uint64 {
 	return this.polyCfg.Defer
 }
 
-func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
+func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	block, err := this.polySdk.GetBlockByHeight(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, fmt.Errorf("there is no poly block!")
+		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no poly block!")
 	}
 	tt := block.Header.Timestamp
 	events, err := this.polySdk.GetSmartContractEventByBlock(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 	polyTransactions := make([]*models.PolyTransaction, 0)
 	for _, event := range events {
@@ -98,7 +98,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 				mctx.Height = height
 				mctx.SrcChainId = uint64(fchainid)
 				mctx.DstChainId = uint64(tchainid)
-				if uint64(fchainid) == basedef.ETHEREUM_CROSSCHAIN_ID || uint64(fchainid) == basedef.BSC_CROSSCHAIN_ID || uint64(fchainid) == basedef.HECO_CROSSCHAIN_ID || uint64(fchainid) == basedef.O3_CROSSCHAIN_ID || uint64(fchainid) == basedef.OK_CROSSCHAIN_ID {
+				if uint64(fchainid) == basedef.ETHEREUM_CROSSCHAIN_ID || uint64(fchainid) == basedef.BSC_CROSSCHAIN_ID || uint64(fchainid) == basedef.HECO_CROSSCHAIN_ID || uint64(fchainid) == basedef.O3_CROSSCHAIN_ID || uint64(fchainid) == basedef.OK_CROSSCHAIN_ID || uint64(fchainid) == basedef.MATIC_CROSSCHAIN_ID {
 					mctx.SrcHash = states[3].(string)
 				} else {
 					mctx.SrcHash = basedef.HexStringReverse(states[3].(string))
@@ -107,7 +107,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 			}
 		}
 	}
-	return nil, nil, polyTransactions, nil, nil
+	return nil, nil, polyTransactions, nil, 0, 0, nil
 }
 
 func (this *PolyChainListen) GetExtendLatestHeight() (uint64, error) {

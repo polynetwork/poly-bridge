@@ -4,7 +4,7 @@
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"wKd5sstfSsY3/Q==",
+    "Password":"123456",
     "Scheme":"polyswap",
     "Debug": true
   },
@@ -33,6 +33,9 @@
       "Nodes": [
         {
           "Url": "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea"
+        },
+        {
+                "Url": "https://ropsten.infura.io/v3/ac76b202a4de4f768bef4b7a81067da1"
         }
       ],
       "ExtendNodes": [
@@ -44,7 +47,7 @@
       "WrapperContract":["e498fb7D00468a67A79dE5D4Ca264d3350165280", "Dc37471Af6a8aB7f45F444c5a3Ef4758281bE32C"],
       "CCMContract":"726532586c50ec9f4080b71f906a3d9779bbd64f",
       "ProxyContract":"D8aE73e06552E270340b63A8bcAbf9277a1aac99",
-      "NFTWrapperContract":"baBaAF5CF7f63437755aAAFE7a4106463c5cD540",
+      "NFTWrapperContract":"940300dc3Fc26e3A330a300be766184C0b5Fe019",
       "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
     },
     {
@@ -65,7 +68,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["cd074cd290acc3d73c030784101afbcf40fd86a1"],
+      "WrapperContract":["cd074cd290acc3d73c030784101afbcf40fd86a1", "0f4fad9ae3830585a9264e6ec0b1eff3e89c6558"],
       "CCMContract":"e1695b1314a1331e3935481620417ed835669407",
       "ProxyContract":"edd2862dceb90b945210372d229f453f2b705f4f"
     },
@@ -76,7 +79,7 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/" 
+          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/"
         }
       ],
       "ExtendNodes": [
@@ -84,7 +87,7 @@
       "WrapperContract":["Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5", "9f9F15CC407F7b26f55D71D43f993580a9107007"],
       "CCMContract":"dB8e0cB4b48981BAf26c4844f084Fbb7303151ef",
       "ProxyContract":"097Ae585BfEf78DDC8E266ABCb840dAF7265130c",
-      "NFTWrapperContract":"2E830E0cf3dc8643B497F88C07c8A72EFE24B11f",
+      "NFTWrapperContract":"61E289D43C1FEA7598786557A2F309979ad144D3",
       "NFTProxyContract":"9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
     },
     {
@@ -102,7 +105,7 @@
       "WrapperContract":["3c92F1E31aACA43Eb4fF8aE498C7E85618680F45", "CC8407Ee04AaC2AdC0E6A55E7E97176C701146cd"],
       "CCMContract":"D9A3d265a1127051F620e700B5a461af4991EaAE",
       "ProxyContract":"4a76E52600C6285029c8f7c52183cf86282cA5b8",
-      "NFTWrapperContract": "94aa42C5dAB9b1006f59FF5E311344CC460A2335",
+      "NFTWrapperContract": "baBaAF5CF7f63437755aAAFE7a4106463c5cD540",
       "NFTProxyContract": "25BB8E9C0Cc03B30d09769735208a47d389Ff36c"
     },
     {
@@ -127,7 +130,7 @@
       "Defer": 2,
       "Nodes": [
         {
-          "Url": "https://exchaintestrpc.okex.org"
+          "Url": "https://exchaintestrpc.okex.org/"
         }
       ],
       "ExtendNodes": [
@@ -135,8 +138,50 @@
       "WrapperContract":["5598226aD2E8991deEFD03203739C87BdF6e6D03", "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"],
       "CCMContract":"2A4cF474Aef33F0046434E4916Ac6b2fef4e5B78",
       "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
+    },
+    {
+      "ChainName":"NEO3",
+      "ChainId":88,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "http://seed1t4.neo.org:20332"
+        },
+        {
+          "Url": "http://seed2t4.neo.org:20332"
+        },
+        {
+          "Url": "http://seed3t4.neo.org:20332"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":[],
+      "CCMContract":"618d44dc3af16c6120dbf65402024f40a04f772a",
+      "ProxyContract":"4487494dac2f7eb68bdae009cacd6de88243e542"
+    },
+    {
+      "ChainName":"MATIC",
+      "ChainId":202,
+      "ListenSlot":5,
+      "Defer": 10,
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.22:8545"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["", "D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"],
+      "CCMContract":"3f17e8DCb0D762e2bFCb437aD2C4ffe24BCF25ee",
+      "ProxyContract":"4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446"
     }
   ],
+  "StatsConfig": {
+    "TokenBasicStatsInterval": 60,
+    "TokenStatsInterval": 60
+  },
   "EventEffectConfig": {
     "HowOld": 3600,
     "HowOld2": 3600,
@@ -233,7 +278,28 @@
           "Url": "https://exchaintestrpc.okex.org"
         }
       ],
-      "GasLimit":220000,
+      "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":88,
+      "ChainName":"NEO3",
+      "Nodes": [
+      ],
+      "GasLimit":5000000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":202,
+      "ChainName":"MATIC",
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.22:8545"
+        }
+      ],
+      "GasLimit":120000,
       "ProxyFee":120,
       "MinFee": 20
     }

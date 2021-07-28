@@ -18,13 +18,22 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	"github.com/urfave/cli"
 	"os"
-	"poly-bridge/bridge_tools/conf"
+	"os/signal"
+	"poly-bridge/basedef"
+	"poly-bridge/conf"
+	"poly-bridge/crosschaindao"
+	"poly-bridge/crosschainlisten"
 	"runtime"
 	"strings"
+	"syscall"
 )
+
+var chainListen *crosschainlisten.CrossChainListen
 
 var (
 	logLevelFlag = cli.UintFlag{
@@ -36,25 +45,18 @@ var (
 	configPathFlag = cli.StringFlag{
 		Name:  "cliconfig",
 		Usage: "Server config file `<path>`",
-		Value: "./bridge_tools/conf/config_transactions.json",
-	}
-
-	methodFlag = cli.StringFlag{
-		Name:  "method",
-		Usage: "Bridge tool method",
-		Value: "",
+		Value: "./conf/config_mainnet.json",
 	}
 
 	logDirFlag = cli.StringFlag{
 		Name:  "logdir",
 		Usage: "log directory",
-		Value: "./Log-bridge_tools/",
+		Value: "./Log/",
 	}
-
-	cmdFlag = cli.UintFlag{
-		Name:  "cmd",
-		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:update bridge 5:update transactions",
-		Value: 2,
+	heightFlag = cli.UintFlag{
+		Name:  "height",
+		Usage: "",
+		Value: 0,
 	}
 )
 
@@ -69,16 +71,15 @@ func getFlagName(flag cli.Flag) string {
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
-	app.Usage = "poly-bridge deploy Service"
-	app.Action = startServer
+	app.Usage = "poly-bridge Service"
+	app.Action = StartServer
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
 	app.Flags = []cli.Flag{
 		logLevelFlag,
 		configPathFlag,
 		logDirFlag,
-		cmdFlag,
-		methodFlag,
+		heightFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -88,57 +89,68 @@ func setupApp() *cli.App {
 	return app
 }
 
+func StartServer(ctx *cli.Context) {
+	for true {
+		startServer(ctx)
+		sig := waitSignal()
+		stopServer()
+		if sig != syscall.SIGHUP {
+			break
+		} else {
+			continue
+		}
+	}
+}
+
 func startServer(ctx *cli.Context) {
-	cmd := ctx.GlobalInt(getFlagName(cmdFlag))
-	method := ctx.GlobalString("method")
-	if method != "" {
-		executeMethod(method, ctx)
+	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/crosschain_listen.log"}`)
+	configFile := ctx.GlobalString(getFlagName(configPathFlag))
+	config := conf.NewConfig(configFile)
+	if config == nil {
+		logs.Error("startServer - read config failed!")
 		return
 	}
-	if cmd == 1 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewDeployConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		startDeploy(config)
-		dumpStatus(config.DBConfig)
-	} else if cmd == 2 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewDeployConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		dumpStatus(config.DBConfig)
-	} else if cmd == 3 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewDeployConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		startUpdateToken(config)
-		dumpStatus(config.DBConfig)
-	} else if cmd == 4 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewUpdateConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		startUpdate(config)
-		dumpStatus(config.DBConfig)
-	} else if cmd == 5 {
-		configFile := ctx.GlobalString(getFlagName(configPathFlag))
-		config := conf.NewTransactionsConfig(configFile)
-		if config == nil {
-			fmt.Printf("startServer - read config failed!")
-			return
-		}
-		startTransactions(config)
+	{
+		conf, _ := json.Marshal(config)
+		logs.Info("%s\n", string(conf))
 	}
+	height := ctx.GlobalUint64(getFlagName(heightFlag))
+	db := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
+	if db == nil {
+		panic("server is invalid")
+	}
+	chainListenConfig := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+	if chainListenConfig == nil {
+		panic("chain is invalid")
+	}
+	chainHandler := crosschainlisten.NewChainHandle(chainListenConfig)
+	if chainHandler == nil {
+		panic("chain handler is invalid")
+	}
+	chainListen = crosschainlisten.NewCrossChainListen(chainHandler, db)
+	chainListen.SetHeight(height)
+	chainListen.Start()
+}
+
+func waitSignal() os.Signal {
+	exit := make(chan os.Signal, 0)
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer signal.Stop(sc)
+	go func() {
+		for sig := range sc {
+			logs.Info("cross chain listen received signal:(%s).", sig.String())
+			exit <- sig
+			close(exit)
+			break
+		}
+	}()
+	sig := <-exit
+	return sig
+}
+
+func stopServer() {
+	chainListen.Stop()
 }
 
 func main() {
