@@ -24,6 +24,7 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
+	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
 	"runtime"
@@ -104,7 +105,8 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
-	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig,config.IPPortConfig)
+	common.SetupChainsSDK(config)
+	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig)
 }
 
 func waitSignal() os.Signal {
