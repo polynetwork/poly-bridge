@@ -35,7 +35,7 @@ type DstChainAsset struct {
 	Flow        *big.Int
 }
 
-func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
+func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 	logs.Info("StartCheckAsset,start startCheckAsset")
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -64,7 +64,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
 			if notToken(token) {
 				continue
 			}
-			if token.Precision!=uint64(1){
+			if token.Precision != uint64(1) {
 				continue
 			}
 			chainAsset := new(DstChainAsset)
@@ -128,7 +128,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
 
 		resAssetDetails = append(resAssetDetails, assetDetail)
 	}
-	err = sendDing(resAssetDetails,ipCfg.DingIP)
+	err = sendDing(resAssetDetails, ipCfg.DingIP)
 	if err != nil {
 		logs.Error("------------sendDingDINg err---------")
 	}
@@ -238,13 +238,15 @@ func notToken(token *models.Token) bool {
 	return false
 }
 
-func sendDing(assetDetail []*AssetDetail,dingUrl string) error {
+func sendDing(assetDetails []*AssetDetail, dingUrl string) error {
 	ss := "[poly_NB]\n"
 	flag := false
-	for _, assetDetail := range assetDetail {
+	for _, assetDetail := range assetDetails {
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
 			usd, _ := decimal.NewFromString(assetDetail.Amount_usd)
 			if usd.Cmp(decimal.NewFromInt32(10000)) == 1 {
+				jsonassetDetail, _ := json.Marshal(assetDetail)
+				fmt.Println("这里json" + string(jsonassetDetail))
 				flag = true
 				ss += fmt.Sprintf("【%v】totalflow:%v $%v\n", assetDetail.BasicName, decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2), assetDetail.Amount_usd)
 				if assetDetail.Reason != "" {
@@ -261,7 +263,7 @@ func sendDing(assetDetail []*AssetDetail,dingUrl string) error {
 		}
 	}
 	if flag {
-		err := common.PostDingtext(ss,dingUrl)
+		err := common.PostDingtext(ss, dingUrl)
 		return err
 	}
 	return nil
