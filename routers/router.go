@@ -44,6 +44,7 @@ func init() {
 		beego.NSRouter("/transactionsofunfinished/", &controllers.TransactionController{}, "post:TransactionsOfUnfinished"),
 		beego.NSRouter("/transactionsofasset/", &controllers.TransactionController{}, "post:TransactionsOfAsset"),
 		beego.NSRouter("/expecttime/", &controllers.StatisticController{}, "post:ExpectTime"),
+		beego.NSRouter("/gettokenasset/", &controllers.TokenAssetController{}, "post:Gettokenasset"),
 	)
 	beego.AddNamespace(ns)
 	beego.Router("/", &controllers.InfoController{}, "*:Get")

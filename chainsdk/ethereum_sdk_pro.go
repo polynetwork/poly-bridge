@@ -346,6 +346,28 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 	}
 	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
+func (pro *EthereumSdkPro) Erc20TotalSupply(erc20 string) (*big.Int, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
+	}
+	erc20Address := common.HexToAddress(erc20)
+	for info != nil {
+		totalSupply := new(big.Int).SetUint64(0)
+		if pro.IsEthAddress(erc20) {
+			return totalSupply, nil
+		} else {
+			totalSupply, err := info.sdk.GetERC20TotalSupply(erc20Address)
+			if err != nil {
+				info.latestHeight = 0
+				info = pro.GetLatest()
+			} else {
+				return totalSupply, nil
+			}
+		}
+	}
+	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
+}
 
 func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) bool {
 	num := 0
