@@ -75,7 +75,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 				assetDetail.Reason = err.Error()
 				logs.Info("chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err)
 				balance = big.NewInt(0)
-				fmt.Println(basic.Name, balance, err)
+				fmt.Println("有err的balance", basic.Name, balance, err)
 			}
 			chainAsset.Balance = balance
 			time.Sleep(time.Second)
@@ -84,14 +84,13 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 				assetDetail.Reason = err.Error()
 				totalSupply = big.NewInt(0)
 				logs.Info("chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err)
-				totalSupply = specialBasic(token, totalSupply)
-
+				fmt.Println("有err的totalSupply", basic.Name, totalSupply, err)
 			}
+			totalSupply = specialBasic(token, totalSupply)
 			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
 				totalSupply = big.NewInt(0)
 			}
 			//specialBasic
-			fmt.Println(basic.Name, totalSupply, err)
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.Flow = new(big.Int).Sub(totalSupply, balance)
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.Flow)
@@ -118,8 +117,10 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 		logs.Error("------------sendDingDINg err---------")
 	}
 	logs.Info("rightdata___")
+	fmt.Println("rightdata___")
 	for _, assetDetail := range resAssetDetails {
 		logs.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
+		fmt.Println(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		for _, tokenAsset := range assetDetail.TokenAsset {
 			fmt.Printf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
