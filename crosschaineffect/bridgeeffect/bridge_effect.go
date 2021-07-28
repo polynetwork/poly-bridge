@@ -69,30 +69,30 @@ func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig,ipCfg *co
 }
 
 func (eff *BridgeEffect) Effect() error {
-	err := eff.updateHash()
-	if err != nil {
-		logs.Error("update hash- err: %s", err)
-	}
-	err = eff.checkStatus()
-	if err != nil {
-		logs.Error("check status- err: %s", err)
-	}
-	err = eff.updateStatus()
-	if err != nil {
-		logs.Error("update status- err: %s", err)
-	}
-	err = eff.doStatistic()
-	if err != nil {
-		logs.Error("update status- err: %s", err)
-	}
-	err = eff.checkChainListening()
-	if err != nil {
-		logs.Error("check chain listening- err: %s", err)
-	}
+	//err := eff.updateHash()
+	//if err != nil {
+	//	logs.Error("update hash- err: %s", err)
+	//}
+	//err = eff.checkStatus()
+	//if err != nil {
+	//	logs.Error("check status- err: %s", err)
+	//}
+	//err = eff.updateStatus()
+	//if err != nil {
+	//	logs.Error("update status- err: %s", err)
+	//}
+	//err = eff.doStatistic()
+	//if err != nil {
+	//	logs.Error("update status- err: %s", err)
+	//}
+	//err = eff.checkChainListening()
+	//if err != nil {
+	//	logs.Error("check chain listening- err: %s", err)
+	//}
 	checkTime++
 	if checkTime > 600 {
 		checkTime = 0
-		err = StartCheckAsset(eff.dbCfg,eff.ipCfg)
+		err := StartCheckAsset(eff.dbCfg,eff.ipCfg)
 		if err != nil {
 			logs.Error("check asset- err: %s", err)
 		}

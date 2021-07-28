@@ -64,6 +64,9 @@ func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
 			if notToken(token) {
 				continue
 			}
+			if token.Precision!=uint64(1){
+				continue
+			}
 			chainAsset := new(DstChainAsset)
 			chainAsset.ChainId = token.ChainId
 			chainAsset.Hash = token.Hash
@@ -133,7 +136,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
 	for _, assetDetail := range resAssetDetails {
 		logs.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			logs.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
+			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
 	}
 	fmt.Println("wrongdata___")
@@ -157,7 +160,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) error {
 			assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 		}
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			logs.Info(fmt.Sprintf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow))
+			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
 	}
 	return nil
