@@ -216,6 +216,10 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 			continue
 		}
 
+		if tx.FeeAmount == nil || tx.FeeToken == nil || tx.FeeToken.TokenBasic == nil {
+			continue
+		}
+
 		x := new(big.Int).Mul(&tx.FeeAmount.Int, big.NewInt(tx.FeeToken.TokenBasic.Price))
 		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(tx.FeeToken.Precision))))
 		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
