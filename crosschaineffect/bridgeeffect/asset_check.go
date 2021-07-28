@@ -75,8 +75,8 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 				assetDetail.Reason = err.Error()
 				logs.Info("chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err)
 				balance = big.NewInt(0)
+				fmt.Println(basic.Name, balance, err)
 			}
-			fmt.Println(basic.Name, balance, err)
 			chainAsset.Balance = balance
 			time.Sleep(time.Second)
 			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
@@ -84,12 +84,13 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 				assetDetail.Reason = err.Error()
 				totalSupply = big.NewInt(0)
 				logs.Info("chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err)
+				totalSupply = specialBasic(token, totalSupply)
+
 			}
 			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
 				totalSupply = big.NewInt(0)
 			}
 			//specialBasic
-			totalSupply = specialBasic(token, totalSupply)
 			fmt.Println(basic.Name, totalSupply, err)
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.Flow = new(big.Int).Sub(totalSupply, balance)
@@ -105,7 +106,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 			extraAssetDetails = append(extraAssetDetails, assetDetail)
 			continue
 		}
-		getO3Data(assetDetail)
+		getO3Data(assetDetail, ipCfg)
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
 			assetDetail.Amount_usd = decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).Mul(decimal.New(assetDetail.Price, -8)).StringFixed(0)
 		}
@@ -120,6 +121,7 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 	for _, assetDetail := range resAssetDetails {
 		logs.Info(assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		for _, tokenAsset := range assetDetail.TokenAsset {
+			fmt.Printf("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
 	}
@@ -222,7 +224,7 @@ func notToken(token *models.Token) bool {
 	}
 	return false
 }
-func getO3Data(assetDetail *AssetDetail) {
+func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 	switch assetDetail.BasicName {
 	case "WBTC":
 		chainAsset := new(DstChainAsset)
