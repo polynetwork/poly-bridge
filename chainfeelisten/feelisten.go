@@ -84,6 +84,8 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		return switcheofee.NewSwitcheoFee(cfg, feeUpdateSlot)
 	} else if cfg.ChainId == basedef.NEO3_CROSSCHAIN_ID {
 		return neo3fee.NewNeo3Fee(cfg, feeUpdateSlot)
+	} else if cfg.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	} else {
 		return nil
 	}

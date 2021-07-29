@@ -19,12 +19,10 @@ package chainsdk
 
 import (
 	"github.com/polynetwork/poly-go-sdk"
-	"github.com/polynetwork/poly-go-sdk/common"
-	"github.com/polynetwork/poly/core/types"
 )
 
 type PolySDK struct {
-	sdk *poly_go_sdk.PolySdk
+	*poly_go_sdk.PolySdk
 	url string
 }
 
@@ -32,22 +30,7 @@ func NewPolySDK(url string) *PolySDK {
 	rawsdk := poly_go_sdk.NewPolySdk()
 	rawsdk.NewRpcClient().SetAddress(url)
 	return &PolySDK{
-		sdk: rawsdk,
-		url: url,
+		PolySdk: rawsdk,
+		url:     url,
 	}
-}
-
-func (sdk *PolySDK) GetCurrentBlockHeight() (uint64, error) {
-	height, err := sdk.sdk.GetCurrentBlockHeight()
-	return uint64(height), err
-}
-
-func (sdk *PolySDK) GetBlockByHeight(height uint64) (*types.Block, error) {
-	block, err := sdk.sdk.GetBlockByHeight(uint32(height))
-	return block, err
-}
-
-func (sdk *PolySDK) GetSmartContractEventByBlock(height uint64) ([]*common.SmartContactEvent, error) {
-	event, err := sdk.sdk.GetSmartContractEventByBlock(uint32(height))
-	return event, err
 }

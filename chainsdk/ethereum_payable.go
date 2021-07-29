@@ -147,6 +147,14 @@ func (s *EthereumSdk) GetERC20Balance(asset, owner common.Address) (*big.Int, er
 	return contract.BalanceOf(nil, owner)
 }
 
+func (s*EthereumSdk) GetERC20TotalSupply(asset common.Address) (*big.Int, error) {
+	contract, err := erc20.NewERC20Mintable(asset, s.backend())
+	if err != nil {
+		return nil, err
+	}
+	return contract.TotalSupply(nil)
+}
+
 func (s *EthereumSdk) ApproveERC20Token(
 	key *ecdsa.PrivateKey,
 	asset, spender common.Address,

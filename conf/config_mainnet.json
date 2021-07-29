@@ -14,6 +14,11 @@
     "Scheme":"polyswap",
     "Debug": false
   },
+  "IPPortConfig":{
+    "WBTCIP":"http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
+    "USDTIP":"http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
+    "DingIP": "https://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
+  },
   "ChainListenConfig":[
     {
       "ChainName":"Poly",
@@ -56,6 +61,22 @@
       "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
       "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
       "SwapContract": "02e20ca05e38cbdf1a6235a7acdd34efc0434caa"
+    },
+    {
+      "ChainName":"MATIC",
+      "ChainId":16,
+      "ListenSlot":5,
+      "Defer": 10,
+      "Nodes": [
+        {
+          "Url": "http://124.156.210.161:8545"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["", "B88f13682F3C602aCD84B4b2eEB96A9DD75Afd89"],
+      "CCMContract":"abd7f7b89c5fd5d0aef06165f8173b1b83d7d5c9",
+      "ProxyContract":"28ff66a1b95d7cacf8eded2e658f768f44841212"
     },
     {
       "ChainName":"NEO",
@@ -302,6 +323,18 @@
         }
       ],
       "GasLimit":220000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":16,
+      "ChainName":"MATIC",
+      "Nodes": [
+        {
+          "Url": "http://124.156.210.161:8545"
+        }
+      ],
+      "GasLimit":120000,
       "ProxyFee":120,
       "MinFee": 20
     }

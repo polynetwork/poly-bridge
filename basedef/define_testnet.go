@@ -26,9 +26,10 @@ var (
 	ONT_CROSSCHAIN_ID      = uint64(3)
 	NEO_CROSSCHAIN_ID      = uint64(5)
 	HECO_CROSSCHAIN_ID     = uint64(7)
-	NEO3_CROSSCHAIN_ID     = uint64(11)
 	BSC_CROSSCHAIN_ID      = uint64(79)
 	O3_CROSSCHAIN_ID       = uint64(82)
+	NEO3_CROSSCHAIN_ID     = uint64(88)
 	OK_CROSSCHAIN_ID       = uint64(200)
+	MATIC_CROSSCHAIN_ID    = uint64(202)
 	SWITCHEO_CROSSCHAIN_ID = uint64(1000) // No testnet for cosmos
 )

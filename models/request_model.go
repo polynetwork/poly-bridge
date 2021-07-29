@@ -106,6 +106,7 @@ func MakeTokenBasicsRsp(tokenBasics []*TokenBasic) *TokenBasicsRsp {
 type TokenBasicsInfoReq struct {
 	PageSize int
 	PageNo   int
+	Order    string
 }
 
 type TokenBasicsInfoRsp struct {
@@ -514,15 +515,21 @@ type TransactionRsp struct {
 }
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
+	if transaction.WrapperTransaction == nil || transaction.SrcTransaction == nil {
+		return nil
+	}
+
 	feeAmount := ""
 	if transaction.WrapperTransaction != nil {
 		aaa := new(big.Int).Set(&transaction.WrapperTransaction.FeeAmount.Int)
 		feeAmount = aaa.String()
 	}
 	transferAmount := ""
+	dstUser := ""
 	if transaction.SrcTransaction.SrcTransfer != nil {
 		aaa := new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int)
 		transferAmount = aaa.String()
+		dstUser = transaction.SrcTransaction.SrcTransfer.DstUser
 	}
 	transactionRsp := &TransactionRsp{
 		Hash:           transaction.WrapperTransaction.Hash,
@@ -534,7 +541,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		ServerId:       transaction.WrapperTransaction.ServerId,
 		FeeAmount:      feeAmount,
 		TransferAmount: transferAmount,
-		DstUser:        transaction.SrcTransaction.SrcTransfer.DstUser,
+		DstUser:        dstUser,
 		State:          transaction.WrapperTransaction.Status,
 	}
 	if transaction.Token != nil {
@@ -627,9 +634,11 @@ func MakeCurveTransactionRsp(transaction1 *SrcPolyDstRelation, transaction2 *Src
 		feeAmount = aaa.String()
 	}
 	transferAmount := ""
+	dstUser := ""
 	if transaction1.SrcTransaction.SrcTransfer != nil {
 		aaa := new(big.Int).Set(&transaction1.SrcTransaction.SrcTransfer.Amount.Int)
 		transferAmount = aaa.String()
+		dstUser = transaction1.SrcTransaction.SrcTransfer.DstUser
 	}
 	transactionRsp := &TransactionRsp{
 		Hash:           transaction1.WrapperTransaction.Hash,
@@ -642,7 +651,7 @@ func MakeCurveTransactionRsp(transaction1 *SrcPolyDstRelation, transaction2 *Src
 		FeeAmount:      feeAmount,
 		TransferAmount: transferAmount,
 		//Amount:         amount.String(),
-		DstUser: transaction1.SrcTransaction.SrcTransfer.DstUser,
+		DstUser: dstUser,
 		State:   transaction1.WrapperTransaction.Status,
 	}
 	if transaction1.Token != nil {
@@ -1098,4 +1107,21 @@ func MakeExpectTimeRsp(srcchainId uint64, dstchainid uint64, time uint64) *Expec
 		DstChainId: dstchainid,
 	}
 	return expectTimeRsp
+}
+
+type TokenAssetReq struct {
+	NameOrHash string
+}
+
+type AssetDetailRes struct {
+	BasicName  string
+	TokenAsset []*DstChainAssetRes
+	Precision  uint64
+}
+type DstChainAssetRes struct {
+	ChainName   string
+	Hash        string
+	TotalSupply *big.Int
+	Balance     *big.Int
+	ErrReason   string
 }

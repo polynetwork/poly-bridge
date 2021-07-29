@@ -32,7 +32,7 @@ func NewPolySdkAndSetChainID(url string) (*PolySDK, error) {
 		return nil, err
 	}
 	hdr := blk.Header
-	s.sdk.SetChainId(hdr.ChainID)
+	s.SetChainId(hdr.ChainID)
 	return s, nil
 }
 
@@ -59,7 +59,7 @@ func (s *PolySDK) SyncGenesisBlock(
 	genesisHeader []byte,
 ) error {
 
-	if txhash, err := s.sdk.Native.Hs.SyncGenesisHeader(
+	if txhash, err := s.Native.Hs.SyncGenesisHeader(
 		selfChainID,
 		genesisHeader,
 		validators,
@@ -88,7 +88,7 @@ func (s *PolySDK) RegisterSideChain(
 		return fmt.Errorf("failed to decode eccd address, err: %s", err)
 	}
 
-	if txhash, err := s.sdk.Native.Scm.RegisterSideChain(
+	if txhash, err := s.Native.Scm.RegisterSideChain(
 		owner.Address,
 		chainID,
 		router,
@@ -126,7 +126,7 @@ func (s *PolySDK) RegisterSideChainExt(
 		return fmt.Errorf("failed to decode eccd address, err: %s", err)
 	}
 
-	if txhash, err := s.sdk.Native.Scm.RegisterSideChainExt(
+	if txhash, err := s.Native.Scm.RegisterSideChainExt(
 		owner.Address,
 		chainID,
 		router,
@@ -156,7 +156,7 @@ func (s *PolySDK) ApproveRegisterSideChain(chainID uint64, validators []*polysdk
 		err    error
 	)
 	for i, acc := range validators {
-		txhash, err = s.sdk.Native.Scm.ApproveRegisterSideChain(chainID, acc)
+		txhash, err = s.Native.Scm.ApproveRegisterSideChain(chainID, acc)
 		if err != nil {
 			return fmt.Errorf("no%d - failed to approve %d: %v", i, chainID, err)
 		}
@@ -167,7 +167,7 @@ func (s *PolySDK) ApproveRegisterSideChain(chainID uint64, validators []*polysdk
 }
 
 func (s *PolySDK) RegisterCandidate(peer string, validator *polysdk.Account) error {
-	txHash, err := s.sdk.Native.Nm.RegisterCandidate(peer, validator)
+	txHash, err := s.Native.Nm.RegisterCandidate(peer, validator)
 	if err != nil {
 		if strings.Contains(err.Error(), "already") {
 			log.Warn("candidate %s already registered: %v", peer, err)
@@ -185,7 +185,7 @@ func (s *PolySDK) ApproveCandidate(peer string, validators []*polysdk.Account) e
 	)
 
 	for index, validator := range validators {
-		txhash, err = s.sdk.Native.Nm.ApproveCandidate(peer, validator)
+		txhash, err = s.Native.Nm.ApproveCandidate(peer, validator)
 		if err != nil {
 			return fmt.Errorf("node-%d sendTransaction error: %v", index, err)
 		}
@@ -196,7 +196,7 @@ func (s *PolySDK) ApproveCandidate(peer string, validators []*polysdk.Account) e
 }
 
 func (s *PolySDK) CommitPolyDpos(accArr []*polysdk.Account) error {
-	txhash, err := s.sdk.Native.Nm.CommitDpos(accArr)
+	txhash, err := s.Native.Nm.CommitDpos(accArr)
 	if err != nil {
 		return err
 	}
@@ -211,8 +211,8 @@ func (s *PolySDK) waitPolyTx(hash common.Uint256) error {
 	)
 
 	for range tick.C {
-		h, _ = s.sdk.GetBlockHeightByTxHash(hash.ToHexString())
-		curr, _ := s.sdk.GetCurrentBlockHeight()
+		h, _ = s.GetBlockHeightByTxHash(hash.ToHexString())
+		curr, _ := s.GetCurrentBlockHeight()
 		if h > 0 && curr > h {
 			break
 		}
