@@ -214,7 +214,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		}
 	}
 	if fChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-		fChainTxResp.TxHash = "0x" + fChainTx.Key
+		fChainTxResp.TxHash = "0x" + fChainTxResp.TxHash
 	} else if fChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
 		fChainTxResp.TxHash = strings.ToUpper(fChainTxResp.TxHash)
 	}
