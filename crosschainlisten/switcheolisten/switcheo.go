@@ -56,13 +56,13 @@ func (this *SwitcheoChainListen) GetDefer() uint64 {
 	return this.swthCfg.Defer
 }
 
-func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
+func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	block, err := this.swthSdk.GetBlockByHeight(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, fmt.Errorf("there is no switcheo block!")
+		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no switcheo block!")
 	}
 	tt := uint64(block.Block.Time.Unix())
 	srcTransactions := make([]*models.SrcTransaction, 0)
@@ -70,12 +70,12 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 	ccmLockEvent, lockEvents, err := this.getCosmosCCMLockEventByBlockNumber(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 
 	ccmUnlockEvent, unlockEvents, err := this.getCosmosCCMUnlockEventByBlockNumber(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 
 	for _, lockEvent := range ccmLockEvent {
@@ -143,7 +143,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransactions = append(dstTransactions, dstTransaction)
 		}
 	}
-	return nil, srcTransactions, nil, dstTransactions, nil
+	return nil, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
 }
 
 func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint64) ([]*models.ECCMLockEvent, []*models.ProxyLockEvent, error) {

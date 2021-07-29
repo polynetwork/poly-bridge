@@ -30,6 +30,7 @@ import (
 	"poly-bridge/crosschainlisten/ontologylisten"
 	"poly-bridge/crosschainlisten/polylisten"
 	"poly-bridge/crosschainlisten/switcheolisten"
+	"poly-bridge/http/tools"
 	"poly-bridge/models"
 	"runtime/debug"
 	"time"
@@ -66,7 +67,7 @@ func StopCrossChainListen() {
 type ChainHandle interface {
 	GetExtendLatestHeight() (uint64, error)
 	GetLatestHeight() (uint64, error)
-	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error)
+	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error)
 	GetChainListenSlot() uint64
 	GetChainId() uint64
 	GetChainName() string
@@ -94,6 +95,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return switcheolisten.NewSwitcheoChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == basedef.NEO3_CROSSCHAIN_ID {
 		return neo3listen.NewNeo3ChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	} else {
 		return nil
 	}
@@ -140,6 +143,25 @@ func (ccl *CrossChainListen) ListenChain() {
 	}
 }
 
+func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, err error) {
+	chain := ccl.handle.GetChainId()
+	var locks, unlocks int
+	for c := 3; c > 0; c-- {
+		w, s, p, d, locks, unlocks, err = ccl.handle.HandleNewBlock(height)
+		if err != nil {
+			return
+		}
+		if locks == len(w) && locks == len(s) && unlocks == len(d) {
+			return
+		}
+		if c > 1 {
+			logs.Warn("Possible missing events for chain %v height %v", chain, height)
+			time.Sleep(time.Second * 5)
+		}
+	}
+	logs.Error("Possible inconsistent chain %d height %d wrapper %d/%d src %d/%d dst %d/%d", chain, height, len(w), locks, len(s), locks, len(d), unlocks)
+	return
+}
 func (ccl *CrossChainListen) listenChain() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -178,15 +200,15 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			} else if extendHeight >= height+21 {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
+			tools.Record(height, "%v.lastest_height", chain.ChainId)
+			tools.Record(extendHeight, "%v.watch_height", chain.ChainId)
+			tools.Record(chain.Height, "%v.height", chain.ChainId)
 			if chain.Height >= height-ccl.handle.GetDefer() {
 				continue
 			}
 			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			for chain.Height < height-ccl.handle.GetDefer() {
-				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.handle.HandleNewBlock(chain.Height + 1)
-				if len(wrapperTransactions) != len(srcTransactions) {
-					logs.Error("Possible inconsistent chain %d height %d wrapper %d src %d", chain.ChainId, chain.Height, len(wrapperTransactions), len(srcTransactions))
-				}
+				wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.HandleNewBlock(chain.Height + 1)
 				if err != nil {
 					logs.Error("HandleNewBlock %d err: %v", chain.Height+1, err)
 					break
@@ -198,6 +220,8 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					chain.Height -= 1
 					break
 				}
+				tools.Record(len(srcTransactions), "%v.locks", chain.ChainId)
+				tools.Record(len(dstTransactions), "%v.unlocks", chain.ChainId)
 			}
 		case <-ccl.exit:
 			logs.Info("cross chain listen exit, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())

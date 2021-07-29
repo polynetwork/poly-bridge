@@ -185,3 +185,32 @@ func (pro *OntologySdkPro) Oep4Balance(hash string, addr string) (*big.Int, erro
 		return balance, nil
 	}
 }
+
+func (pro *OntologySdkPro) Oep4TotalSupply(hash string, addr string) (*big.Int, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
+	}
+	if pro.IsOngAddress(hash) {
+		return new(big.Int).SetUint64(0), nil
+	} else {
+		contractAddr, err := common1.AddressFromHexString(hash)
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		address, err := common1.AddressFromHexString(addr)
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		preResult, err := info.sdk.NeoVM.PreExecInvokeNeoVMContract(contractAddr,
+			[]interface{}{"totalSupply", []interface{}{address[:]}})
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		totalSupply, err := preResult.Result.ToInteger()
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
+		return totalSupply, nil
+	}
+}

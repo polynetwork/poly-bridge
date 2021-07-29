@@ -108,3 +108,16 @@ func (sdk *NeoSdk) Nep5Balance(hash string, addr string) (uint64, error) {
 	}
 	return nep5.BalanceOf(addrHash)
 }
+func (sdk *NeoSdk) Nep5TotalSupply(hash string) (uint64, error) {
+	scriptHash, err := helper.UInt160FromString(hash)
+	if err != nil {
+		return 0, err
+	}
+	logs.Info("hash: %s", hash)
+	nep5 := nep5.NewNep5Helper(scriptHash, sdk.url)
+	if err != nil {
+		return 0, err
+	}
+	return nep5.TotalSupply()
+}
+

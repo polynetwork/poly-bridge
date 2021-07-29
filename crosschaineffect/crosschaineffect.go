@@ -36,8 +36,8 @@ type Effect interface {
 
 var crossChainEffect *CrossChainEffect
 
-func StartCrossChainEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) {
-	effect := NewEffect(server, effCfg, dbCfg)
+func StartCrossChainEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) {
+	effect := NewEffect(server, effCfg, dbCfg,ipCfg)
 	if effect == nil {
 		panic("effect is not valid")
 	}
@@ -51,9 +51,9 @@ func StopCrossChainEffect() {
 	}
 }
 
-func NewEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig) Effect {
+func NewEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) Effect {
 	if server == basedef.SERVER_POLY_BRIDGE {
-		return bridgeeffect.NewBridgeEffect(effCfg, dbCfg)
+		return bridgeeffect.NewBridgeEffect(effCfg, dbCfg,ipCfg)
 	} else if server == basedef.SERVER_POLY_SWAP {
 		return swapeffect.NewSwapEffect(effCfg, dbCfg)
 	} else if server == basedef.SERVER_EXPLORER {

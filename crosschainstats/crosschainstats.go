@@ -22,17 +22,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/shopspring/decimal"
-	"gorm.io/gorm"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/bridgedao"
+	"poly-bridge/http/tools"
 	"poly-bridge/models"
 	"sync"
 	"time"
+
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type Stats struct {
@@ -107,22 +109,31 @@ func (this *Stats) computeStats() (err error) {
 		return fmt.Errorf("Failed to fetch token basic list %w", err)
 	}
 	for _, basic := range tokens {
-		err := this.computeTokenBasicStats(basic)
-		if err != nil {
-			return err
+		if len(basic.Tokens) > 0 {
+			err := this.computeTokenBasicStats(basic)
+			if err != nil {
+				logs.Error("Failed to computeTokenBasicStats for %s err %v", basic.Name, err)
+			}
 		}
 	}
 	return
 }
 
 func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) {
+	logs.Info("Computing token basic stats for %s", token.Name)
+	if len(token.Tokens) == 0 {
+		return
+	}
 	assets := make([][]interface{}, len(token.Tokens))
 	for i, t := range token.Tokens {
 		assets[i] = []interface{}{t.ChainId, t.Hash}
 	}
 	checkPoint := token.StatsUpdateTime
 	last, err := this.dao.GetLastSrcTransferForToken(assets)
-	if err != nil || last == nil || checkPoint >= last.Id {
+	if err != nil || last == nil || checkPoint == int64(last.Time) {
+		if err != nil || last == nil {
+			logs.Error("Failed to get last src transfers for %s %+v err %v", *token, assets, err)
+		}
 		return err
 	}
 	totalAmount, totalCount, err := this.dao.AggregateTokenBasicSrcTransfers(assets, checkPoint, last.Id)
@@ -137,6 +148,10 @@ func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) 
 		token.TotalAmount = &models.BigInt{*new(big.Int).Add(totalAmount, &token.TotalAmount.Int)}
 		token.TotalCount += totalCount
 	}
+	v := new(big.Float).Quo(new(big.Float).SetInt(&token.TotalAmount.Int), new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
+	f, _ := v.Float32()
+	tools.Record(f, "total_amount.%s", token.Name)
+	tools.Record(token.TotalCount, "total_count.%s", token.Name)
 	err = this.dao.UpdateTokenBasicStatsWithCheckPoint(token, checkPoint)
 	return
 }
@@ -153,6 +168,9 @@ func (this *Stats) computeTokensStats() (err error) {
 			logs.Error("Failed to fetch token available amount for token %s %v %s", t.Hash, t.ChainId, err)
 			continue
 		}
+		v := new(big.Float).Quo(new(big.Float).SetInt(amount), new(big.Float).SetInt64(basedef.Int64FromFigure(int(t.Precision))))
+		f, _ := v.Float32()
+		tools.Record(f, "balance.%s.%v", t.TokenBasicName, t.ChainId)
 		err = this.dao.UpdateTokenAvailableAmount(t.Hash, t.ChainId, amount)
 		if err != nil {
 			logs.Error("Failed to update token available amount for token %s %v %s", t.Hash, t.ChainId, err)

@@ -86,10 +86,15 @@ func (c *TokenController) TokenBasicsInfo() {
 		c.ServeJSON()
 	}
 	tokenBasics := make([]*models.TokenBasic, 0)
-	query := db.Model(&models.TokenBasic{}).Where("standard = 0 AND property = 1")
+	orderBy := "total_count desc, name"
+	switch tokenBasicReq.Order {
+	case "total_amount", "total_count", "name", "price":
+		orderBy = tokenBasicReq.Order + " desc"
+	}
+	query := db.Model(&models.TokenBasic{}).Where("standard = 0 AND property = 1").Order(orderBy)
 	var totalCount int64
 	query.Count(&totalCount)
-	query.Limit(tokenBasicReq.PageSize).Offset(tokenBasicReq.PageSize * tokenBasicReq.PageNo).Order("total_amount, name").Preload("Tokens").Find(&tokenBasics)
+	query.Limit(tokenBasicReq.PageSize).Offset(tokenBasicReq.PageSize * tokenBasicReq.PageNo).Preload("Tokens").Find(&tokenBasics)
 	c.Data["json"] = models.MakeTokenBasicsInfoRsp(&tokenBasicReq, uint64(totalCount), tokenBasics)
 	c.ServeJSON()
 }

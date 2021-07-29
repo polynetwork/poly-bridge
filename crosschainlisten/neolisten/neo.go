@@ -90,13 +90,13 @@ func (this *NeoChainListen) isListeningContract(contract string, contracts []str
 	return false
 }
 
-func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
+func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, fmt.Errorf("can not get neo block!")
+		return nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get neo block!")
 	}
 	tt := block.Time
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
@@ -129,6 +129,10 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							tchainId, _ = new(big.Int).SetString(value[3].Value, 10)
 						} else {
 							tchainId, _ = new(big.Int).SetString(basedef.HexStringReverse(value[3].Value), 16)
+						}
+						if tchainId == nil {
+							logs.Error("Invalid to chain id %+v tx %s", value, tx.Txid[2:])
+							continue
 						}
 						serverId := big.NewInt(0)
 						if value[7].Type == "Integer" {
@@ -282,7 +286,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 			}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
 }
 
 type Error struct {

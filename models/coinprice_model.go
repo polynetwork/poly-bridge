@@ -29,9 +29,9 @@ const (
 type TokenBasic struct {
 	Id              int64          `gorm:"primaryKey;autoIncrement"`
 	Name            string         `gorm:"uniqueIndex;size:64;not null"`
-	ChainId         uint64         `gorm:"type:bigint(20);not null;default:0"`
 	Precision       uint64         `gorm:"type:bigint(20);not null"`
 	Price           int64          `gorm:"size:64;not null"`
+	ChainId         uint64         `gorm:"type:bigint(20);not null"` //该tokenbasicname的源链ID
 	Ind             uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
 	Time            int64          `gorm:"type:bigint(20);not null"`
 	Property        int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线

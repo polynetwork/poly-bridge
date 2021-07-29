@@ -331,8 +331,11 @@ BODY raw
 ```
 {
   "PageSize":10,
-  "PageNo":5
+  "PageNo":5,
+  "Order": "total_count"
 }
+
+# Valid order keys: "total_amount", "total_count", "name", "price"
 ```
 
 Example Request
@@ -1003,7 +1006,8 @@ BODY raw
     "PageSize":10,
     "SrcChainId": 2,
     "DstChainId: 79,
-    "Assets": ["155040625d7ae3e9cada9a73e3e44f76d3ed1409"]
+    "Assets": ["155040625d7ae3e9cada9a73e3e44f76d3ed1409"],
+    "Addresses":["ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"]
 }
 ```
 
@@ -1015,35 +1019,65 @@ curl --location --request POST 'http://localhost:8080/v1/transactionswithfilter/
     "PageSize":10,
     "SrcChainId": 2,
     "DstChainId: 79,
-    "Assets": ["155040625d7ae3e9cada9a73e3e44f76d3ed1409"]
+    "Assets": ["155040625d7ae3e9cada9a73e3e44f76d3ed1409"],
+    "Addresses":["ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f", "ARpuQar5CPtxEoqfcg1fxGWnwDdp7w3jj8"]
 }'
 ```
 
 Example Response
 ```
 {
-    "PageSize": 1,
+    "PageSize": 10,
     "PageNo": 0,
     "TotalPage": 1,
     "TotalCount": 1,
     "Transactions": [
         {
-            "Hash": "175beb5e1d93c50c216c512892bbf7d904a9903064051ec8225d471f221bc4dc",
-            "User": "e48956b4b73bfc8f0ac5f87e8f1c2df1f90e2339",
+            "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
+            "User": "ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f",
             "SrcChainId": 2,
-            "BlockHeight": 9998505,
-            "Time": 1617873836,
+            "BlockHeight": 9469807,
+            "Time": 1610695305,
             "DstChainId": 79,
-            "DstUser": "e48956b4b73bfc8f0ac5f87e8f1c2df1f90e2339",
-            "ServerId": 0,
-            "FeeTokenHash": "155040625d7ae3e9cada9a73e3e44f76d3ed1409",
-            "FeeAmount": "55817733720000000000",
-            "State": 0
+            "FeeAmount": "10000000000000000",
+            "TransferAmount": "90000000000000000",
+            "DstUser": "6e43f9988f2771f1a2b140cb3faad424767d39fc",
+            "State": 0,
+            "Token": {
+                "Hash": "0000000000000000000000000000000000000000",
+                "ChainId": 2,
+                "Name": "Ethereum",
+                "TokenBasicName": "Ethereum",
+                "TokenBasic": null,
+                "TokenMaps": null
+            },
+            "TransactionState": [
+                {
+                    "Hash": "85d1b5a97ae1a16e4507bc20e55c17426af6fcf5c35ef177e333148b601f1002",
+                    "ChainId": 2,
+                    "Blocks": 10,
+                    "NeedBlocks": 10,
+                    "Time": 1610695305
+                },
+                {
+                    "Hash": "a58b5705c2117e390c7add98d55e762342c26508a9b787befa228e5c10a2b14f",
+                    "ChainId": 0,
+                    "Blocks": 10,
+                    "NeedBlocks": 10,
+                    "Time": 1610697074
+                },
+                {
+                    "Hash": "5e201266b11f107dafa8e323b4be3b1c7f062bc1f1926ce36cf8832497342e37",
+                    "ChainId": 79,
+                    "Blocks": 10,
+                    "NeedBlocks": 10,
+                    "Time": 1610697089
+                }
+            ]
         }
     ]
 }
 ```
-
 
 ### POST transactionsofaddress
 
@@ -2744,3 +2778,53 @@ Example Response
     "Time": 90
 }
 ```
+### POST gettokenasset
+
+ 查资产balance与totalsupply(根据token或name)
+
+Request
+```
+http://localhost:8080/v1/gettokenasset/
+```
+
+BODY raw
+```
+{
+    "nameOrHash":"HKR"
+}
+```
+
+Example Request
+```
+curl --location --request POST 'http://localhost:8080/v1/gettokenasset/' \
+--data-raw '{
+    "nameOrHash":"HKR"
+}'
+```
+
+Example Response
+```
+[
+    {
+        "BasicName": "HKR",
+        "TokenAsset": [
+            {
+                "ChainName": "",
+                "Hash": "0",
+                "TotalSupply": 0,
+                "Balance": 0,
+                "ErrReason": ""
+            },
+            {
+                "ChainName": "",
+                "Hash": "0",
+                "TotalSupply": 0,
+                "Balance": 0,
+                "ErrReason": ""
+            }
+        ],
+        "Precision": 18
+    }
+]
+```
+

@@ -87,7 +87,7 @@ func (pro *PolySDKPro) selection() {
 			logs.Error("get current block height err: %v, url: %s", err, url)
 		}
 		pro.mutex.Lock()
-		info.latestHeight = height
+		info.latestHeight = uint64(height)
 		pro.mutex.Unlock()
 	}
 }
@@ -122,12 +122,29 @@ func (pro *PolySDKPro) GetBlockByHeight(height uint64) (*types.Block, error) {
 		return nil, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		block, err := info.sdk.GetBlockByHeight(height)
+		block, err := info.sdk.GetBlockByHeight(uint32(height))
 		if err != nil {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
 			return block, nil
+		}
+	}
+	return nil, fmt.Errorf("all node is not working")
+}
+
+func (pro *PolySDKPro) GetSmartContractEvent(txHash string) (*common.SmartContactEvent, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		event, err := info.sdk.GetSmartContractEvent(txHash)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return event, nil
 		}
 	}
 	return nil, fmt.Errorf("all node is not working")
@@ -139,7 +156,7 @@ func (pro *PolySDKPro) GetSmartContractEventByBlock(height uint64) ([]*common.Sm
 		return nil, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		event, err := info.sdk.GetSmartContractEventByBlock(height)
+		event, err := info.sdk.GetSmartContractEventByBlock(uint32(height))
 		if err != nil {
 			info.latestHeight = 0
 			info = pro.GetLatest()
@@ -148,4 +165,37 @@ func (pro *PolySDKPro) GetSmartContractEventByBlock(height uint64) ([]*common.Sm
 		}
 	}
 	return nil, fmt.Errorf("all node is not working")
+}
+
+func (pro *PolySDKPro) wrap(f func(*PolySDK) error) error {
+	info := pro.GetLatest()
+	if info == nil {
+		return fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		err := f(info.sdk)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return nil
+		}
+	}
+	return fmt.Errorf("all node is not working")
+}
+
+func (pro *PolySDKPro) GetTransaction(txHash string) (tx *types.Transaction, err error) {
+	err = pro.wrap(func(sdk *PolySDK) error {
+		tx, err = sdk.GetTransaction(txHash)
+		return err
+	})
+	return
+}
+
+func (pro *PolySDKPro) GetStorage(contractAddress string, key []byte) (data []byte, err error) {
+	err = pro.wrap(func(sdk *PolySDK) error {
+		data, err = sdk.GetStorage(contractAddress, key)
+		return err
+	})
+	return
 }
