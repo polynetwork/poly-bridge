@@ -63,7 +63,7 @@ func (c *TokenAssetController) Gettokenasset() {
 		for _, token := range basic.Tokens {
 			chainAsset := new(models.DstChainAssetRes)
 			chainFee := new(models.ChainFee)
-			err = db.Where("token_basic_name = ?", token.ChainId).
+			err = db.Where("chain_id = ?", token.ChainId).
 				First(chainFee).Error
 			if err != nil {
 				chainAsset.ChainName = ""
