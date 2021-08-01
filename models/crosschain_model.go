@@ -214,6 +214,14 @@ type AssetStatistic struct {
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
+type AssetInfo struct {
+	Amount         *BigInt
+	Txnum          uint64
+	Price 			int64
+	TokenBasicName string
+	Precision  	   uint64
+}
+
 type TransactionOnToken struct {
 	Hash    string
 	ChainId uint64

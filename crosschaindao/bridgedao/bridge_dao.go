@@ -448,11 +448,11 @@ func (dao *BridgeDao) GetNewAssetSta() (*models.AssetStatistic, error) {
 		Error
 	return assetStatistic, err
 }
-func (dao *BridgeDao) CalculateAsset(lastId, nowId int64) ([]*models.AssetStatistic, error) {
-	assetStatistics := make([]*models.AssetStatistic, 0)
-	err := dao.db.Debug().Raw("select CONVERT(sum(amount), DECIMAL(37, 0)) as amount, count(*) as txnum, b.token_basic_name  from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash where a.id > ? and a.id <= ? group by token_basic_name", lastId, nowId).
-		Preload("TokenBasic").Find(&assetStatistics).Error
-	return assetStatistics, err
+func (dao *BridgeDao) CalculateAsset(lastId, nowId int64) ([]*models.AssetInfo, error) {
+	assetInfos := make([]*models.AssetInfo, 0)
+	err := dao.db.Debug().Raw("select CONVERT(sum(amount), DECIMAL(37, 0)) as amount, count(*) as txnum, b.token_basic_name, b.precision, c.price  from src_transfers a inner join tokens b on a.chain_id = b.chain_id and a.asset = b.hash left join token_basics c on c.name = b.token_basic_name where b.property=1 and a.id > ? and a.id <= ? group by b.chain_id,b.`hash`", lastId, nowId).
+		Find(&assetInfos).Error
+	return assetInfos, err
 }
 func (dao *BridgeDao) GetAssetStatistic() ([]*models.AssetStatistic, error) {
 	assetStatistics := make([]*models.AssetStatistic, 0)
