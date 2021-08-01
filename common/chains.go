@@ -14,6 +14,7 @@ var (
 	okSdk       *chainsdk.EthereumSdkPro
 	neoSdk      *chainsdk.NeoSdkPro
 	ontologySdk *chainsdk.OntologySdkPro
+	maticSdk    *chainsdk.EthereumSdkPro
 	config      *conf.Config
 )
 
@@ -33,6 +34,14 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := ethereumConfig.GetNodesUrl()
 		ethereumSdk = chainsdk.NewEthereumSdkPro(urls, ethereumConfig.ListenSlot, ethereumConfig.ChainId)
+	}
+	{
+		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+		if maticConfig == nil {
+			panic("chain is invalid")
+		}
+		urls := maticConfig.GetNodesUrl()
+		maticSdk = chainsdk.NewEthereumSdkPro(urls, maticConfig.ListenSlot, maticConfig.ChainId)
 	}
 	{
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
@@ -83,6 +92,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return ethereumSdk.Erc20Balance(hash, ethereumConfig.ProxyContract)
+	}
+	if chainId == basedef.MATIC_CROSSCHAIN_ID {
+		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+		if maticConfig == nil {
+			panic("chain is invalid")
+		}
+		return maticSdk.Erc20Balance(hash, maticConfig.ProxyContract)
 	}
 	if chainId == basedef.BSC_CROSSCHAIN_ID {
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)

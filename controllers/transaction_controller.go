@@ -266,7 +266,13 @@ func (c *TransactionController) TransactionOfHash() {
 		for _, chain := range chains {
 			chainsMap[*chain.ChainId] = chain
 		}
-		c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
+		resp := models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
+		if resp == nil {
+			c.Data["json"] = "transaction does not exist"
+			c.Ctx.ResponseWriter.WriteHeader(400)
+		} else {
+			c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
+		}
 		c.ServeJSON()
 		return
 	}

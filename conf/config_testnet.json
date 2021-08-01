@@ -38,6 +38,9 @@
       "Nodes": [
         {
           "Url": "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea"
+        },
+        {
+                "Url": "https://ropsten.infura.io/v3/ac76b202a4de4f768bef4b7a81067da1"
         }
       ],
       "ExtendNodes": [
@@ -70,7 +73,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["cd074cd290acc3d73c030784101afbcf40fd86a1"],
+      "WrapperContract":["cd074cd290acc3d73c030784101afbcf40fd86a1", "0f4fad9ae3830585a9264e6ec0b1eff3e89c6558"],
       "CCMContract":"e1695b1314a1331e3935481620417ed835669407",
       "ProxyContract":"edd2862dceb90b945210372d229f453f2b705f4f"
     },
@@ -81,7 +84,7 @@
       "Defer": 1,
       "Nodes": [
         {
-          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/" 
+          "Url":"https://data-seed-prebsc-1-s1.binance.org:8545/"
         }
       ],
       "ExtendNodes": [
@@ -141,27 +144,43 @@
       "CCMContract":"2A4cF474Aef33F0046434E4916Ac6b2fef4e5B78",
       "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
     },
-        {
+    {
       "ChainName":"NEO3",
-      "ChainId":11,
+      "ChainId":88,
       "ListenSlot":1,
       "Defer": 1,
       "Nodes": [
         {
-          "Url": "http://seed1t.neo.org:20332"
+          "Url": "http://seed1t4.neo.org:20332"
         },
         {
-          "Url": "http://seed2t.neo.org:20332"
+          "Url": "http://seed2t4.neo.org:20332"
         },
         {
-          "Url": "http://seed3t.neo.org:20332"
+          "Url": "http://seed3t4.neo.org:20332"
         }
       ],
       "ExtendNodes": [
       ],
       "WrapperContract":[],
-      "CCMContract":"fdd6c536f59bfd1149e818635d46dcc6faf1ba44",
-      "ProxyContract":"97758f7e9c11e79423453e5acd925989ff7d3ade"
+      "CCMContract":"618d44dc3af16c6120dbf65402024f40a04f772a",
+      "ProxyContract":"4487494dac2f7eb68bdae009cacd6de88243e542"
+    },
+    {
+      "ChainName":"MATIC",
+      "ChainId":202,
+      "ListenSlot":5,
+      "Defer": 10,
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.22:8545"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["", "D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"],
+      "CCMContract":"3f17e8DCb0D762e2bFCb437aD2C4ffe24BCF25ee",
+      "ProxyContract":"4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446"
     }
   ],
   "StatsConfig": {
@@ -268,12 +287,24 @@
       "ProxyFee":120,
       "MinFee": 20
     },
-        {
-      "ChainId":11,
+    {
+      "ChainId":88,
       "ChainName":"NEO3",
       "Nodes": [
       ],
       "GasLimit":5000000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":202,
+      "ChainName":"MATIC",
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.22:8545"
+        }
+      ],
+      "GasLimit":120000,
       "ProxyFee":120,
       "MinFee": 20
     }

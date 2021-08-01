@@ -20,51 +20,52 @@ package chainsdk
 import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
-	"github.com/polynetwork/poly-go-sdk/common"
-	"github.com/polynetwork/poly/core/types"
+	"github.com/joeqian10/neo3-gogogo/rpc/models"
+	"math/big"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 )
 
-type PolyInfo struct {
-	sdk          *PolySDK
+type Neo3Info struct {
+	sdk          *Neo3Sdk
 	latestHeight uint64
 }
 
-func NewPolyInfo(url string) *PolyInfo {
-	sdk := NewPolySDK(url)
-	return &PolyInfo{
+func NewNeo3Info(url string) *Neo3Info {
+	sdk := NewNeo3Sdk(url)
+	return &Neo3Info{
 		sdk:          sdk,
 		latestHeight: 0,
 	}
 }
 
-type PolySDKPro struct {
-	infos         map[string]*PolyInfo
+type Neo3SdkPro struct {
+	infos         map[string]*Neo3Info
 	selectionSlot uint64
 	id            uint64
 	mutex         sync.Mutex
 }
 
-func NewPolySDKPro(urls []string, slot uint64, id uint64) *PolySDKPro {
-	infos := make(map[string]*PolyInfo, len(urls))
+func NewNeo3SdkPro(urls []string, slot uint64, id uint64) *Neo3SdkPro {
+	infos := make(map[string]*Neo3Info, len(urls))
 	for _, url := range urls {
-		infos[url] = NewPolyInfo(url)
+		infos[url] = NewNeo3Info(url)
 	}
-	pro := &PolySDKPro{infos: infos, selectionSlot: slot, id: id}
+	pro := &Neo3SdkPro{infos: infos, selectionSlot: slot, id: id}
 	pro.selection()
 	go pro.NodeSelection()
 	return pro
 }
 
-func (pro *PolySDKPro) NodeSelection() {
+func (pro *Neo3SdkPro) NodeSelection() {
 	for {
 		pro.nodeSelection()
 	}
 }
 
-func (pro *PolySDKPro) nodeSelection() {
+func (pro *Neo3SdkPro) nodeSelection() {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("node selection, recover info: %s", string(debug.Stack()))
@@ -80,25 +81,25 @@ func (pro *PolySDKPro) nodeSelection() {
 	}
 }
 
-func (pro *PolySDKPro) selection() {
+func (pro *Neo3SdkPro) selection() {
 	for url, info := range pro.infos {
-		height, err := info.sdk.GetCurrentBlockHeight()
+		height, err := info.sdk.GetBlockCount()
 		if err != nil {
 			logs.Error("get current block height err: %v, url: %s", err, url)
 		}
 		pro.mutex.Lock()
-		info.latestHeight = uint64(height)
+		info.latestHeight = height
 		pro.mutex.Unlock()
 	}
 }
 
-func (pro *PolySDKPro) GetLatest() *PolyInfo {
+func (pro *Neo3SdkPro) GetLatest() *Neo3Info {
 	pro.mutex.Lock()
 	defer func() {
 		pro.mutex.Unlock()
 	}()
 	height := uint64(0)
-	var latestInfo *PolyInfo = nil
+	var latestInfo *Neo3Info = nil
 	for _, info := range pro.infos {
 		if info != nil && info.latestHeight > height {
 			height = info.latestHeight
@@ -108,7 +109,7 @@ func (pro *PolySDKPro) GetLatest() *PolyInfo {
 	return latestInfo
 }
 
-func (pro *PolySDKPro) GetCurrentBlockHeight() (uint64, error) {
+func (pro *Neo3SdkPro) GetBlockCount() (uint64, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return 0, fmt.Errorf("all node is not working")
@@ -116,13 +117,13 @@ func (pro *PolySDKPro) GetCurrentBlockHeight() (uint64, error) {
 	return info.latestHeight, nil
 }
 
-func (pro *PolySDKPro) GetBlockByHeight(height uint64) (*types.Block, error) {
+func (pro *Neo3SdkPro) GetBlockByIndex(index uint64) (*models.RpcBlock, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		block, err := info.sdk.GetBlockByHeight(uint32(height))
+		block, err := info.sdk.GetBlockByIndex(index)
 		if err != nil {
 			info.latestHeight = 0
 			info = pro.GetLatest()
@@ -133,69 +134,101 @@ func (pro *PolySDKPro) GetBlockByHeight(height uint64) (*types.Block, error) {
 	return nil, fmt.Errorf("all node is not working")
 }
 
-func (pro *PolySDKPro) GetSmartContractEvent(txHash string) (*common.SmartContactEvent, error) {
+func (pro *Neo3SdkPro) GetApplicationLog(txId string) (*models.RpcApplicationLog, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		event, err := info.sdk.GetSmartContractEvent(txHash)
-		if err != nil {
+		log, err := info.sdk.GetApplicationLog(txId)
+		if err != nil && !strings.Contains(err.Error(), "json: cannot") {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			return event, nil
+			return log, nil
 		}
 	}
 	return nil, fmt.Errorf("all node is not working")
 }
 
-func (pro *PolySDKPro) GetSmartContractEventByBlock(height uint64) ([]*common.SmartContactEvent, error) {
+func (pro *Neo3SdkPro) Nep17Info(hash string) (string, string, int64, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
+		return "", "", 0, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		event, err := info.sdk.GetSmartContractEventByBlock(uint32(height))
+		hash, name, decimal, err := info.sdk.Nep17Info(hash)
 		if err != nil {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			return event, nil
+			return hash, name, decimal, nil
 		}
 	}
-	return nil, fmt.Errorf("all node is not working")
+	return "", "", 0, fmt.Errorf("all node is not working")
 }
 
-func (pro *PolySDKPro) wrap(f func(*PolySDK) error) error {
+func (pro *Neo3SdkPro) Nep17Balance(hash string, addr string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return fmt.Errorf("all node is not working")
+		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		err := f(info.sdk)
+		balance, err := info.sdk.Nep17Balance(hash, addr)
 		if err != nil {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			return nil
+			return balance, nil
 		}
 	}
-	return fmt.Errorf("all node is not working")
+	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
 
-func (pro *PolySDKPro) GetTransaction(txHash string) (tx *types.Transaction, err error) {
-	err = pro.wrap(func(sdk *PolySDK) error {
-		tx, err = sdk.GetTransaction(txHash)
-		return err
-	})
-	return
+func (pro *Neo3SdkPro) GetTransactionHeight(hash string) (uint64, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return 0, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		height, err := info.sdk.GetTransactionHeight(hash)
+		if err != nil || height == 0 {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return height, nil
+		}
+	}
+	return 0, fmt.Errorf("all node is not working")
 }
 
-func (pro *PolySDKPro) GetStorage(contractAddress string, key []byte) (data []byte, err error) {
-	err = pro.wrap(func(sdk *PolySDK) error {
-		data, err = sdk.GetStorage(contractAddress, key)
-		return err
-	})
-	return
+func (pro *Neo3SdkPro) SendRawTransaction(txHex string) (bool, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return false, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		result, err := info.sdk.SendRawTransaction(txHex)
+		if err != nil || !result {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return result, nil
+		}
+	}
+	return false, fmt.Errorf("all node is not working")
+}
+
+func (pro *Neo3SdkPro) WaitTransactionConfirm(hash string) bool {
+	num := 0
+	for num < 150 {
+		time.Sleep(time.Second * 2)
+		height, err := pro.GetTransactionHeight(hash)
+		if err != nil || height == 0 {
+			num++
+			continue
+		}
+		return true
+	}
+	return false
 }
