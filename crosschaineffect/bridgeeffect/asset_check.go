@@ -200,6 +200,9 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 	if token.TokenBasicName == "SXC" && token.ChainId == basedef.MATIC_CROSSCHAIN_ID {
 		return big.NewInt(0)
 	}
+	if token.TokenBasicName == "OOE" && token.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
 
 	return totalSupply
 }
