@@ -201,6 +201,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Preload("PolyTransaction").
 		Order("poly_transactions.time desc").
 		Limit(crossTxListReq.PageSize).Offset((crossTxListReq.PageNo - 1) * crossTxListReq.PageSize).
 		Find(&srcPolyDstRelations)
@@ -211,10 +212,14 @@ func (c *ExplorerController) GetCrossTxList() {
 		return
 	}
 	for _, srcPolyDstRelation := range srcPolyDstRelations {
-		polyTransaction := new(models.PolyTransaction)
-		err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
-		if err == nil {
-			srcPolyDstRelation.PolyTransaction = polyTransaction
+		//polyTransaction := new(models.PolyTransaction)
+		//err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
+		if srcPolyDstRelation.PolyTransaction == nil {
+			if srcPolyDstRelation.DstTransaction.Hash!=""{
+				srcPolyDstRelation.PolyTransaction.State=1
+			}else {
+				srcPolyDstRelation.PolyTransaction.State=0
+			}
 		}
 	}
 	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations)
