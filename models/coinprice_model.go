@@ -30,6 +30,7 @@ type TokenBasic struct {
 	Name            string         `gorm:"primaryKey;size:64;not null"`
 	Precision       uint64         `gorm:"type:bigint(20);not null"`
 	Price           int64          `gorm:"size:64;not null"`
+	ChainId         uint64         `gorm:"type:bigint(20);not null"` //该tokenbasicname的源链ID
 	Ind             uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
 	Time            int64          `gorm:"type:bigint(20);not null"`
 	Property        int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线

@@ -61,6 +61,7 @@ func init() {
 		beego.NSRouter("/botcheckfee/", &controllers.BotController{Conf: config}, "post:CheckFees"),
 		beego.NSRouter("/botfinishtx/", &controllers.BotController{Conf: config}, "get:FinishTx"),
 		beego.NSRouter("/expecttime/", &controllers.StatisticController{}, "post:ExpectTime"),
+		beego.NSRouter("/gettokenasset/", &controllers.TokenAssetController{}, "post:Gettokenasset"),
 	)
 	beego.AddNamespace(ns)
 	beego.Router("/", &controllers.InfoController{}, "*:Get")

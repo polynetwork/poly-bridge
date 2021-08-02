@@ -32,6 +32,14 @@ type DBConfig struct {
 	Debug    bool
 }
 
+type ExpConfig struct {
+	URL      string
+	User     string
+	Password string
+	Scheme   string
+	Debug    bool
+}
+
 type Restful struct {
 	Url string
 	Key string
@@ -152,6 +160,12 @@ type BotConfig struct {
 	Interval  int64
 }
 
+type IPPortConfig struct {
+	WBTCIP string
+	USDTIP string
+	DingIP string
+}
+
 type Config struct {
 	Server                string
 	Backup                bool
@@ -164,6 +178,7 @@ type Config struct {
 	StatsConfig           *StatsConfig
 	DBConfig              *DBConfig
 	BotConfig             *BotConfig
+	IPPortConfig          *IPPortConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
