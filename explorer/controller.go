@@ -336,7 +336,7 @@ func (c *ExplorerController) GetTransferStatistic() {
 		transferStatisticReq.Chain = uint64(chainId)
 	}
 	req, _ := json.Marshal(transferStatisticReq)
-	log.Info("GetTransferStatistic transferStatisticReq" + string(req))
+	logs.Info("GetTransferStatistic transferStatisticReq" + string(req))
 
 	tokenStatistics := make([]*models.TokenStatistic, 0)
 	chainStatistics := make([]*models.ChainStatistic, 0)
