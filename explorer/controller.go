@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/astaxie/beego/logs"
 	log "github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"gorm.io/driver/mysql"
@@ -212,9 +213,12 @@ func (c *ExplorerController) GetCrossTxList() {
 		return
 	}
 	for _, srcPolyDstRelation := range srcPolyDstRelations {
+		jsonpo,_:=json.Marshal(srcPolyDstRelation.PolyTransaction)
+		logs.Info(jsonpo)
 		//polyTransaction := new(models.PolyTransaction)
 		//err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
-		if srcPolyDstRelation.PolyTransaction == nil {
+		if srcPolyDstRelation.PolyTransaction != nil {
+			logs.Info("srcPolyDstRelation.PolyTransaction != nil")
 			if srcPolyDstRelation.DstTransaction.Hash!=""{
 				srcPolyDstRelation.PolyTransaction.State=1
 			}else {
