@@ -214,7 +214,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		polyTransaction := new(models.PolyTransaction)
 		err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
 		if err == nil {
-			if srcPolyDstRelation.DstTransaction.Hash!=""{
+			if srcPolyDstRelation.DstHash!=""{
 				srcPolyDstRelation.PolyTransaction.State=1
 			}else {
 				srcPolyDstRelation.PolyTransaction.State=0
