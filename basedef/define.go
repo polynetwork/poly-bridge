@@ -52,6 +52,10 @@ func GetStateName(state int) string {
 		return "PolyConfirmed"
 	case STATE_DESTINATION_DONE:
 		return "DestDone"
+	case STATE_WAIT:
+		return "WAIT"
+	case STATE_SKIP:
+		return "SKIP"
 	default:
 		return fmt.Sprintf("Unknown(%d)", state)
 	}
