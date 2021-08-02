@@ -214,7 +214,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		return
 	}
 	logs.Info("查完sql")
-	jsonpo,_:=json.Marshal(srcPolyDstRelation)
+	jsonpo,_:=json.Marshal(srcPolyDstRelations)
 	logs.Info(jsonpo)
 
 	for _, srcPolyDstRelation := range srcPolyDstRelations {
