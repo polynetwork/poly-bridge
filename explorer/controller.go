@@ -214,11 +214,11 @@ func (c *ExplorerController) GetCrossTxList() {
 	}
 	logs.Info("查完sql")
 	jsonpo,_:=json.Marshal(srcPolyDstRelations)
-	logs.Info(jsonpo)
+	logs.Info(string(jsonpo))
 
 	for _, srcPolyDstRelation := range srcPolyDstRelations {
 		jsonpo,_:=json.Marshal(srcPolyDstRelation.PolyTransaction)
-		logs.Info(jsonpo)
+		logs.Info(string(jsonpo))
 		//polyTransaction := new(models.PolyTransaction)
 		//err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
 		if srcPolyDstRelation.PolyTransaction != nil {
