@@ -195,14 +195,12 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-	logs.Info("crossTxListReq",crossTxListReq)
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Debug().Model(&models.PolyTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Preload("PolyTransaction").
 		Order("poly_transactions.time desc").
 		Limit(crossTxListReq.PageSize).Offset((crossTxListReq.PageNo - 1) * crossTxListReq.PageSize).
 		Find(&srcPolyDstRelations)
@@ -212,17 +210,10 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.ServeJSON()
 		return
 	}
-	logs.Info("查完sql")
-	jsonpo,_:=json.Marshal(srcPolyDstRelations)
-	logs.Info(string(jsonpo))
-
 	for _, srcPolyDstRelation := range srcPolyDstRelations {
-		jsonpo,_:=json.Marshal(srcPolyDstRelation.PolyTransaction)
-		logs.Info(string(jsonpo))
-		//polyTransaction := new(models.PolyTransaction)
-		//err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
-		if srcPolyDstRelation.PolyTransaction != nil {
-			logs.Info("srcPolyDstRelation.PolyTransaction != nil")
+		polyTransaction := new(models.PolyTransaction)
+		err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
+		if err == nil {
 			if srcPolyDstRelation.DstTransaction.Hash!=""{
 				srcPolyDstRelation.PolyTransaction.State=1
 			}else {
