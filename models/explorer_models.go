@@ -308,7 +308,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTxResp.Transfer = &TChainTransferResp{
 			From:   tChainTx.DstTransfer.From,
 			To:     tChainTx.DstTransfer.To,
-			Amount: strconv.FormatUint(tChainTx.DstTransfer.Amount.Uint64(), 10),
+			Amount: tChainTx.DstTransfer.Amount.String(),
 		}
 		tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
 		if toToken != nil {
@@ -355,7 +355,7 @@ type CrossTransferResp struct {
 
 func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token *Token) *CrossTransferResp {
 	if transfer == nil {
-		return nil
+		transfer = new(SrcTransfer)
 	}
 	crossTransfer := new(CrossTransferResp)
 	crossTransfer.CrossTxType = 1
