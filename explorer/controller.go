@@ -196,6 +196,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
+	logs.Info(crossTxListReq)
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Debug().Model(&models.PolyTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
@@ -212,6 +213,10 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.ServeJSON()
 		return
 	}
+	logs.Info("查完sql")
+	jsonpo,_:=json.Marshal(srcPolyDstRelation)
+	logs.Info(jsonpo)
+
 	for _, srcPolyDstRelation := range srcPolyDstRelations {
 		jsonpo,_:=json.Marshal(srcPolyDstRelation.PolyTransaction)
 		logs.Info(jsonpo)
