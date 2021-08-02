@@ -439,7 +439,7 @@ type CrossTxOutlineResp struct {
 	TxHash     string `json:"txhash"`
 	State      byte   `json:"state"`
 	TT         uint32 `json:"timestamp"`
-	Fee        uint64 `json:"fee"`
+	Fee        string `json:"fee"`
 	Height     uint32 `json:"blockheight"`
 	FChainId   uint32 `json:"fchainid"`
 	FChainName string `json:"fchainname"`
@@ -460,7 +460,7 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation, counter int64) *CrossTxListR
 			TxHash:     tx.PolyHash,
 			State:      byte(tx.PolyTransaction.State),
 			TT:         uint32(tx.PolyTransaction.Time),
-			Fee:        tx.PolyTransaction.Fee.Uint64(),
+			Fee:        FormatFee(tx.PolyTransaction.ChainId, tx.PolyTransaction.Fee),
 			Height:     uint32(tx.PolyTransaction.Height),
 			FChainId:   uint32(tx.PolyTransaction.SrcChainId),
 			FChainName: ChainId2Name(tx.PolyTransaction.SrcChainId),
