@@ -21,8 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	log "github.com/beego/beego/v2/core/logs"
+	logs "github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -196,7 +195,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-	logs.Info(crossTxListReq)
+	logs.Info("crossTxListReq",crossTxListReq)
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Debug().Model(&models.PolyTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
