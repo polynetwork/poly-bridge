@@ -49,6 +49,14 @@ func Init() {
 		panic(err)
 	}
 
+	// Preload chains info
+	chains := []*models.Chain{}
+	err = db.Find(&chains).Error
+	if err != nil {
+		panic(err)
+	}
+	models.Init(chains)
+
 	//redisConfig := conf.GlobalConfig.RedisConfig
 	//if redisConfig.DialTimeout <= 0 || redisConfig.ReadTimeout <= 0 || redisConfig.WriteTimeout <= 0 {
 	//	panic("must config redis timeout")
@@ -63,6 +71,7 @@ func Init() {
 	//	IdleTimeout:  redisConfig.IdleTimeout * time.Second,
 	//}
 	//redis=goredis.NewClient(options)
+
 }
 
 type ExplorerController struct {
@@ -230,7 +239,12 @@ func (c *ExplorerController) GetCrossTxList() {
 		}
 	}
 	var counter int64
-
+	res = db.Debug().Model(&models.PolyTransaction{}).
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
+		Where("src_transactions.standard = ?", 0).
+		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Count(&counter)
 	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations, counter)
 	c.ServeJSON()
 }
@@ -276,6 +290,7 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.Token = token
 	}
 	srcTransaction := new(models.SrcTransaction)
+	srcTransaction.SrcTransfer = new(models.SrcTransfer)
 	err = db.Where("hash = ?", relation.SrcHash).
 		Preload("SrcTransfer").
 		First(srcTransaction).Error
@@ -288,6 +303,7 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.PolyTransaction = polyTransaction
 	}
 	dstTransaction := new(models.DstTransaction)
+	dstTransaction.DstTransfer = new(models.DstTransfer)
 	err = db.Where("hash=?", relation.DstHash).
 		Preload("DstTransfer").
 		First(dstTransaction).Error

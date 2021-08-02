@@ -189,33 +189,34 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		Key:        fChainTx.Key,
 		Param:      fChainTx.Param,
 	}
-	if fChainTx.SrcTransfer != nil {
-		fChainTxResp.Transfer = &FChainTransferResp{
-			From:        basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.From),
-			To:          basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.To),
-			Amount:      strconv.FormatUint(fChainTx.SrcTransfer.Amount.Uint64(), 10),
-			ToChain:     uint32(fChainTx.SrcTransfer.DstChainId),
-			ToChainName: ChainId2Name(fChainTx.SrcTransfer.DstChainId),
-			ToUser:      basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.DstUser),
-		}
-		fChainTxResp.Transfer.TokenHash = fChainTx.SrcTransfer.Asset
-		if token != nil {
-			fChainTxResp.Transfer.TokenHash = token.Hash
-			fChainTxResp.Transfer.TokenName = token.Name
-			fChainTxResp.Transfer.TokenType = token.TokenType
-			fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
-		} else {
-			fChainTxResp.Transfer.TokenName = fChainTx.SrcTransfer.Asset
-			fChainTxResp.Transfer.Amount = fChainTx.SrcTransfer.Amount.String()
-		}
-		fChainTxResp.Transfer.ToTokenHash = fChainTx.SrcTransfer.DstAsset
-		if toToken != nil {
-			fChainTxResp.Transfer.ToTokenHash = toToken.Hash
-			fChainTxResp.Transfer.ToTokenName = toToken.Name
-			fChainTxResp.Transfer.ToTokenType = toToken.TokenType
-		} else {
-			fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
-		}
+	if fChainTx.SrcTransfer.Amount == nil {
+		fChainTx.SrcTransfer.Amount = NewBigIntFromInt(0)
+	}
+	fChainTxResp.Transfer = &FChainTransferResp{
+		From:        basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.From),
+		To:          basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.To),
+		Amount:      strconv.FormatUint(fChainTx.SrcTransfer.Amount.Uint64(), 10),
+		ToChain:     uint32(fChainTx.SrcTransfer.DstChainId),
+		ToChainName: ChainId2Name(fChainTx.SrcTransfer.DstChainId),
+		ToUser:      basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.DstUser),
+	}
+	fChainTxResp.Transfer.TokenHash = fChainTx.SrcTransfer.Asset
+	if token != nil {
+		fChainTxResp.Transfer.TokenHash = token.Hash
+		fChainTxResp.Transfer.TokenName = token.Name
+		fChainTxResp.Transfer.TokenType = token.TokenType
+		fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
+	} else {
+		fChainTxResp.Transfer.TokenName = fChainTx.SrcTransfer.Asset
+		fChainTxResp.Transfer.Amount = fChainTx.SrcTransfer.Amount.String()
+	}
+	fChainTxResp.Transfer.ToTokenHash = fChainTx.SrcTransfer.DstAsset
+	if toToken != nil {
+		fChainTxResp.Transfer.ToTokenHash = toToken.Hash
+		fChainTxResp.Transfer.ToTokenName = toToken.Name
+		fChainTxResp.Transfer.ToTokenType = toToken.TokenType
+	} else {
+		fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
 	}
 	if fChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		fChainTxResp.TxHash = "0x" + fChainTxResp.TxHash
@@ -304,23 +305,25 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		Contract:   tChainTx.Contract,
 		RTxHash:    tChainTx.PolyHash,
 	}
-	if tChainTx.DstTransfer != nil {
-		tChainTxResp.Transfer = &TChainTransferResp{
-			From:   tChainTx.DstTransfer.From,
-			To:     tChainTx.DstTransfer.To,
-			Amount: tChainTx.DstTransfer.Amount.String(),
-		}
-		tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
-		if toToken != nil {
-			tChainTxResp.Transfer.TokenHash = toToken.Hash
-			tChainTxResp.Transfer.TokenName = toToken.Name
-			tChainTxResp.Transfer.TokenType = toToken.TokenType
-			tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
-		} else {
-			tChainTxResp.Transfer.TokenName = tChainTx.DstTransfer.Asset
-			tChainTxResp.Transfer.Amount = tChainTx.DstTransfer.Amount.String()
-		}
+	if tChainTx.DstTransfer.Amount == nil {
+		tChainTx.DstTransfer.Amount = NewBigIntFromInt(0)
 	}
+	tChainTxResp.Transfer = &TChainTransferResp{
+		From:   tChainTx.DstTransfer.From,
+		To:     tChainTx.DstTransfer.To,
+		Amount: tChainTx.DstTransfer.Amount.String(),
+	}
+	tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
+	if toToken != nil {
+		tChainTxResp.Transfer.TokenHash = toToken.Hash
+		tChainTxResp.Transfer.TokenName = toToken.Name
+		tChainTxResp.Transfer.TokenType = toToken.TokenType
+		tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
+	} else {
+		tChainTxResp.Transfer.TokenName = tChainTx.DstTransfer.Asset
+		tChainTxResp.Transfer.Amount = tChainTx.DstTransfer.Amount.String()
+	}
+
 	if tChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		tChainTxResp.TxHash = "0x" + tChainTxResp.TxHash
 	} else if tChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
@@ -354,8 +357,8 @@ type CrossTransferResp struct {
 }
 
 func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token *Token) *CrossTransferResp {
-	if transfer == nil {
-		transfer = new(SrcTransfer)
+
+	if transfer.Amount == nil {
 		transfer.Amount = NewBigIntFromInt(0)
 	}
 	crossTransfer := new(CrossTransferResp)
