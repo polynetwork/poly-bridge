@@ -211,8 +211,8 @@ func (c *ExplorerController) GetCrossTxList() {
 		return
 	}
 	for _, srcPolyDstRelation := range srcPolyDstRelations {
-		polyTransaction := new(models.PolyTransaction)
-		err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(polyTransaction).Error
+		srcPolyDstRelation.PolyTransaction = new(models.PolyTransaction)
+		err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(srcPolyDstRelation.PolyTransaction).Error
 		if err == nil {
 			if srcPolyDstRelation.DstHash!=""{
 				srcPolyDstRelation.PolyTransaction.State=1
