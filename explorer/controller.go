@@ -290,12 +290,14 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.Token = token
 	}
 	srcTransaction := new(models.SrcTransaction)
-	srcTransaction.SrcTransfer = new(models.SrcTransfer)
 	err = db.Where("hash = ?", relation.SrcHash).
 		Preload("SrcTransfer").
 		First(srcTransaction).Error
 	if err == nil {
 		relation.SrcTransaction = srcTransaction
+		if srcTransaction.SrcTransfer == nil {
+			srcTransaction.SrcTransfer = new(models.SrcTransfer)
+		}
 	}
 	polyTransaction := new(models.PolyTransaction)
 	err = db.Where("hash=?", relation.PolyHash).First(polyTransaction).Error
@@ -303,12 +305,14 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.PolyTransaction = polyTransaction
 	}
 	dstTransaction := new(models.DstTransaction)
-	dstTransaction.DstTransfer = new(models.DstTransfer)
 	err = db.Where("hash=?", relation.DstHash).
 		Preload("DstTransfer").
 		First(dstTransaction).Error
 	if err == nil {
 		relation.DstTransaction = dstTransaction
+		if dstTransaction.DstTransfer == nil {
+			dstTransaction.DstTransfer = new(models.DstTransfer)
+		}
 	}
 	toToken := new(models.Token)
 	err = db.Where("hash = ? and chain_id =?", relation.ToTokenHash, relation.ToChainId).

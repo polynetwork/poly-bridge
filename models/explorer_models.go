@@ -357,7 +357,6 @@ type CrossTransferResp struct {
 }
 
 func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token *Token) *CrossTransferResp {
-
 	if transfer.Amount == nil {
 		transfer.Amount = NewBigIntFromInt(0)
 	}
