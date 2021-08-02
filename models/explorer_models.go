@@ -29,7 +29,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
