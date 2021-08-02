@@ -204,8 +204,8 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 			fChainTxResp.Transfer.TokenHash = token.Hash
 			fChainTxResp.Transfer.TokenName = token.Name
 			fChainTxResp.Transfer.TokenType = token.TokenType
-			fChainTxResp.Transfer.Amount = FormatAmount(token.TokenBasic.Precision, fChainTx.SrcTransfer.Amount)
-		}else {
+			fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
+		} else {
 			fChainTxResp.Transfer.TokenName = fChainTx.SrcTransfer.Asset
 			fChainTxResp.Transfer.Amount = fChainTx.SrcTransfer.Amount.String()
 		}
@@ -214,7 +214,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 			fChainTxResp.Transfer.ToTokenHash = toToken.Hash
 			fChainTxResp.Transfer.ToTokenName = toToken.Name
 			fChainTxResp.Transfer.ToTokenType = toToken.TokenType
-		}else {
+		} else {
 			fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
 		}
 	}
@@ -316,7 +316,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 			tChainTxResp.Transfer.TokenHash = toToken.Hash
 			tChainTxResp.Transfer.TokenName = toToken.Name
 			tChainTxResp.Transfer.TokenType = toToken.TokenType
-			tChainTxResp.Transfer.Amount = FormatAmount(toToken.TokenBasic.Precision, tChainTx.DstTransfer.Amount)
+			tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
 		} else {
 			tChainTxResp.Transfer.TokenName = tChainTx.DstTransfer.Asset
 			tChainTxResp.Transfer.Amount = tChainTx.DstTransfer.Amount.String()
@@ -373,8 +373,8 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
 		crossTransfer.TokenType = token.TokenType
-		crossTransfer.Amount = FormatAmount(token.TokenBasic.Precision, transfer.Amount)
-	}else {
+		crossTransfer.Amount = FormatAmount(token.Precision, transfer.Amount)
+	} else {
 		crossTransfer.TokenName = transfer.Asset
 		crossTransfer.Amount = transfer.Amount.String()
 	}
@@ -447,9 +447,10 @@ type CrossTxOutlineResp struct {
 
 type CrossTxListResp struct {
 	CrossTxList []*CrossTxOutlineResp `json:"crosstxs"`
+	Total       int64                 `json:"total"`
 }
 
-func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
+func MakeCrossTxListResp(txs []*SrcPolyDstRelation, counter int64) *CrossTxListResp {
 	crossTxListResp := &CrossTxListResp{}
 	crossTxListResp.CrossTxList = make([]*CrossTxOutlineResp, 0)
 	for _, tx := range txs {
@@ -459,7 +460,7 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
 			TT:         uint32(tx.PolyTransaction.Time),
 			Fee:        tx.PolyTransaction.Fee.Uint64(),
 			Height:     uint32(tx.PolyTransaction.Height),
-			FChainId:   uint32(tx.PolyTransaction.DstChainId),
+			FChainId:   uint32(tx.PolyTransaction.SrcChainId),
 			FChainName: ChainId2Name(tx.PolyTransaction.SrcChainId),
 			TChainId:   uint32(tx.PolyTransaction.DstChainId),
 			TChainName: ChainId2Name(tx.PolyTransaction.DstChainId),
@@ -468,9 +469,7 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation) *CrossTxListResp {
 	sort.Slice(crossTxListResp.CrossTxList, func(i, j int) bool {
 		return crossTxListResp.CrossTxList[i].TT > crossTxListResp.CrossTxList[j].TT
 	})
-	for _, v := range crossTxListResp.CrossTxList {
-		fmt.Println(v.TT)
-	}
+	crossTxListResp.Total = counter
 	return crossTxListResp
 }
 

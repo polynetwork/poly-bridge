@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"poly-bridge/basedef"
 	"strings"
+	"time"
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/urfave/cli"
@@ -47,6 +48,18 @@ type DBConfig struct {
 	Password string
 	Scheme   string
 	Debug    bool
+}
+
+type RedisConfig struct {
+	Proto        string        `json:"proto"`
+	Addr         string        `json:"addr"`
+	PoolSize     int           `json:"pool_size"`
+	MinIdleConns int           `json:"min_idle_conns"`
+	DialTimeout  time.Duration `json:"dial_timeout"`
+	ReadTimeout  time.Duration `json:"read_timeout"`
+	WriteTimeout time.Duration `json:"write_timeout"`
+	IdleTimeout  time.Duration `json:"idle_timeout"`
+	Expiration   time.Duration `json:"expiration"` // day
 }
 
 type ExpConfig struct {
@@ -199,6 +212,7 @@ type Config struct {
 	EventEffectConfig     *EventEffectConfig
 	StatsConfig           *StatsConfig
 	DBConfig              *DBConfig
+	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
 }
 

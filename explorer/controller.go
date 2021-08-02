@@ -23,6 +23,7 @@ import (
 	"fmt"
 	logs "github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
+	goredis "github.com/go-redis/redis"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -33,28 +34,35 @@ import (
 )
 
 var db *gorm.DB
+var redis *goredis.Client
 
 func Init() {
-	config := conf.GlobalConfig.DBConfig
+	dbConfig := conf.GlobalConfig.DBConfig
 	Logger := logger.Default
 	if conf.GlobalConfig.RunMode == "dev" {
 		Logger = Logger.LogMode(logger.Info)
 	}
-
-	conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", config.User, config.Password, config.URL, config.Scheme)
+	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", dbConfig.User, dbConfig.Password, dbConfig.URL, dbConfig.Scheme)
 	var err error
-	db, err = gorm.Open(mysql.Open(conn), &gorm.Config{Logger: Logger})
+	db, err = gorm.Open(mysql.Open(dbConn), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
 	}
 
-	// Preload chains info
-	chains := []*models.Chain{}
-	err = db.Find(&chains).Error
-	if err != nil {
-		panic(err)
-	}
-	models.Init(chains)
+	//redisConfig := conf.GlobalConfig.RedisConfig
+	//if redisConfig.DialTimeout <= 0 || redisConfig.ReadTimeout <= 0 || redisConfig.WriteTimeout <= 0 {
+	//	panic("must config redis timeout")
+	//}
+	//options := &goredis.Options{
+	//	Network:      redisConfig.Proto,
+	//	Addr:         redisConfig.Addr,
+	//	DialTimeout:  redisConfig.DialTimeout * time.Second,
+	//	ReadTimeout:  redisConfig.ReadTimeout * time.Second,
+	//	WriteTimeout: redisConfig.WriteTimeout * time.Second,
+	//	PoolSize:     redisConfig.PoolSize,
+	//	IdleTimeout:  redisConfig.IdleTimeout * time.Second,
+	//}
+	//redis=goredis.NewClient(options)
 }
 
 type ExplorerController struct {
@@ -214,14 +222,16 @@ func (c *ExplorerController) GetCrossTxList() {
 		srcPolyDstRelation.PolyTransaction = new(models.PolyTransaction)
 		err = db.Where("hash=?", srcPolyDstRelation.PolyHash).First(srcPolyDstRelation.PolyTransaction).Error
 		if err == nil {
-			if srcPolyDstRelation.DstHash!=""{
-				srcPolyDstRelation.PolyTransaction.State=1
-			}else {
-				srcPolyDstRelation.PolyTransaction.State=0
+			if srcPolyDstRelation.DstHash != "" {
+				srcPolyDstRelation.PolyTransaction.State = 1
+			} else {
+				srcPolyDstRelation.PolyTransaction.State = 0
 			}
 		}
 	}
-	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations)
+	var counter int64
+
+	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations, counter)
 	c.ServeJSON()
 }
 
@@ -267,6 +277,7 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.Token = token
 	}
 	srcTransaction := new(models.SrcTransaction)
+	srcTransaction.SrcTransfer = new(models.SrcTransfer)
 	err = db.Where("hash = ?", relation.SrcHash).
 		Preload("SrcTransfer").
 		First(srcTransaction).Error
@@ -279,22 +290,20 @@ func (c *ExplorerController) GetCrossTx() {
 		relation.PolyTransaction = polyTransaction
 	}
 	dstTransaction := new(models.DstTransaction)
+	dstTransaction.DstTransfer = new(models.DstTransfer)
 	err = db.Where("hash=?", relation.DstHash).
-		Preload("DstTransfer").
 		First(dstTransaction).Error
 	if err == nil {
 		relation.DstTransaction = dstTransaction
 	}
 	toToken := new(models.Token)
 	err = db.Where("hash = ? and chain_id =?", relation.ToTokenHash, relation.ToChainId).
-		Preload("TokenBasic").
 		First(toToken).Error
 	if err == nil {
 		relation.ToToken = toToken
 	}
 	dstToken := new(models.Token)
 	err = db.Where("hash = ? and chain_id =?", relation.DstTokenHash, relation.DstChainId).
-		Preload("TokenBasic").
 		First(dstToken).Error
 	if err == nil {
 		relation.DstToken = dstToken
