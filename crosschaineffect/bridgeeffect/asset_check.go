@@ -70,21 +70,19 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 			chainAsset := new(DstChainAsset)
 			chainAsset.ChainId = token.ChainId
 			chainAsset.Hash = token.Hash
-			balance, err := common.GetBalance(token.ChainId, token.Hash)
+			balance, err := getAndRetryBalance(token.ChainId, token.Hash)
 			if err != nil {
 				assetDetail.Reason = err.Error()
-				logs.Info("chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err)
+				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err)
 				balance = big.NewInt(0)
-				fmt.Println("getbalance err", basic.Name, balance, err)
 			}
 			chainAsset.Balance = balance
 			time.Sleep(time.Second)
-			totalSupply, _ := common.GetTotalSupply(token.ChainId, token.Hash)
+			totalSupply, err :=getAndRetryTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				assetDetail.Reason = err.Error()
 				totalSupply = big.NewInt(0)
-				logs.Info("chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err)
-				fmt.Println("gettotalSupply err", basic.Name, totalSupply, err)
+				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err)
 			}
 			totalSupply = specialBasic(token, totalSupply)
 			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
@@ -117,19 +115,18 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 	if err != nil {
 		logs.Error("------------sendDingDINg err---------")
 	}
-	logs.Info("rightdata___")
-	fmt.Println("rightdata___")
+	logs.Info("CheckAsset rightdata___")
 	for _, assetDetail := range resAssetDetails {
 		logs.Info("CheckAsset:", assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
+			logs.Info("CheckAsset %2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
 	}
-	fmt.Println("wrongdata___")
+	logs.Info("CheckAsset wrongdata___")
 	for _, assetDetail := range extraAssetDetails {
 		logs.Info("CheckAsset:", assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price)
 		for _, tokenAsset := range assetDetail.TokenAsset {
-			logs.Info("%2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
+			logs.Info("CheckAsset %2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
 		}
 	}
 	return nil
@@ -197,6 +194,15 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 		x, _ := new(big.Int).SetString("285000000000", 10)
 		return new(big.Int).Mul(x, presion)
 	}
+	if token.TokenBasicName == "SXC" && token.ChainId == basedef.OK_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "SXC" && token.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "OOE" && token.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
 
 	return totalSupply
 }
@@ -246,20 +252,46 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 	}
 }
 
+func getAndRetryBalance(chainId uint64, hash string)(*big.Int, error){
+	balance,err:=common.GetBalance(chainId,hash)
+	if err!=nil{
+		for i:=0;i<2;i++{
+			time.Sleep(time.Second)
+			balance,err=common.GetBalance(chainId,hash)
+			if err==nil{
+				break
+			}
+		}
+	}
+	return balance,err
+}
+
+func getAndRetryTotalSupply(chainId uint64, hash string)(*big.Int, error){
+	totalSupply,err:=common.GetTotalSupply(chainId, hash)
+	if err!=nil{
+		for i:=0;i<2;i++{
+			time.Sleep(time.Second)
+			totalSupply,err=common.GetTotalSupply(chainId,hash)
+			if err==nil{
+				break
+			}
+		}
+	}
+	return totalSupply,err
+}
+
 func sendDing(assetDetails []*AssetDetail, dingUrl string) error {
 	ss := "[poly_NB]\n"
 	flag := false
 	for _, assetDetail := range assetDetails {
+		if assetDetail.Reason == "all node is not working" {
+			continue
+		}
 		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
 			usd, _ := decimal.NewFromString(assetDetail.Amount_usd)
 			if usd.Cmp(decimal.NewFromInt32(10000)) == 1 {
-				jsonassetDetail, _ := json.Marshal(assetDetail)
-				fmt.Println("这里json" + string(jsonassetDetail))
 				flag = true
 				ss += fmt.Sprintf("【%v】totalflow:%v $%v\n", assetDetail.BasicName, decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2), assetDetail.Amount_usd)
-				if assetDetail.Reason != "" {
-					ss += "err Reason:" + assetDetail.Reason + "\n"
-				}
 				for _, x := range assetDetail.TokenAsset {
 					ss += "ChainId: " + fmt.Sprintf("%v", x.ChainId) + "\n"
 					ss += "Hash: " + fmt.Sprintf("%v", x.Hash) + "\n"
