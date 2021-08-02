@@ -131,13 +131,20 @@ func (c *BotController) BotPage() {
 func (c *BotController) FinishTx() {
 	tx := c.Ctx.Input.Query("tx")
 	token := c.Ctx.Input.Query("token")
+	status := c.Ctx.Input.Query("status")
 	var err error
-	if token == c.Conf.BotConfig.ApiToken {
-		err = db.Table("wrapper_transactions").Where("hash in ?", []string{tx}).Update("status", 0).Error
+	if status != "skip" && status != "wait" {
+		err = fmt.Errorf("Invalid status")
+	} else if token == c.Conf.BotConfig.ApiToken {
+		target := basedef.STATE_WAIT
+		if status == "skip" {
+			target = basedef.STATE_SKIP
+		}
+		err = db.Table("wrapper_transactions").Where("hash in ?", []string{tx}).Update("status", target).Error
 	} else {
 		err = fmt.Errorf("Access denied")
 	}
-	resp := fmt.Sprintf("Success: %s", tx)
+	resp := fmt.Sprintf("Success: %s as %s", tx, status)
 	if err != nil {
 		resp = fmt.Sprintf("Tx %s Error %s", tx, err.Error())
 	}
@@ -383,12 +390,16 @@ func (c *BotController) checkTxs() (err error) {
 
 		btns := []map[string]string{
 			map[string]string{
-				"title":     "StuckList",
+				"title":     "ListAll",
 				"actionURL": c.Conf.BotConfig.DetailUrl,
 			},
 			map[string]string{
-				"title":     "MarkAsFinished",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s", c.Conf.BotConfig.FinishUrl, c.Conf.BotConfig.ApiToken, entry.Hash),
+				"title":     "MarkAsSkipped",
+				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", c.Conf.BotConfig.FinishUrl, c.Conf.BotConfig.ApiToken, entry.Hash),
+			},
+			map[string]string{
+				"title":     "MarkAsWaiting",
+				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=wait", c.Conf.BotConfig.FinishUrl, c.Conf.BotConfig.ApiToken, entry.Hash),
 			},
 			map[string]string{
 				"title":     "Open",
