@@ -383,12 +383,16 @@ func (c *BotController) checkTxs() (err error) {
 
 		btns := []map[string]string{
 			map[string]string{
-				"title":     "Detail",
+				"title":     "StuckList",
 				"actionURL": c.Conf.BotConfig.DetailUrl,
 			},
 			map[string]string{
 				"title":     "MarkAsFinished",
 				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s", c.Conf.BotConfig.FinishUrl, c.Conf.BotConfig.ApiToken, entry.Hash),
+			},
+			map[string]string{
+				"title":     "Open",
+				"actionURL": "https://explorer.poly.network/tx/" + entry.Hash,
 			},
 		}
 
