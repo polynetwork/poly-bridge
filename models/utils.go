@@ -23,7 +23,6 @@ import (
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/utils/decimal"
-	"strconv"
 )
 
 var chainsNamesCache = map[uint64]string{}
