@@ -64,7 +64,7 @@
     },
     {
       "ChainName":"MATIC",
-      "ChainId":16,
+      "ChainId":17,
       "ListenSlot":5,
       "Defer": 10,
       "Nodes": [
@@ -327,7 +327,7 @@
       "MinFee": 20
     },
     {
-      "ChainId":16,
+      "ChainId":17,
       "ChainName":"MATIC",
       "Nodes": [
         {

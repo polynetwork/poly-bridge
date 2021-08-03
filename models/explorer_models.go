@@ -65,7 +65,7 @@ func MakeExplorerInfoResp(chains []*Chain, statistics []*ChainStatistic, tokenBa
 		}
 		for _, tokenBasic := range tokenBasics {
 			for _, token := range tokenBasic.Tokens {
-				if token.ChainId == chain.ChainId {
+				if token.ChainId == chain.ChainId && token.Property == int64(1) {
 					chainInfoResp.Tokens = append(chainInfoResp.Tokens, MakeChainTokenResp(token))
 				}
 			}

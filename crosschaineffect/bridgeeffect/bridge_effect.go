@@ -90,12 +90,14 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("check chain listening- err: %s", err)
 	}
-	checkTime++
-	if checkTime > 600 {
-		checkTime = 0
-		err := StartCheckAsset(eff.dbCfg, eff.ipCfg)
-		if err != nil {
-			logs.Error("check asset- err: %s", err)
+	if basedef.ENV == basedef.MAINNET {
+		checkTime++
+		if checkTime > 600 {
+			checkTime = 0
+			err = StartCheckAsset(eff.dbCfg, eff.ipCfg)
+			if err != nil {
+				logs.Error("check asset- err: %s", err)
+			}
 		}
 	}
 	return nil

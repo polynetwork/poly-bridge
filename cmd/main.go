@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"runtime"
 	"syscall"
@@ -57,6 +58,7 @@ func setupApp() *cli.App {
 }
 
 func StartServer(ctx *cli.Context) {
+	basedef.Init()
 	for true {
 		startServer(ctx)
 		sig := waitSignal()
@@ -90,7 +92,7 @@ func startServer(ctx *cli.Context) {
 	}
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
-	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig,config.IPPortConfig)
+	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig)
 	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig)
 
 	// register http routers

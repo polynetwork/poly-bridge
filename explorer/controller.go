@@ -23,7 +23,6 @@ import (
 	"fmt"
 	logs "github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	goredis "github.com/go-redis/redis"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -34,7 +33,7 @@ import (
 )
 
 var db *gorm.DB
-var redis *goredis.Client
+var redis *RedisCache
 
 func Init() {
 	dbConfig := conf.GlobalConfig.DBConfig
@@ -49,6 +48,12 @@ func Init() {
 		panic(err)
 	}
 
+	redisConfig := conf.GlobalConfig.RedisConfig
+	redis, err = GetRedisClient(redisConfig)
+	if err != nil {
+		logs.Error("GetRedisClient redis err")
+	}
+
 	// Preload chains info
 	chains := []*models.Chain{}
 	err = db.Find(&chains).Error
@@ -56,22 +61,6 @@ func Init() {
 		panic(err)
 	}
 	models.Init(chains)
-
-	//redisConfig := conf.GlobalConfig.RedisConfig
-	//if redisConfig.DialTimeout <= 0 || redisConfig.ReadTimeout <= 0 || redisConfig.WriteTimeout <= 0 {
-	//	panic("must config redis timeout")
-	//}
-	//options := &goredis.Options{
-	//	Network:      redisConfig.Proto,
-	//	Addr:         redisConfig.Addr,
-	//	DialTimeout:  redisConfig.DialTimeout * time.Second,
-	//	ReadTimeout:  redisConfig.ReadTimeout * time.Second,
-	//	WriteTimeout: redisConfig.WriteTimeout * time.Second,
-	//	PoolSize:     redisConfig.PoolSize,
-	//	IdleTimeout:  redisConfig.IdleTimeout * time.Second,
-	//}
-	//redis=goredis.NewClient(options)
-
 }
 
 type ExplorerController struct {
@@ -102,7 +91,8 @@ func (c *ExplorerController) GetExplorerInfo() {
 
 	// get all tokens
 	tokenBasics := make([]*models.TokenBasic, 0)
-	res = db.Preload("Tokens").Find(&tokenBasics)
+	res = db.Where("property = ?", 1).
+		Preload("Tokens").Find(&tokenBasics)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
@@ -147,7 +137,7 @@ func (c *ExplorerController) GetTokenTxList() {
 		return
 	}
 	token := &models.Token{}
-	db.Where("chain_id=? and hash=?", tokenTxListReq.ChainId, tokenTxListReq.Token).
+	db.Where("chain_id=? and hash=? and property = ?", tokenTxListReq.ChainId, tokenTxListReq.Token, 1).
 		Preload("TokenBasic").
 		First(token)
 	c.Data["json"] = models.MakeTokenTxList(transactionOnTokens, counter.Counter, token)
@@ -238,13 +228,27 @@ func (c *ExplorerController) GetCrossTxList() {
 			}
 		}
 	}
-	var counter int64
-	res = db.Debug().Model(&models.PolyTransaction{}).
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
-		Where("src_transactions.standard = ?", 0).
-		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
-		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Count(&counter)
+	counter, err := redis.GetCrossTxCounter()
+	if err != nil {
+		logs.Info(err)
+		res = db.Debug().Model(&models.PolyTransaction{}).
+			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
+			Where("src_transactions.standard = ?", 0).
+			Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
+			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+			Count(&counter)
+		if res.RowsAffected == 0 {
+			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("CrossTxCounter does not exist"))
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
+		err = redis.SetCrossTxCounter(counter)
+		if err != nil {
+			logs.Error(err)
+		}
+	}
+
 	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations, counter)
 	c.ServeJSON()
 }

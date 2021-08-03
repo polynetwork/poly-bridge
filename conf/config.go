@@ -53,13 +53,14 @@ type DBConfig struct {
 type RedisConfig struct {
 	Proto        string        `json:"proto"`
 	Addr         string        `json:"addr"`
+	Password     string        `json:"password"`
 	PoolSize     int           `json:"pool_size"`
 	MinIdleConns int           `json:"min_idle_conns"`
 	DialTimeout  time.Duration `json:"dial_timeout"`
 	ReadTimeout  time.Duration `json:"read_timeout"`
 	WriteTimeout time.Duration `json:"write_timeout"`
 	IdleTimeout  time.Duration `json:"idle_timeout"`
-	Expiration   time.Duration `json:"expiration"` // day
+	Expiration   time.Duration `json:"expiration"`
 }
 
 type ExpConfig struct {
