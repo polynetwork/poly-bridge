@@ -1,6 +1,9 @@
 package basedef
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/beego/beego/v2/core/logs"
+)
 
 var (
 	PRICE_PRECISION = int64(100000000)
@@ -67,9 +70,8 @@ var (
 
 func Init() {
 	if Environment == "testnet" {
-		fmt.Println("qqqqqqqqqqqqqqqqqqqqqqqqqqq")
-		fmt.Println("qqqqqqqq  testnet  qqqqqqqqqqq")
-		fmt.Println("qqqqqqqqqqqqqqqqqqqqqqqqqqq")
+		logs.Info("this is testnet")
+		fmt.Println("this is testnet")
 		POLY_CROSSCHAIN_ID = uint64(0)
 		ETHEREUM_CROSSCHAIN_ID = uint64(2)
 		ONT_CROSSCHAIN_ID = uint64(3)
@@ -83,9 +85,8 @@ func Init() {
 
 		ENV = "testnet"
 	} else if Environment == "mainnet" {
-		fmt.Println("wwwwwwwwwwwwwwwwwwww")
-		fmt.Println("wwwwww mainnet wwwwwwwww")
-		fmt.Println("wwwwwwwwwwwwwwwwwwww")
+		logs.Info("this is mainnet")
+		fmt.Println("this is mainnet")
 		POLY_CROSSCHAIN_ID = uint64(0)
 		BTC_CROSSCHAIN_ID = uint64(1)
 		ETHEREUM_CROSSCHAIN_ID = uint64(2)

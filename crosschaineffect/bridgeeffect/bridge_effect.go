@@ -121,6 +121,7 @@ func (eff *BridgeEffect) updateHash() error {
 		}
 	}
 	if len(updatePolyTransactions) > 0 {
+		logs.Info("updateHash now min PolyTransaction.id", updatePolyTransactions[0].Id)
 		eff.db.Save(updatePolyTransactions)
 	}
 	return nil
