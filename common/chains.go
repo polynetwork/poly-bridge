@@ -135,6 +135,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return ontologySdk.Oep4Balance(hash, ontConfig.ProxyContract)
 	}
+	if chainId == basedef.MATIC_CROSSCHAIN_ID {
+		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+		if maticConfig == nil {
+			panic("chain is invalid")
+		}
+		return maticSdk.Erc20Balance(hash,maticConfig.ProxyContract)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -180,6 +187,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return ontologySdk.Oep4TotalSupply(hash, ontConfig.ProxyContract)
+	}
+	if chainId == basedef.MATIC_CROSSCHAIN_ID {
+		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+		if maticConfig == nil {
+			panic("chain is invalid")
+		}
+		return maticSdk.Erc20TotalSupply(hash)
 	}
 	return new(big.Int).SetUint64(0), nil
 }
