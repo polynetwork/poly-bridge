@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"runtime"
 	"syscall"
@@ -58,7 +57,6 @@ func setupApp() *cli.App {
 }
 
 func StartServer(ctx *cli.Context) {
-	basedef.Init()
 	for true {
 		startServer(ctx)
 		sig := waitSignal()

@@ -57,7 +57,6 @@ func setupApp() *cli.App {
 }
 
 func run(ctx *cli.Context) {
-	basedef.Init()
 	// Initialize
 	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
