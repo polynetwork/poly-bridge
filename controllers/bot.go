@@ -54,7 +54,7 @@ func (c *BotController) BotPage() {
 		pageSize = 10
 	}
 
-	txs, count, err := c.getTxs(pageSize, pageNo, from)
+	txs, count, err := c.getTxs(pageSize, pageNo, from, nil)
 	if err == nil {
 		// Check fee
 		hashes := make([]string, len(txs))
@@ -257,7 +257,7 @@ func (c *BotController) GetTxs() {
 		pageSize = 10
 	}
 
-	txs, count, err := c.getTxs(pageSize, pageNo, from)
+	txs, count, err := c.getTxs(pageSize, pageNo, from, nil)
 	if err == nil {
 		// Check fee
 		hashes := make([]string, len(txs))
@@ -280,7 +280,8 @@ func (c *BotController) GetTxs() {
 	c.ServeJSON()
 }
 
-func (c *BotController) getTxs(pageSize, pageNo, from int) ([]*models.SrcPolyDstRelation, int, error) {
+func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*models.SrcPolyDstRelation, int, error) {
+	skips := append(skip, basedef.STATE_FINISHED, basedef.STATE_SKIP)
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
 	end := tt - c.Conf.EventEffectConfig.HowOld
@@ -290,7 +291,7 @@ func (c *BotController) getTxs(pageSize, pageNo, from int) ([]*models.SrcPolyDst
 	endBsc := tt - c.Conf.EventEffectConfig.HowOld2
 	query := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
-		Where("wrapper_transactions.status NOT IN ?", []uint64{basedef.STATE_FINISHED, basedef.STATE_SKIP}). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
+		Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
@@ -358,7 +359,7 @@ func (c *BotController) checkTxs() (err error) {
 	from := c.Conf.BotConfig.CheckFrom
 	pageSize := 20
 	pageNo := 0
-	txs, _, err := c.getTxs(pageSize, pageNo, int(from))
+	txs, _, err := c.getTxs(pageSize, pageNo, int(from), []uint64{basedef.STATE_WAIT})
 	if err != nil {
 		return err
 	}
