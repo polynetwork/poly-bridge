@@ -20,7 +20,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"poly-bridge/basedef"
 	"poly-bridge/bridge_tools/conf"
 	"runtime"
 	"strings"
@@ -91,7 +90,6 @@ func setupApp() *cli.App {
 }
 
 func startServer(ctx *cli.Context) {
-	basedef.Init()
 	cmd := ctx.GlobalInt(getFlagName(cmdFlag))
 	method := ctx.GlobalString("method")
 	if method != "" {
