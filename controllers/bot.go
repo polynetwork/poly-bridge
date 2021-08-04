@@ -70,12 +70,12 @@ func (c *BotController) BotPage() {
 			for i, entry := range txs {
 				tx := models.ParseBotTx(entry, fees)
 				rows[i] = fmt.Sprintf(
-					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 12)),
-					tx.Hash,
+					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 13)),
 					tx.Asset,
 					tx.Amount,
 					tx.SrcChainName,
 					tx.DstChainName,
+					tx.Hash,
 					tx.FeeToken,
 					tx.FeePaid,
 					tx.FeeMin,
@@ -83,6 +83,7 @@ func (c *BotController) BotPage() {
 					tx.Status,
 					tx.Time,
 					tx.Duration,
+					tx.PolyHash,
 				)
 			}
 			pages := count / pageSize
@@ -96,11 +97,11 @@ func (c *BotController) BotPage() {
 					<div>total %d transactions (page %d/%d current page size %d)</div>
 						<table style="width:100%%">
 						<tr>
-							<th>Hash</th>
 							<th>Asset</th>
 							<th>Amount</th>
 							<th>From</th>
 							<th>To</th>
+							<th>Hash</th>
 							<th>FeeToken</th>
 							<th>FeePaid</th>
 							<th>FeeMin</th>
@@ -108,6 +109,7 @@ func (c *BotController) BotPage() {
 							<th>Status</th>
 							<th>Time</th>
 							<th>Duration</th>
+							<th>PolyHash</th>
 						</tr>
 						%s
 						</table>
@@ -288,7 +290,7 @@ func (c *BotController) getTxs(pageSize, pageNo, from int) ([]*models.SrcPolyDst
 	endBsc := tt - c.Conf.EventEffectConfig.HowOld2
 	query := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
-		Where("wrapper_transactions.status != ?", basedef.STATE_FINISHED). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
+		Where("wrapper_transactions.status NOT IN ?", []uint64{basedef.STATE_FINISHED, basedef.STATE_SKIP}). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
@@ -377,7 +379,7 @@ func (c *BotController) checkTxs() (err error) {
 		entry := models.ParseBotTx(tx, fees)
 		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
 		body := fmt.Sprintf(
-			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v",
+			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v\n- Poly %v\n",
 			title,
 			entry.Amount,
 			entry.Time,
@@ -386,6 +388,7 @@ func (c *BotController) checkTxs() (err error) {
 			entry.FeePaid,
 			entry.FeeMin,
 			entry.Hash,
+			entry.PolyHash,
 		)
 
 		btns := []map[string]string{

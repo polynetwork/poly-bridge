@@ -999,6 +999,7 @@ type CheckFeeResult struct {
 type BotTx struct {
 	Asset        string
 	Hash         string
+	PolyHash     string
 	SrcChainId   uint64
 	SrcChainName string
 	DstChainId   uint64
@@ -1014,7 +1015,7 @@ type BotTx struct {
 }
 
 func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
-	v := BotTx{Hash: tx.SrcHash}
+	v := BotTx{Hash: tx.SrcHash, PolyHash: tx.PolyHash}
 	if c := tx.WrapperTransaction; c != nil {
 		v.SrcChainId = c.SrcChainId
 		v.DstChainId = c.DstChainId
@@ -1037,6 +1038,8 @@ func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
 	}
 	if token := tx.Token; token != nil {
 		v.Asset = token.Name
+	} else {
+		v.Asset = tx.TokenHash
 	}
 	if token := tx.FeeToken; token != nil {
 		v.FeeToken = token.Name
