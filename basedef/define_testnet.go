@@ -31,6 +31,7 @@ var (
 	NEO3_CROSSCHAIN_ID     = uint64(88)
 	OK_CROSSCHAIN_ID       = uint64(200)
 	MATIC_CROSSCHAIN_ID    = uint64(202)
+	PLT_CROSSCHAIN_ID      = uint64(107)
 	SWITCHEO_CROSSCHAIN_ID = uint64(1000) // No testnet for cosmos
 
 	ENV = "testnet"
