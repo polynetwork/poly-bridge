@@ -384,7 +384,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.SrcTransaction.ChainId = r.SrcTransaction.ChainId
 
 		feeToken := feeTokens[s.SrcTransaction.ChainId]
-		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.TokenBasic.Precision)))
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.Precision)))
 		{
 			bbb := decimal.NewFromBigInt(&r.SrcTransaction.Fee.Int, 0)
 			feeAmount := bbb.Div(precision)
@@ -411,11 +411,11 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.DstTransaction.ChainId = r.DstTransaction.ChainId
 
 		feeToken := feeTokens[s.DstTransaction.ChainId]
-		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.TokenBasic.Precision)))
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.Precision)))
 		{
-			bbb := decimal.NewFromBigInt(&r.SrcTransaction.Fee.Int, 0)
+			bbb := decimal.NewFromBigInt(&r.DstTransaction.Fee.Int, 0)
 			feeAmount := bbb.Div(precision)
-			s.SrcTransaction.Fee = feeAmount.String()
+			s.DstTransaction.Fee = feeAmount.String()
 		}
 	}
 

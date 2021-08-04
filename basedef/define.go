@@ -33,6 +33,12 @@ const (
 )
 
 const (
+	MAINNET = "mainnet"
+	TESTNET = "testnet"
+	DEVNET  = "devnet"
+)
+
+const (
 	ADDRESS_LENGTH = 64
 )
 

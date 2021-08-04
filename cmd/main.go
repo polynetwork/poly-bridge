@@ -22,12 +22,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"poly-bridge/common"
 	"runtime"
 	"syscall"
 
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/coinpricelisten"
-	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
@@ -90,7 +90,7 @@ func startServer(ctx *cli.Context) {
 	}
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
-	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig,config.IPPortConfig)
+	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig)
 	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig)
 
 	// register http routers

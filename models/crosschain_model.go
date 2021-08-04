@@ -207,11 +207,19 @@ type AssetStatistic struct {
 	Amount         *BigInt     `gorm:"type:varchar(64);not null"`
 	Txnum          uint64      `gorm:"type:bigint(20);not null"`
 	Addressnum     uint64      `gorm:"type:bigint(20);not null"`
-	TokenBasicName string      `gorm:"size:64;not null"`
+	TokenBasicName string      `gorm:"uniqueIndex;size:64;not null"`
 	AmountBtc      *BigInt     `gorm:"type:varchar(64);not null"`
 	AmountUsd      *BigInt     `gorm:"type:varchar(64);not null"`
 	LastCheckId    int64       `gorm:"type:int"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
+}
+
+type AssetInfo struct {
+	Amount         *BigInt
+	Txnum          uint64
+	Price 			int64
+	TokenBasicName string
+	Precision  	   uint64
 }
 
 type TransactionOnToken struct {
@@ -237,4 +245,5 @@ type TransactionOnAddress struct {
 	TokenName string
 	TokenType string
 	Direct    uint32
+	Precision uint64
 }

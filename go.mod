@@ -9,6 +9,7 @@ require (
 	github.com/btcsuite/goleveldb v1.0.0
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/ethereum/go-ethereum v1.9.15
+	github.com/go-redis/redis v6.14.2+incompatible
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
@@ -20,7 +21,7 @@ require (
 	github.com/polynetwork/eth-contracts v0.0.0-20200814062128-70f58e22b014
 	github.com/polynetwork/poly v1.3.1
 	github.com/polynetwork/poly-go-sdk v0.0.0-20210114035303-84e1615f4ad4
-	github.com/polynetwork/poly-io-test v0.0.0-20200819093740-8cf514b07750
+	github.com/polynetwork/poly-io-test v0.0.0-20200819093740-8cf514b07750 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
 	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.7.0

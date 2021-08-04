@@ -28,10 +28,11 @@
 package models
 
 import (
-	"fmt"
+	"encoding/json"
 	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -64,7 +65,7 @@ func MakeExplorerInfoResp(chains []*Chain, statistics []*ChainStatistic, tokenBa
 		}
 		for _, tokenBasic := range tokenBasics {
 			for _, token := range tokenBasic.Tokens {
-				if token.ChainId == chain.ChainId {
+				if token.ChainId == chain.ChainId && token.Property == int64(1) {
 					chainInfoResp.Tokens = append(chainInfoResp.Tokens, MakeChainTokenResp(token))
 				}
 			}
@@ -188,31 +189,37 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		Key:        fChainTx.Key,
 		Param:      fChainTx.Param,
 	}
-	if fChainTx.SrcTransfer != nil {
-		fChainTxResp.Transfer = &FChainTransferResp{
-			From:        basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.From),
-			To:          basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.To),
-			Amount:      strconv.FormatUint(fChainTx.SrcTransfer.Amount.Uint64(), 10),
-			ToChain:     uint32(fChainTx.SrcTransfer.DstChainId),
-			ToChainName: ChainId2Name(fChainTx.SrcTransfer.DstChainId),
-			ToUser:      basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.DstUser),
-		}
-		fChainTxResp.Transfer.TokenHash = fChainTx.SrcTransfer.Asset
-		if token != nil {
-			fChainTxResp.Transfer.TokenHash = token.Hash
-			fChainTxResp.Transfer.TokenName = token.Name
-			fChainTxResp.Transfer.TokenType = token.TokenType
-			fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
-		}
-		fChainTxResp.Transfer.ToTokenHash = fChainTx.SrcTransfer.DstAsset
-		if toToken != nil {
-			fChainTxResp.Transfer.ToTokenHash = toToken.Hash
-			fChainTxResp.Transfer.ToTokenName = toToken.Name
-			fChainTxResp.Transfer.ToTokenType = toToken.TokenType
-		}
+	if fChainTx.SrcTransfer.Amount == nil {
+		fChainTx.SrcTransfer.Amount = NewBigIntFromInt(0)
+	}
+	fChainTxResp.Transfer = &FChainTransferResp{
+		From:        basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.From),
+		To:          basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.To),
+		Amount:      strconv.FormatUint(fChainTx.SrcTransfer.Amount.Uint64(), 10),
+		ToChain:     uint32(fChainTx.SrcTransfer.DstChainId),
+		ToChainName: ChainId2Name(fChainTx.SrcTransfer.DstChainId),
+		ToUser:      basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.DstUser),
+	}
+	fChainTxResp.Transfer.TokenHash = fChainTx.SrcTransfer.Asset
+	if token != nil {
+		fChainTxResp.Transfer.TokenHash = token.Hash
+		fChainTxResp.Transfer.TokenName = token.Name
+		fChainTxResp.Transfer.TokenType = token.TokenType
+		fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
+	} else {
+		fChainTxResp.Transfer.TokenName = fChainTx.SrcTransfer.Asset
+		fChainTxResp.Transfer.Amount = fChainTx.SrcTransfer.Amount.String()
+	}
+	fChainTxResp.Transfer.ToTokenHash = fChainTx.SrcTransfer.DstAsset
+	if toToken != nil {
+		fChainTxResp.Transfer.ToTokenHash = toToken.Hash
+		fChainTxResp.Transfer.ToTokenName = toToken.Name
+		fChainTxResp.Transfer.ToTokenType = toToken.TokenType
+	} else {
+		fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
 	}
 	if fChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-		fChainTxResp.TxHash = "0x" + fChainTx.Key
+		fChainTxResp.TxHash = "0x" + fChainTxResp.TxHash
 	} else if fChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
 		fChainTxResp.TxHash = strings.ToUpper(fChainTxResp.TxHash)
 	}
@@ -298,20 +305,25 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		Contract:   tChainTx.Contract,
 		RTxHash:    tChainTx.PolyHash,
 	}
-	if tChainTx.DstTransfer != nil {
-		tChainTxResp.Transfer = &TChainTransferResp{
-			From:   tChainTx.DstTransfer.From,
-			To:     tChainTx.DstTransfer.To,
-			Amount: strconv.FormatUint(tChainTx.DstTransfer.Amount.Uint64(), 10),
-		}
-		tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
-		if toToken != nil {
-			tChainTxResp.Transfer.TokenHash = toToken.Hash
-			tChainTxResp.Transfer.TokenName = toToken.Name
-			tChainTxResp.Transfer.TokenType = toToken.TokenType
-			tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
-		}
+	if tChainTx.DstTransfer.Amount == nil {
+		tChainTx.DstTransfer.Amount = NewBigIntFromInt(0)
 	}
+	tChainTxResp.Transfer = &TChainTransferResp{
+		From:   tChainTx.DstTransfer.From,
+		To:     tChainTx.DstTransfer.To,
+		Amount: tChainTx.DstTransfer.Amount.String(),
+	}
+	tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
+	if toToken != nil {
+		tChainTxResp.Transfer.TokenHash = toToken.Hash
+		tChainTxResp.Transfer.TokenName = toToken.Name
+		tChainTxResp.Transfer.TokenType = toToken.TokenType
+		tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
+	} else {
+		tChainTxResp.Transfer.TokenName = tChainTx.DstTransfer.Asset
+		tChainTxResp.Transfer.Amount = tChainTx.DstTransfer.Amount.String()
+	}
+
 	if tChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		tChainTxResp.TxHash = "0x" + tChainTxResp.TxHash
 	} else if tChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
@@ -345,8 +357,8 @@ type CrossTransferResp struct {
 }
 
 func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token *Token) *CrossTransferResp {
-	if transfer == nil {
-		return nil
+	if transfer.Amount == nil {
+		transfer.Amount = NewBigIntFromInt(0)
 	}
 	crossTransfer := new(CrossTransferResp)
 	crossTransfer.CrossTxType = 1
@@ -357,12 +369,18 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.ToChainId = uint32(transfer.DstChainId)
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
+	jsonToken, _ := json.Marshal(token)
+	log.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
 		crossTransfer.TokenType = token.TokenType
 		crossTransfer.Amount = FormatAmount(token.Precision, transfer.Amount)
+	} else {
+		crossTransfer.TokenName = transfer.Asset
+		crossTransfer.Amount = transfer.Amount.String()
 	}
+	log.Info("xian crossTransfer.Amount:", crossTransfer.Amount)
 	return crossTransfer
 }
 
@@ -396,9 +414,6 @@ func MakeCrossTxResp(srcPolyDst *PolyTxRelation) *CrossTxResp {
 		},
 	}
 	tx := srcPolyDst
-
-	log.Info("111-------MakeCrossTxResp tx.SrcTransaction: %v", tx.SrcTransaction)
-	log.Info("222-------MakeCrossTxResp tx.SrcTransaction != nil %v", tx.SrcTransaction != nil)
 	if tx.SrcTransaction != nil {
 		crosstx.Fchaintx_valid = true
 		crosstx.Fchaintx = makeFChainTxResp(tx.SrcTransaction, tx.Token, tx.ToToken)
@@ -424,7 +439,7 @@ type CrossTxOutlineResp struct {
 	TxHash     string `json:"txhash"`
 	State      byte   `json:"state"`
 	TT         uint32 `json:"timestamp"`
-	Fee        uint64 `json:"fee"`
+	Fee        string `json:"fee"`
 	Height     uint32 `json:"blockheight"`
 	FChainId   uint32 `json:"fchainid"`
 	FChainName string `json:"fchainname"`
@@ -434,9 +449,10 @@ type CrossTxOutlineResp struct {
 
 type CrossTxListResp struct {
 	CrossTxList []*CrossTxOutlineResp `json:"crosstxs"`
+	Total       int64                 `json:"total"`
 }
 
-func MakeCrossTxListResp(txs []SrcPolyDstRelation) *CrossTxListResp {
+func MakeCrossTxListResp(txs []*SrcPolyDstRelation, counter int64) *CrossTxListResp {
 	crossTxListResp := &CrossTxListResp{}
 	crossTxListResp.CrossTxList = make([]*CrossTxOutlineResp, 0)
 	for _, tx := range txs {
@@ -444,14 +460,18 @@ func MakeCrossTxListResp(txs []SrcPolyDstRelation) *CrossTxListResp {
 			TxHash:     tx.PolyHash,
 			State:      byte(tx.PolyTransaction.State),
 			TT:         uint32(tx.PolyTransaction.Time),
-			Fee:        tx.PolyTransaction.Fee.Uint64(),
+			Fee:        FormatFee(tx.PolyTransaction.ChainId, tx.PolyTransaction.Fee),
 			Height:     uint32(tx.PolyTransaction.Height),
-			FChainId:   uint32(tx.PolyTransaction.DstChainId),
+			FChainId:   uint32(tx.PolyTransaction.SrcChainId),
 			FChainName: ChainId2Name(tx.PolyTransaction.SrcChainId),
 			TChainId:   uint32(tx.PolyTransaction.DstChainId),
 			TChainName: ChainId2Name(tx.PolyTransaction.DstChainId),
 		})
 	}
+	sort.Slice(crossTxListResp.CrossTxList, func(i, j int) bool {
+		return crossTxListResp.CrossTxList[i].TT > crossTxListResp.CrossTxList[j].TT
+	})
+	crossTxListResp.Total = counter
 	return crossTxListResp
 }
 
@@ -477,16 +497,20 @@ type TokenTxListResp struct {
 	Total       int64          `json:"total"`
 }
 
-func MakeTokenTxList(transactoins []*TransactionOnToken, counter int64) *TokenTxListResp {
+func MakeTokenTxList(transactoins []*TransactionOnToken, counter int64, token *Token) *TokenTxListResp {
 	tokenTxListResp := &TokenTxListResp{}
 	tokenTxListResp.Total = counter
 	tokenTxListResp.TokenTxList = make([]*TokenTxResp, 0)
 	for _, transactoin := range transactoins {
+		amount := transactoin.Amount.String()
+		if token != nil {
+			amount = FormatAmount(token.TokenBasic.Precision, transactoin.Amount)
+		}
 		tokenTxListResp.TokenTxList = append(tokenTxListResp.TokenTxList, &TokenTxResp{
 			TxHash: transactoin.Hash,
 			From:   basedef.Hash2Address(transactoin.ChainId, transactoin.From),
 			To:     basedef.Hash2Address(transactoin.ChainId, transactoin.To),
-			Amount: transactoin.Amount.String(),
+			Amount: amount,
 			Height: uint32(transactoin.Height),
 			TT:     uint32(transactoin.Time),
 			Direct: transactoin.Direct,
@@ -529,11 +553,13 @@ func MakeAddressTxList(transactoins []*TransactionOnAddress, counter int64) *Add
 			TxHash:    transactoin.Hash,
 			From:      basedef.Hash2Address(transactoin.ChainId, transactoin.From),
 			To:        basedef.Hash2Address(transactoin.ChainId, transactoin.To),
-			Amount:    transactoin.Amount.String(),
+			Amount:    FormatAmount(transactoin.Precision, transactoin.Amount),
 			Height:    uint32(transactoin.Height),
 			TT:        uint32(transactoin.Time),
 			Direct:    transactoin.Direct,
 			TokenHash: transactoin.TokenHash,
+			TokenName: transactoin.TokenName,
+			TokenType: transactoin.TokenType,
 		})
 	}
 	return addressTxListResp
@@ -589,35 +615,34 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 	allTransferStatistic := new(AllTransferStatisticResp)
 	allTransferStatistic.ChainTransferStatistics = make([]*ChainTransferStatisticResp, 0)
 
-	allAmountUsdTotal := new(big.Int)
+	allAmountUsdTotal := new(big.Int).SetInt64(0)
 	allAddress := uint32(0)
 	allTransactions := uint32(0)
 	for _, chainStatistic := range chainStatistics {
-		amountBtcTotal := new(big.Int)
-		amountUsdTotal := new(big.Int)
+		amountBtcTotal := new(big.Int).SetInt64(0)
+		amountUsdTotal := new(big.Int).SetInt64(0)
 		totalHeight := uint64(0)
 		for _, chain := range chains {
 			if chainStatistic.ChainId == chain.ChainId {
 				totalHeight += chain.Height
 			}
 		}
-		fmt.Println("totalHeight:", totalHeight)
 		assetTransferStatisticResps := make([]*AssetTransferStatisticResp, 0)
 		for _, tokenStatistic := range tokenStatistics {
-			fmt.Println("tokenStatistic.ChainId:", tokenStatistic.ChainId, "chainStatistic.ChainId", chainStatistic.ChainId)
 			if tokenStatistic.ChainId == chainStatistic.ChainId {
 				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
 				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
 				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
-
-				amountBtcTotal.Add(amountBtcTotal, amountBtc)
-				amountUsdTotal.Add(amountUsdTotal, amountUsd)
+				if amountUsd.Cmp(big.NewInt(0)) == 1 {
+					amountBtcTotal = new(big.Int).Add(amountBtcTotal, amountBtc)
+					amountUsdTotal = new(big.Int).Add(amountUsdTotal, amountUsd)
+				}
 				assetTransferStatisticResp := &AssetTransferStatisticResp{
 					Name:            tokenStatistic.Token.TokenBasicName,
 					Hash:            tokenStatistic.Hash,
-					Amount:          FormatAmount(uint64(100), NewBigInt(amount)),
-					AmountBtc:       FormatAmount(uint64(10000), NewBigInt(amountBtc)),
-					AmountUsd:       FormatAmount(uint64(10000), NewBigInt(amountUsd)),
+					Amount:          FormatAmount(2, NewBigInt(amount)),
+					AmountBtc:       FormatAmount(4, NewBigInt(amountBtc)),
+					AmountUsd:       FormatAmount(4, NewBigInt(amountUsd)),
 					AmountUsd1:      amountUsd,
 					SourceChainName: ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId),
 				}
@@ -627,15 +652,17 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		allAmountUsdTotal.Add(allAmountUsdTotal, amountUsdTotal)
 
 		for _, assetTransferStatisticResp := range assetTransferStatisticResps {
-			assetTransferStatisticResp.AmountUsdPrecent = Precent(assetTransferStatisticResp.AmountUsd1.Uint64(), amountUsdTotal.Uint64())
+			if assetTransferStatisticResp.AmountUsd1.Cmp(big.NewInt(0)) == 1 {
+				assetTransferStatisticResp.AmountUsdPrecent = Precent(assetTransferStatisticResp.AmountUsd1.Uint64(), amountUsdTotal.Uint64())
+			}
 		}
 		allAddress += uint32(chainStatistic.Addresses)
 
 		chainTransferStatisticResp := &ChainTransferStatisticResp{
 			Chain:                   uint32(chainStatistic.ChainId),
 			ChainName:               ChainId2Name(chainStatistic.ChainId),
-			AmountBtc:               FormatAmount(uint64(10000), NewBigInt(amountBtcTotal)),
-			AmountUsd:               FormatAmount(uint64(10000), NewBigInt(amountUsdTotal)),
+			AmountBtc:               FormatAmount(4, NewBigInt(amountBtcTotal)),
+			AmountUsd:               FormatAmount(4, NewBigInt(amountUsdTotal)),
 			In:                      uint32(chainStatistic.In),
 			Out:                     uint32(chainStatistic.Out),
 			Addresses:               uint32(chainStatistic.Addresses),
@@ -645,7 +672,15 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		allTransactions += uint32(chainStatistic.In) + uint32(chainStatistic.Out)
 		allTransferStatistic.ChainTransferStatistics = append(allTransferStatistic.ChainTransferStatistics, chainTransferStatisticResp)
 	}
-	allTransferStatistic.AmountUsd = FormatAmount(uint64(10000), NewBigInt(allAmountUsdTotal))
+	sort.Slice(allTransferStatistic.ChainTransferStatistics, func(i, j int) bool {
+		return allTransferStatistic.ChainTransferStatistics[i].AmountUsd1.Cmp(allTransferStatistic.ChainTransferStatistics[j].AmountUsd1) == 1
+	})
+	for _, statis := range allTransferStatistic.ChainTransferStatistics {
+		sort.Slice(statis.AssetTransferStatistics, func(i, j int) bool {
+			return statis.AssetTransferStatistics[i].AmountUsd1.Cmp(statis.AssetTransferStatistics[j].AmountUsd1) == 1
+		})
+	}
+	allTransferStatistic.AmountUsd = FormatAmount(4, NewBigInt(allAmountUsdTotal))
 	allTransferStatistic.Addresses = allAddress
 	allTransferStatistic.Transactions = allTransactions
 	return allTransferStatistic
@@ -677,26 +712,24 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 	txNumTotal := uint64(0)
 
 	for _, assetStatistic := range assetStatistics {
-
 		amountBtcTotal.Add(amountBtcTotal, &assetStatistic.AmountBtc.Int)
 		amountUsdTotal.Add(amountUsdTotal, &assetStatistic.AmountUsd.Int)
-
 		addressNumberTotal += assetStatistic.Addressnum
 		txNumTotal += assetStatistic.Txnum
 	}
 
-	assetInfo.AmountBtcTotal = FormatAmount(uint64(10000), NewBigInt(amountBtcTotal))
-	assetInfo.AmountUsdTotal = FormatAmount(uint64(10000), NewBigInt(amountUsdTotal))
+	assetInfo.AmountBtcTotal = FormatAmount(4, NewBigInt(amountBtcTotal))
+	assetInfo.AmountUsdTotal = FormatAmount(4, NewBigInt(amountUsdTotal))
 
 	for _, assetStatistic := range assetStatistics {
 		assetStatisticResp := &AssetStatisticResp{
 			Name:              assetStatistic.TokenBasicName,
 			AddressNum:        assetStatistic.Addressnum,
 			AddressNumPrecent: Precent(assetStatistic.Addressnum, addressNumberTotal),
-			Amount:            FormatAmount(uint64(100), assetStatistic.Amount),
-			AmountBtc:         FormatAmount(uint64(10000), assetStatistic.AmountBtc),
+			Amount:            FormatAmount(2, assetStatistic.Amount),
+			AmountBtc:         FormatAmount(4, assetStatistic.AmountBtc),
 			AmountBtcPrecent:  Precent(assetStatistic.AmountBtc.Uint64(), amountBtcTotal.Uint64()),
-			AmountUsd:         FormatAmount(uint64(10000), assetStatistic.AmountUsd),
+			AmountUsd:         FormatAmount(4, assetStatistic.AmountUsd),
 			AmountUsdPrecent:  Precent(assetStatistic.AmountUsd.Uint64(), amountUsdTotal.Uint64()),
 			TxNum:             assetStatistic.Txnum,
 			TxNumPrecent:      Precent(assetStatistic.Txnum, txNumTotal),
