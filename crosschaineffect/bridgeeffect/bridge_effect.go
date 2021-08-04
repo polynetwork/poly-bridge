@@ -74,10 +74,12 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("update hash- err: %s", err)
 	}
-	err = eff.checkStatus()
-	if err != nil {
-		logs.Error("check status- err: %s", err)
-	}
+	/*
+		err = eff.checkStatus()
+		if err != nil {
+			logs.Error("check status- err: %s", err)
+		}
+	*/
 	err = eff.updateStatus()
 	if err != nil {
 		logs.Error("update status- err: %s", err)
@@ -131,8 +133,9 @@ func (eff *BridgeEffect) checkStatus() error {
 	{
 		wrapperTransactions := make([]*models.WrapperTransaction, 0)
 		now := time.Now().Unix() - eff.cfg.HowOld2
-		eff.db.Model(models.WrapperTransaction{}).Where("(status != ? and time < ?) and ((src_chain_id = ? and dst_chain_id = ?) or (src_chain_id = ? and dst_chain_id = ?))",
-			basedef.STATE_FINISHED, now, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).Find(&wrapperTransactions)
+		eff.db.Model(models.WrapperTransaction{}).Where("(status NOT IN ? and time < ?) and ((src_chain_id = ? and dst_chain_id = ?) or (src_chain_id = ? and dst_chain_id = ?))",
+			[]int{basedef.STATE_FINISHED, basedef.STATE_WAIT, basedef.STATE_SKIP},
+			now, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).Find(&wrapperTransactions)
 		if len(wrapperTransactions) > 0 {
 			wrapperTransactionsJson, _ := json.Marshal(wrapperTransactions)
 			logs.Error("There is unfinished transactions(%d) %s", now, string(wrapperTransactionsJson))
@@ -162,6 +165,7 @@ func (eff *BridgeEffect) updateStatus() error {
 	eff.db.Table("wrapper_transactions").Where("status != ?", basedef.STATE_FINISHED).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Preload("DstTransaction").Find(&wrapperPolyDstRelations)
 	for _, wrapperPolyDstRelation := range wrapperPolyDstRelations {
 		wrapperTransaction := wrapperPolyDstRelation.WrapperTransaction
+		pending := wrapperTransaction.Status == basedef.STATE_SKIP || wrapperTransaction.Status == basedef.STATE_WAIT
 		if wrapperPolyDstRelation.PolyHash == "" {
 			chain, ok := id2Chains[wrapperPolyDstRelation.WrapperTransaction.SrcChainId]
 			if ok {
@@ -187,7 +191,9 @@ func (eff *BridgeEffect) updateStatus() error {
 				wrapperTransaction.Status = basedef.STATE_FINISHED
 			}
 		}
-		wrapperTransactions = append(wrapperTransactions, wrapperTransaction)
+		if !pending || wrapperTransaction.Status == basedef.STATE_FINISHED {
+			wrapperTransactions = append(wrapperTransactions, wrapperTransaction)
+		}
 	}
 	if len(wrapperTransactions) > 0 {
 		eff.db.Save(wrapperTransactions)
