@@ -73,10 +73,12 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("update hash- err: %s", err)
 	}
-	err = eff.checkStatus()
-	if err != nil {
-		logs.Error("check status- err: %s", err)
-	}
+	/*
+		err = eff.checkStatus()
+		if err != nil {
+			logs.Error("check status- err: %s", err)
+		}
+	*/
 	err = eff.updateStatus()
 	if err != nil {
 		logs.Error("update status- err: %s", err)
