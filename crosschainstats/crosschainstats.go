@@ -244,7 +244,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
-		if in != nil {
+		if in != nil && in.Token != nil && in.Token.TokenBasic != nil {
 			price_new := decimal.New(in.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 			amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
 			precision_new := decimal.New(int64(1), int32(in.Token.Precision))
@@ -262,7 +262,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		if err != nil {
 			return fmt.Errorf("Failed to CalculateInTokenStatistics %w", err)
 		}
-		if out != nil {
+		if out != nil && out.Token != nil && out.Token.TokenBasic != nil {
 			price_new := decimal.New(out.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 			amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
 			precision_new := decimal.New(int64(1), int32(out.Token.Precision))
