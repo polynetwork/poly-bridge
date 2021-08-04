@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/log"
 	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
@@ -132,6 +133,8 @@ func merge() {
 		migrateExplorerChainStatisticTables(exp, db)
 	case "verifyTables":
 		verifyTables(bri, db)
+	case "updateTokenBasicAndToken":
+		updateTokenBasicAndToken(exp, db)
 	default:
 		logs.Error("Invalid step %s", step)
 	}
@@ -613,4 +616,73 @@ func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
 	}
 	err = db.Save(chainStatistics).Error
 	checkError(err, "Saving chainStatistics table")
+}
+
+func updateTokenBasicAndToken(exp, db *gorm.DB) {
+	logs.Info("updateTokenBasicAndToken")
+	type thisTokenHash struct {
+		Hash    string
+		ChainId uint64
+	}
+	mapToken := make(map[thisTokenHash]bool)
+	dbTokens := make([]*models.Token, 0)
+	err := db.Find(&dbTokens).Error
+	if err != nil {
+		panic("Find tokenBasics err")
+	}
+	for _, token := range dbTokens {
+		x := thisTokenHash{}
+		x.ChainId = token.ChainId
+		x.Hash = token.Hash
+		mapToken[x] = true
+	}
+	expTokens := make([]*explorerdao.Token, 0)
+	exp.Raw("select `id`, `xtoken`, `hash`, `xname`, `xtype`, `xprecision` from chain_token").
+		Scan(&expTokens)
+	for _, token := range expTokens {
+		x := thisTokenHash{}
+		x.ChainId = token.Id
+		x.Hash = token.Hash
+		if _, ok := mapToken[x]; !ok {
+			tokenBasics := make([]*models.TokenBasic, 0)
+			err = db.Find(&tokenBasics).Error
+			if err != nil {
+				logs.Error("Find tokenBasics err", err)
+			}
+			flag := false
+			for _, basic := range tokenBasics {
+				if basic.Name == token.Token {
+					flag = true
+				}
+			}
+			if !flag {
+				tokenBasic := new(models.TokenBasic)
+				tokenBasic.Name = token.Token
+				tokenBasic.Standard = 10
+				tokenBasic.Precision = uint64(len(token.Precision) - 1)
+				tokenBasic.Property = 1
+				tokenBasic.Price = 0
+				tokenBasic.Time = 1628084033
+				tokenBasic.Ind = 1
+				err = db.Save(tokenBasic).Error
+				if err != nil {
+					logs.Error("Save(tokenBasic).Error", err)
+				}
+			}
+			y := new(models.Token)
+			y.Hash = token.Hash
+			y.ChainId = token.Id
+			y.TokenType = token.Type
+			y.TokenBasicName = token.Token
+			y.Name = token.Name
+			y.Property = 1
+			y.Precision = uint64(len(token.Precision) - 1)
+			y.AvailableAmount = models.NewBigIntFromInt(0)
+			y.Standard = 10
+			err := db.Save(y).Error
+			if err != nil {
+				log.Error("Save Token err")
+			}
+		}
+	}
 }
