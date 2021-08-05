@@ -521,59 +521,6 @@ func verifyTables(bri, db *gorm.DB) {
 	}
 }
 
-func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
-	logs.Info("Migrating table AssetStatistic")
-	oldAssetstatictics := make([]*explorerdao.AssetStatistic, 0)
-	err := exp.Raw("SELECT a.xname,a.amount,a.addressnum,a.amount_btc,a.amount_usd,a.txnum,b.`hash` from asset_statistic a LEFT JOIN chain_token b on a.xname=b.xtoken").
-		Find(&oldAssetstatictics).Error
-	checkError(err, "Loading table")
-	srcTransfer := new(models.SrcTransfer)
-	err = db.Last(srcTransfer).Error
-	checkError(err, "Loading table")
-	tokenBasics := make([]*models.TokenBasic, 0)
-	err = db.Select("Name").Find(&tokenBasics).Error
-	checkError(err, "Loading table")
-
-	for _, old := range oldAssetstatictics {
-		if old.Hash == "" {
-			continue
-		}
-		err = db.Debug().Raw("SELECT `token_basic_name` FROM `tokens` WHERE hash=? limit 1", old.Hash).
-			Scan(&old).Error
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			checkError(err, "Loading table")
-		}
-	}
-	assetStatistics := make([]*models.AssetStatistic, 0)
-	for _, tokenBasic := range tokenBasics {
-		newAssetstatictic := &models.AssetStatistic{}
-		newAssetstatictic.TokenBasicName = tokenBasic.Name
-		for _, old := range oldAssetstatictics {
-			if old.Hash == "" {
-				continue
-			}
-			if old.TokenBasicName == tokenBasic.Name {
-				if newAssetstatictic.Amount != nil && newAssetstatictic.Amount.Uint64() != uint64(0) {
-					continue
-				}
-				newAssetstatictic.Amount = old.Amount
-				newAssetstatictic.AmountUsd = old.AmountUsd
-				newAssetstatictic.AmountBtc = old.AmountBtc
-				newAssetstatictic.Addressnum = uint64(old.Addressnum)
-				newAssetstatictic.Txnum = uint64(old.Txnum)
-			}
-		}
-		newAssetstatictic.LastCheckId = srcTransfer.Id
-		assetStatistics = append(assetStatistics, newAssetstatictic)
-	}
-	for _, assetStatistic := range assetStatistics {
-		models.NullToZero(&assetStatistic.Amount)
-		models.NullToZero(&assetStatistic.AmountBtc)
-		models.NullToZero(&assetStatistic.AmountUsd)
-	}
-	err = db.Debug().Save(assetStatistics).Error
-	checkError(err, "Saving AssetStatistic table3")
-}
 func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
 	logs.Info("Migrating table ChainStatistic")
 	chainInfos := make([]*explorerdao.ChainInfo, 0)
@@ -620,6 +567,54 @@ func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
 
 func updateTokenBasicAndToken(exp, db *gorm.DB) {
 	logs.Info("updateTokenBasicAndToken")
+	nameToken := make(map[string]string)
+	descToken := make(map[string]string)
+	if basdef.ENV == "testnet" {
+		//xtoken=="Bitcoin"
+		descToken["RENBTC"] = "renBTC"
+		descToken["wbtc"] = "WBTC"
+
+		nameToken["Crowns"] = "CWS"
+		nameToken["EBNB"] = "BNB"
+		nameToken["pBNB"] = "BNB"
+		nameToken["Dai"] = "DAI"
+		nameToken["pDAI"] = "DAI"
+		nameToken["erc20"] = "ERC20"
+		nameToken["pETH"] = "ETH"
+		nameToken["Ethereum"] = "ETH"
+		nameToken["pFLM"] = "FLM"
+		nameToken["pHRC20"] = "HRC20"
+		nameToken["pHT"] = "HT"
+		nameToken["pHT"] = "HT"
+		nameToken["Neo"] = "NEO"
+		nameToken["pNEO"] = "NEO"
+		nameToken["Neo Ether"] = "WETH"
+		nameToken["Neo USDT"] = "USDT"
+		nameToken["NEP5 NEO"] = "NEO"
+		nameToken["Ontology Gas"] = "ONG"
+		nameToken["Ontology"] = "ONT"
+		nameToken["pONTd"] = "ONT"
+		nameToken["ontoogy"] = "ONTD"
+		nameToken["pONTd"] = "ONTD"
+		nameToken["Paxos Standard"] = "PAX"
+		nameToken["BNB mapping"] = "BNB"
+		nameToken["pBNB NEP5"] = "BNB"
+		nameToken["DAI mapping"] = "DAI"
+		nameToken["pHECO NEP5"] = "HRC20"
+		nameToken["ONTd mapping"] = "ONTd"
+		nameToken["USDC mapping"] = "USDC"
+		nameToken["USDT mapping"] = "USDT"
+		nameToken["wBTC mapping"] = "WBTC"
+		nameToken["WING mapping"] = "WING"
+		nameToken["Synthetix Network Token"] = "SNX"
+		nameToken["Uniswap"] = "UNI"
+		nameToken["pUSDC"] = "USDC"
+		nameToken["USDT"] = "USDT"
+		nameToken["Tether"] = "USDT"
+		nameToken["USD Coin"] = "USDC"
+		nameToken["pWBTC"] = "WBTC"
+		nameToken["pWING"] = "WING"
+	}
 	type thisTokenHash struct {
 		Hash    string
 		ChainId uint64
@@ -644,6 +639,18 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 		x.ChainId = token.Id
 		x.Hash = token.Hash
 		if _, ok := mapToken[x]; !ok {
+			tokenBasocName := token.Token
+			if token.Token == "Bitcoin" {
+				tokenBasocName = descToken[token.Desc]
+			} else if token.Token == "" {
+				tokenBasocName = nameToken[token.Name]
+			} else if _, in := nameToken[token.Token]; in {
+				tokenBasocName = nameToken[token.Token]
+			}
+			if tokenBasocName == "" {
+				log.Error("tokenBasocName is null for coutinue %v", *token)
+				continue
+			}
 			tokenBasics := make([]*models.TokenBasic, 0)
 			err = db.Find(&tokenBasics).Error
 			if err != nil {
@@ -651,13 +658,14 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 			}
 			flag := false
 			for _, basic := range tokenBasics {
-				if basic.Name == token.Token {
+				if basic.Name == tokenBasocName {
 					flag = true
+					break
 				}
 			}
 			if !flag {
 				tokenBasic := new(models.TokenBasic)
-				tokenBasic.Name = token.Token
+				tokenBasic.Name = tokenBasocName
 				tokenBasic.Standard = 10
 				tokenBasic.Precision = uint64(len(token.Precision) - 1)
 				tokenBasic.Property = 1
@@ -669,20 +677,164 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 					logs.Error("Save(tokenBasic).Error", err)
 				}
 			}
-			y := new(models.Token)
-			y.Hash = token.Hash
-			y.ChainId = token.Id
-			y.TokenType = token.Type
-			y.TokenBasicName = token.Token
-			y.Name = token.Name
-			y.Property = 1
-			y.Precision = uint64(len(token.Precision) - 1)
-			y.AvailableAmount = models.NewBigIntFromInt(0)
-			y.Standard = 10
-			err := db.Save(y).Error
+
+			tokenBasic := new(models.TokenBasic)
+			err = db.Where("token_basic_name = ?", tokenBasocName).
+				Preload("Tokens").
+				First(tokenBasic).Error
 			if err != nil {
-				log.Error("Save Token err")
+				logs.Error("Find tokenBasic with tokenBasocName err", err)
+			}
+			if len(tokenBasic.Tokens) > 0 {
+				flag := false
+				for _, v := range tokenBasic.Tokens {
+					if v.ChainId == token.Id {
+						if token.Token != "" {
+							txnum := 0
+							err = exp.Raw("select txnum from asset_statistic where xname= ?", token.Token).
+								Scan(&txnum).Error
+							if err != nil {
+								logs.Error("Find amount with token.Token err", err)
+							}
+							if txnum == 0 {
+								jsonTokrn, _ := json.Marshal(token)
+								logs.Info("token`s amount ==0", string(jsonTokrn))
+								continue
+							} else {
+								y := new(models.Token)
+								y.Hash = token.Hash
+								y.ChainId = token.Id
+								y.TokenType = token.Type
+								y.TokenBasicName = tokenBasocName
+								y.Name = token.Name
+								y.Property = 1
+								y.Precision = uint64(len(token.Precision) - 1)
+								y.AvailableAmount = models.NewBigIntFromInt(0)
+								y.Standard = 10
+								err := db.Save(y).Error
+								if err != nil {
+									log.Error("Save Token err")
+								}
+								flag = true
+								break
+							}
+						} else {
+							flag = true
+						}
+					}
+				}
+				if !flag {
+					y := new(models.Token)
+					y.Hash = token.Hash
+					y.ChainId = token.Id
+					y.TokenType = token.Type
+					y.TokenBasicName = tokenBasocName
+					y.Name = token.Name
+					y.Property = 1
+					y.Precision = uint64(len(token.Precision) - 1)
+					y.AvailableAmount = models.NewBigIntFromInt(0)
+					y.Standard = 10
+					err := db.Save(y).Error
+					if err != nil {
+						log.Error("Save Token err")
+					}
+				}
+			} else {
+				y := new(models.Token)
+				y.Hash = token.Hash
+				y.ChainId = token.Id
+				y.TokenType = token.Type
+				y.TokenBasicName = tokenBasocName
+				y.Name = token.Name
+				y.Property = 1
+				y.Precision = uint64(len(token.Precision) - 1)
+				y.AvailableAmount = models.NewBigIntFromInt(0)
+				y.Standard = 10
+				err := db.Save(y).Error
+				if err != nil {
+					log.Error("Save Token err")
+				}
 			}
 		}
+	}
+}
+
+func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
+	logs.Info("updateAssetStatistic")
+	nameToken := make(map[string]string)
+	if basdef.ENV == "testnet" {
+		nameToken["Bitcoin"] = "WBTC"
+
+		nameToken["Crowns"] = "CWS"
+		nameToken["EBNB"] = "BNB"
+		nameToken["pBNB"] = "BNB"
+		nameToken["Dai"] = "DAI"
+		nameToken["pDAI"] = "DAI"
+		nameToken["erc20"] = "ERC20"
+		nameToken["pETH"] = "ETH"
+		nameToken["Ethereum"] = "ETH"
+		nameToken["pFLM"] = "FLM"
+		nameToken["pHRC20"] = "HRC20"
+		nameToken["pHT"] = "HT"
+		nameToken["pHT"] = "HT"
+		nameToken["Neo"] = "NEO"
+		nameToken["pNEO"] = "NEO"
+		nameToken["Neo Ether"] = "WETH"
+		nameToken["Neo USDT"] = "USDT"
+		nameToken["NEP5 NEO"] = "NEO"
+		nameToken["Ontology Gas"] = "ONG"
+		nameToken["Ontology"] = "ONT"
+		nameToken["pONTd"] = "ONT"
+		nameToken["ontoogy"] = "ONTD"
+		nameToken["pONTd"] = "ONTD"
+		nameToken["Paxos Standard"] = "PAX"
+		nameToken["BNB mapping"] = "BNB"
+		nameToken["pBNB NEP5"] = "BNB"
+		nameToken["DAI mapping"] = "DAI"
+		nameToken["pHECO NEP5"] = "HRC20"
+		nameToken["ONTd mapping"] = "ONTd"
+		nameToken["USDC mapping"] = "USDC"
+		nameToken["USDT mapping"] = "USDT"
+		nameToken["wBTC mapping"] = "WBTC"
+		nameToken["WING mapping"] = "WING"
+		nameToken["Synthetix Network Token"] = "SNX"
+		nameToken["Uniswap"] = "UNI"
+		nameToken["pUSDC"] = "USDC"
+		nameToken["USDT"] = "USDT"
+		nameToken["Tether"] = "USDT"
+		nameToken["USD Coin"] = "USDC"
+		nameToken["pWBTC"] = "WBTC"
+		nameToken["pWING"] = "WING"
+	}
+
+	srcTransfer := new(models.SrcTransfer)
+	err := db.Last(srcTransfer).Error
+	checkError(err, "db.Last(srcTransfer).Error")
+
+	expAssets := make([]*explorerdao.AssetStatistic, 0)
+	err = exp.Raw("select xname,addressnum,amount,amount_btc,amount_usd,txnum from asset_statistic").
+		Scan(&expAssets).Error
+	if err != nil {
+		logs.Error("Scan(&expAssets).Error", err)
+	}
+	assetStatistics := make([]*models.AssetStatistic, 0)
+	for _, expAsset := range expAssets {
+		assetStatistic := new(models.AssetStatistic)
+		tokenBasicName := expAsset.Xname
+		if _, ok := nameToken[expAsset.Xname]; ok {
+			tokenBasicName = nameToken[expAsset.Xname]
+		}
+		assetStatistic.TokenBasicName = tokenBasicName
+		assetStatistic.Amount = expAsset.Amount
+		assetStatistic.Txnum = uint64(expAsset.Txnum)
+		assetStatistic.AmountUsd = expAsset.AmountUsd
+		assetStatistic.AmountBtc = expAsset.AmountBtc
+		assetStatistic.Addressnum = uint64(expAsset.Addressnum)
+		assetStatistic.LastCheckId = srcTransfer.Id
+		assetStatistics = append(assetStatistics, assetStatistic)
+	}
+	err = db.Save(assetStatistics).Error
+	if err != nil {
+		logs.Error("db.Save(assetStatistics).Error", err)
 	}
 }
