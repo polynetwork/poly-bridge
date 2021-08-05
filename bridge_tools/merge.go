@@ -567,7 +567,12 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 	logs.Info("updateTokenBasicAndToken")
 	nameToken := make(map[string]string)
 	descToken := make(map[string]string)
+	unUseHash := make(map[string]bool)
 	if basedef.ENV == "testnet" {
+		unUseHash["49fdf74986fbfaa96ae3cfbdf4e3dfda59e8bcec"] = true
+		unUseHash["b119b3b8e5e6eeffbe754b20ee5b8a42809931fb"] = true
+		unUseHash["33ae7eae016193ba0fe238b223623bc78faac158"] = true
+
 		//xtoken=="Bitcoin"
 		descToken["RENBTC"] = "renBTC"
 		descToken["wbtc"] = "WBTC"
@@ -635,6 +640,9 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 	exp.Raw("select `id`, `xtoken`, `hash`, `xname`, `xtype`, `xprecision` from chain_token").
 		Scan(&expTokens)
 	for _, token := range expTokens {
+		if _, ok := unUseHash[token.Hash]; ok {
+			continue
+		}
 		x := thisTokenHash{}
 		x.ChainId = token.Id
 		x.Hash = token.Hash
