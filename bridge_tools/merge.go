@@ -612,6 +612,8 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 		nameToken["USD Coin"] = "USDC"
 		nameToken["pWBTC"] = "WBTC"
 		nameToken["pWING"] = "WING"
+		nameToken["Wing"] = "WING"
+		nameToken["ONTD"] = "ONTd"
 	}
 	type thisTokenHash struct {
 		Hash    string
