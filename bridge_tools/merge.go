@@ -770,6 +770,7 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	logs.Info("updateAssetStatistic")
 	nameToken := make(map[string]string)
+	unUseAsset := make(map[string]bool)
 	if basedef.ENV == "testnet" {
 		nameToken["Bitcoin"] = "WBTC"
 
@@ -814,6 +815,8 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		nameToken["pWING"] = "WING"
 		nameToken["Wing"] = "WING"
 		nameToken["ONTD"] = "ONTd"
+
+		unUseAsset["coinmarketcap"] = true
 	}
 
 	srcTransfer := new(models.SrcTransfer)
@@ -828,6 +831,9 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	}
 	assetStatistics := make([]*models.AssetStatistic, 0)
 	for _, expAsset := range expAssets {
+		if _, ok := unUseAsset[expAsset.Xname]; ok {
+			continue
+		}
 		assetStatistic := new(models.AssetStatistic)
 		tokenBasicName := expAsset.Xname
 		if _, ok := nameToken[expAsset.Xname]; ok {
