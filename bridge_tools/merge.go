@@ -804,6 +804,8 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		nameToken["USD Coin"] = "USDC"
 		nameToken["pWBTC"] = "WBTC"
 		nameToken["pWING"] = "WING"
+		nameToken["Wing"] = "WING"
+		nameToken["ONTD"] = "ONTd"
 	}
 
 	srcTransfer := new(models.SrcTransfer)
