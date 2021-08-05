@@ -677,7 +677,7 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 			}
 
 			tokenBasic := new(models.TokenBasic)
-			err = db.Where("token_basic_name = ?", tokenBasocName).
+			err = db.Where("name = ?", tokenBasocName).
 				Preload("Tokens").
 				First(tokenBasic).Error
 			if err != nil {
