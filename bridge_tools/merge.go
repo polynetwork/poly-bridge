@@ -2,9 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/log"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
@@ -13,12 +17,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/cosmos/cosmos-sdk/types"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type MergeConfig struct {
@@ -569,7 +567,7 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 	logs.Info("updateTokenBasicAndToken")
 	nameToken := make(map[string]string)
 	descToken := make(map[string]string)
-	if basdef.ENV == "testnet" {
+	if basedef.ENV == "testnet" {
 		//xtoken=="Bitcoin"
 		descToken["RENBTC"] = "renBTC"
 		descToken["wbtc"] = "WBTC"
@@ -762,7 +760,7 @@ func updateTokenBasicAndToken(exp, db *gorm.DB) {
 func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	logs.Info("updateAssetStatistic")
 	nameToken := make(map[string]string)
-	if basdef.ENV == "testnet" {
+	if basedef.ENV == "testnet" {
 		nameToken["Bitcoin"] = "WBTC"
 
 		nameToken["Crowns"] = "CWS"
