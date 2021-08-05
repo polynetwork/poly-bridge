@@ -815,8 +815,21 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		nameToken["pWING"] = "WING"
 		nameToken["Wing"] = "WING"
 		nameToken["ONTD"] = "ONTd"
+		nameToken["oep4"] = "Oep4"
 
 		unUseAsset["coinmarketcap"] = true
+		unUseAsset["EBNB"] = true
+		unUseAsset["pBNB"] = true
+		unUseAsset["pONTd"] = true
+		unUseAsset["pHRC20"] = true
+		unUseAsset["ONTD"] = true
+		unUseAsset["pDAI"] = true
+		unUseAsset["pETH"] = true
+		unUseAsset["pHT"] = true
+		unUseAsset["pNEO"] = true
+		unUseAsset["pUSDC"] = true
+		unUseAsset["pWING"] = true
+
 	}
 
 	srcTransfer := new(models.SrcTransfer)
