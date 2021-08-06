@@ -2,8 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/cosmos/cosmos-sdk/types"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
@@ -12,12 +16,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/cosmos/cosmos-sdk/types"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type MergeConfig struct {
@@ -132,6 +130,10 @@ func merge() {
 		migrateExplorerChainStatisticTables(exp, db)
 	case "verifyTables":
 		verifyTables(bri, db)
+	case "updateTokenBasicAndToken":
+		updateTokenBasicAndToken(exp, db)
+	case "upDateChainBasicChainId":
+		upDateChainBasicChainId(db)
 	default:
 		logs.Error("Invalid step %s", step)
 	}
@@ -518,59 +520,6 @@ func verifyTables(bri, db *gorm.DB) {
 	}
 }
 
-func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
-	logs.Info("Migrating table AssetStatistic")
-	oldAssetstatictics := make([]*explorerdao.AssetStatistic, 0)
-	err := exp.Raw("SELECT a.xname,a.amount,a.addressnum,a.amount_btc,a.amount_usd,a.txnum,b.`hash` from asset_statistic a LEFT JOIN chain_token b on a.xname=b.xtoken").
-		Find(&oldAssetstatictics).Error
-	checkError(err, "Loading table")
-	srcTransfer := new(models.SrcTransfer)
-	err = db.Last(srcTransfer).Error
-	checkError(err, "Loading table")
-	tokenBasics := make([]*models.TokenBasic, 0)
-	err = db.Select("Name").Find(&tokenBasics).Error
-	checkError(err, "Loading table")
-
-	for _, old := range oldAssetstatictics {
-		if old.Hash == "" {
-			continue
-		}
-		err = db.Debug().Raw("SELECT `token_basic_name` FROM `tokens` WHERE hash=? limit 1", old.Hash).
-			Scan(&old).Error
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			checkError(err, "Loading table")
-		}
-	}
-	assetStatistics := make([]*models.AssetStatistic, 0)
-	for _, tokenBasic := range tokenBasics {
-		newAssetstatictic := &models.AssetStatistic{}
-		newAssetstatictic.TokenBasicName = tokenBasic.Name
-		for _, old := range oldAssetstatictics {
-			if old.Hash == "" {
-				continue
-			}
-			if old.TokenBasicName == tokenBasic.Name {
-				if newAssetstatictic.Amount != nil && newAssetstatictic.Amount.Uint64() != uint64(0) {
-					continue
-				}
-				newAssetstatictic.Amount = old.Amount
-				newAssetstatictic.AmountUsd = old.AmountUsd
-				newAssetstatictic.AmountBtc = old.AmountBtc
-				newAssetstatictic.Addressnum = uint64(old.Addressnum)
-				newAssetstatictic.Txnum = uint64(old.Txnum)
-			}
-		}
-		newAssetstatictic.LastCheckId = srcTransfer.Id
-		assetStatistics = append(assetStatistics, newAssetstatictic)
-	}
-	for _, assetStatistic := range assetStatistics {
-		models.NullToZero(&assetStatistic.Amount)
-		models.NullToZero(&assetStatistic.AmountBtc)
-		models.NullToZero(&assetStatistic.AmountUsd)
-	}
-	err = db.Debug().Save(assetStatistics).Error
-	checkError(err, "Saving AssetStatistic table3")
-}
 func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
 	logs.Info("Migrating table ChainStatistic")
 	chainInfos := make([]*explorerdao.ChainInfo, 0)
@@ -613,4 +562,17 @@ func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
 	}
 	err = db.Save(chainStatistics).Error
 	checkError(err, "Saving chainStatistics table")
+}
+
+func updateTokenBasicAndToken(exp, db *gorm.DB) {
+	logs.Info("updateTokenBasicAndToken")
+
+}
+
+func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
+	logs.Info("updateAssetStatistic")
+
+}
+func upDateChainBasicChainId(db *gorm.DB) {
+
 }
