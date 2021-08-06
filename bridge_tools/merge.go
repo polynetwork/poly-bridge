@@ -133,6 +133,8 @@ func merge() {
 		verifyTables(bri, db)
 	case "updateTokenBasicAndToken":
 		updateTokenBasicAndToken(exp, db)
+	case "upDateChainBasicChainId":
+		upDateChainBasicChainId(db)
 	default:
 		logs.Error("Invalid step %s", step)
 	}
@@ -864,5 +866,44 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 	err = db.Save(assetStatistics).Error
 	if err != nil {
 		logs.Error("db.Save(assetStatistics).Error", err)
+	}
+}
+func upDateChainBasicChainId(db *gorm.DB) {
+	srcChainId := make(map[string]uint64)
+	if basedef.ENV == "testnet" {
+		srcChainId["BCC"] = 79
+		srcChainId["Bcopr"] = 79
+		srcChainId["BNB"] = 79
+		srcChainId["DOG"] = 79
+		srcChainId["ERC20Test"] = 79
+		srcChainId["FLM"] = 7
+		srcChainId["GAS"] = 5
+		srcChainId["HRC20"] = 7
+		srcChainId["HT"] = 7
+		srcChainId["ISMTest"] = 79
+		srcChainId["MATIC"] = 202
+		srcChainId["MDX"] = 79
+		srcChainId["NB"] = 202
+		srcChainId["NEO"] = 5
+		srcChainId["OKB"] = 00
+		srcChainId["ONG"] = 3
+		srcChainId["ONT"] = 3
+		srcChainId["ONTd"] = 3
+		srcChainId["T-SOFA"] = 79
+		srcChainId["WETH"] = 5
+	}
+	tokenBasics := make([]*models.TokenBasic, 0)
+	err := db.Find(&tokenBasics).Error
+	if err != nil {
+		panic(fmt.Sprintf("Find(&tokenStatistics).Error %v", err))
+	}
+	for _, tokenBasic := range tokenBasics {
+		if _, ok := srcChainId[tokenBasic.Name]; ok {
+			tokenBasic.ChainId = srcChainId[tokenBasic.Name]
+			err = db.Save(tokenBasic).Error
+			if err != nil {
+				logs.Error("Save(tokenBasic).Error %v", *tokenBasic)
+			}
+		}
 	}
 }

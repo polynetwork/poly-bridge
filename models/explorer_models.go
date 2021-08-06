@@ -29,6 +29,7 @@ package models
 
 import (
 	"encoding/json"
+	"github.com/astaxie/beego/logs"
 	log "github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
@@ -311,8 +312,8 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTx.DstTransfer.Amount = NewBigIntFromInt(0)
 	}
 	tChainTxResp.Transfer = &TChainTransferResp{
-		From:   tChainTx.DstTransfer.From,
-		To:     tChainTx.DstTransfer.To,
+		From:   basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.From),
+		To:     basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.To),
 		Amount: tChainTx.DstTransfer.Amount.String(),
 	}
 	tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
@@ -621,6 +622,9 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 	allAddress := uint32(0)
 	allTransactions := uint32(0)
 	for _, chainStatistic := range chainStatistics {
+		if chainStatistic.ChainId == uint64(0) {
+			continue
+		}
 		amountBtcTotal := new(big.Int).SetInt64(0)
 		amountUsdTotal := new(big.Int).SetInt64(0)
 		totalHeight := uint64(0)
@@ -639,14 +643,19 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 					amountBtcTotal = new(big.Int).Add(amountBtcTotal, amountBtc)
 					amountUsdTotal = new(big.Int).Add(amountUsdTotal, amountUsd)
 				}
+				tokenBasicChainId := uint64(0)
+				if tokenStatistic.Token != nil && tokenStatistic.Token.TokenBasic != nil {
+					logs.Info("MakeTransferInfoResp tokenStatistic.Token.TokenBasic nil")
+					tokenBasicChainId = tokenStatistic.Token.TokenBasic.ChainId
+				}
 				assetTransferStatisticResp := &AssetTransferStatisticResp{
-					Name:            tokenStatistic.Token.TokenBasicName,
+					Name:            tokenStatistic.Token.Name,
 					Hash:            tokenStatistic.Hash,
 					Amount:          FormatAmount(2, NewBigInt(amount)),
 					AmountBtc:       FormatAmount(4, NewBigInt(amountBtc)),
 					AmountUsd:       FormatAmount(4, NewBigInt(amountUsd)),
 					AmountUsd1:      amountUsd,
-					SourceChainName: ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId),
+					SourceChainName: ChainId2Name(tokenBasicChainId),
 				}
 				assetTransferStatisticResps = append(assetTransferStatisticResps, assetTransferStatisticResp)
 			}
