@@ -83,6 +83,19 @@ func (this *EthereumChainListen) GetDefer() uint64 {
 	return this.ethCfg.Defer
 }
 
+func (this *EthereumChainListen) getPLTUnlock(tx common.Hash) *models.ProxyUnlockEvent {
+	address, asset, amount, err := this.GetPaletteLockProxyEvent(tx)
+	if err != nil {
+		logs.Error("Get palette lock proxy event error %v", err)
+		return nil
+	}
+	return &models.ProxyUnlockEvent{
+		Amount:      amount,
+		ToAddress:   strings.ToLower(address.String()[2:]),
+		ToAssetHash: strings.ToLower(asset.String()[2:]),
+	}
+}
+
 func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {
@@ -228,22 +241,30 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.SrcChainId = uint64(unLockEvent.FChainId)
 			dstTransaction.Contract = unLockEvent.Contract
 			dstTransaction.PolyHash = unLockEvent.RTxHash
-			for _, v := range proxyUnlockEvents {
-				if v.TxHash == unLockEvent.TxHash {
-					dstTransfer := &models.DstTransfer{}
-					dstTransfer.TxHash = unLockEvent.TxHash
-					dstTransfer.Time = tt
-					dstTransfer.ChainId = this.GetChainId()
-					dstTransfer.From = unLockEvent.Contract
-					dstTransfer.To = v.ToAddress
-					dstTransfer.Asset = v.ToAssetHash
-					dstTransfer.Amount = models.NewBigInt(v.Amount)
-					dstTransaction.DstTransfer = dstTransfer
-					if this.isNFTECCMUnlockEvent(unLockEvent) {
-						dstTransaction.Standard = models.TokenTypeErc721
-						dstTransaction.DstTransfer.Standard = models.TokenTypeErc721
+			var unlock *models.ProxyUnlockEvent
+			if dstTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID {
+				unlock = this.getPLTUnlock(common.HexToHash("0x" + unLockEvent.TxHash))
+			} else {
+				for _, v := range proxyUnlockEvents {
+					if v.TxHash == unLockEvent.TxHash {
+						unlock = v
+						break
 					}
-					break
+				}
+			}
+			if unlock != nil {
+				dstTransfer := &models.DstTransfer{}
+				dstTransfer.TxHash = unLockEvent.TxHash
+				dstTransfer.Time = tt
+				dstTransfer.ChainId = this.GetChainId()
+				dstTransfer.From = unLockEvent.Contract
+				dstTransfer.To = unlock.ToAddress
+				dstTransfer.Asset = unlock.ToAssetHash
+				dstTransfer.Amount = models.NewBigInt(unlock.Amount)
+				dstTransaction.DstTransfer = dstTransfer
+				if this.isNFTECCMUnlockEvent(unLockEvent) {
+					dstTransaction.Standard = models.TokenTypeErc721
+					dstTransaction.DstTransfer.Standard = models.TokenTypeErc721
 				}
 			}
 			if dstTransaction.DstTransfer != nil {
