@@ -255,7 +255,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
 			statistic.InAmountBtc = addDecimalBigInt(statistic.InAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
 			statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
-			statistic.LastInCheckId = nowInId
 		}
 
 		out, err := this.dao.CalculateOutTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
@@ -274,9 +273,9 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
 			statistic.OutAmountUsd = addDecimalBigInt(statistic.OutAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
 			statistic.OutAmountBtc = addDecimalBigInt(statistic.OutAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
-			statistic.LastOutCheckId = nowOutId
 		}
-
+		statistic.LastInCheckId = nowInId
+		statistic.LastOutCheckId = nowOutId
 		if in != nil || out != nil {
 			err = this.dao.SaveTokenStatistic(statistic)
 			if err != nil {

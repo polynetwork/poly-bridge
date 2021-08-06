@@ -829,7 +829,7 @@ func migrateExplorerAssetStatisticTables(exp, db *gorm.DB) {
 		unUseAsset["pNEO"] = true
 		unUseAsset["pUSDC"] = true
 		unUseAsset["pWING"] = true
-
+		unUseAsset["pWBTC"] = true
 	}
 
 	srcTransfer := new(models.SrcTransfer)

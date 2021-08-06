@@ -151,7 +151,9 @@ func MakeTokenBasicResp(tokenBasic *TokenBasic) *CrossChainTokenResp {
 		Name: tokenBasic.Name,
 	}
 	for _, token := range tokenBasic.Tokens {
-		crossChainTokenResp.Tokens = append(crossChainTokenResp.Tokens, MakeChainTokenResp(token))
+		if token.Property == int64(1) {
+			crossChainTokenResp.Tokens = append(crossChainTokenResp.Tokens, MakeChainTokenResp(token))
+		}
 	}
 	return crossChainTokenResp
 }
