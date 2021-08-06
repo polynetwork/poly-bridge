@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
