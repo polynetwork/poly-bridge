@@ -29,8 +29,7 @@ package models
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego/logs"
-	log "github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
 	"sort"
@@ -373,7 +372,7 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
 	jsonToken, _ := json.Marshal(token)
-	log.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
+	logs.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
@@ -383,7 +382,7 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 		crossTransfer.TokenName = transfer.Asset
 		crossTransfer.Amount = transfer.Amount.String()
 	}
-	log.Info("xian crossTransfer.Amount:", crossTransfer.Amount)
+	logs.Info("xian crossTransfer.Amount:", crossTransfer.Amount)
 	return crossTransfer
 }
 
@@ -650,10 +649,11 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 					AmountUsd1: amountUsd,
 				}
 				if tokenStatistic.Token != nil {
-					logs.Info("MakeTransferInfoResp tokenStatistic_Token nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
 					assetTransferStatisticResp.Name = tokenStatistic.Token.Name
 					assetTransferStatisticResp.Hash = tokenStatistic.Hash
 					assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
+				} else {
+					logs.Info("MakeTransferInfoResp tokenStatistic_Token nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
 				}
 				assetTransferStatisticResps = append(assetTransferStatisticResps, assetTransferStatisticResp)
 			}
