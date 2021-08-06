@@ -276,12 +276,11 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		}
 		statistic.LastInCheckId = nowInId
 		statistic.LastOutCheckId = nowOutId
-		if in != nil || out != nil {
-			err = this.dao.SaveTokenStatistic(statistic)
-			if err != nil {
-				return fmt.Errorf("Failed to SaveTokenStatistic %w", err)
-			}
+		err = this.dao.SaveTokenStatistic(statistic)
+		if err != nil {
+			return fmt.Errorf("Failed to SaveTokenStatistic %w", err)
 		}
+
 	}
 	return nil
 }
