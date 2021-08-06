@@ -29,7 +29,7 @@ package models
 
 import (
 	"encoding/json"
-	log "github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
 	"sort"
@@ -151,7 +151,9 @@ func MakeTokenBasicResp(tokenBasic *TokenBasic) *CrossChainTokenResp {
 		Name: tokenBasic.Name,
 	}
 	for _, token := range tokenBasic.Tokens {
-		crossChainTokenResp.Tokens = append(crossChainTokenResp.Tokens, MakeChainTokenResp(token))
+		if token.Property == int64(1) {
+			crossChainTokenResp.Tokens = append(crossChainTokenResp.Tokens, MakeChainTokenResp(token))
+		}
 	}
 	return crossChainTokenResp
 }
@@ -309,8 +311,8 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTx.DstTransfer.Amount = NewBigIntFromInt(0)
 	}
 	tChainTxResp.Transfer = &TChainTransferResp{
-		From:   tChainTx.DstTransfer.From,
-		To:     tChainTx.DstTransfer.To,
+		From:   basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.From),
+		To:     basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.To),
 		Amount: tChainTx.DstTransfer.Amount.String(),
 	}
 	tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
@@ -370,7 +372,7 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
 	jsonToken, _ := json.Marshal(token)
-	log.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
+	logs.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
@@ -380,7 +382,7 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 		crossTransfer.TokenName = transfer.Asset
 		crossTransfer.Amount = transfer.Amount.String()
 	}
-	log.Info("xian crossTransfer.Amount:", crossTransfer.Amount)
+	logs.Info("xian crossTransfer.Amount:", crossTransfer.Amount)
 	return crossTransfer
 }
 
@@ -619,6 +621,9 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 	allAddress := uint32(0)
 	allTransactions := uint32(0)
 	for _, chainStatistic := range chainStatistics {
+		if chainStatistic.ChainId == uint64(0) {
+			continue
+		}
 		amountBtcTotal := new(big.Int).SetInt64(0)
 		amountUsdTotal := new(big.Int).SetInt64(0)
 		totalHeight := uint64(0)
@@ -638,13 +643,17 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 					amountUsdTotal = new(big.Int).Add(amountUsdTotal, amountUsd)
 				}
 				assetTransferStatisticResp := &AssetTransferStatisticResp{
-					Name:            tokenStatistic.Token.TokenBasicName,
-					Hash:            tokenStatistic.Hash,
-					Amount:          FormatAmount(2, NewBigInt(amount)),
-					AmountBtc:       FormatAmount(4, NewBigInt(amountBtc)),
-					AmountUsd:       FormatAmount(4, NewBigInt(amountUsd)),
-					AmountUsd1:      amountUsd,
-					SourceChainName: ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId),
+					Amount:     FormatAmount(2, NewBigInt(amount)),
+					AmountBtc:  FormatAmount(4, NewBigInt(amountBtc)),
+					AmountUsd:  FormatAmount(4, NewBigInt(amountUsd)),
+					AmountUsd1: amountUsd,
+				}
+				if tokenStatistic.Token != nil {
+					assetTransferStatisticResp.Name = tokenStatistic.Token.Name
+					assetTransferStatisticResp.Hash = tokenStatistic.Hash
+					assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
+				} else {
+					logs.Info("MakeTransferInfoResp tokenStatistic_Token nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
 				}
 				assetTransferStatisticResps = append(assetTransferStatisticResps, assetTransferStatisticResp)
 			}
