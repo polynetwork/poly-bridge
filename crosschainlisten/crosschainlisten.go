@@ -20,6 +20,9 @@ package crosschainlisten
 import (
 	"fmt"
 	"math"
+	"runtime/debug"
+	"time"
+
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
@@ -32,8 +35,6 @@ import (
 	"poly-bridge/crosschainlisten/switcheolisten"
 	"poly-bridge/http/tools"
 	"poly-bridge/models"
-	"runtime/debug"
-	"time"
 
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -97,6 +98,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return neo3listen.NewNeo3ChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == basedef.MATIC_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == basedef.PLT_CROSSCHAIN_ID {
+		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	} else {
 		return nil
 	}
@@ -151,7 +154,7 @@ func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperT
 		if err != nil {
 			return
 		}
-		if locks == len(w) && locks == len(s) && unlocks == len(d) {
+		if locks == len(s) && unlocks == len(d) {
 			return
 		}
 		if c > 1 {
