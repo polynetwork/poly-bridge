@@ -66,10 +66,11 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 	if !ok {
 		return fmt.Errorf("type error, %v", v)
 	}
-	if string(value) == "null" {
+	str := string(value)
+	if str == "null" || str == "nil" || str == "<nil>" {
 		return nil
 	}
-	data, ok := new(big.Int).SetString(string(value), 10)
+	data, ok := new(big.Int).SetString(str, 10)
 	if !ok {
 		return fmt.Errorf("not a valid big integer: %s", value)
 	}
