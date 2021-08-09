@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 
+	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/explorer"
@@ -66,6 +67,7 @@ func run(ctx *cli.Context) {
 	}
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
+	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
 	// bridge http
 	http.Init()

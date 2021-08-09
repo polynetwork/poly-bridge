@@ -22,12 +22,13 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"poly-bridge/common"
 	"runtime"
 	"syscall"
 
+	"poly-bridge/basedef"
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/coinpricelisten"
+	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
@@ -83,6 +84,7 @@ func startServer(ctx *cli.Context) {
 		logs.Info("%s\n", string(conf))
 	}
 	tools.Init()
+	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
 	crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
 	if config.Backup {

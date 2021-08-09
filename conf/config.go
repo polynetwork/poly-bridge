@@ -201,6 +201,7 @@ type IPPortConfig struct {
 
 type Config struct {
 	Server                string
+	Env                   string
 	RunMode               string
 	Backup                bool
 	LogFile               string
