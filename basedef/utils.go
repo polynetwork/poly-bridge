@@ -110,3 +110,11 @@ func Int64FromFigure(figure int) int64 {
 	}
 	return x
 }
+
+func ConfirmEnv(env string) {
+	if ENV != env {
+		logs.Error("Config env(%s) does not match build env(%s)", env, ENV)
+		os.Exit(1)
+	}
+	logs.Info("Current env: %s", ENV)
+}

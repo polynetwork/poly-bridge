@@ -20,6 +20,7 @@ package main
 import (
 	"encoding/json"
 
+	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	_ "poly-bridge/routers"
@@ -36,6 +37,7 @@ func main() {
 	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_http.log"}`)
 	configFile := beego.AppConfig.String("chain_config")
 	config := conf.NewConfig(configFile)
+	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
 
 	mode := beego.AppConfig.String("runmode")

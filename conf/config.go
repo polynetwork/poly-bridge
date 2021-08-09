@@ -152,13 +152,14 @@ type EventEffectConfig struct {
 }
 
 type IPPortConfig struct {
-	WBTCIP	string
-	USDTIP	string
-	DingIP	string
+	WBTCIP string
+	USDTIP string
+	DingIP string
 }
 
 type Config struct {
 	Server                string
+	Env                   string
 	Backup                bool
 	ChainListenConfig     []*ChainListenConfig
 	CoinPriceUpdateSlot   int64
@@ -168,7 +169,7 @@ type Config struct {
 	EventEffectConfig     *EventEffectConfig
 	StatsConfig           *StatsConfig
 	DBConfig              *DBConfig
-	IPPortConfig		  *IPPortConfig
+	IPPortConfig          *IPPortConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
