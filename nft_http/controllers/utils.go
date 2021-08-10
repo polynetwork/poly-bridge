@@ -98,40 +98,42 @@ func Initialize(c *conf.Config) {
 	}
 	lruDB = arcLRU
 
-	fetcher = meta.NewStoreFetcher(db)
-	for _, asset := range assets {
-		if asset.TokenBasic == nil {
-			continue
-		}
-		fetcherTyp := meta.FetcherType(asset.TokenBasic.MetaFetcherType)
-		baseUri := asset.TokenBasic.Meta
-		assetName := asset.TokenBasic.Name
-		fetcher.Register(fetcherTyp, asset.ChainId, assetName, baseUri)
-	}
-
-	txCounter = NewTransactionCounter()
-
-	// only fetcher one kind of NFT asset for each chain
-	homePageItemsExists := make(map[uint64]bool)
-	maxNum := 200
-	cachingHomePageItems := func() {
-		for _, v := range assets {
-			if _, exist := homePageItemsExists[v.ChainId]; exist {
+	go func() {
+		fetcher = meta.NewStoreFetcher(db)
+		for _, asset := range assets {
+			if asset.TokenBasic == nil {
 				continue
 			}
-			if ok, _ := prepareHomepageItems(v, maxNum); ok {
-				homePageItemsExists[v.ChainId] = true
+			fetcherTyp := meta.FetcherType(asset.TokenBasic.MetaFetcherType)
+			baseUri := asset.TokenBasic.Meta
+			assetName := asset.TokenBasic.Name
+			fetcher.Register(fetcherTyp, asset.ChainId, assetName, baseUri)
+		}
+
+		txCounter = NewTransactionCounter()
+
+		// only fetcher one kind of NFT asset for each chain
+		homePageItemsExists := make(map[uint64]bool)
+		maxNum := 200
+		cachingHomePageItems := func() {
+			for _, v := range assets {
+				if _, exist := homePageItemsExists[v.ChainId]; exist {
+					continue
+				}
+				if ok, _ := prepareHomepageItems(v, maxNum); ok {
+					homePageItemsExists[v.ChainId] = true
+				}
 			}
 		}
-	}
-	cachingHomePageItems()
-	go func() {
-		for {
-			select {
-			case <-homePageTicker.C:
-				cachingHomePageItems()
+		cachingHomePageItems()
+		go func() {
+			for {
+				select {
+				case <-homePageTicker.C:
+					cachingHomePageItems()
+				}
 			}
-		}
+		}()
 	}()
 }
 
