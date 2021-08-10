@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
-	"github.com/stretchr/testify/assert"
 	"poly-bridge/conf"
 	"testing"
+
+	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/context"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -29,7 +30,7 @@ func TestInfoController_Home(t *testing.T) {
 	}
 
 	c := new(InfoController)
-	c.Controller = beego.Controller{}
+	c.Controller = web.Controller{}
 	assert.NoError(t, encodeContextParams(&c.Controller, req))
 
 	c.Home()
@@ -46,14 +47,14 @@ func TestItemController_Items(t *testing.T) {
 	}
 
 	c := new(ItemController)
-	bc := new(beego.Controller)
+	bc := new(web.Controller)
 	c.Controller = *bc
 	assert.NoError(t, encodeContextParams(&c.Controller, req))
 
 	c.Items()
 }
 
-func encodeContextParams(c *beego.Controller, request interface{}) error {
+func encodeContextParams(c *web.Controller, request interface{}) error {
 	c.Ctx = new(context.Context)
 	c.Ctx.Input = new(context.BeegoInput)
 	c.Ctx.Output = new(context.BeegoOutput)

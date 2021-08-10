@@ -56,3 +56,56 @@ type ProxyUnlockEvent struct {
 	ToAddress   string
 	Amount      *big.Int
 }
+
+type SwapLockEvent struct {
+	Type          uint64
+	TxHash        string
+	FromAddress   string
+	FromAssetHash string
+	ToChainId     uint64
+	ToPoolId      uint64
+	ToAddress     string
+	Amount        *big.Int
+	FeeAssetHash  string
+	Fee           *big.Int
+	ServerId      *big.Int
+}
+
+type SwapUnlockEvent struct {
+	Type         uint64
+	TxHash       string
+	ToPoolId     uint64
+	InAssetHash  string
+	InAmount     *big.Int
+	OutAssetHash string
+	OutAmount    *big.Int
+	ToChainId    uint64
+	ToAssetHash  string
+	ToAddress    string
+}
+
+type SwapEvent struct {
+	Type          uint64
+	TxHash        string
+	FromAddress   string
+	FromAssetHash string
+	ToChainId     uint64
+	ToPoolId      uint64
+	ToAddress     string
+	Amount        *big.Int
+	FeeAssetHash  string
+	Fee           *big.Int
+	ServerId      *big.Int
+}
+type UnSwapEvent struct {
+	Type         uint64
+	TxHash       string
+	ToPoolId     uint64
+	InAssetHash  string
+	InAmount     *big.Int
+	OutAssetHash string
+	OutAmount    *big.Int
+	ToChainId    uint64
+	ToAssetHash  string
+	ToAddress    string
+}

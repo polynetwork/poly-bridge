@@ -422,3 +422,19 @@ func (dao *ExplorerDao) RemoveTokens(tokens []string) error {
 func (dao *ExplorerDao) Name() string {
 	return basedef.SERVER_EXPLORER
 }
+
+type AssetStatistic struct {
+	Xname          string
+	Addressnum     uint32
+	Amount         *models.BigInt `gorm:"type:varchar(64);not null"`
+	AmountBtc      *models.BigInt `gorm:"type:varchar(64);not null"`
+	AmountUsd      *models.BigInt `gorm:"type:varchar(64);not null"`
+	Txnum          uint32
+	Hash           string
+	TokenBasicName string
+}
+type ChainInfo struct {
+	Id    uint64 `gorm:"column:id"`
+	Txin  int64  `gorm:"column:txin"`
+	Txout int64  `gorm:"column:txout"`
+}

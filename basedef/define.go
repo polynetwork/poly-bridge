@@ -19,6 +19,9 @@ const (
 	STATE_SOURCE_CONFIRMED
 	STATE_POLY_CONFIRMED
 	STATE_DESTINATION_DONE
+
+	STATE_WAIT = 100
+	STATE_SKIP = 101
 )
 
 const (
@@ -30,5 +33,18 @@ const (
 )
 
 const (
+	MAINNET = "mainnet"
+	TESTNET = "testnet"
+	DEVNET  = "devnet"
+)
+
+const (
 	ADDRESS_LENGTH = 64
+)
+
+const (
+	SWAP_SWAP = iota
+	SWAP_ADDLIQUIDITY
+	SWAP_REMOVELIQUIDITY
+	SWAP_ROLLBACK
 )

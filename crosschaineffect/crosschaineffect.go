@@ -18,7 +18,7 @@
 package crosschaineffect
 
 import (
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect/bridgeeffect"

@@ -22,7 +22,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	log "github.com/astaxie/beego/logs"
+	log "github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/polynetwork/poly/native/service/header_sync/bsc"

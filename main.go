@@ -19,27 +19,79 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"os"
 
+	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
-	_ "poly-bridge/routers"
+	"poly-bridge/explorer"
+	"poly-bridge/http"
+	"poly-bridge/nft_http"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
-	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/plugins/cors"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/context"
+	"github.com/beego/beego/v2/server/web/filter/cors"
+	"github.com/urfave/cli"
 )
 
 func main() {
+	if err := setupApp().Run(os.Args); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
 
+func setupApp() *cli.App {
+	app := cli.NewApp()
+	app.Name = "poly bridge server"
+	app.Usage = "poly-bridge http server"
+	app.Action = run
+	app.Version = "1.0.0"
+	app.Copyright = "Copyright in 2019 The PolyNetwork Authors"
+	app.Flags = []cli.Flag{
+		conf.ConfigPathFlag,
+	}
+	return app
+}
+
+func run(ctx *cli.Context) {
 	// Initialize
-	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_http.log"}`)
-	configFile := beego.AppConfig.String("chain_config")
+	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
-	common.SetupChainsSDK(config)
+	if config == nil || config.HttpConfig == nil {
+		fmt.Println(config)
+		fmt.Println(config.HttpConfig)
+		panic("Invalid server config")
+	}
+	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
-	mode := beego.AppConfig.String("runmode")
-	if mode == "dev" {
+	basedef.ConfirmEnv(config.Env)
+	common.SetupChainsSDK(config)
+	// bridge http
+	http.Init()
+	// explorer http
+	explorer.Init()
+
+	// register http routers
+	web.AddNamespace(
+		web.NewNamespace("/v1",
+			nft_http.Init(config),
+			http.GetRouter(),
+			explorer.GetRouter(),
+		),
+	)
+
+	// Insert web config
+	web.BConfig.Listen.HTTPAddr = config.HttpConfig.Address
+	web.BConfig.Listen.HTTPPort = config.HttpConfig.Port
+	web.BConfig.RunMode = config.RunMode
+	web.BConfig.AppName = "bridgehttp"
+	web.BConfig.CopyRequestBody = true
+	web.BConfig.EnableErrorsRender = false
+
+	if config.RunMode == "dev" {
 		var FilterLog = func(ctx *context.Context) {
 			url, _ := json.Marshal(ctx.Input.Data()["RouterPattern"])
 			params := string(ctx.Input.RequestBody)
@@ -51,13 +103,16 @@ func main() {
 			outputStr := "\n" + topDivider + "\n│ url:" + string(url) + "\n" + middleDivider + "\n│ request:" + string(params) + "\n│ response:" + string(outputBytes) + "\n" + bottomDivider
 			logs.Info(outputStr)
 		}
-		beego.InsertFilter("/*", beego.FinishRouter, FilterLog, false)
+		web.InsertFilter("/*", web.FinishRouter, FilterLog)
 	}
-	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
+
+	web.InsertFilter("*", web.BeforeRouter, cors.Allow(&cors.Options{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-		AllowCredentials: true}))
-	beego.Run()
+		AllowCredentials: true}),
+	)
+
+	web.Run()
 }

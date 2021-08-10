@@ -20,9 +20,27 @@ package conf
 import (
 	"encoding/json"
 	"poly-bridge/basedef"
+	"strings"
+	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/urfave/cli"
 )
+
+var GlobalConfig *Config
+
+var (
+	ConfigPathFlag = cli.StringFlag{
+		Name:  "config",
+		Usage: "Server config file `<path>`",
+		Value: "./conf/config_testnet.json",
+	}
+)
+
+//getFlagName deal with short flag, and return the flag name whether flag name have short name
+func GetFlagName(flag cli.Flag) string {
+	return strings.TrimSpace(strings.Split(flag.GetName(), ",")[0])
+}
 
 type DBConfig struct {
 	URL      string
@@ -30,6 +48,19 @@ type DBConfig struct {
 	Password string
 	Scheme   string
 	Debug    bool
+}
+
+type RedisConfig struct {
+	Proto        string        `json:"proto"`
+	Addr         string        `json:"addr"`
+	Password     string        `json:"password"`
+	PoolSize     int           `json:"pool_size"`
+	MinIdleConns int           `json:"min_idle_conns"`
+	DialTimeout  time.Duration `json:"dial_timeout"`
+	ReadTimeout  time.Duration `json:"read_timeout"`
+	WriteTimeout time.Duration `json:"write_timeout"`
+	IdleTimeout  time.Duration `json:"idle_timeout"`
+	Expiration   time.Duration `json:"expiration"`
 }
 
 type ExpConfig struct {
@@ -58,6 +89,7 @@ type ChainListenConfig struct {
 	NFTWrapperContract string
 	NFTProxyContract   string
 	NFTQueryContract   string
+	SwapContract       string
 }
 
 func (cfg *ChainListenConfig) GetNodesUrl() []string {
@@ -139,8 +171,13 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 }
 
 type StatsConfig struct {
-	TokenBasicStatsInterval int64 // Chain token basic stats aggregation interval in seconds
-	TokenStatsInterval      int64 // Chain token stats aggregation interval in seconds
+	TokenBasicStatsInterval   int64 // Chain token basic stats aggregation interval in seconds
+	TokenAmountCheckInterval  int64 // Chain token stats aggregation interval in seconds
+	TokenStatisticInterval    int64 // TokenStatistic aggregation interval in seconds
+	ChainStatisticInterval    int64 // ChainStatisticInterval except asset aggregation interval in seconds
+	ChainAddressCheckInterval int64 // ChainStatistic's asset Interval aggregation interval in seconds
+	AssetStatisticInterval    int64 // AssetStatistic aggregation interval in seconds
+	AssetAdressInterval       int64 // AssetAdress aggregation interval in seconds
 }
 
 type EventEffectConfig struct {
@@ -151,15 +188,24 @@ type EventEffectConfig struct {
 	TimeStatisticSlot int64
 }
 
+type HttpConfig struct {
+	Address string
+	Port    int
+}
+
 type IPPortConfig struct {
-	WBTCIP	string
-	USDTIP	string
-	DingIP	string
+	WBTCIP string
+	USDTIP string
+	DingIP string
 }
 
 type Config struct {
 	Server                string
+	Env                   string
+	RunMode               string
 	Backup                bool
+	LogFile               string
+	HttpConfig            *HttpConfig
 	ChainListenConfig     []*ChainListenConfig
 	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig
@@ -168,7 +214,8 @@ type Config struct {
 	EventEffectConfig     *EventEffectConfig
 	StatsConfig           *StatsConfig
 	DBConfig              *DBConfig
-	IPPortConfig		  *IPPortConfig
+	RedisConfig           *RedisConfig
+	IPPortConfig          *IPPortConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
@@ -210,5 +257,6 @@ func NewConfig(filePath string) *Config {
 		logs.Error("NewServiceConfig: failed, err: %s", err)
 		return nil
 	}
+	GlobalConfig = config
 	return config
 }

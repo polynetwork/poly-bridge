@@ -30,8 +30,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru"
 	"gorm.io/driver/mysql"
@@ -40,16 +40,16 @@ import (
 )
 
 var (
-	db            *gorm.DB
-	chainConfig   = make(map[uint64]*conf.ChainListenConfig)
-	txCounter     *TransactionCounter
-	sdks          = make(map[uint64]*chainsdk.EthereumSdkPro)
-	assets        = make([]*models.Token, 0)
-	inquirerAddrs = make(map[uint64]common.Address)
-	fetcher       *meta.StoreFetcher
-	feeTokens     = make(map[uint64]*models.Token)
-	lruDB         *lru.ARCCache
-	homePageTicker    = time.NewTimer(600 * time.Second)
+	db             *gorm.DB
+	chainConfig    = make(map[uint64]*conf.ChainListenConfig)
+	txCounter      *TransactionCounter
+	sdks           = make(map[uint64]*chainsdk.EthereumSdkPro)
+	assets         = make([]*models.Token, 0)
+	inquirerAddrs  = make(map[uint64]common.Address)
+	fetcher        *meta.StoreFetcher
+	feeTokens      = make(map[uint64]*models.Token)
+	lruDB          *lru.ARCCache
+	homePageTicker = time.NewTimer(600 * time.Second)
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -128,7 +128,7 @@ func Initialize(c *conf.Config) {
 	go func() {
 		for {
 			select {
-			case <- homePageTicker.C:
+			case <-homePageTicker.C:
 				cachingHomePageItems()
 			}
 		}
@@ -231,7 +231,7 @@ var errMap = map[int]string{
 	ErrCodeNodeInvalid: "blockchain node exception",
 }
 
-func input(c *beego.Controller, req interface{}) bool {
+func input(c *web.Controller, req interface{}) bool {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		code := ErrCodeRequest
 		customInput(c, code, errMap[code])
@@ -241,20 +241,20 @@ func input(c *beego.Controller, req interface{}) bool {
 	}
 }
 
-func customInput(c *beego.Controller, code int, msg string) {
+func customInput(c *web.Controller, code int, msg string) {
 	c.Data["json"] = models.MakeErrorRsp(msg)
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 }
 
-func notExist(c *beego.Controller) {
+func notExist(c *web.Controller) {
 	code := ErrCodeNotExist
 	c.Data["json"] = models.MakeErrorRsp(errMap[code])
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 }
 
-func checkPageSize(c *beego.Controller, size int) bool {
+func checkPageSize(c *web.Controller, size int) bool {
 	if size <= 10 {
 		return true
 	}
@@ -285,19 +285,19 @@ func checkNumString(numStr string) (*big.Int, error) {
 	return data, nil
 }
 
-func nodeInvalid(c *beego.Controller) {
+func nodeInvalid(c *web.Controller) {
 	code := ErrCodeNodeInvalid
 	c.Data["json"] = models.MakeErrorRsp(errMap[code])
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 }
 
-func output(c *beego.Controller, data interface{}) {
+func output(c *web.Controller, data interface{}) {
 	c.Data["json"] = data
 	c.ServeJSON()
 }
 
-func customOutput(c *beego.Controller, code int, msg string) {
+func customOutput(c *web.Controller, code int, msg string) {
 	c.Data["json"] = models.MakeErrorRsp(msg)
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()

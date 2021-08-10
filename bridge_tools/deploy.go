@@ -18,13 +18,14 @@
 package main
 
 import (
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"poly-bridge/bridge_tools/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
 	"strings"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func startDeploy(cfg *conf.DeployConfig) {
@@ -38,8 +39,24 @@ func startDeploy(cfg *conf.DeployConfig) {
 	if err != nil {
 		panic(err)
 	}
-	err = db.Debug().AutoMigrate(&models.Chain{}, &models.WrapperTransaction{}, &models.ChainFee{}, &models.TokenBasic{}, &models.Token{}, &models.PriceMarket{},
-		&models.TokenMap{}, &models.SrcTransaction{}, &models.SrcTransfer{}, &models.PolyTransaction{}, &models.DstTransaction{}, &models.DstTransfer{}, &models.NFTProfile{})
+	err = db.Debug().AutoMigrate(
+		&models.ChainFee{},
+		&models.Chain{},
+		&models.DstSwap{},
+		&models.DstTransaction{},
+		&models.DstTransfer{},
+		&models.NFTProfile{},
+		&models.PolyTransaction{},
+		&models.PriceMarket{},
+		&models.SrcSwap{},
+		&models.SrcTransaction{},
+		&models.SrcTransfer{},
+		&models.TimeStatistic{},
+		&models.TokenBasic{},
+		&models.TokenMap{},
+		&models.Token{},
+		&models.WrapperTransaction{},
+	)
 	if err != nil {
 		panic(err)
 	}
