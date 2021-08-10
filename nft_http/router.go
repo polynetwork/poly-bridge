@@ -24,21 +24,9 @@ import (
 	"github.com/beego/beego/v2/server/web"
 )
 
-func initControllers(config *conf.Config) {
-	mode, err := web.AppConfig.String("runmode")
-	if err != nil {
-		panic(err)
-	}
-	httpPort, err := web.AppConfig.Int("httpport")
-	if err != nil {
-		panic(err)
-	}
-	controllers.SetBaseInfo(mode, httpPort)
-	controllers.Initialize(config)
-}
-
 func Init(config *conf.Config) web.LinkNamespace {
-	initControllers(config)
+	controllers.SetBaseInfo(config.HttpConfig.Address, config.HttpConfig.Port)
+	controllers.Initialize(config)
 
 	ns := web.NSNamespace("/nft",
 		web.NSRouter("/", &controllers.InfoController{}, "*:Get"),
