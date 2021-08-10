@@ -19,13 +19,14 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/joeqian10/neo3-gogogo/rpc/models"
 	"math/big"
 	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/joeqian10/neo3-gogogo/rpc/models"
 )
 
 type Neo3Info struct {

@@ -3,7 +3,6 @@ package bridgeeffect
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -16,6 +15,8 @@ import (
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
 	"time"
+
+	"github.com/beego/beego/v2/core/logs"
 )
 
 type AssetDetail struct {

@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	logs "github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

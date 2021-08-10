@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/beego/beego/v2/core/logs"
 )
 
 var DingUrl string
@@ -45,8 +46,8 @@ func PostDingmarkdown(title, body string) error {
 
 }
 
-func PostDingtext(body string,dingURL string) error {
-	DingUrl=dingURL
+func PostDingtext(body string, dingURL string) error {
+	DingUrl = dingURL
 	payload := map[string]interface{}{}
 	payload["msgtype"] = "text"
 	card := map[string]interface{}{}
