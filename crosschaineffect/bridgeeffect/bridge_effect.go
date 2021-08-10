@@ -19,14 +19,15 @@ package bridgeeffect
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego/logs"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"time"
+
+	"github.com/beego/beego/v2/core/logs"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var checkTime int = 0
@@ -91,12 +92,14 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("check chain listening- err: %s", err)
 	}
-	checkTime++
-	if checkTime > 600 {
-		checkTime = 0
-		err := StartCheckAsset(eff.dbCfg, eff.ipCfg)
-		if err != nil {
-			logs.Error("check asset- err: %s", err)
+	if basedef.ENV == basedef.MAINNET {
+		checkTime++
+		if checkTime > 600 {
+			checkTime = 0
+			err = StartCheckAsset(eff.dbCfg, eff.ipCfg)
+			if err != nil {
+				logs.Error("check asset- err: %s", err)
+			}
 		}
 	}
 	return nil
@@ -120,6 +123,7 @@ func (eff *BridgeEffect) updateHash() error {
 		}
 	}
 	if len(updatePolyTransactions) > 0 {
+		logs.Info("updateHash now min PolyTransaction.id", updatePolyTransactions[0].Id)
 		eff.db.Save(updatePolyTransactions)
 	}
 	return nil
@@ -154,7 +158,7 @@ func (eff *BridgeEffect) updateStatus() error {
 	id2Chains := make(map[uint64]*models.Chain)
 	eff.db.Model(&models.Chain{}).Find(&chains)
 	for _, chain := range chains {
-		id2Chains[*chain.ChainId] = chain
+		id2Chains[chain.ChainId] = chain
 	}
 	wrapperPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
@@ -210,17 +214,17 @@ func (eff *BridgeEffect) checkChainListening() error {
 	}
 	id2Chains := make(map[uint64]*models.Chain)
 	for _, chain := range eff.chains {
-		id2Chains[*chain.ChainId] = chain
+		id2Chains[chain.ChainId] = chain
 	}
 	chains := make([]*models.Chain, 0)
 	eff.db.Model(&models.Chain{}).Find(&chains)
 	for _, chain := range chains {
-		old, ok := id2Chains[*chain.ChainId]
+		old, ok := id2Chains[chain.ChainId]
 		if !ok {
 			continue
 		}
 		if chain.Height == old.Height && chain.HeightSwap == old.HeightSwap {
-			logs.Error("Chain %d is not listening!", *chain.ChainId)
+			logs.Error("Chain %d is not listening!", chain.ChainId)
 		}
 	}
 	eff.chains = chains

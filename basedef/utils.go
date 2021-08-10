@@ -20,16 +20,18 @@ package basedef
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/astaxie/beego/logs"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/beego/beego/v2/core/logs"
+	cosmos_types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
 	"github.com/joeqian10/neo3-gogogo/crypto"
 	neo3_helper "github.com/joeqian10/neo3-gogogo/helper"
 	ontcommon "github.com/ontio/ontology/common"
-	"io/ioutil"
-	"os"
-	"strconv"
-	"strings"
 )
 
 func ReadFile(fileName string) ([]byte, error) {
@@ -71,11 +73,17 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == OK_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
+		addr, _ := cosmos_types.AccAddressFromHex(value)
+		return addr.String()
 	} else if chainId == NEO3_CROSSCHAIN_ID {
 		addrHex, _ := hex.DecodeString(value)
 		addr := neo3_helper.UInt160FromBytes(addrHex)
 		address := crypto.ScriptHashToAddress(addr, neo3_helper.DefaultAddressVersion)
 		return address
+	} else if chainId == BTC_CROSSCHAIN_ID {
+		addrHex, _ := hex.DecodeString(value)
+		return string(addrHex)
 	}
 	return value
 }
@@ -109,6 +117,44 @@ func Int64FromFigure(figure int) int64 {
 		x *= 10
 	}
 	return x
+}
+
+func Address2Hash(chainId uint64, value string) (string, error) {
+	if chainId == ETHEREUM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == NEO_CROSSCHAIN_ID {
+		scripHash, err := helper.AddressToScriptHash(value)
+		if err != nil {
+			return value, err
+		}
+		addrBytes := scripHash.Bytes()
+		addrHex := hex.EncodeToString(addrBytes)
+		return addrHex, nil
+	} else if chainId == BSC_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == HECO_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == ONT_CROSSCHAIN_ID {
+		addr, err := ontcommon.AddressFromBase58(value)
+		if err != nil {
+			return value, err
+		}
+		addrHex := addr.ToHexString()
+		return HexStringReverse(addrHex), nil
+	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
+		//cosmos_types.
+		addr, err := cosmos_types.AccAddressFromBech32(value)
+		if err != nil {
+			return value, err
+		}
+		addrBytes := addr.Bytes()
+		addrHex := hex.EncodeToString(addrBytes)
+		return addrHex, nil
+	}
+	return value, nil
 }
 
 func ConfirmEnv(env string) {

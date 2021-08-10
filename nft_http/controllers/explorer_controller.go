@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego/logs"
 	"poly-bridge/models"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type ExplorerController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *ExplorerController) Transactions() {
@@ -22,8 +22,11 @@ func (c *ExplorerController) Transactions() {
 	}
 
 	relations := make([]*TransactionBriefRelation, 0)
+	if req.PageNo == 0 {
+		req.PageNo = 1
+	}
 	limit := req.PageSize
-	offset := req.PageSize * req.PageNo
+	offset := req.PageSize * (req.PageNo - 1)
 	db.Raw("select wp.*, tr.amount as token_id, tr.asset as src_asset "+
 		"from wrapper_transactions wp "+
 		"left join src_transfers as tr on wp.hash=tr.tx_hash "+

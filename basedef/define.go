@@ -33,5 +33,18 @@ const (
 )
 
 const (
+	MAINNET = "mainnet"
+	TESTNET = "testnet"
+	DEVNET  = "devnet"
+)
+
+const (
 	ADDRESS_LENGTH = 64
+)
+
+const (
+	SWAP_SWAP = iota
+	SWAP_ADDLIQUIDITY
+	SWAP_REMOVELIQUIDITY
+	SWAP_ROLLBACK
 )

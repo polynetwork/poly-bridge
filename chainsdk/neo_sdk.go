@@ -19,7 +19,7 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/joeqian10/neo-gogogo/helper"
 	"github.com/joeqian10/neo-gogogo/nep5"
 	"github.com/joeqian10/neo-gogogo/rpc"

@@ -10,3 +10,5 @@ crosschainlisten/ethereumlisten/*.json
 conf/*.json
 conf/config_testnet.json
 chain_tool/*.json
+**/*.swp
+*.swap

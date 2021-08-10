@@ -19,11 +19,12 @@ package main
 
 import (
 	"fmt"
+	"poly-bridge/conf"
+	"poly-bridge/models"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"poly-bridge/conf"
-	"poly-bridge/models"
 )
 
 func dumpStatus(dbCfg *conf.DBConfig) {
@@ -41,7 +42,7 @@ func dumpStatus(dbCfg *conf.DBConfig) {
 		db.Find(&chains)
 		fmt.Printf("chain info:\nchainid\t\t\t\theight\t\t\t\t\n")
 		for _, chain := range chains {
-			fmt.Printf("%d\t\t\t\t%d\t\t\t\t\n", *chain.ChainId, chain.Height)
+			fmt.Printf("%d\t\t\t\t%d\t\t\t\t\n", chain.ChainId, chain.Height)
 		}
 	}
 	{

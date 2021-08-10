@@ -1,18 +1,19 @@
-package controllers
+package http
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 	"math/big"
 	"poly-bridge/common"
 	"poly-bridge/models"
 	"time"
+
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type TokenAssetController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *TokenAssetController) Gettokenasset() {

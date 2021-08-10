@@ -1,8 +1,9 @@
 package models
 
 type NFTProfile struct {
-	TokenBasicName string `gorm:"primaryKey;size:64;not null"`
-	NftTokenId     string `gorm:"primaryKey;type:varchar(64);not null"`
+	Id             int64  `gorm:"primaryKey;autoIncrement"`
+	TokenBasicName string `gorm:"uniqueIndex:idx_name_token;size:64;not null"`
+	NftTokenId     string `gorm:"uniqueIndex:idx_name_token;type:varchar(64);not null"`
 	Name           string `gorm:"size:64;not null"`
 	Url            string `gorm:"size:64;not null"`
 	Image          string `gorm:"size:64;not null"`

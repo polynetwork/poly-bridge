@@ -1,6 +1,12 @@
 {
   "Server":"polybridge",
   "Backup": false,
+  "LogFile": "logs/bridge.log",
+  "RunMode": "dev",
+  "HttpConfig": {
+    "Address": "0.0.0.0",
+    "Port": 8080
+  },
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
@@ -53,11 +59,12 @@
       "CCMContract":"838bf9e95cb12dd76a54c9f9d2e3082eaf928270",
       "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
       "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
-      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "SwapContract": "02e20ca05e38cbdf1a6235a7acdd34efc0434caa"
     },
     {
       "ChainName":"MATIC",
-      "ChainId":16,
+      "ChainId":17,
       "ListenSlot":5,
       "Defer": 10,
       "Nodes": [
@@ -130,7 +137,8 @@
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
-      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "SwapContract": "3ec481143d688442E581aD7116Bf1ECC76669cfa"
     },
     {
       "ChainName":"HECO",
@@ -148,7 +156,8 @@
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
-      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "SwapContract": "70f4d1176f9276ab4B31658f58F7473858F2b550"
     },
     {
       "ChainName":"Ontology",
@@ -184,11 +193,33 @@
       "WrapperContract":["11e2A718d46EBe97645b87F2363AFE1BF28c2672", "bd4a08577476A521C41a21EF3f00b045b74175d5"],
       "CCMContract":"F35844C21A0Ca574D0e52697Bbd5ceDda5798A07",
       "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
+    },
+    {
+      "ChainName":"curve",
+      "ChainId":10,
+      "ListenSlot":1,
+      "Defer": 2,
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.42:8545"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430"],
+      "CCMContract":"5fda5277E73FCB07E28135900a6B4Cc170930d8E",
+      "ProxyContract":"34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430",
+      "SwapContract": "34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430"
     }
   ],
   "StatsConfig": {
-    "TokenBasicStatsInterval": 60,
-    "TokenStatsInterval": 60
+    "TokenBasicStatsInterval": 120,
+    "TokenAmountCheckInterval": 120,
+    "TokenStatisticInterval": 600, 
+    "ChainStatisticInterval": 600,
+    "ChainAddressCheckInterval": 86400,
+    "AssetStatisticInterval": 600,
+    "AssetAdressInterval": 86400
   },
   "EventEffectConfig": {
     "HowOld": 1800,
@@ -296,7 +327,7 @@
       "MinFee": 20
     },
     {
-      "ChainId":16,
+      "ChainId":17,
       "ChainName":"MATIC",
       "Nodes": [
         {
@@ -304,6 +335,19 @@
         }
       ],
       "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
+    }
+    ,
+    {
+      "ChainId":5,
+      "ChainName":"Switcheo",
+      "Nodes": [
+        {
+          "Url": "http://40.115.182.238:26657"
+        }
+      ],
+      "GasLimit":0,
       "ProxyFee":120,
       "MinFee": 20
     }

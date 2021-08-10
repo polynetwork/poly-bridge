@@ -1,17 +1,35 @@
 {
   "Server":"polybridge",
   "Backup": false,
+  "LogFile": "logs/bridge.log",
+  "RunMode": "prod",
+  "HttpConfig": {
+    "Address": "0.0.0.0",
+    "Port": 8080
+  },
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
-    "Password":"123456",
+    "Password":"root123",
     "Scheme":"polyswap",
-    "Debug": true
+    "Debug": false
+  },
+  "RedisConfig": {
+    "addr": "localhost:6379",
+    "password": "123456",
+    "proto": "tcp",
+    "pool_size": 50,
+    "min_idle_conns": 10,
+    "dial_timeout": 2,
+    "read_timeout": 2,
+    "write_timeout": 2,
+    "idle_timeout": 10,
+    "expiration": 600
   },
   "IPPortConfig":{
     "WBTCIP":"http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
     "USDTIP":"http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
-    "DingIP": "https://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
+    "DingIP": "hhttps://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
   },
   "ChainListenConfig":[
     {
@@ -73,7 +91,7 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["cd074cd290acc3d73c030784101afbcf40fd86a1", "0f4fad9ae3830585a9264e6ec0b1eff3e89c6558"],
+      "WrapperContract":["cd074cd290acc3d73c030784101afbcf40fd86a1", "0f4fad9ae3830585a9264e6ec0b1eff3e89c6558", "7997ac991b66ca3810602639a2f2c1bd985e8b5a"],
       "CCMContract":"e1695b1314a1331e3935481620417ed835669407",
       "ProxyContract":"edd2862dceb90b945210372d229f453f2b705f4f"
     },
@@ -184,8 +202,13 @@
     }
   ],
   "StatsConfig": {
-    "TokenBasicStatsInterval": 60,
-    "TokenStatsInterval": 60
+    "TokenBasicStatsInterval": 1200,
+    "TokenAmountCheckInterval": 1200,
+    "TokenStatisticInterval": 6000,
+    "ChainStatisticInterval": 30,
+    "ChainAddressCheckInterval": 6000,
+    "AssetStatisticInterval": 6000,
+    "AssetAdressInterval": 6000
   },
   "EventEffectConfig": {
     "HowOld": 3600,

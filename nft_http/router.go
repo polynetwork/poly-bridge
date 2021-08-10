@@ -15,37 +15,41 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package main
+package nft_http
 
 import (
-	"github.com/astaxie/beego"
+	"poly-bridge/conf"
 	"poly-bridge/nft_http/controllers"
+
+	"github.com/beego/beego/v2/server/web"
 )
 
-func init() {
-	ns := beego.NewNamespace("/nft/v1",
-		beego.NSRouter("/", &controllers.InfoController{}, "*:Get"),
+func Init(config *conf.Config) web.LinkNamespace {
+	controllers.SetBaseInfo(config.HttpConfig.Address, config.HttpConfig.Port)
+	controllers.Initialize(config)
 
-		beego.NSRouter("/assetshow/", &controllers.InfoController{}, "post:Home"),
-		beego.NSRouter("/asset/", &controllers.AssetController{}, "post:Asset"),
-		beego.NSRouter("/assets/", &controllers.AssetController{}, "post:Assets"),
+	ns := web.NSNamespace("/nft",
+		web.NSRouter("/", &controllers.InfoController{}, "*:Get"),
 
-		//beego.NSRouter("/assetbasics/", &controllers.AssetController{}, "post:AssetBasics"),
-		//beego.NSRouter("/assetmap/", &controllers.AssetMapController{}, "post:AssetMap"),
-		//beego.NSRouter("/assetmapreverse/", &controllers.AssetMapController{}, "post:AssetMapReverse"),
+		web.NSRouter("/assetshow/", &controllers.InfoController{}, "post:Home"),
+		web.NSRouter("/asset/", &controllers.AssetController{}, "post:Asset"),
+		web.NSRouter("/assets/", &controllers.AssetController{}, "post:Assets"),
 
-		beego.NSRouter("/items/", &controllers.ItemController{}, "post:Items"),
-		beego.NSRouter("/getfee/", &controllers.FeeController{}, "post:GetFee"),
+		//web.NSRouter("/assetbasics/", &controllers.AssetController{}, "post:AssetBasics"),
+		//web.NSRouter("/assetmap/", &controllers.AssetMapController{}, "post:AssetMap"),
+		//web.NSRouter("/assetmapreverse/", &controllers.AssetMapController{}, "post:AssetMapReverse"),
 
-		beego.NSRouter("/exp_transactions/", &controllers.ExplorerController{}, "post:Transactions"),
-		beego.NSRouter("/exp_transactionsofaddress/", &controllers.ExplorerController{}, "post:TransactionsOfAddress"),
-		beego.NSRouter("/exp_transactionofhash/", &controllers.ExplorerController{}, "post:TransactionDetail"),
+		web.NSRouter("/items/", &controllers.ItemController{}, "post:Items"),
+		web.NSRouter("/getfee/", &controllers.FeeController{}, "post:GetFee"),
 
-		beego.NSRouter("/transactionsofaddress/", &controllers.TransactionController{}, "post:TransactionsOfAddress"),
-		beego.NSRouter("/transactionofhash/", &controllers.TransactionController{}, "post:TransactionOfHash"),
+		web.NSRouter("/exp_transactions/", &controllers.ExplorerController{}, "post:Transactions"),
+		web.NSRouter("/exp_transactionsofaddress/", &controllers.ExplorerController{}, "post:TransactionsOfAddress"),
+		web.NSRouter("/exp_transactionofhash/", &controllers.ExplorerController{}, "post:TransactionDetail"),
 
-		//beego.NSRouter("/transactionsofstate/", &controllers.TransactionController{}, "post:TransactionsOfState"),
+		web.NSRouter("/transactionsofaddress/", &controllers.TransactionController{}, "post:TransactionsOfAddress"),
+		web.NSRouter("/transactionofhash/", &controllers.TransactionController{}, "post:TransactionOfHash"),
+
+		//web.NSRouter("/transactionsofstate/", &controllers.TransactionController{}, "post:TransactionsOfState"),
 	)
-	beego.AddNamespace(ns)
-	beego.Router("/", &controllers.InfoController{}, "*:Get")
+	return ns
 }

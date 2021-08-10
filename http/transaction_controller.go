@@ -15,7 +15,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
 	"encoding/json"
@@ -24,13 +24,13 @@ import (
 	"poly-bridge/models"
 	"time"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 	"gorm.io/gorm"
 )
 
 type TransactionController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *TransactionController) Transactions() {
@@ -134,7 +134,7 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 			db.Model(&models.Chain{}).Find(&chains)
 			chainsMap := make(map[uint64]*models.Chain)
 			for _, chain := range chains {
-				chainsMap[*chain.ChainId] = chain
+				chainsMap[chain.ChainId] = chain
 			}
 			c.Data["json"] = models.MakeTransactionsOfUserRsp(req.PageSize, req.PageNo,
 				(int(transactionNum)+req.PageSize-1)/req.PageSize, int(transactionNum), srcPolyDstRelations, chainsMap)
@@ -183,7 +183,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 	c.Data["json"] = models.MakeTransactionsOfUserRsp(transactionsOfAddressReq.PageSize, transactionsOfAddressReq.PageNo,
 		(int(transactionNum)+transactionsOfAddressReq.PageSize-1)/transactionsOfAddressReq.PageSize, int(transactionNum), srcPolyDstRelations, chainsMap)
@@ -264,7 +264,7 @@ func (c *TransactionController) TransactionOfHash() {
 		db.Model(&models.Chain{}).Find(&chains)
 		chainsMap := make(map[uint64]*models.Chain)
 		for _, chain := range chains {
-			chainsMap[*chain.ChainId] = chain
+			chainsMap[chain.ChainId] = chain
 		}
 		resp := models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
 		if resp == nil {
@@ -289,7 +289,7 @@ func (c *TransactionController) TransactionOfHash() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 	c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
 	c.ServeJSON()
@@ -328,7 +328,7 @@ func (c *TransactionController) TransactionOfCurve() {
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
 	for _, chain := range chains {
-		chainsMap[*chain.ChainId] = chain
+		chainsMap[chain.ChainId] = chain
 	}
 	c.Data["json"] = models.MakeCurveTransactionRsp(srcPolyDstRelation1, srcPolyDstRelation2, chainsMap)
 	c.ServeJSON()

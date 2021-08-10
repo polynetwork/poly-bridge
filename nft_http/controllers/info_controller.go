@@ -23,8 +23,8 @@ import (
 	"poly-bridge/nft_http/meta"
 	"poly-bridge/utils/net"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -34,7 +34,7 @@ var (
 )
 
 type InfoController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *InfoController) Get() {
@@ -154,5 +154,5 @@ func captureUrl() (string, error) {
 	case "prod":
 		return "http://bridge.poly.network/nft", nil
 	}
-	return "", fmt.Errorf("beego running mode invalid")
+	return "", fmt.Errorf("web running mode invalid")
 }
