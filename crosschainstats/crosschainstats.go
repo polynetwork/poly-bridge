@@ -19,7 +19,6 @@ package crosschainstats
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
@@ -33,7 +32,6 @@ import (
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/shopspring/decimal"
-	"gorm.io/gorm"
 )
 
 type Stats struct {
