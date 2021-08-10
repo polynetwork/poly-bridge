@@ -202,10 +202,12 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	}
 	tokensMap := make(map[chainhash]bool)
 	for _, token := range tokens {
-		a := chainhash{}
-		a.chainId = token.ChainId
-		a.hash = token.Hash
-		tokensMap[a] = true
+		if token.Standard == uint8(0) {
+			a := chainhash{}
+			a.chainId = token.ChainId
+			a.hash = token.Hash
+			tokensMap[a] = true
+		}
 	}
 	for _, tokenSta := range tokenStatistics {
 		a := chainhash{}
@@ -436,7 +438,9 @@ func (this *Stats) computeAssetStatistics() (err error) {
 		return fmt.Errorf("Failed to GetTokenBasics %w", err)
 	}
 	for _, v := range tokenBasics {
-		nameMap[v.Name] = false
+		if v.Standard == uint8(0) {
+			nameMap[v.Name] = false
+		}
 	}
 	assetStatistics, err := this.dao.GetAssetStatistic()
 	if err != nil {
