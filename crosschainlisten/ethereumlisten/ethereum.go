@@ -96,6 +96,15 @@ func (this *EthereumChainListen) getPLTUnlock(tx common.Hash) *models.ProxyUnloc
 	}
 }
 
+func (this *EthereumChainListen) HandleFetchBlock(height uint64) (err error) {
+	err = this.getMU(height)
+	if err != nil {
+		return
+	}
+	err = this.getPU(height)
+	return
+}
+
 func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {
@@ -342,6 +351,51 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 		}
 	}
 	return wrapperTransactions, nil
+}
+
+func (this *EthereumChainListen) getMU(height uint64) error {
+	eccmContractAddress := common.HexToAddress(this.ethCfg.CCMContract)
+	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
+	if err != nil {
+		return fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+	}
+	opt := &bind.FilterOpts{
+		Start:   height,
+		End:     &height,
+		Context: context.Background(),
+	}
+	crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt, nil)
+	if err != nil {
+		return fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+	}
+	for crossChainEvents.Next() {
+		evt := crossChainEvents.Event
+		fmt.Printf("ccm unlock %+v\n", *evt)
+	}
+	return nil
+}
+
+func (this *EthereumChainListen) getPU(height uint64) error {
+	proxyAddress := common.HexToAddress(this.ethCfg.ProxyContract)
+	proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, this.ethSdk.GetClient())
+	if err != nil {
+		return fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+	}
+	opt := &bind.FilterOpts{
+		Start:   height,
+		End:     &height,
+		Context: context.Background(),
+	}
+	// get ethereum lock events from given block
+	lockEvents, err := proxyContract.FilterLockEvent(opt)
+	if err != nil {
+		return fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+	}
+	for lockEvents.Next() {
+		evt := lockEvents.Event
+		fmt.Printf("proxy unlock %+v\n", *evt)
+	}
+	return nil
 }
 
 func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
