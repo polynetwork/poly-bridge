@@ -25,6 +25,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+
+	"poly-bridge/models"
 )
 
 var pltLockABIMap map[string]abi.Event
@@ -64,7 +66,45 @@ func init() {
 	}
 }
 
-func (this *EthereumChainListen) GetPaletteLockProxyEvent(hash common.Hash) (toAddress, toAsset common.Address, amount *big.Int, err error) {
+func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) (*models.ProxyLockEvent, err error) {
+  var (
+		receipt     *types.Receipt
+		event       *types.Log
+		unlockEvent *UnlockEvent
+	)
+
+	proxyAddr := common.HexToAddress("0x0000000000000000000000000000000000000103")
+
+	if receipt, err = this.ethSdk.GetTransactionReceipt(hash); err != nil {
+		return
+	}
+
+	abEvent := pltLockABIMap["lock"]
+	for _, e := range receipt.Logs {
+		eid := common.BytesToHash(e.Topics[0][:])
+		if eid != abEvent.ID {
+			continue
+		} else {
+			event = e
+		}
+	}
+	if event == nil {
+		err = fmt.Errorf("can not find proxy unlock event")
+		return
+	}
+	if event.Address != proxyAddr {
+		err = fmt.Errorf("expect proxy addr %s, got %s", proxyAddr.Hex(), event.Address.Hex())
+	}
+
+	if unlockEvent, err = unpackUnlockEvent(event.Data, abEvent); err != nil {
+		return
+	}
+
+  return nil, nil
+}
+
+
+func (this *EthereumChainListen) GetPaletteLockProxyUnlockEvent(hash common.Hash) (toAddress, toAsset common.Address, amount *big.Int, err error) {
 	var (
 		receipt     *types.Receipt
 		event       *types.Log
