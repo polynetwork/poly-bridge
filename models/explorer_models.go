@@ -651,7 +651,11 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 				if tokenStatistic.Token != nil {
 					assetTransferStatisticResp.Name = tokenStatistic.Token.Name
 					assetTransferStatisticResp.Hash = tokenStatistic.Hash
-					assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
+					if tokenStatistic.Token.TokenBasic != nil {
+						assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
+					} else {
+						logs.Info("MakeTransferInfoResp tokenStatistic_Token_TokenBasic!=nil nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
+					}
 				} else {
 					logs.Info("MakeTransferInfoResp tokenStatistic_Token nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
 				}

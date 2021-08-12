@@ -222,6 +222,8 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		}{}
 		json.Unmarshal(body, &o3WBTC)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		chainAsset.TotalSupply = big.NewInt(0)
+		chainAsset.Balance = big.NewInt(0)
 		chainAsset.Flow = o3WBTC.Balance
 		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 		assetDetail.Difference.Add(assetDetail.Difference, chainAsset.Flow)
@@ -241,6 +243,8 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		json.Unmarshal(body, &o3USDT)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 		chainAsset.Balance = o3USDT.Balance
+		chainAsset.TotalSupply = big.NewInt(0)
+		chainAsset.Flow = big.NewInt(0)
 		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 	}
 }
