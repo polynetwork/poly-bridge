@@ -593,6 +593,7 @@ type ChainTransferStatisticResp struct {
 	ChainName               string `json:"chainname"`
 	AmountBtc               string `json:"amount_btc"`
 	AmountUsd               string `json:"amount_usd"`
+	TxAmount                int64  `json:"txAmount"`
 	AmountUsd1              *big.Int
 	In                      uint32                        `json:"in"`
 	Out                     uint32                        `json:"out"`
@@ -680,6 +681,7 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 			AmountUsd:               FormatAmount(4, NewBigInt(amountUsdTotal)),
 			In:                      uint32(chainStatistic.In),
 			Out:                     uint32(chainStatistic.Out),
+			TxAmount:                chainStatistic.In + chainStatistic.Out,
 			Addresses:               uint32(chainStatistic.Addresses),
 			Height:                  uint32(totalHeight),
 			AssetTransferStatistics: assetTransferStatisticResps,
@@ -709,6 +711,7 @@ type AssetStatisticResp struct {
 	AmountBtc         string `json:"amount_btc"`
 	AmountBtcPrecent  string `json:"amount_btc_precent"`
 	AmountUsd         string `json:"amount_usd"`
+	AmountUsd1        *big.Int
 	AmountUsdPrecent  string `json:"Amount_usd_precent"`
 	TxNum             uint64 `json:"txnumber"`
 	TxNumPrecent      string `json:"txnumber_precent"`
@@ -744,6 +747,7 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 			Amount:            FormatAmount(2, assetStatistic.Amount),
 			AmountBtc:         FormatAmount(4, assetStatistic.AmountBtc),
 			AmountBtcPrecent:  Precent(assetStatistic.AmountBtc.Uint64(), amountBtcTotal.Uint64()),
+			AmountUsd1:        &assetStatistic.AmountUsd.Int,
 			AmountUsd:         FormatAmount(4, assetStatistic.AmountUsd),
 			AmountUsdPrecent:  Precent(assetStatistic.AmountUsd.Uint64(), amountUsdTotal.Uint64()),
 			TxNum:             assetStatistic.Txnum,
@@ -751,5 +755,8 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 		}
 		assetInfo.AssetStatistics = append(assetInfo.AssetStatistics, assetStatisticResp)
 	}
+	sort.Slice(assetInfo.AssetStatistics, func(i, j int) bool {
+		return assetInfo.AssetStatistics[i].AmountUsd1.Cmp(assetInfo.AssetStatistics[j].AmountUsd1) == 1
+	})
 	return assetInfo
 }
