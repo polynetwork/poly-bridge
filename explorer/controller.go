@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	logs "github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -202,6 +202,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
+	logs.Info("crossTxListReq %v", crossTxListReq)
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Debug().Model(&models.PolyTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
@@ -228,6 +229,7 @@ func (c *ExplorerController) GetCrossTxList() {
 			}
 		}
 	}
+	logs.Info("jisuan counter")
 	var counter int64
 	/*	counter, err := redis.GetCrossTxCounter()
 		if err != nil {
@@ -250,6 +252,7 @@ func (c *ExplorerController) GetCrossTxList() {
 			logs.Error(err)
 		}
 	*/
+	logs.Info("jisuan jieshu1 counter")
 
 	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations, counter)
 	c.ServeJSON()

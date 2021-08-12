@@ -455,6 +455,7 @@ type CrossTxListResp struct {
 }
 
 func MakeCrossTxListResp(txs []*SrcPolyDstRelation, counter int64) *CrossTxListResp {
+	logs.Info("jinru MakeCrossTxListResp")
 	crossTxListResp := &CrossTxListResp{}
 	crossTxListResp.CrossTxList = make([]*CrossTxOutlineResp, 0)
 	for _, tx := range txs {
@@ -474,6 +475,7 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation, counter int64) *CrossTxListR
 		return crossTxListResp.CrossTxList[i].TT > crossTxListResp.CrossTxList[j].TT
 	})
 	crossTxListResp.Total = counter
+	logs.Info("jieshu MakeCrossTxListResp")
 	return crossTxListResp
 }
 
