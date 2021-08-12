@@ -474,14 +474,9 @@ func (this *Stats) computeAssetStatistics() (err error) {
 		}
 		for _, assetInfo := range assetInfos {
 			amount_new := decimal.NewFromBigInt(&assetInfo.Amount.Int, 0)
-			price_new := decimal.NewFromInt(assetInfo.Price)
-			if assetInfo.Price == int64(0) {
-				price_new = decimal.NewFromInt32(1)
-			} else {
-				price_new = price_new.Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
-			}
 			precision_new := decimal.New(int64(1), int32(assetInfo.Precision))
 			real_amount := amount_new.Div(precision_new)
+			price_new := decimal.NewFromInt(assetInfo.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 			amount_usd := real_amount.Mul(price_new)
 			amount_btc := amount_usd.Div(BTCPrice)
 
