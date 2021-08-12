@@ -18,6 +18,7 @@
 package ethereumlisten
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"strings"
@@ -42,8 +43,8 @@ type LockEvent struct {
 	FromAssetHash common.Address
 	FromAddress   common.Address
 	ToChainId     uint64
-	ToAssetHash   common.Address
-	ToAddress     common.Address
+	ToAssetHash   []byte
+	ToAddress     []byte
 	Amount        *big.Int
 }
 
@@ -66,15 +67,14 @@ func init() {
 	}
 }
 
-func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) (*models.ProxyLockEvent, err error) {
+func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) (ev *models.ProxyLockEvent, err error) {
   var (
 		receipt     *types.Receipt
 		event       *types.Log
-		unlockEvent *UnlockEvent
+		lockEvent   *LockEvent
 	)
 
 	proxyAddr := common.HexToAddress("0x0000000000000000000000000000000000000103")
-
 	if receipt, err = this.ethSdk.GetTransactionReceipt(hash); err != nil {
 		return
 	}
@@ -89,18 +89,28 @@ func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) 
 		}
 	}
 	if event == nil {
-		err = fmt.Errorf("can not find proxy unlock event")
+		err = fmt.Errorf("can not find proxy lock event")
 		return
 	}
 	if event.Address != proxyAddr {
 		err = fmt.Errorf("expect proxy addr %s, got %s", proxyAddr.Hex(), event.Address.Hex())
-	}
-
-	if unlockEvent, err = unpackUnlockEvent(event.Data, abEvent); err != nil {
 		return
 	}
 
-  return nil, nil
+	if lockEvent, err = unpackLockEvent(event.Data, abEvent); err != nil {
+		return
+	}
+
+	ev = &models.ProxyLockEvent{
+		Amount: lockEvent.Amount,
+		FromAddress: lockEvent.FromAddress.String()[2:],
+		FromAssetHash: strings.ToLower(lockEvent.FromAssetHash.String()[2:]),
+		ToChainId:     uint32(lockEvent.ToChainId),
+		ToAssetHash:   hex.EncodeToString(lockEvent.ToAssetHash),
+		ToAddress:     hex.EncodeToString(lockEvent.ToAddress),
+	}
+
+    return
 }
 
 
