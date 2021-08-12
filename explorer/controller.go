@@ -236,10 +236,10 @@ func (c *ExplorerController) GetCrossTxList() {
 	*/
 
 	res = db.Debug().Model(&models.PolyTransaction{}).
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
+		//Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
 		Where("src_transactions.standard = ?", 0).
-		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
-		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		//Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
+		//Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
 		Count(&counter)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("CrossTxCounter does not exist"))
