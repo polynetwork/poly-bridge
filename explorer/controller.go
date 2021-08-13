@@ -229,31 +229,29 @@ func (c *ExplorerController) GetCrossTxList() {
 			}
 		}
 	}
-	logs.Info("jisuan counter")
-	var counter int64
-	/*	counter, err := redis.GetCrossTxCounter()
-		if err != nil {
-			logs.Info(err)
 
-	*/
-
-	res = db.Debug().Model(&models.SrcTransaction{}).
-		Where("src_transactions.standard = ?", 0).
-		Count(&counter)
-	if res.RowsAffected == 0 {
-		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("CrossTxCounter does not exist"))
-		c.Ctx.ResponseWriter.WriteHeader(400)
-		c.ServeJSON()
-		return
-	}
-	/*
+	logs.Info("GetCrossTxList count counter")
+	counter, err := redis.GetCrossTxCounter()
+	if err != nil {
+		logs.Info(err)
+		res := db.Debug().Model(&models.PolyTransaction{}).
+			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
+			Where("src_transactions.standard = ?", 0).
+			Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
+			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+			Count(&counter)
+		if res.RowsAffected == 0 {
+			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("CrossTxCounter does not exist"))
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
 		err = redis.SetCrossTxCounter(counter)
 		if err != nil {
 			logs.Error(err)
 		}
-	*/
-	logs.Info("jisuan jieshu1 counter")
-
+		logs.Info("GetCrossTxList count counter end")
+	}
 	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations, counter)
 	c.ServeJSON()
 }
