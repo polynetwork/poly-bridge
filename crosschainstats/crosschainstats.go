@@ -483,6 +483,8 @@ func (this *Stats) computeAssetStatistics() (err error) {
 			old.Amount = models.NewBigInt((real_amount.Mul(decimal.New(int64(100), 0)).Add(decimal.NewFromBigInt(&old.Amount.Int, 0))).BigInt())
 			old.AmountUsd = models.NewBigInt((amount_usd.Mul(decimal.New(int64(10000), 0)).Add(decimal.NewFromBigInt(&old.AmountUsd.Int, 0))).BigInt())
 			old.AmountBtc = models.NewBigInt((amount_btc.Mul(decimal.New(int64(10000), 0)).Add(decimal.NewFromBigInt(&old.AmountBtc.Int, 0))).BigInt())
+
+			old.Txnum = old.Txnum + assetInfo.Txnum
 		}
 		old.LastCheckId = nowId
 		err = this.dao.SaveAssetStatistic(old)
