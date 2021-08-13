@@ -206,6 +206,7 @@ type Config struct {
 	Backup                bool
 	LogFile               string
 	HttpConfig            *HttpConfig
+	MetricConfig		  *HttpConfig
 	ChainListenConfig     []*ChainListenConfig
 	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig

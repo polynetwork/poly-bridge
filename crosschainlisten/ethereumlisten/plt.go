@@ -68,10 +68,10 @@ func init() {
 }
 
 func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) (ev *models.ProxyLockEvent, err error) {
-  var (
-		receipt     *types.Receipt
-		event       *types.Log
-		lockEvent   *LockEvent
+	var (
+		receipt   *types.Receipt
+		event     *types.Log
+		lockEvent *LockEvent
 	)
 
 	proxyAddr := common.HexToAddress("0x0000000000000000000000000000000000000103")
@@ -102,17 +102,16 @@ func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) 
 	}
 
 	ev = &models.ProxyLockEvent{
-		Amount: lockEvent.Amount,
-		FromAddress: lockEvent.FromAddress.String()[2:],
+		Amount:        lockEvent.Amount,
+		FromAddress:   lockEvent.FromAddress.String()[2:],
 		FromAssetHash: strings.ToLower(lockEvent.FromAssetHash.String()[2:]),
 		ToChainId:     uint32(lockEvent.ToChainId),
 		ToAssetHash:   hex.EncodeToString(lockEvent.ToAssetHash),
 		ToAddress:     hex.EncodeToString(lockEvent.ToAddress),
 	}
 
-    return
+	return
 }
-
 
 func (this *EthereumChainListen) GetPaletteLockProxyUnlockEvent(hash common.Hash) (toAddress, toAsset common.Address, amount *big.Int, err error) {
 	var (
