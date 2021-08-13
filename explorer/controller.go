@@ -202,6 +202,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
+	logs.Info("crossTxListReq %v", crossTxListReq)
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	res := db.Debug().Model(&models.PolyTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
@@ -228,10 +229,12 @@ func (c *ExplorerController) GetCrossTxList() {
 			}
 		}
 	}
+
+	logs.Info("GetCrossTxList count counter")
 	counter, err := redis.GetCrossTxCounter()
 	if err != nil {
 		logs.Info(err)
-		res = db.Debug().Model(&models.PolyTransaction{}).
+		res := db.Debug().Model(&models.PolyTransaction{}).
 			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
 			Where("src_transactions.standard = ?", 0).
 			Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
@@ -247,8 +250,8 @@ func (c *ExplorerController) GetCrossTxList() {
 		if err != nil {
 			logs.Error(err)
 		}
+		logs.Info("GetCrossTxList count counter end")
 	}
-
 	c.Data["json"] = models.MakeCrossTxListResp(srcPolyDstRelations, counter)
 	c.ServeJSON()
 }
