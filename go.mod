@@ -3,7 +3,6 @@ module poly-bridge
 go 1.14
 
 require (
-	github.com/astaxie/beego v1.12.3
 	github.com/beego/beego/v2 v2.0.1
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/btcsuite/goleveldb v1.0.0

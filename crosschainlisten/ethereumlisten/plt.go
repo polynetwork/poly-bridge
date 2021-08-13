@@ -18,6 +18,7 @@
 package ethereumlisten
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"strings"
@@ -25,6 +26,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+
+	"poly-bridge/models"
 )
 
 var pltLockABIMap map[string]abi.Event
@@ -40,8 +43,8 @@ type LockEvent struct {
 	FromAssetHash common.Address
 	FromAddress   common.Address
 	ToChainId     uint64
-	ToAssetHash   common.Address
-	ToAddress     common.Address
+	ToAssetHash   []byte
+	ToAddress     []byte
 	Amount        *big.Int
 }
 
@@ -64,7 +67,53 @@ func init() {
 	}
 }
 
-func (this *EthereumChainListen) GetPaletteLockProxyEvent(hash common.Hash) (toAddress, toAsset common.Address, amount *big.Int, err error) {
+func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) (ev *models.ProxyLockEvent, err error) {
+	var (
+		receipt   *types.Receipt
+		event     *types.Log
+		lockEvent *LockEvent
+	)
+
+	proxyAddr := common.HexToAddress("0x0000000000000000000000000000000000000103")
+	if receipt, err = this.ethSdk.GetTransactionReceipt(hash); err != nil {
+		return
+	}
+
+	abEvent := pltLockABIMap["lock"]
+	for _, e := range receipt.Logs {
+		eid := common.BytesToHash(e.Topics[0][:])
+		if eid != abEvent.ID {
+			continue
+		} else {
+			event = e
+		}
+	}
+	if event == nil {
+		err = fmt.Errorf("can not find proxy lock event")
+		return
+	}
+	if event.Address != proxyAddr {
+		err = fmt.Errorf("expect proxy addr %s, got %s", proxyAddr.Hex(), event.Address.Hex())
+		return
+	}
+
+	if lockEvent, err = unpackLockEvent(event.Data, abEvent); err != nil {
+		return
+	}
+
+	ev = &models.ProxyLockEvent{
+		Amount:        lockEvent.Amount,
+		FromAddress:   lockEvent.FromAddress.String()[2:],
+		FromAssetHash: strings.ToLower(lockEvent.FromAssetHash.String()[2:]),
+		ToChainId:     uint32(lockEvent.ToChainId),
+		ToAssetHash:   hex.EncodeToString(lockEvent.ToAssetHash),
+		ToAddress:     hex.EncodeToString(lockEvent.ToAddress),
+	}
+
+	return
+}
+
+func (this *EthereumChainListen) GetPaletteLockProxyUnlockEvent(hash common.Hash) (toAddress, toAsset common.Address, amount *big.Int, err error) {
 	var (
 		receipt     *types.Receipt
 		event       *types.Log

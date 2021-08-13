@@ -102,9 +102,17 @@ func startServer(ctx *cli.Context) {
 		),
 	)
 
+	metricConfig := config.MetricConfig
+	if metricConfig == nil {
+		metricConfig = &conf.HttpConfig {
+			Address: "0.0.0.0",
+			Port: 6222,
+		}
+	}
+
 	// Insert web config
-	web.BConfig.Listen.HTTPAddr = config.HttpConfig.Address
-	web.BConfig.Listen.HTTPPort = config.HttpConfig.Port
+	web.BConfig.Listen.HTTPAddr = metricConfig.Address
+	web.BConfig.Listen.HTTPPort = metricConfig.Port
 	web.BConfig.RunMode = config.RunMode
 	web.BConfig.AppName = "bridge-server"
 	web.BConfig.CopyRequestBody = true

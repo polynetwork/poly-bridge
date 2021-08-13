@@ -69,6 +69,17 @@ func run(ctx *cli.Context) {
 
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
+
+	web.InsertFilter("*", web.BeforeRouter, cors.Allow(
+		&cors.Options{
+			AllowAllOrigins:  true,
+			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
+			ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
+			AllowCredentials: true,
+		},
+	))
+
 	// bridge http
 	http.Init()
 	// explorer http
@@ -105,14 +116,6 @@ func run(ctx *cli.Context) {
 		}
 		web.InsertFilter("/*", web.FinishRouter, FilterLog)
 	}
-
-	web.InsertFilter("*", web.BeforeRouter, cors.Allow(&cors.Options{
-		AllowAllOrigins:  true,
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-		AllowCredentials: true}),
-	)
 
 	web.Run()
 }

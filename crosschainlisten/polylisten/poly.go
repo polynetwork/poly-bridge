@@ -98,11 +98,13 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 				mctx.Height = height
 				mctx.SrcChainId = uint64(fchainid)
 				mctx.DstChainId = uint64(tchainid)
-				if uint64(fchainid) == basedef.ETHEREUM_CROSSCHAIN_ID || uint64(fchainid) == basedef.BSC_CROSSCHAIN_ID || uint64(fchainid) == basedef.HECO_CROSSCHAIN_ID || uint64(fchainid) == basedef.O3_CROSSCHAIN_ID || uint64(fchainid) == basedef.OK_CROSSCHAIN_ID || uint64(fchainid) == basedef.MATIC_CROSSCHAIN_ID {
+				switch uint64(fchainid) {
+				case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID:
 					mctx.SrcHash = states[3].(string)
-				} else {
+				default:
 					mctx.SrcHash = basedef.HexStringReverse(states[3].(string))
 				}
+
 				polyTransactions = append(polyTransactions, mctx)
 			}
 		}

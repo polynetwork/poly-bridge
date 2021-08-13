@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -84,7 +85,7 @@ func (this *EthereumChainListen) GetDefer() uint64 {
 }
 
 func (this *EthereumChainListen) getPLTUnlock(tx common.Hash) *models.ProxyUnlockEvent {
-	address, asset, amount, err := this.GetPaletteLockProxyEvent(tx)
+	address, asset, amount, err := this.GetPaletteLockProxyUnlockEvent(tx)
 	if err != nil {
 		logs.Error("Get palette lock proxy event error %v", err)
 		return nil
@@ -169,28 +170,38 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Contract = lockEvent.Contract
 			srcTransaction.Key = lockEvent.Txid
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
-			for _, v := range proxyLockEvents {
-				if v.TxHash == lockEvent.TxHash {
-					toAssetHash := v.ToAssetHash
-					srcTransfer := &models.SrcTransfer{}
-					srcTransfer.Time = tt
-					srcTransfer.ChainId = this.GetChainId()
-					srcTransfer.TxHash = lockEvent.TxHash
-					srcTransfer.From = lockEvent.User
-					srcTransfer.To = lockEvent.Contract
-					srcTransfer.Asset = v.FromAssetHash
-					srcTransfer.Amount = models.NewBigInt(v.Amount)
-					srcTransfer.DstChainId = uint64(v.ToChainId)
-					srcTransfer.DstAsset = toAssetHash
-					srcTransfer.DstUser = v.ToAddress
-					srcTransaction.SrcTransfer = srcTransfer
-					if this.isNFTECCMLockEvent(lockEvent) {
-						srcTransaction.Standard = models.TokenTypeErc721
-						srcTransaction.SrcTransfer.Standard = models.TokenTypeErc721
-					}
-					break
-				}
-			}
+			var lock *models.ProxyLockEvent
+			if srcTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID {
+        // TODO: with retry later
+				lock, _ = this.GetPaletteLockProxyLockEvent(common.HexToHash("0x" + lockEvent.TxHash))
+			} else {
+        for _, v := range proxyLockEvents {
+          if v.TxHash == lockEvent.TxHash {
+            lock = v
+            break
+          }
+        }
+      }
+      if lock != nil {
+         toAssetHash := lock.ToAssetHash
+          srcTransfer := &models.SrcTransfer{}
+          srcTransfer.Time = tt
+          srcTransfer.ChainId = this.GetChainId()
+          srcTransfer.TxHash = lockEvent.TxHash
+          srcTransfer.From = lockEvent.User
+          srcTransfer.To = lockEvent.Contract
+          srcTransfer.Asset = lock.FromAssetHash
+          srcTransfer.Amount = models.NewBigInt(lock.Amount)
+          srcTransfer.DstChainId = uint64(lock.ToChainId)
+          srcTransfer.DstAsset = toAssetHash
+          srcTransfer.DstUser = lock.ToAddress
+          srcTransaction.SrcTransfer = srcTransfer
+          if this.isNFTECCMLockEvent(lockEvent) {
+            srcTransaction.Standard = models.TokenTypeErc721
+            srcTransaction.SrcTransfer.Standard = models.TokenTypeErc721
+          }
+      }
+
 			for _, v := range swapEvents {
 				if v.TxHash == lockEvent.TxHash {
 					srcSwapTransfer := &models.SrcSwap{}
