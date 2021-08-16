@@ -87,13 +87,13 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.ChainId = this.GetChainId()
 					srcTransfer.TxHash = lockEvent.TxHash
 					srcTransfer.Time = tt
-					srcTransfer.From = v.FromAddress
-					srcTransfer.To = lockEvent.Contract
+					srcTransfer.From, _ = basedef.Address2Hash(srcTransfer.ChainId, v.FromAddress)
+					srcTransfer.To = v.ToAddress
 					srcTransfer.Asset = v.FromAssetHash
 					srcTransfer.Amount = models.NewBigInt(v.Amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
 					srcTransfer.DstAsset = v.ToAssetHash
-					srcTransfer.DstUser = v.ToAddress
+					srcTransfer.DstUser = v.DstUser
 					break
 				}
 			}
@@ -107,7 +107,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.User = lockEvent.User
 			srcTransaction.DstChainId = uint64(lockEvent.Tchain)
 			srcTransaction.Contract = lockEvent.Contract
-			srcTransaction.Key = lockEvent.Txid
+			srcTransaction.Key = lockEvent.TxHash
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			srcTransaction.SrcTransfer = srcTransfer
 			srcTransactions = append(srcTransactions, srcTransaction)
@@ -122,8 +122,8 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					dstTransfer.ChainId = this.GetChainId()
 					dstTransfer.TxHash = unLockEvent.TxHash
 					dstTransfer.Time = tt
-					dstTransfer.From = unLockEvent.Contract
-					dstTransfer.To = v.ToAddress
+					dstTransfer.From, _ = basedef.Address2Hash(dstTransfer.ChainId, unLockEvent.Contract)
+					dstTransfer.To, _ = basedef.Address2Hash(dstTransfer.ChainId, v.ToAddress)
 					dstTransfer.Asset = v.ToAssetHash
 					dstTransfer.Amount = models.NewBigInt(v.Amount)
 					break
@@ -182,16 +182,17 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 						})
 					} else if e.Type == _switcheo_lock {
 						tchainId, _ := strconv.ParseUint(string(e.Attributes[1].Value), 10, 32)
-						amount, _ := strconv.ParseUint(string(e.Attributes[5].Value), 10, 64)
+						amount, _ := strconv.ParseUint(string(e.Attributes[6].Value), 10, 64)
 						lockEvents = append(lockEvents, &models.ProxyLockEvent{
 							Method:        _switcheo_lock,
 							TxHash:        strings.ToLower(tx.Hash.String()),
-							FromAddress:   string(e.Attributes[3].Value),
+							FromAddress:   string(e.Attributes[4].Value),
 							FromAssetHash: string(e.Attributes[0].Value),
 							ToChainId:     uint32(tchainId),
-							ToAssetHash:   string(e.Attributes[2].Value),
-							ToAddress:     string(e.Attributes[4].Value),
+							ToAssetHash:   string(e.Attributes[3].Value),
+							ToAddress:     string(e.Attributes[7].Value),
 							Amount:        new(big.Int).SetUint64(amount),
+							DstUser:       string(e.Attributes[5].Value),
 						})
 					}
 				}

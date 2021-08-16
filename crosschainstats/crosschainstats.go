@@ -19,6 +19,7 @@ package crosschainstats
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
@@ -240,16 +241,27 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	BTCPrice := decimal.NewFromInt(tokenBasicBTC.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 	logs.Info("BTCPrice:", BTCPrice)
 	for _, statistic := range tokenStatistics {
+		if statistic.Hash == "d2a4cff31913016155e38e474a2c06d08be276cf" || statistic.Hash == "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5" {
+			jsons, _ := json.Marshal(statistic)
+			logs.Info("qwertstatistic:", string(jsons))
+		}
 		in, err := this.dao.CalculateInTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
 		if err != nil {
 			logs.Error("Failed to CalculateInTokenStatistics %w", err)
+		}
+		if statistic.Hash == "d2a4cff31913016155e38e474a2c06d08be276cf" || statistic.Hash == "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5" {
+			jsons, _ := json.Marshal(in)
+			logs.Info("qwertin", string(jsons))
 		}
 		if in != nil && in.Token != nil && in.Token.TokenBasic != nil {
 			price_new := decimal.New(in.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 			amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
 			precision_new := decimal.New(int64(1), int32(in.Token.Precision))
-			logs.Info("precision_new in", precision_new)
+			logs.Info("qwertprecision_new in", precision_new)
 			amount_usd := amount_new.Div(precision_new).Mul(price_new)
+			if statistic.Hash == "d2a4cff31913016155e38e474a2c06d08be276cf" || statistic.Hash == "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5" {
+				logs.Info("qwertamount_usd in", precision_new)
+			}
 			amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 			statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 			statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
@@ -258,6 +270,14 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		}
 
 		out, err := this.dao.CalculateOutTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
+		if statistic.Hash == "d2a4cff31913016155e38e474a2c06d08be276cf" || statistic.Hash == "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5" {
+			jsons, _ := json.Marshal(in)
+			logs.Info("qwertin", string(jsons))
+		}
+		if statistic.Hash == "d2a4cff31913016155e38e474a2c06d08be276cf" || statistic.Hash == "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5" {
+			jsons, _ := json.Marshal(out)
+			logs.Info("qwertout", string(jsons))
+		}
 		if err != nil {
 			logs.Error("Failed to CalculateOutTokenStatistics %w", err)
 		}
@@ -265,8 +285,10 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			price_new := decimal.New(out.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 			amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
 			precision_new := decimal.New(int64(1), int32(out.Token.Precision))
-			logs.Info("precision_new out", precision_new)
 			amount_usd := amount_new.Div(precision_new).Mul(price_new)
+			if statistic.Hash == "d2a4cff31913016155e38e474a2c06d08be276cf" || statistic.Hash == "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5" {
+				logs.Info("qwertamount_usd out", precision_new)
+			}
 			amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 
 			statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
