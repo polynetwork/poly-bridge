@@ -471,9 +471,6 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation, counter int64) *CrossTxListR
 			TChainName: ChainId2Name(tx.PolyTransaction.DstChainId),
 		})
 	}
-	sort.Slice(crossTxListResp.CrossTxList, func(i, j int) bool {
-		return crossTxListResp.CrossTxList[i].TT > crossTxListResp.CrossTxList[j].TT
-	})
 	crossTxListResp.Total = counter
 	logs.Info("jieshu MakeCrossTxListResp")
 	return crossTxListResp

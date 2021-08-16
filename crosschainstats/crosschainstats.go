@@ -19,6 +19,7 @@ package crosschainstats
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
@@ -248,7 +249,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			price_new := decimal.New(in.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 			amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
 			precision_new := decimal.New(int64(1), int32(in.Token.Precision))
-			logs.Info("precision_new in", precision_new)
+			logs.Info("qwertprecision_new in", precision_new)
 			amount_usd := amount_new.Div(precision_new).Mul(price_new)
 			amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 			statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
@@ -265,7 +266,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			price_new := decimal.New(out.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 			amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
 			precision_new := decimal.New(int64(1), int32(out.Token.Precision))
-			logs.Info("precision_new out", precision_new)
 			amount_usd := amount_new.Div(precision_new).Mul(price_new)
 			amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
 

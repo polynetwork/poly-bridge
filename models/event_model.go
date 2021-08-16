@@ -48,6 +48,7 @@ type ProxyLockEvent struct {
 	ToAssetHash   string
 	ToAddress     string
 	Amount        *big.Int
+	DstUser       string
 }
 type ProxyUnlockEvent struct {
 	Method      string
