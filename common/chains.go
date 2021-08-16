@@ -9,13 +9,14 @@ import (
 
 var (
 	ethereumSdk *chainsdk.EthereumSdkPro
-	pltSdk 		*chainsdk.EthereumSdkPro
+	pltSdk      *chainsdk.EthereumSdkPro
 	bscSdk      *chainsdk.EthereumSdkPro
 	hecoSdk     *chainsdk.EthereumSdkPro
 	okSdk       *chainsdk.EthereumSdkPro
 	neoSdk      *chainsdk.NeoSdkPro
 	ontologySdk *chainsdk.OntologySdkPro
 	maticSdk    *chainsdk.EthereumSdkPro
+	swthSdk     *chainsdk.SwitcheoSdkPro
 	config      *conf.Config
 )
 
@@ -85,13 +86,22 @@ func newChainSdks(config *conf.Config) {
 		ontologySdk = chainsdk.NewOntologySdkPro(urls, ontConfig.ListenSlot, ontConfig.ChainId)
 	}
 	{
+		swthConfig := config.GetChainListenConfig(basedef.SWITCHEO_CROSSCHAIN_ID)
+		if swthConfig == nil {
+			panic("swth chain is invalid")
+		}
+		urls := swthConfig.GetNodesUrl()
+		swthSdk = chainsdk.NewSwitcheoSdkPro(urls, swthConfig.ListenSlot, swthConfig.ChainId)
+	}
+
+	/*{
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf == nil {
 			panic("chain is invalid")
 		}
 		urls := conf.GetNodesUrl()
 		pltSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
-	}
+	}*/
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -149,15 +159,16 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		if maticConfig == nil {
 			panic("chain is invalid")
 		}
-		return maticSdk.Erc20Balance(hash,maticConfig.ProxyContract)
+		return maticSdk.Erc20Balance(hash, maticConfig.ProxyContract)
 	}
-	if chainId == basedef.PLT_CROSSCHAIN_ID {
+	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf == nil {
 			panic("chain is invalid")
 		}
 		return pltSdk.Erc20Balance(hash,conf.ProxyContract)
 	}
+	*/
 	return new(big.Int).SetUint64(0), nil
 }
 
