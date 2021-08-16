@@ -16,6 +16,7 @@ var (
 	neoSdk      *chainsdk.NeoSdkPro
 	ontologySdk *chainsdk.OntologySdkPro
 	maticSdk    *chainsdk.EthereumSdkPro
+	swthSdk     *chainsdk.SwitcheoSdkPro
 	config      *conf.Config
 )
 
@@ -84,6 +85,15 @@ func newChainSdks(config *conf.Config) {
 		urls := ontConfig.GetNodesUrl()
 		ontologySdk = chainsdk.NewOntologySdkPro(urls, ontConfig.ListenSlot, ontConfig.ChainId)
 	}
+	{
+		swthConfig := config.GetChainListenConfig(basedef.SWITCHEO_CROSSCHAIN_ID)
+		if swthConfig == nil {
+			panic("swth chain is invalid")
+		}
+		urls := swthConfig.GetNodesUrl()
+		swthSdk = chainsdk.NewSwitcheoSdkPro(urls, swthConfig.ListenSlot, swthConfig.ChainId)
+	}
+
 	/*{
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf == nil {
