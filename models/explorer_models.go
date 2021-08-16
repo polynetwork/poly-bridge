@@ -196,7 +196,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 	}
 	fChainTxResp.Transfer = &FChainTransferResp{
 		From:        basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.From),
-		To:          basedef.Hash2Address(fChainTx.SrcTransfer.DstChainId, fChainTx.SrcTransfer.To),
+		To:          basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.To),
 		Amount:      strconv.FormatUint(fChainTx.SrcTransfer.Amount.Uint64(), 10),
 		ToChain:     uint32(fChainTx.SrcTransfer.DstChainId),
 		ToChainName: ChainId2Name(fChainTx.SrcTransfer.DstChainId),
