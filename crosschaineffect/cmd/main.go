@@ -106,7 +106,7 @@ func startServer(ctx *cli.Context) {
 		logs.Info("%s\n", string(conf))
 	}
 	common.SetupChainsSDK(config)
-	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig)
+	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig, config.RedisConfig)
 }
 
 func waitSignal() os.Signal {

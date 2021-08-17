@@ -19,7 +19,9 @@ package bridgeeffect
 
 import (
 	"encoding/json"
+	"fmt"
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"time"
@@ -31,23 +33,26 @@ import (
 )
 
 var checkTime int = 0
+var counterTime int = 0
 
 type BridgeEffect struct {
-	dbCfg  *conf.DBConfig
-	cfg    *conf.EventEffectConfig
-	db     *gorm.DB
-	ipCfg  *conf.IPPortConfig
-	chains []*models.Chain
-	time   int64
+	dbCfg    *conf.DBConfig
+	cfg      *conf.EventEffectConfig
+	db       *gorm.DB
+	ipCfg    *conf.IPPortConfig
+	redisCfg *conf.RedisConfig
+	chains   []*models.Chain
+	time     int64
 }
 
-func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) *BridgeEffect {
+func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig, redisCfg *conf.RedisConfig) *BridgeEffect {
 	swapEffect := &BridgeEffect{
-		dbCfg:  dbCfg,
-		cfg:    cfg,
-		ipCfg:  ipCfg,
-		chains: nil,
-		time:   0,
+		dbCfg:    dbCfg,
+		cfg:      cfg,
+		ipCfg:    ipCfg,
+		redisCfg: redisCfg,
+		chains:   nil,
+		time:     0,
 	}
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -101,6 +106,34 @@ func (eff *BridgeEffect) Effect() error {
 				logs.Error("check asset- err: %s", err)
 			}
 		}
+	}
+	counterTime++
+	if counterTime > 180 {
+		counterTime = 0
+		err = eff.StartUpdateCrossCount()
+		if err != nil {
+			logs.Error("UpdateCrossCount err: %s", err)
+		}
+	}
+	return nil
+}
+
+func (eff *BridgeEffect) StartUpdateCrossCount() error {
+	var counter int64
+	res := eff.db.Model(&models.PolyTransaction{}).
+		Where("src_transactions.standard = ?", 0).
+		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Count(&counter)
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("StartUpdateCrossCount counter err %w", res.Error)
+	}
+	redis, err := RedisCache.GetRedisClient(eff.redisCfg)
+	if err != nil {
+		return fmt.Errorf("StartUpdateCrossCount GetRedisClient err %w", err)
+	}
+	err = redis.SetCrossTxCounter(counter)
+	if err != nil {
+		return fmt.Errorf("StartUpdateCrossCount SetCrossTxCounter err %w", err)
 	}
 	return nil
 }
