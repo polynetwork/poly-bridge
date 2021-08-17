@@ -85,7 +85,7 @@ func newChainSdks(config *conf.Config) {
 		urls := ontConfig.GetNodesUrl()
 		ontologySdk = chainsdk.NewOntologySdkPro(urls, ontConfig.ListenSlot, ontConfig.ChainId)
 	}
-	{
+	if basedef.ENV == basedef.MAINNET {
 		swthConfig := config.GetChainListenConfig(basedef.SWITCHEO_CROSSCHAIN_ID)
 		if swthConfig == nil {
 			panic("swth chain is invalid")
