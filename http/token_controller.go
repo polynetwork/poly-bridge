@@ -72,7 +72,7 @@ func (c *TokenController) TokenBasics() {
 		c.ServeJSON()
 	}
 	tokenBasics := make([]*models.TokenBasic, 0)
-	db.Model(&models.TokenBasic{}).Where("standard = 0").Preload("Tokens").Find(&tokenBasics)
+	db.Model(&models.TokenBasic{}).Where("standard = 0 and property = 1").Preload("Tokens").Find(&tokenBasics)
 	c.Data["json"] = models.MakeTokenBasicsRsp(tokenBasics)
 	c.ServeJSON()
 }
