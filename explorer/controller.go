@@ -211,7 +211,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Order("poly_transactions.time desc").
+		Order("src_transactions.id desc").
 		Limit(crossTxListReq.PageSize).Offset((crossTxListReq.PageNo - 1) * crossTxListReq.PageSize).
 		Find(&srcPolyDstRelations)
 	if res.RowsAffected == 0 {
@@ -379,6 +379,12 @@ func (c *ExplorerController) GetTransferStatistic() {
 	chainStatistics := make([]*models.ChainStatistic, 0)
 	chains := make([]*models.Chain, 0)
 	if transferStatisticReq.Chain == uint64(0) {
+		resp, err := redis.GetAllTransferResp()
+		if err == nil && resp != nil {
+			c.Data["json"] = resp
+			c.ServeJSON()
+		}
+		logs.Info("not redisGetAllTransferResp")
 		res := db.Preload("Token").Preload("Token.TokenBasic").Find(&tokenStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transferStatistics does not exist"))
@@ -400,6 +406,13 @@ func (c *ExplorerController) GetTransferStatistic() {
 			c.ServeJSON()
 			return
 		}
+		resp = models.MakeTransferInfoResp(tokenStatistics, chainStatistics, chains)
+		err = redis.SetAllTransferResp(resp)
+		if err != nil {
+			logs.Error("redis.SetAllTransferResp err", err)
+		}
+		c.Data["json"] = resp
+		c.ServeJSON()
 	} else {
 		res := db.
 			Where("chain_id=?", transferStatisticReq.Chain).
