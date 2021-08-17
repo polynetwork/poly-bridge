@@ -279,7 +279,7 @@ func getAndRetryTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 }
 
 func sendDing(assetDetails []*AssetDetail, dingUrl string) error {
-	ss := "[poly_NB]\n"
+	ss := "[poly_NB]_[mainnet]\n"
 	flag := false
 	for _, assetDetail := range assetDetails {
 		if assetDetail.Reason == "all node is not working" {

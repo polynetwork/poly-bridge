@@ -1,4 +1,4 @@
-package RedisCache
+package cacheRedis
 
 import (
 	"errors"
