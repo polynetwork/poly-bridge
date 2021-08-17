@@ -94,14 +94,15 @@ func newChainSdks(config *conf.Config) {
 		swthSdk = chainsdk.NewSwitcheoSdkPro(urls, swthConfig.ListenSlot, swthConfig.ChainId)
 	}
 
-	/*{
+	{
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
-		if conf == nil {
-			panic("chain is invalid")
+		if conf != nil {
+			urls := conf.GetNodesUrl()
+			pltSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		} else {
+			logs.Error("Missing plt chain sdk config")
 		}
-		urls := conf.GetNodesUrl()
-		pltSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
-	}*/
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
