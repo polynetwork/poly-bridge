@@ -11,7 +11,7 @@
   },
   "RedisConfig": {
     "addr": "redis:6379",
-    "password": "123456",
+    "password": "abcdef",
     "proto": "tcp",
     "pool_size": 50,
     "min_idle_conns": 10,
