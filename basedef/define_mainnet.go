@@ -28,11 +28,11 @@ const (
 	SWITCHEO_CROSSCHAIN_ID = uint64(5)
 	BSC_CROSSCHAIN_ID      = uint64(6)
 	HECO_CROSSCHAIN_ID     = uint64(7)
+	PLT_CROSSCHAIN_ID      = uint64(8)
 	O3_CROSSCHAIN_ID       = uint64(10)
 	OK_CROSSCHAIN_ID       = uint64(12)
 	NEO3_CROSSCHAIN_ID     = uint64(14)
 	MATIC_CROSSCHAIN_ID    = uint64(17)
-	PLT_CROSSCHAIN_ID      = uint64(107)
 
 	ENV = "mainnet"
 )
