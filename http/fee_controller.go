@@ -92,7 +92,7 @@ func (c *FeeController) GetFee() {
 			return
 		}
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
-		if tokenMap.DstChainId == basedef.PLT_CROSSCHAIN_ID {
+		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
 				c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
