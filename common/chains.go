@@ -5,6 +5,8 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
+
+	"github.com/beego/beego/v2/core/logs"
 )
 
 var (
