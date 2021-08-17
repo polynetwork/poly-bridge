@@ -321,6 +321,14 @@ func findFeeToken(cid uint64, hash string) *models.Token {
 			return v
 		}
 	}
+	feeToken := new(models.Token)
+	err := db.Model(&models.Token{}).
+		Where("chain_id = ? and hash = ?", cid, hash).
+		Preload("TokenBasic").
+		First(feeToken).Error
+	if err == nil {
+		return feeToken
+	}
 	return nil
 }
 
