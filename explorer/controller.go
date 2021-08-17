@@ -27,13 +27,14 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strconv"
 )
 
 var db *gorm.DB
-var redis *RedisCache
+var redis *RedisCache.RedisCache
 
 func Init() {
 	dbConfig := conf.GlobalConfig.DBConfig
@@ -49,7 +50,7 @@ func Init() {
 	}
 
 	redisConfig := conf.GlobalConfig.RedisConfig
-	redis, err = GetRedisClient(redisConfig)
+	redis, err = RedisCache.GetRedisClient(redisConfig)
 	if err != nil {
 		logs.Error("GetRedisClient redis err")
 	}
@@ -235,10 +236,8 @@ func (c *ExplorerController) GetCrossTxList() {
 	if err != nil {
 		logs.Info(err)
 		res := db.Debug().Model(&models.PolyTransaction{}).
-			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
 			Where("src_transactions.standard = ?", 0).
 			Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
-			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
 			Count(&counter)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("CrossTxCounter does not exist"))
@@ -267,7 +266,7 @@ func (c *ExplorerController) GetCrossTx() {
 	crossTxReq.TxHash = c.Ctx.Input.Query("txhash")
 	fmt.Println("crossTxReq.TxHash", crossTxReq.TxHash)
 	relations := make([]*models.PolyTxRelation, 0)
-	tx := &struct { Hash string }{}
+	tx := &struct{ Hash string }{}
 	err := db.Raw(`select hash from src_transactions where hash=?
 		UNION select s.hash from src_transactions s left join poly_transactions p on p.src_hash=s.hash where p.hash=?
 		UNION select s.hash from src_transactions s left join poly_transactions p on p.src_hash=s.hash
