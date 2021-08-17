@@ -1,16 +1,19 @@
 package cacheRedis
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/beego/beego/v2/core/logs"
 	goredis "github.com/go-redis/redis"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 	"strconv"
 	"time"
 )
 
 const (
-	_crossTxCounter = "CrossTxCounter"
+	_crossTxCounter        = "CrossTxCounter"
+	_TransferStatisticResp = "TransferStatisticRes"
 )
 
 type RedisCache struct {
@@ -62,6 +65,28 @@ func (r *RedisCache) GetCrossTxCounter() (counter int64, err error) {
 	counter = int64(count)
 	if err != nil {
 		err = errors.New(err.Error() + "cache GetCrossTxCounter Atoi")
+	}
+	return
+}
+
+func (r *RedisCache) SetAllTransferResp(resp *models.AllTransferStatisticResp) (err error) {
+	key := _TransferStatisticResp
+	jsons, err := json.Marshal(resp)
+	if _, err = r.c.Set(key, string(jsons), time.Second*600).Result(); err != nil {
+		err = errors.New(err.Error() + "add SetAllTransferResp")
+	}
+	return
+}
+func (r *RedisCache) GetAllTransferResp() (resp *models.AllTransferStatisticResp, err error) {
+	key := _TransferStatisticResp
+	jsons, err := r.c.Get(key).Result()
+	if err != nil {
+		err = errors.New(err.Error() + "cache GetAllTransferResp")
+		return
+	}
+	err = json.Unmarshal([]byte(jsons), resp)
+	if err != nil {
+		err = errors.New(err.Error() + "cache GetAllTransferResp")
 	}
 	return
 }
