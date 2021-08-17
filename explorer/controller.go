@@ -28,13 +28,14 @@ import (
 	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
+
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strconv"
 )
 
 var db *gorm.DB
-var redis *RedisCache.RedisCache
+var redis *cacheRedis.RedisCache
 
 func Init() {
 	dbConfig := conf.GlobalConfig.DBConfig
@@ -50,7 +51,7 @@ func Init() {
 	}
 
 	redisConfig := conf.GlobalConfig.RedisConfig
-	redis, err = RedisCache.GetRedisClient(redisConfig)
+	redis, err = cacheRedis.GetRedisClient(redisConfig)
 	if err != nil {
 		logs.Error("GetRedisClient redis err")
 	}

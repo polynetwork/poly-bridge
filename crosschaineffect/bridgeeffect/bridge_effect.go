@@ -39,6 +39,7 @@ type BridgeEffect struct {
 	dbCfg    *conf.DBConfig
 	cfg      *conf.EventEffectConfig
 	db       *gorm.DB
+	redis    *cacheRedis.RedisCache
 	ipCfg    *conf.IPPortConfig
 	redisCfg *conf.RedisConfig
 	chains   []*models.Chain
@@ -64,6 +65,11 @@ func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *c
 		panic(err)
 	}
 	swapEffect.db = db
+	redis, err := cacheRedis.GetRedisClient(redisCfg)
+	if err != nil {
+		panic(err)
+	}
+	swapEffect.redis = redis
 	chains := make([]*models.Chain, 0)
 	res := db.Model(&models.Chain{}).Find(&chains)
 	if res.Error != nil || res.RowsAffected == 0 {
@@ -119,6 +125,7 @@ func (eff *BridgeEffect) Effect() error {
 }
 
 func (eff *BridgeEffect) StartUpdateCrossCount() error {
+	logs.Info("StartUpdateCrossCount start")
 	var counter int64
 	res := eff.db.Model(&models.PolyTransaction{}).
 		Where("src_transactions.standard = ?", 0).
@@ -127,11 +134,7 @@ func (eff *BridgeEffect) StartUpdateCrossCount() error {
 	if res.RowsAffected == 0 {
 		return fmt.Errorf("StartUpdateCrossCount counter err %w", res.Error)
 	}
-	redis, err := RedisCache.GetRedisClient(eff.redisCfg)
-	if err != nil {
-		return fmt.Errorf("StartUpdateCrossCount GetRedisClient err %w", err)
-	}
-	err = redis.SetCrossTxCounter(counter)
+	err := eff.redis.SetCrossTxCounter(counter)
 	if err != nil {
 		return fmt.Errorf("StartUpdateCrossCount SetCrossTxCounter err %w", err)
 	}
