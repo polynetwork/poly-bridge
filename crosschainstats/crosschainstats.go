@@ -19,7 +19,6 @@ package crosschainstats
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
