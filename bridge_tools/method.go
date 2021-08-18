@@ -100,7 +100,7 @@ func fetchBlock(config *conf.Config) {
 		fmt.Printf("wrapper %d: %+v\n", i, *tx)
 	}
 	for i, tx := range srcTransactions {
-		fmt.Printf("src %d: %+v\n", i, *tx)
+		fmt.Printf("src %d: %+v srcTransfer:%+v\n", i, *tx, tx.SrcTransfer)
 	}
 	for i, tx := range polyTransactions {
 		fmt.Printf("poly %d: %+v\n", i, *tx)
