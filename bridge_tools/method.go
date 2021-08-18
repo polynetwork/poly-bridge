@@ -40,6 +40,7 @@ const (
 
 func executeMethod(method string, ctx *cli.Context) {
 	configFile := ctx.GlobalString(getFlagName(configPathFlag))
+	fmt.Println("configFile", configFile)
 	config := conf.NewConfig(configFile)
 	if config == nil {
 		logs.Error("startServer - read config failed!")
