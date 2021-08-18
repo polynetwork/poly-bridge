@@ -116,7 +116,7 @@ func bingfaSWTH(config *conf.Config) {
 	}
 	var handle crosschainlisten.ChainHandle
 	for _, cfg := range config.ChainListenConfig {
-		if int(cfg.ChainId) == basedef.SWITCHEO_CROSSCHAIN_ID {
+		if cfg.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
 			handle = crosschainlisten.NewChainHandle(cfg)
 			break
 		}
