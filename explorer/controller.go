@@ -384,7 +384,7 @@ func (c *ExplorerController) GetTransferStatistic() {
 			c.Data["json"] = resp
 			c.ServeJSON()
 		}
-		logs.Info("not redisGetAllTransferResp")
+		logs.Info("not redisGetAllTransferResp err", err)
 		res := db.Preload("Token").Preload("Token.TokenBasic").Find(&tokenStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transferStatistics does not exist"))
