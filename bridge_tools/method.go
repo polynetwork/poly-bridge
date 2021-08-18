@@ -84,9 +84,7 @@ func fetchBlock(config *conf.Config) {
 	if err != nil {
 		panic(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
 	}
-	logs.Info("save", save)
 	if save == "true" {
-		logs.Info("save == \"true\"")
 		err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 		if err != nil {
 			panic(err)

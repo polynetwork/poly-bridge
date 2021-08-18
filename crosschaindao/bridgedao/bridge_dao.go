@@ -64,7 +64,7 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 			}
 		}
 		if srcTransactions != nil && len(srcTransactions) > 0 {
-			res := dao.db.Save(srcTransactions)
+			res := dao.db.Debug().Save(srcTransactions)
 			if res.Error != nil {
 				return res.Error
 			}
@@ -99,7 +99,7 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 			}
 		}
 		if srcTransactions != nil && len(srcTransactions) > 0 {
-			res := dao.db.Save(srcTransactions)
+			res := dao.db.Debug().Save(srcTransactions)
 			if res.Error != nil {
 				return res.Error
 			}

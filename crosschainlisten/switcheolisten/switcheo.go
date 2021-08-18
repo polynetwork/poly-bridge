@@ -87,9 +87,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.ChainId = this.GetChainId()
 					srcTransfer.TxHash = lockEvent.TxHash
 					srcTransfer.Time = tt
-					logs.Info("srcTransfer.From1", v.FromAddress)
 					srcTransfer.From, _ = basedef.Address2Hash(srcTransfer.ChainId, v.FromAddress)
-					logs.Info("srcTransfer.From2", srcTransfer.From)
 					srcTransfer.To = v.ToAddress
 					srcTransfer.Asset = v.FromAssetHash
 					srcTransfer.Amount = models.NewBigInt(v.Amount)
@@ -103,8 +101,6 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.ChainId = this.GetChainId()
 			srcTransaction.Hash = lockEvent.TxHash
 			srcTransaction.State = 1
-			fmt.Println("lockEvent.Fee", lockEvent.Fee)
-			fmt.Println("int64(lockEvent.Fee)", int64(lockEvent.Fee))
 			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
 			srcTransaction.Time = tt
 			srcTransaction.Height = lockEvent.Height
