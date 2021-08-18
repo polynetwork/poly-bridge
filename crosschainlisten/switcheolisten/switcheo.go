@@ -103,6 +103,8 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.ChainId = this.GetChainId()
 			srcTransaction.Hash = lockEvent.TxHash
 			srcTransaction.State = 1
+			fmt.Println("lockEvent.Fee", lockEvent.Fee)
+			fmt.Println("int64(lockEvent.Fee)", int64(lockEvent.Fee))
 			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
 			srcTransaction.Time = tt
 			srcTransaction.Height = lockEvent.Height
@@ -184,7 +186,7 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 						})
 					} else if e.Type == _switcheo_lock {
 						tchainId, _ := strconv.ParseUint(string(e.Attributes[1].Value), 10, 32)
-						amount, _ := strconv.ParseUint(string(e.Attributes[6].Value), 10, 64)
+						amount, _ := strconv.ParseUint(strings.Trim(string(e.Attributes[6].Value), "+"), 10, 64)
 						lockEvents = append(lockEvents, &models.ProxyLockEvent{
 							Method:        _switcheo_lock,
 							TxHash:        strings.ToLower(tx.Hash.String()),
@@ -237,7 +239,7 @@ func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uin
 							Fee:      uint64(tx.TxResult.GasUsed),
 						})
 					} else if e.Type == _switcheo_unlock {
-						amount, _ := strconv.ParseUint(string(e.Attributes[2].Value), 10, 64)
+						amount, _ := strconv.ParseUint(strings.Trim(string(e.Attributes[2].Value), "+"), 10, 64)
 						unlockEvents = append(unlockEvents, &models.ProxyUnlockEvent{
 							Method:      _switcheo_unlock,
 							TxHash:      strings.ToLower(tx.Hash.String()),
