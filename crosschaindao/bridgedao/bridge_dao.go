@@ -69,8 +69,11 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 				return res.Error
 			}
 			for _, v := range srcTransactions {
-				if v.SrcTransfer != nil {
-					res := dao.db.Debug().Save(v.SrcTransfer)
+				if v.SrcTransfer != nil && v.SrcTransfer.TxHash != "" {
+					res := dao.db.Debug().
+						Table("src_transfers").
+						Where("tx_hash = ?", v.SrcTransfer.TxHash).
+						Updates(v.SrcTransfer)
 					if res.Error != nil {
 						return res.Error
 					}
@@ -89,8 +92,10 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 				return res.Error
 			}
 			for _, v := range dstTransactions {
-				if v.DstTransfer != nil {
-					res := dao.db.Save(v.DstTransfer)
+				if v.DstTransfer != nil && v.DstTransfer.TxHash != "" {
+					res := dao.db.Table("dst_transfers").
+						Where("tx_hash = ?", v.DstTransfer.TxHash).
+						Updates(v.DstTransfer)
 					if res.Error != nil {
 						return res.Error
 					}
