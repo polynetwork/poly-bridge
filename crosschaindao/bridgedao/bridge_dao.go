@@ -64,13 +64,13 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 			}
 		}
 		if srcTransactions != nil && len(srcTransactions) > 0 {
-			res := dao.db.Debug().Save(srcTransactions)
+			res := dao.db.Save(srcTransactions)
 			if res.Error != nil {
 				return res.Error
 			}
 			for _, v := range srcTransactions {
 				if v.SrcTransfer != nil && v.SrcTransfer.TxHash != "" {
-					res := dao.db.Debug().
+					res := dao.db.
 						Table("src_transfers").
 						Where("tx_hash = ?", v.SrcTransfer.TxHash).
 						Updates(v.SrcTransfer)
