@@ -68,6 +68,14 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 			if res.Error != nil {
 				return res.Error
 			}
+			for _, v := range srcTransactions {
+				if v.SrcTransfer != nil {
+					res := dao.db.Debug().Save(v.SrcTransfer)
+					if res.Error != nil {
+						return res.Error
+					}
+				}
+			}
 		}
 		if polyTransactions != nil && len(polyTransactions) > 0 {
 			res := dao.db.Save(polyTransactions)
@@ -79,6 +87,14 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 			res := dao.db.Save(dstTransactions)
 			if res.Error != nil {
 				return res.Error
+			}
+			for _, v := range dstTransactions {
+				if v.DstTransfer != nil {
+					res := dao.db.Save(v.DstTransfer)
+					if res.Error != nil {
+						return res.Error
+					}
+				}
 			}
 		}
 		if chain != nil {

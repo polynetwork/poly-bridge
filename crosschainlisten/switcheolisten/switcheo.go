@@ -3,7 +3,7 @@ package switcheolisten
 import (
 	"encoding/hex"
 	"fmt"
-	"math/big"
+	"github.com/shopspring/decimal"
 	"strconv"
 	"strings"
 
@@ -182,7 +182,7 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 						})
 					} else if e.Type == _switcheo_lock {
 						tchainId, _ := strconv.ParseUint(string(e.Attributes[1].Value), 10, 32)
-						amount, _ := strconv.ParseUint(strings.Trim(string(e.Attributes[6].Value), "+"), 10, 64)
+						amount, _ := decimal.NewFromString(string(e.Attributes[6].Value))
 						lockEvents = append(lockEvents, &models.ProxyLockEvent{
 							Method:        _switcheo_lock,
 							TxHash:        strings.ToLower(tx.Hash.String()),
@@ -191,7 +191,7 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 							ToChainId:     uint32(tchainId),
 							ToAssetHash:   string(e.Attributes[3].Value),
 							ToAddress:     string(e.Attributes[7].Value),
-							Amount:        new(big.Int).SetUint64(amount),
+							Amount:        amount.BigInt(),
 							DstUser:       string(e.Attributes[5].Value),
 						})
 					}
@@ -235,13 +235,13 @@ func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uin
 							Fee:      uint64(tx.TxResult.GasUsed),
 						})
 					} else if e.Type == _switcheo_unlock {
-						amount, _ := strconv.ParseUint(strings.Trim(string(e.Attributes[2].Value), "+"), 10, 64)
+						amount, _ := decimal.NewFromString(string(e.Attributes[2].Value))
 						unlockEvents = append(unlockEvents, &models.ProxyUnlockEvent{
 							Method:      _switcheo_unlock,
 							TxHash:      strings.ToLower(tx.Hash.String()),
 							ToAssetHash: string(e.Attributes[0].Value),
 							ToAddress:   string(e.Attributes[1].Value),
-							Amount:      new(big.Int).SetUint64(amount),
+							Amount:      amount.BigInt(),
 						})
 					}
 				}
