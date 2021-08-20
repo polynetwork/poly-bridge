@@ -15,68 +15,56 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package binance
+package coincheck
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"io/ioutil"
+	"math/big"
 	"net/http"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"reflect"
 )
 
-type BinanceSdk struct {
+type CoincheckSdk struct {
 	client *http.Client
 	nodes  []*conf.Restful
 }
 
-func DefaultBinanceSdk() *BinanceSdk {
+func NewCoincheckSdk(cfg *conf.CoinPriceListenConfig) *CoincheckSdk {
 	client := &http.Client{}
-	sdk := &BinanceSdk{
-		client: client,
-		nodes: []*conf.Restful{
-			{
-				Url: "https://api1.binance.com/",
-			},
-		},
-	}
-	return sdk
-}
-
-func NewBinanceSdk(cfg *conf.CoinPriceListenConfig) *BinanceSdk {
-	client := &http.Client{}
-	sdk := &BinanceSdk{
+	sdk := &CoincheckSdk{
 		client: client,
 		nodes:  cfg.Nodes,
 	}
 	return sdk
 }
 
-func (sdk *BinanceSdk) QuotesLatest() ([]*Ticker, error) {
-	for i := 0; i < len(sdk.nodes); i++ {
-		quotes, err := sdk.quotesLatest(i)
+func (c *CoincheckSdk) QuotesLatest() (*Rate, error) {
+	for i := 0; i < len(c.nodes); i++ {
+		quotes, err := c.quotesLatest(i)
 		if err != nil {
-			logs.Error("Binance QuotesLatest err: %s", err.Error())
+			logs.Error("Coincheck QuotesLatest err: %s", err.Error())
 			continue
 		} else {
 			return quotes, nil
 		}
 	}
-	return nil, fmt.Errorf("Cannot get Binance QuotesLatest!")
+	return nil, fmt.Errorf("Cannot get Coincheck QuotesLatest!")
 }
 
-func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
-	req, err := http.NewRequest("GET", sdk.nodes[node].Url+"api/v3/ticker/price", nil)
+func (c *CoincheckSdk) quotesLatest(node int) (*Rate, error) {
+	req, err := http.NewRequest("GET", c.nodes[node].Url+"api/rate/all", nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Accepts", "application/json")
-	req.Header.Add("X-CMC_PRO_API_KEY", "8efe5156-8b37-4c77-8e1d-a140c97bf466")
 
-	resp, err := sdk.client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -85,35 +73,43 @@ func (sdk *BinanceSdk) quotesLatest(node int) ([]*Ticker, error) {
 		return nil, fmt.Errorf("response status code: %d", resp.StatusCode)
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	tickers := make([]*Ticker, 0)
-	err = json.Unmarshal(respBody, &tickers)
+	rates := new(Rate)
+	err = json.Unmarshal(respBody, rates)
 	if err != nil {
 		return nil, err
 	}
-	return tickers, nil
+	return rates, nil
 }
 
-func (sdk *BinanceSdk) GetMarketName() string {
-	return basedef.MARKET_BINANCE
+func (c *CoincheckSdk) GetMarketName() string {
+	return basedef.MARKET_COINCHECK
 }
 
-func (this *BinanceSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
-	quotes, err := this.QuotesLatest()
+func (c *CoincheckSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
+	rates, err := c.QuotesLatest()
 	if err != nil {
 		return nil, err
 	}
-	coinSymbol2Price := make(map[string]float64, 0)
-	for _, v := range quotes {
-		coinSymbol2Price[v.Symbol] = v.Price
+
+	var (
+		supportedCoinsMap = make(map[string]struct{}, 0)
+		coinPrice         = make(map[string]float64, 0)
+		typeOfRates       = reflect.TypeOf(rates.Jpy)
+		valueOfRate       = reflect.ValueOf(rates.Jpy)
+		usdJpyRate        = big.NewFloat(rates.Jpy.USD)
+	)
+
+	for i := 0; i < typeOfRates.NumField(); i++ {
+		fieldType := typeOfRates.Field(i)
+		supportedCoinsMap[fieldType.Name] = struct{}{}
 	}
-	coinPrice := make(map[string]float64, 0)
 	for _, coin := range coins {
-		price, ok := coinSymbol2Price[coin]
-		if !ok {
-			logs.Warn("There is no coin price %s in Binance!", coin)
+		if _, ok := supportedCoinsMap[coin]; !ok {
+			logs.Warn("%s price is not available in Coincheck!", coin)
 			continue
 		}
-		coinPrice[coin] = price
+		coinJpyRate := valueOfRate.FieldByName(coin).Float()
+		coinPrice[coin], _ = new(big.Float).Quo(big.NewFloat(coinJpyRate), usdJpyRate).Float64()
 	}
 	return coinPrice, nil
 }

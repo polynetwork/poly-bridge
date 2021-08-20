@@ -9,6 +9,7 @@ var (
 	MARKET_COINMARKETCAP = "coinmarketcap"
 	MARKET_BINANCE       = "binance"
 	MARKET_HUOBI         = "huobi"
+	MARKET_COINCHECK     = "coincheck"
 	MARKET_SELF          = "self"
 )
 
