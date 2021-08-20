@@ -105,7 +105,8 @@ func (client *SwitcheoSDK) GetGas(tx []byte) uint64 {
 func (sdk *SwitcheoSDK) GetCurrentBlockHeight() (uint64, error) {
 	status, err := sdk.Status()
 	if err != nil {
-		logs.Error("GetLatestBlockHeight: get current block status %s", err.Error())
+		logs.Error("GetLatestBlockHeight switcheo: get current block status %s", err.Error())
+		return 0, err
 	}
 	res := status.SyncInfo.LatestBlockHeight
 	return uint64(res), nil
