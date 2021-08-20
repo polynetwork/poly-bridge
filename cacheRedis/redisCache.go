@@ -77,16 +77,18 @@ func (r *RedisCache) SetAllTransferResp(resp *models.AllTransferStatisticResp) (
 	}
 	return
 }
-func (r *RedisCache) GetAllTransferResp() (resp *models.AllTransferStatisticResp, err error) {
+func (r *RedisCache) GetAllTransferResp() (*models.AllTransferStatisticResp, error) {
 	key := _TransferStatisticResp
 	jsons, err := r.c.Get(key).Result()
 	if err != nil {
 		err = errors.New(err.Error() + "cache GetAllTransferResp")
-		return
+		return nil, err
 	}
+	resp := new(models.AllTransferStatisticResp)
 	err = json.Unmarshal([]byte(jsons), resp)
 	if err != nil {
 		err = errors.New(err.Error() + "cache GetAllTransferResp")
+		return nil, err
 	}
-	return
+	return resp, nil
 }

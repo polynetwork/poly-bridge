@@ -150,9 +150,8 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		if err != nil {
 			return value, err
 		}
-		addrBytes := addr.Bytes()
-		addrHex := hex.EncodeToString(addrBytes)
-		return addrHex, nil
+		hash := fmt.Sprint(addr)
+		return hash, nil
 	}
 	return value, nil
 }
