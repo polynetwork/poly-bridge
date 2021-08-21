@@ -15,32 +15,23 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
-	"github.com/astaxie/beego"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"poly-bridge/models"
+
+	"github.com/beego/beego/v2/server/web"
 )
 
-var (
-	db = newDB()
-)
+type InfoController struct {
+	web.Controller
+}
 
-func newDB() *gorm.DB {
-	user := beego.AppConfig.String("mysqluser")
-	password := beego.AppConfig.String("mysqlpass")
-	url := beego.AppConfig.String("mysqlurls")
-	scheme := beego.AppConfig.String("mysqldb")
-	mode := beego.AppConfig.String("runmode")
-	Logger := logger.Default
-	if mode == "dev" {
-		Logger = Logger.LogMode(logger.Info)
+func (c *InfoController) Get() {
+	explorer := &models.PolyBridgeResp{
+		Version: "v1",
+		URL:     "http://localhost:8080/v1",
 	}
-	db, err := gorm.Open(mysql.Open(user+":"+password+"@tcp("+url+")/"+scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
-	if err != nil {
-		panic(err)
-	}
-	return db
+	c.Data["json"] = explorer
+	c.ServeJSON()
 }

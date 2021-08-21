@@ -19,6 +19,9 @@ package main
 
 import (
 	"fmt"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
@@ -27,7 +30,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/urfave/cli"
 )
 
@@ -37,6 +40,7 @@ const (
 
 func executeMethod(method string, ctx *cli.Context) {
 	configFile := ctx.GlobalString(getFlagName(configPathFlag))
+	fmt.Println("configFile", configFile)
 	config := conf.NewConfig(configFile)
 	if config == nil {
 		logs.Error("startServer - read config failed!")
@@ -46,6 +50,8 @@ func executeMethod(method string, ctx *cli.Context) {
 	switch method {
 	case FETCH_BLOCK:
 		fetchBlock(config)
+	case "bingfaSWTH":
+		bingfaSWTH(config)
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}
@@ -78,7 +84,6 @@ func fetchBlock(config *conf.Config) {
 	if err != nil {
 		panic(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
 	}
-
 	if save == "true" {
 		err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 		if err != nil {
@@ -94,12 +99,68 @@ func fetchBlock(config *conf.Config) {
 		fmt.Printf("wrapper %d: %+v\n", i, *tx)
 	}
 	for i, tx := range srcTransactions {
-		fmt.Printf("src %d: %+v\n", i, *tx)
+		fmt.Printf("src %d: %+v srcTransfer:%+v\n", i, *tx, tx.SrcTransfer)
 	}
 	for i, tx := range polyTransactions {
 		fmt.Printf("poly %d: %+v\n", i, *tx)
 	}
 	for i, tx := range dstTransactions {
 		fmt.Printf("dst %d: %+v\n", i, *tx)
+	}
+}
+
+func bingfaSWTH(config *conf.Config) {
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
+	if dao == nil {
+		panic("server is not valid")
+	}
+	var handle crosschainlisten.ChainHandle
+	for _, cfg := range config.ChainListenConfig {
+		if cfg.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
+			handle = crosschainlisten.NewChainHandle(cfg)
+			break
+		}
+	}
+	if handle == nil {
+		panic(fmt.Sprintf("chain %d handler is invalid", basedef.SWITCHEO_CROSSCHAIN_ID))
+	}
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	srcHeights := make([]int, 0)
+	dstHeights := make([]int, 0)
+	err = db.Table("src_transactions").
+		Select("height").
+		Where("chain_id = ?", basedef.SWITCHEO_CROSSCHAIN_ID).
+		Find(&srcHeights).Error
+	if err != nil {
+		panic(fmt.Sprintf("bingfaSWTH db Find(&inHeights) err:%v", err))
+	}
+	fmt.Println("bingfaSWTH Find(&srcHeights)", srcHeights[:3])
+	err = db.Table("dst_transactions").
+		Select("height").
+		Where("chain_id = ?", basedef.SWITCHEO_CROSSCHAIN_ID).
+		Find(&dstHeights).Error
+	if err != nil {
+		panic(fmt.Sprintf("bingfaSWTH db Find(&dstHeights) err:%v", err))
+	}
+	fmt.Println("bingfaSWTH Find(&dstHeights)", dstHeights[:3])
+	heights := srcHeights
+	heights = append(heights, dstHeights...)
+
+	for _, height := range heights {
+		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := handle.HandleNewBlock(uint64(height))
+		if err != nil {
+			panic(fmt.Sprintf("bingfaSWTH HandleNewBlock %d err: %v", height, err))
+		}
+		err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		if err != nil {
+			panic(fmt.Sprintf("bingfaSWTH bingfaSWTH panic panicHeight:%v,flagerr is:%v", height, err))
+		}
+		fmt.Printf("bingfaSWTH ing.....nowHeight:%v /n", height)
 	}
 }

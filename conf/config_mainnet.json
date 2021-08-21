@@ -1,17 +1,25 @@
 {
   "Server":"polybridge",
   "Backup": false,
+  "Env": "mainnet",
   "DBConfig":{
     "URL":"localhost:3306",
     "User":"root",
     "Password":"123456",
-    "Scheme":"polyswap",
+    "Scheme":"poly",
     "Debug": false
   },
-  "IPPortConfig":{
-    "WBTCIP":"http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
-    "USDTIP":"http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
-    "DingIP": "https://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
+  "RedisConfig": {
+    "addr": "redis:6379",
+    "password": "abcdef",
+    "proto": "tcp",
+    "pool_size": 50,
+    "min_idle_conns": 10,
+    "dial_timeout": 2,
+    "read_timeout": 2,
+    "write_timeout": 2,
+    "idle_timeout": 10,
+    "expiration": 600
   },
   "ChainListenConfig":[
     {
@@ -52,12 +60,14 @@
       "WrapperContract":["2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac", "d380450e9e373bDC389951C54616edb2EE653524"],
       "CCMContract":"838bf9e95cb12dd76a54c9f9d2e3082eaf928270",
       "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
+      "SwapContract": "af83ce8d461e8834de03a3803c968615013c6b3d",
       "NFTWrapperContract":"e5204d62361A353C665668C858Ea213070CA159c",
-      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "NFTQueryContract": "B2265A122814dA516318F727183a5D8FeCA8BaCE"
     },
     {
       "ChainName":"MATIC",
-      "ChainId":16,
+      "ChainId":17,
       "ListenSlot":5,
       "Defer": 10,
       "Nodes": [
@@ -67,7 +77,8 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["", "B88f13682F3C602aCD84B4b2eEB96A9DD75Afd89"],
+      "WrapperContract":["4493fb5dc195900938CC23096C7EEdEfc434e283", "B88f13682F3C602aCD84B4b2eEB96A9DD75Afd89"],
+      "SwaperContract": "aC57280B3A657A2e8D1180493C519a476D208F61",
       "CCMContract":"abd7f7b89c5fd5d0aef06165f8173b1b83d7d5c9",
       "ProxyContract":"28ff66a1b95d7cacf8eded2e658f768f44841212"
     },
@@ -92,9 +103,34 @@
       ],
       "ExtendNodes": [
       ],
-      "WrapperContract":["125c83403763670c215f9c7c815ef759b258a41b"],
+      "WrapperContract":["125c83403763670c215f9c7c815ef759b258a41b", "1b20e48cd86d6af552f70847e081c2e9169a57d3"],
       "CCMContract":"82a3401fb9a60db42c6fa2ea2b6d62e872d6257f",
       "ProxyContract":"e7fb2e1d937e71dbbb512e6375746181127282e7"
+    },
+    {
+      "ChainName":"NEO3",
+      "ChainId":14,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "http://seed1.neo.org:10332"
+        },
+        {
+          "Url": "http://seed2.neo.org:10332"
+        },
+        {
+          "Url": "http://seed3.neo.org:10332"
+        },
+        {
+          "Url": "http://seed4.neo.org:10332"
+        }
+      ],
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["1b20e48cd86d6af552f70847e081c2e9169a57d3"],
+      "CCMContract":"5ba6c543c5a86a85e9ab3f028a4ad849b924fab9",
+      "ProxyContract":"385501cb0288b2953db767b0dc971478539456cb"
     },
     {
       "ChainName":"BSC",
@@ -129,8 +165,23 @@
       "WrapperContract":["E3D0FB6E3cB5DA61EB18b06D035052441009d1E6","4b0CFdb5e1Ca898a225F9E14AfF9e4eF178a10d2"],
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
+      "SwapContract": "00b93851e3135663AAeC351555EddEE5B01325e6",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
-      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "NFTQueryContract": "02015dBb2Dc25Cc7313D7EDb4785c2C46F3B7FD2"
+    },
+    {
+      "ChainName":"Switcheo",
+      "ChainId":5,
+      "ListenSlot":1,
+      "Defer": 1,
+      "Nodes": [
+        {
+          "Url": "http://40.115.182.238:26657"
+        }
+      ],
+      "ExtendNodes": [
+      ]
     },
     {
       "ChainName":"HECO",
@@ -147,8 +198,10 @@
       "WrapperContract":["4fE451186c0D69205ACc1fA00FD75fc6d71e47eE", "1B0C55be400e2a7D924032B257Fbc75Bbfd256E7"],
       "CCMContract":"7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
+      "SwapContract": "D98Ee7Ca1B33e60C75E3cd9493c566fc857592c8",
       "NFTWrapperContract":"e2bD9dD8FAF5C4C2087Ab82eC7E63F619CcAa152",
-      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5"
+      "NFTProxyContract":"2cdfc90250EF967036838DA601099656e74bCfc5",
+      "NFTQueryContract": "56C9491F2aC2Bc623AB890D2Db16C98E1aBd1FBd"
     },
     {
       "ChainName":"Ontology",
@@ -176,7 +229,10 @@
       "Defer": 2,
       "Nodes": [
         {
-          "Url": "https://exchainrpc.okex.org"
+          "Url": "http://35.73.164.192:26659"
+        },
+        {
+         "Url": "http://10.203.0.47:8545"
         }
       ],
       "ExtendNodes": [
@@ -184,11 +240,35 @@
       "WrapperContract":["11e2A718d46EBe97645b87F2363AFE1BF28c2672", "bd4a08577476A521C41a21EF3f00b045b74175d5"],
       "CCMContract":"F35844C21A0Ca574D0e52697Bbd5ceDda5798A07",
       "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
-    }
+    },
+    {
+            "CCMContract": "5fda5277E73FCB07E28135900a6B4Cc170930d8E",
+            "ChainId": 10,
+            "ChainName": "curve",
+            "Defer": 2,
+            "ExtendNodes": [
+            ],
+            "ListenSlot": 1,
+            "Nodes": [
+                {
+                    "Url": "http://10.203.0.42:8545"
+                }
+            ],
+            "ProxyContract": "34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430",
+            "SwapContract": "34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430",
+            "WrapperContract": [
+                "34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430"
+            ]
+     }
   ],
   "StatsConfig": {
-    "TokenBasicStatsInterval": 60,
-    "TokenStatsInterval": 60
+    "AssetAdressInterval": 500,
+    "AssetStatisticInterval": 120,
+    "ChainAddressCheckInterval": 1200,
+    "ChainStatisticInterval": 600,
+    "TokenAmountCheckInterval": 300,
+    "TokenBasicStatsInterval": 600,
+    "TokenStatisticInterval": 60
   },
   "EventEffectConfig": {
     "HowOld": 1800,
@@ -204,7 +284,8 @@
       "Nodes": [
         {
           "Url": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/",
-          "Key": "8c175886-3aec-4276-8961-1f0ce06ab69e"
+          "Key1": "8c175886-3aec-4276-8961-1f0ce06ab69e",
+          "Key": "342a1d63-d772-4bd3-8ae9-9c6437e31769"
         }
       ]
     },
@@ -249,6 +330,15 @@
       "GasLimit":300000,
       "ProxyFee":140,
       "MinFee": 40
+    },
+    {
+      "ChainId":14,
+      "ChainName":"NEO3",
+      "Nodes": [
+      ],
+      "GasLimit":5000000,
+      "ProxyFee":120,
+      "MinFee": 20
     },
     {
       "ChainId":6,
@@ -296,16 +386,39 @@
       "MinFee": 20
     },
     {
-      "ChainId":16,
+      "ChainId":17,
       "ChainName":"MATIC",
       "Nodes": [
         {
           "Url": "http://124.156.210.161:8545"
         }
       ],
-      "GasLimit":120000,
+      "GasLimit":300000,
+      "ProxyFee":120,
+      "MinFee": 20
+    },
+    {
+      "ChainId":5,
+      "ChainName":"Switcheo",
+      "Nodes": [
+        {
+          "Url": "http://40.115.182.238:26657"
+        }
+      ],
+      "GasLimit":0,
       "ProxyFee":120,
       "MinFee": 20
     }
-  ]
+  ],
+"IPPortConfig":{
+    "WBTCIP":"http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
+    "USDTIP":"http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
+    "DingIP": "hhttps://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
+  },
+  "HttpConfig": {
+        "Address": "0.0.0.0",
+        "Port": 8081
+    },
+    "LogFile": "logs/bridge.log",
+    "RunMode": "prod"
 }

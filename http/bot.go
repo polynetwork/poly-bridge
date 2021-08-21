@@ -15,7 +15,7 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
 	"bytes"
@@ -33,15 +33,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 )
 
 // Deduplicate alarms
 var ALARMS = map[string]struct{}{}
 
 type BotController struct {
-	beego.Controller
+	web.Controller
 	Conf *conf.Config
 }
 
@@ -137,7 +137,7 @@ func (c *BotController) FinishTx() {
 	var err error
 	if status != "skip" && status != "wait" {
 		err = fmt.Errorf("Invalid status")
-	} else if token == c.Conf.BotConfig.ApiToken {
+	} else if token == conf.GlobalConfig.BotConfig.ApiToken {
 		target := basedef.STATE_WAIT
 		if status == "skip" {
 			target = basedef.STATE_SKIP
@@ -284,11 +284,11 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 	skips := append(skip, basedef.STATE_FINISHED, basedef.STATE_SKIP)
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
-	end := tt - c.Conf.EventEffectConfig.HowOld
+	end := tt - conf.GlobalConfig.EventEffectConfig.HowOld
 	if from == 0 {
 		from = 3
 	}
-	endBsc := tt - c.Conf.EventEffectConfig.HowOld2
+	endBsc := tt - conf.GlobalConfig.EventEffectConfig.HowOld2
 	query := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
@@ -333,10 +333,10 @@ func (c *BotController) CheckTxs() {
 }
 
 func (c *BotController) RunChecks() {
-	if c.Conf.BotConfig == nil || c.Conf.BotConfig.DingUrl == "" {
+	if conf.GlobalConfig.BotConfig == nil || conf.GlobalConfig.BotConfig.DingUrl == "" {
 		panic("Invalid ding url")
 	}
-	interval := c.Conf.BotConfig.Interval
+	interval := conf.GlobalConfig.BotConfig.Interval
 	if interval == 0 {
 		interval = 60 * 5
 	}
@@ -356,7 +356,7 @@ func (c *BotController) checkTxs() (err error) {
 		}
 	}()
 
-	from := c.Conf.BotConfig.CheckFrom
+	from := conf.GlobalConfig.BotConfig.CheckFrom
 	pageSize := 20
 	pageNo := 0
 	txs, _, err := c.getTxs(pageSize, pageNo, int(from), []uint64{basedef.STATE_WAIT})
@@ -395,15 +395,15 @@ func (c *BotController) checkTxs() (err error) {
 		btns := []map[string]string{
 			map[string]string{
 				"title":     "ListAll",
-				"actionURL": c.Conf.BotConfig.DetailUrl,
+				"actionURL": conf.GlobalConfig.BotConfig.DetailUrl,
 			},
 			map[string]string{
 				"title":     "MarkAsSkipped",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", c.Conf.BotConfig.FinishUrl, c.Conf.BotConfig.ApiToken, entry.Hash),
+				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", conf.GlobalConfig.BotConfig.FinishUrl, conf.GlobalConfig.BotConfig.ApiToken, entry.Hash),
 			},
 			map[string]string{
 				"title":     "MarkAsWaiting",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=wait", c.Conf.BotConfig.FinishUrl, c.Conf.BotConfig.ApiToken, entry.Hash),
+				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=wait", conf.GlobalConfig.BotConfig.FinishUrl, conf.GlobalConfig.BotConfig.ApiToken, entry.Hash),
 			},
 			map[string]string{
 				"title":     "Open",
@@ -462,7 +462,7 @@ func (c *BotController) postDing(payload interface{}) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", c.Conf.BotConfig.DingUrl, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", conf.GlobalConfig.BotConfig.DingUrl, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

@@ -20,17 +20,20 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/urfave/cli"
 	"os"
 	"os/signal"
+
+	"runtime"
+	"strings"
+	"syscall"
+
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
-	"runtime"
-	"strings"
-	"syscall"
+
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/urfave/cli"
 )
 
 var chainListen *crosschainlisten.CrossChainListen

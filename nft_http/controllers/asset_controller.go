@@ -18,12 +18,13 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"poly-bridge/models"
+
+	"github.com/beego/beego/v2/server/web"
 )
 
 type AssetController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *AssetController) Assets() {

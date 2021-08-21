@@ -3,7 +3,6 @@ package bridgeeffect
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -16,6 +15,8 @@ import (
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
 	"time"
+
+	"github.com/beego/beego/v2/core/logs"
 )
 
 type AssetDetail struct {
@@ -78,17 +79,18 @@ func StartCheckAsset(dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) error {
 			}
 			chainAsset.Balance = balance
 			time.Sleep(time.Second)
-			totalSupply, err :=getAndRetryTotalSupply(token.ChainId, token.Hash)
+			totalSupply, err := getAndRetryTotalSupply(token.ChainId, token.Hash)
 			if err != nil {
 				assetDetail.Reason = err.Error()
 				totalSupply = big.NewInt(0)
 				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err)
 			}
+			//specialBasic
 			totalSupply = specialBasic(token, totalSupply)
+			//original asset
 			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
 				totalSupply = big.NewInt(0)
 			}
-			//specialBasic
 			chainAsset.TotalSupply = totalSupply
 			chainAsset.Flow = new(big.Int).Sub(totalSupply, balance)
 			totalFlow = new(big.Int).Add(totalFlow, chainAsset.Flow)
@@ -141,30 +143,24 @@ func inExtraBasic(name string) bool {
 	return false
 }
 func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
-	presion, _ := new(big.Int).SetString("1000000000000000000", 10)
-
+	presion := decimal.New(1, int32(token.Precision)).BigInt()
 	if token.TokenBasicName == "YNI" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		return big.NewInt(0)
 	}
 	if token.TokenBasicName == "YNI" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("1", 10)
-		return new(big.Int).Mul(x, presion)
+		return new(big.Int).Mul(big.NewInt(1), presion)
 	}
 	if token.TokenBasicName == "DAO" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("1000", 10)
-		return new(big.Int).Mul(x, presion)
+		return new(big.Int).Mul(big.NewInt(1000), presion)
 	}
 	if token.TokenBasicName == "DAO" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("1000", 10)
-		return new(big.Int).Mul(x, presion)
+		return new(big.Int).Mul(big.NewInt(1000), presion)
 	}
 	if token.TokenBasicName == "COPR" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("274400000", 10)
-		return new(big.Int).Mul(x, presion)
+		return new(big.Int).Mul(big.NewInt(274400000), presion)
 	}
 	if token.TokenBasicName == "COPR" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("0", 10)
-		return x
+		return big.NewInt(0)
 	}
 	if token.TokenBasicName == "DigiCol ERC-721" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		return big.NewInt(0)
@@ -183,12 +179,10 @@ func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
 		return x
 	}
 	if token.TokenBasicName == "SIL" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("5001", 10)
-		return new(big.Int).Mul(x, presion)
+		return new(big.Int).Mul(big.NewInt(5001), presion)
 	}
 	if token.TokenBasicName == "DOGK" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
-		x, _ := new(big.Int).SetString("0", 10)
-		return x
+		return big.NewInt(0)
 	}
 	if token.TokenBasicName == "DOGK" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
 		x, _ := new(big.Int).SetString("285000000000", 10)
@@ -229,6 +223,8 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		}{}
 		json.Unmarshal(body, &o3WBTC)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		chainAsset.TotalSupply = big.NewInt(0)
+		chainAsset.Balance = big.NewInt(0)
 		chainAsset.Flow = o3WBTC.Balance
 		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 		assetDetail.Difference.Add(assetDetail.Difference, chainAsset.Flow)
@@ -248,40 +244,42 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		json.Unmarshal(body, &o3USDT)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 		chainAsset.Balance = o3USDT.Balance
+		chainAsset.TotalSupply = big.NewInt(0)
+		chainAsset.Flow = big.NewInt(0)
 		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
 	}
 }
 
-func getAndRetryBalance(chainId uint64, hash string)(*big.Int, error){
-	balance,err:=common.GetBalance(chainId,hash)
-	if err!=nil{
-		for i:=0;i<2;i++{
+func getAndRetryBalance(chainId uint64, hash string) (*big.Int, error) {
+	balance, err := common.GetBalance(chainId, hash)
+	if err != nil {
+		for i := 0; i < 2; i++ {
 			time.Sleep(time.Second)
-			balance,err=common.GetBalance(chainId,hash)
-			if err==nil{
+			balance, err = common.GetBalance(chainId, hash)
+			if err == nil {
 				break
 			}
 		}
 	}
-	return balance,err
+	return balance, err
 }
 
-func getAndRetryTotalSupply(chainId uint64, hash string)(*big.Int, error){
-	totalSupply,err:=common.GetTotalSupply(chainId, hash)
-	if err!=nil{
-		for i:=0;i<2;i++{
+func getAndRetryTotalSupply(chainId uint64, hash string) (*big.Int, error) {
+	totalSupply, err := common.GetTotalSupply(chainId, hash)
+	if err != nil {
+		for i := 0; i < 2; i++ {
 			time.Sleep(time.Second)
-			totalSupply,err=common.GetTotalSupply(chainId,hash)
-			if err==nil{
+			totalSupply, err = common.GetTotalSupply(chainId, hash)
+			if err == nil {
 				break
 			}
 		}
 	}
-	return totalSupply,err
+	return totalSupply, err
 }
 
 func sendDing(assetDetails []*AssetDetail, dingUrl string) error {
-	ss := "[poly_NB]\n"
+	ss := "[poly_NB]_[mainnet]\n"
 	flag := false
 	for _, assetDetail := range assetDetails {
 		if assetDetail.Reason == "all node is not working" {
@@ -295,6 +293,7 @@ func sendDing(assetDetails []*AssetDetail, dingUrl string) error {
 				for _, x := range assetDetail.TokenAsset {
 					ss += "ChainId: " + fmt.Sprintf("%v", x.ChainId) + "\n"
 					ss += "Hash: " + fmt.Sprintf("%v", x.Hash) + "\n"
+					logs.Info("x.TotalSupply:", x.TotalSupply)
 					ss += "TotalSupply: " + decimal.NewFromBigInt(x.TotalSupply, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + " "
 					ss += "Balance: " + decimal.NewFromBigInt(x.Balance, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + " "
 					ss += "Flow: " + decimal.NewFromBigInt(x.Flow, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + "\n"

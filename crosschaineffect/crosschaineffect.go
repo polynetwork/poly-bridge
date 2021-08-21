@@ -18,7 +18,7 @@
 package crosschaineffect
 
 import (
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect/bridgeeffect"
@@ -36,8 +36,8 @@ type Effect interface {
 
 var crossChainEffect *CrossChainEffect
 
-func StartCrossChainEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) {
-	effect := NewEffect(server, effCfg, dbCfg,ipCfg)
+func StartCrossChainEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig, redisCfg *conf.RedisConfig) {
+	effect := NewEffect(server, effCfg, dbCfg, ipCfg, redisCfg)
 	if effect == nil {
 		panic("effect is not valid")
 	}
@@ -51,9 +51,9 @@ func StopCrossChainEffect() {
 	}
 }
 
-func NewEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig,ipCfg *conf.IPPortConfig) Effect {
+func NewEffect(server string, effCfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig, redisCfg *conf.RedisConfig) Effect {
 	if server == basedef.SERVER_POLY_BRIDGE {
-		return bridgeeffect.NewBridgeEffect(effCfg, dbCfg,ipCfg)
+		return bridgeeffect.NewBridgeEffect(effCfg, dbCfg, ipCfg, redisCfg)
 	} else if server == basedef.SERVER_POLY_SWAP {
 		return swapeffect.NewSwapEffect(effCfg, dbCfg)
 	} else if server == basedef.SERVER_EXPLORER {

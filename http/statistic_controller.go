@@ -15,17 +15,18 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
 	"poly-bridge/models"
+
+	"github.com/beego/beego/v2/server/web"
 )
 
 type StatisticController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *StatisticController) ExpectTime() {
@@ -38,6 +39,6 @@ func (c *StatisticController) ExpectTime() {
 	}
 	var expectTime models.TimeStatistic
 	db.Where("src_chain_id = ? and dst_chain_id = ?", expectTimeReq.SrcChainId, expectTimeReq.DstChainId).First(&expectTime)
-	c.Data["json"] = models.MakeExpectTimeRsp(expectTime.SrcChainId, expectTime.DstChainId, (expectTime.Time) / 100000000)
+	c.Data["json"] = models.MakeExpectTimeRsp(expectTime.SrcChainId, expectTime.DstChainId, (expectTime.Time)/100000000)
 	c.ServeJSON()
 }

@@ -20,7 +20,7 @@ package self
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"io/ioutil"
 	"net/http"
 	"poly-bridge/basedef"

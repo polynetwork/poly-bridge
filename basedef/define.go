@@ -35,6 +35,12 @@ const (
 )
 
 const (
+	MAINNET = "mainnet"
+	TESTNET = "testnet"
+	DEVNET  = "devnet"
+)
+
+const (
 	ADDRESS_LENGTH = 64
 )
 
@@ -60,3 +66,10 @@ func GetStateName(state int) string {
 		return fmt.Sprintf("Unknown(%d)", state)
 	}
 }
+
+const (
+	SWAP_SWAP = iota
+	SWAP_ADDLIQUIDITY
+	SWAP_REMOVELIQUIDITY
+	SWAP_ROLLBACK
+)

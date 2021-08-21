@@ -19,7 +19,7 @@
 
 package basedef
 
-var (
+const (
 	POLY_CROSSCHAIN_ID     = uint64(0)
 	ETHEREUM_CROSSCHAIN_ID = uint64(2)
 	ONT_CROSSCHAIN_ID      = uint64(3)
@@ -30,4 +30,7 @@ var (
 	NEO3_CROSSCHAIN_ID     = uint64(88)
 	OK_CROSSCHAIN_ID       = uint64(90)
 	MATIC_CROSSCHAIN_ID    = uint64(13)
+	PLT_CROSSCHAIN_ID      = uint64(107)
+
+	ENV = "devnet"
 )

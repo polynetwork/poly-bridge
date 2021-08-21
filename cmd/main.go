@@ -22,6 +22,10 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
+	"syscall"
+
+	"poly-bridge/basedef"
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/coinpricelisten"
 	"poly-bridge/common"
@@ -29,42 +33,12 @@ import (
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
 	"poly-bridge/crosschainstats"
-	"runtime"
-	"strings"
-	"syscall"
+	"poly-bridge/http/tools"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/urfave/cli"
 )
-
-var (
-	logLevelFlag = cli.UintFlag{
-		Name:  "loglevel",
-		Usage: "Set the log level to `<level>` (0~6). 0:Trace 1:Debug 2:Info 3:Warn 4:Error 5:Fatal 6:MaxLevel",
-		Value: 1,
-	}
-
-	configPathFlag = cli.StringFlag{
-		Name:  "cliconfig",
-		Usage: "Server config file `<path>`",
-		Value: "./conf/config_testnet.json",
-	}
-
-	logDirFlag = cli.StringFlag{
-		Name:  "logdir",
-		Usage: "log directory",
-		Value: "./Log/",
-	}
-)
-
-//getFlagName deal with short flag, and return the flag name whether flag name have short name
-func getFlagName(flag cli.Flag) string {
-	name := flag.GetName()
-	if name == "" {
-		return ""
-	}
-	return strings.TrimSpace(strings.Split(name, ",")[0])
-}
 
 func setupApp() *cli.App {
 	app := cli.NewApp()
@@ -73,9 +47,7 @@ func setupApp() *cli.App {
 	app.Version = "1.0.0"
 	app.Copyright = "Copyright in 2019 The Ontology Authors"
 	app.Flags = []cli.Flag{
-		logLevelFlag,
-		configPathFlag,
-		logDirFlag,
+		conf.ConfigPathFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -99,17 +71,20 @@ func StartServer(ctx *cli.Context) {
 }
 
 func startServer(ctx *cli.Context) {
-	logs.SetLogger(logs.AdapterFile, `{"filename":"logs/bridge_server.log"}`)
-	configFile := ctx.GlobalString(getFlagName(configPathFlag))
+	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
 	if config == nil {
 		logs.Error("startServer - read config failed!")
 		return
 	}
+	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
+
 	{
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
+	tools.Init()
+	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
 	crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
 	if config.Backup {
@@ -117,8 +92,32 @@ func startServer(ctx *cli.Context) {
 	}
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
-	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig,config.IPPortConfig)
+	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig, config.RedisConfig)
 	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig)
+
+	// register http routers
+	web.AddNamespace(
+		web.NewNamespace("/v1",
+			tools.GetRouter(),
+		),
+	)
+
+	metricConfig := config.MetricConfig
+	if metricConfig == nil {
+		metricConfig = &conf.HttpConfig{
+			Address: "0.0.0.0",
+			Port:    6222,
+		}
+	}
+
+	// Insert web config
+	web.BConfig.Listen.HTTPAddr = metricConfig.Address
+	web.BConfig.Listen.HTTPPort = metricConfig.Port
+	web.BConfig.RunMode = config.RunMode
+	web.BConfig.AppName = "bridge-server"
+	web.BConfig.CopyRequestBody = true
+	web.BConfig.EnableErrorsRender = false
+	go web.Run()
 }
 
 func waitSignal() os.Signal {

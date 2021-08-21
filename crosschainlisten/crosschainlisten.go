@@ -19,22 +19,27 @@ package crosschainlisten
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"math"
+	"runtime/debug"
+	"time"
+
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten/ethereumlisten"
 	"poly-bridge/crosschainlisten/neo3listen"
 	"poly-bridge/crosschainlisten/neolisten"
+	"poly-bridge/crosschainlisten/o3listen"
 	"poly-bridge/crosschainlisten/ontologylisten"
 	"poly-bridge/crosschainlisten/polylisten"
+	"poly-bridge/crosschainlisten/switcheolisten"
+	"poly-bridge/http/tools"
 	"poly-bridge/models"
-	"runtime/debug"
-	"time"
+
+	"github.com/beego/beego/v2/core/logs"
 )
 
-var chainListens [10]*CrossChainListen
+var chainListens [12]*CrossChainListen
 
 func StartCrossChainListen(server string, backup bool, listenCfg []*conf.ChainListenConfig, dbCfg *conf.DBConfig) {
 	dao := crosschaindao.NewCrossChainDao(server, backup, dbCfg)
@@ -85,9 +90,15 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return ontologylisten.NewOntologyChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == basedef.OK_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == basedef.O3_CROSSCHAIN_ID {
+		return o3listen.NewO3ChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
+		return switcheolisten.NewSwitcheoChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == basedef.NEO3_CROSSCHAIN_ID {
 		return neo3listen.NewNeo3ChainListen(chainListenConfig)
 	} else if chainListenConfig.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
+	} else if chainListenConfig.ChainId == basedef.PLT_CROSSCHAIN_ID {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	} else {
 		return nil
@@ -143,7 +154,7 @@ func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperT
 		if err != nil {
 			return
 		}
-		if locks == len(w) && locks == len(s) && unlocks == len(d) {
+		if locks == len(s) && unlocks == len(d) {
 			return
 		}
 		if c > 1 {
@@ -192,6 +203,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			} else if extendHeight >= height+21 {
 				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 			}
+			tools.Record(height, "%v.lastest_height", chain.ChainId)
+			tools.Record(extendHeight, "%v.watch_height", chain.ChainId)
+			tools.Record(chain.Height, "%v.height", chain.ChainId)
 			if chain.Height >= height-ccl.handle.GetDefer() {
 				continue
 			}
@@ -209,6 +223,8 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					chain.Height -= 1
 					break
 				}
+				tools.Record(len(srcTransactions), "%v.locks", chain.ChainId)
+				tools.Record(len(dstTransactions), "%v.unlocks", chain.ChainId)
 			}
 		case <-ccl.exit:
 			logs.Info("cross chain listen exit, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())

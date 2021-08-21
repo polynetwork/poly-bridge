@@ -19,34 +19,41 @@ package bridgeeffect
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego/logs"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"fmt"
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"time"
+
+	"github.com/beego/beego/v2/core/logs"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var checkTime int = 0
+var counterTime int = 0
 
 type BridgeEffect struct {
-	dbCfg  *conf.DBConfig
-	cfg    *conf.EventEffectConfig
-	db     *gorm.DB
-	ipCfg  *conf.IPPortConfig
-	chains []*models.Chain
-	time   int64
+	dbCfg    *conf.DBConfig
+	cfg      *conf.EventEffectConfig
+	db       *gorm.DB
+	redis    *cacheRedis.RedisCache
+	ipCfg    *conf.IPPortConfig
+	redisCfg *conf.RedisConfig
+	chains   []*models.Chain
+	time     int64
 }
 
-func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) *BridgeEffect {
+func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig, redisCfg *conf.RedisConfig) *BridgeEffect {
 	swapEffect := &BridgeEffect{
-		dbCfg:  dbCfg,
-		cfg:    cfg,
-		ipCfg:  ipCfg,
-		chains: nil,
-		time:   0,
+		dbCfg:    dbCfg,
+		cfg:      cfg,
+		ipCfg:    ipCfg,
+		redisCfg: redisCfg,
+		chains:   nil,
+		time:     0,
 	}
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -58,6 +65,11 @@ func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *c
 		panic(err)
 	}
 	swapEffect.db = db
+	redis, err := cacheRedis.GetRedisClient(redisCfg)
+	if err != nil {
+		panic(err)
+	}
+	swapEffect.redis = redis
 	chains := make([]*models.Chain, 0)
 	res := db.Model(&models.Chain{}).Find(&chains)
 	if res.Error != nil || res.RowsAffected == 0 {
@@ -73,10 +85,12 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("update hash- err: %s", err)
 	}
-	err = eff.checkStatus()
-	if err != nil {
-		logs.Error("check status- err: %s", err)
-	}
+	/*
+		err = eff.checkStatus()
+		if err != nil {
+			logs.Error("check status- err: %s", err)
+		}
+	*/
 	err = eff.updateStatus()
 	if err != nil {
 		logs.Error("update status- err: %s", err)
@@ -89,13 +103,40 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("check chain listening- err: %s", err)
 	}
-	checkTime++
-	if checkTime > 600 {
-		checkTime = 0
-		err := StartCheckAsset(eff.dbCfg, eff.ipCfg)
-		if err != nil {
-			logs.Error("check asset- err: %s", err)
+	if basedef.ENV == basedef.MAINNET {
+		checkTime++
+		if checkTime > 600 {
+			checkTime = 0
+			err = StartCheckAsset(eff.dbCfg, eff.ipCfg)
+			if err != nil {
+				logs.Error("check asset- err: %s", err)
+			}
 		}
+	}
+	counterTime++
+	if counterTime > 180 {
+		counterTime = 0
+		err = eff.StartUpdateCrossCount()
+		if err != nil {
+			logs.Error("UpdateCrossCount err: %s", err)
+		}
+	}
+	return nil
+}
+
+func (eff *BridgeEffect) StartUpdateCrossCount() error {
+	logs.Info("StartUpdateCrossCount start")
+	var counter int64
+	res := eff.db.Model(&models.PolyTransaction{}).
+		Where("src_transactions.standard = ?", 0).
+		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Count(&counter)
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("StartUpdateCrossCount counter err %w", res.Error)
+	}
+	err := eff.redis.SetCrossTxCounter(counter)
+	if err != nil {
+		return fmt.Errorf("StartUpdateCrossCount SetCrossTxCounter err %w", err)
 	}
 	return nil
 }
@@ -108,18 +149,28 @@ func (eff *BridgeEffect) GetEffectSlot() int64 {
 }
 
 func (eff *BridgeEffect) updateHash() error {
-	polySrcRelations := make([]*models.PolySrcRelation, 0)
-	eff.db.Table("poly_transactions").Where("poly_transactions.src_hash like ?", "00000000%").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key and poly_transactions.src_chain_id = src_transactions.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Find(&polySrcRelations)
-	updatePolyTransactions := make([]*models.PolyTransaction, 0)
-	for _, polySrcRelation := range polySrcRelations {
-		if polySrcRelation.SrcTransaction != nil {
-			polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
-			updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
+	batch := 500
+	index := 0
+
+	for {
+		polySrcRelations := make([]*models.PolySrcRelation, 0)
+		eff.db.Table("poly_transactions").Where("poly_transactions.src_hash like ? and poly_transactions.time > ?", "00000000%", 1622476800).Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key and poly_transactions.src_chain_id = src_transactions.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Limit(batch).Offset(batch * index).Order("poly_transactions.time desc").Find(&polySrcRelations)
+		updatePolyTransactions := make([]*models.PolyTransaction, 0)
+		for _, polySrcRelation := range polySrcRelations {
+			if polySrcRelation.SrcTransaction != nil {
+				polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
+				updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
+			}
+		}
+		if len(updatePolyTransactions) > 0 {
+			logs.Info("updateHash now min PolyTransaction.id", updatePolyTransactions[0].Id)
+			eff.db.Save(updatePolyTransactions)
+			index++
+		} else {
+			break
 		}
 	}
-	if len(updatePolyTransactions) > 0 {
-		eff.db.Save(updatePolyTransactions)
-	}
+	logs.Info("Update hash finished with at most %d * 500 checked", index+1)
 	return nil
 }
 
@@ -152,43 +203,56 @@ func (eff *BridgeEffect) updateStatus() error {
 	id2Chains := make(map[uint64]*models.Chain)
 	eff.db.Model(&models.Chain{}).Find(&chains)
 	for _, chain := range chains {
-		id2Chains[*chain.ChainId] = chain
+		id2Chains[chain.ChainId] = chain
 	}
-	wrapperPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	eff.db.Table("wrapper_transactions").Where("status NOT IN ?", []int{basedef.STATE_FINISHED, basedef.STATE_WAIT, basedef.STATE_SKIP}).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Preload("DstTransaction").Find(&wrapperPolyDstRelations)
-	for _, wrapperPolyDstRelation := range wrapperPolyDstRelations {
-		wrapperTransaction := wrapperPolyDstRelation.WrapperTransaction
-		if wrapperPolyDstRelation.PolyHash == "" {
-			chain, ok := id2Chains[wrapperPolyDstRelation.WrapperTransaction.SrcChainId]
-			if ok {
-				if chain.Height-wrapperPolyDstRelation.WrapperTransaction.BlockHeight >= chain.BackwardBlockNumber {
-					wrapperTransaction.Status = basedef.STATE_SOURCE_CONFIRMED
+
+	batch := 500
+	index := 0
+	for {
+		wrapperPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
+		wrapperTransactions := make([]*models.WrapperTransaction, 0)
+		eff.db.Table("wrapper_transactions").Where("wrapper_transactions.status != ? and wrapper_transactions.time > 1622476800", basedef.STATE_FINISHED).Select("wrapper_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").Joins("left join poly_transactions on wrapper_transactions.hash = poly_transactions.src_hash").Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Preload("WrapperTransaction").Preload("DstTransaction").Limit(batch).Offset(batch * index).Order("wrapper_transactions.time desc").Find(&wrapperPolyDstRelations)
+		for _, wrapperPolyDstRelation := range wrapperPolyDstRelations {
+			wrapperTransaction := wrapperPolyDstRelation.WrapperTransaction
+			pending := wrapperTransaction.Status == basedef.STATE_SKIP || wrapperTransaction.Status == basedef.STATE_WAIT
+			if wrapperPolyDstRelation.PolyHash == "" {
+				chain, ok := id2Chains[wrapperPolyDstRelation.WrapperTransaction.SrcChainId]
+				if ok {
+					if chain.Height-wrapperPolyDstRelation.WrapperTransaction.BlockHeight >= chain.BackwardBlockNumber {
+						wrapperTransaction.Status = basedef.STATE_SOURCE_CONFIRMED
+					} else {
+						wrapperTransaction.Status = basedef.STATE_SOURCE_DONE
+					}
 				} else {
 					wrapperTransaction.Status = basedef.STATE_SOURCE_DONE
 				}
+			} else if wrapperPolyDstRelation.DstHash == "" {
+				wrapperTransaction.Status = basedef.STATE_POLY_CONFIRMED
 			} else {
-				wrapperTransaction.Status = basedef.STATE_SOURCE_DONE
-			}
-		} else if wrapperPolyDstRelation.DstHash == "" {
-			wrapperTransaction.Status = basedef.STATE_POLY_CONFIRMED
-		} else {
-			chain, ok := id2Chains[wrapperPolyDstRelation.DstTransaction.ChainId]
-			if ok {
-				if chain.Height-wrapperPolyDstRelation.DstTransaction.Height >= 1 {
-					wrapperTransaction.Status = basedef.STATE_FINISHED
+				chain, ok := id2Chains[wrapperPolyDstRelation.DstTransaction.ChainId]
+				if ok {
+					if chain.Height-wrapperPolyDstRelation.DstTransaction.Height >= 1 {
+						wrapperTransaction.Status = basedef.STATE_FINISHED
+					} else {
+						wrapperTransaction.Status = basedef.STATE_DESTINATION_DONE
+					}
 				} else {
-					wrapperTransaction.Status = basedef.STATE_DESTINATION_DONE
+					wrapperTransaction.Status = basedef.STATE_FINISHED
 				}
-			} else {
-				wrapperTransaction.Status = basedef.STATE_FINISHED
+			}
+			if !pending || wrapperTransaction.Status == basedef.STATE_FINISHED {
+				wrapperTransactions = append(wrapperTransactions, wrapperTransaction)
 			}
 		}
-		wrapperTransactions = append(wrapperTransactions, wrapperTransaction)
+		if len(wrapperTransactions) > 0 {
+			eff.db.Save(wrapperTransactions)
+		}
+		if len(wrapperPolyDstRelations) == 0 {
+			break
+		}
+		index++
 	}
-	if len(wrapperTransactions) > 0 {
-		eff.db.Save(wrapperTransactions)
-	}
+	logs.Info("Update wrapper tx status finished with at most %d * 500 checked", index+1)
 	return nil
 }
 
@@ -205,17 +269,17 @@ func (eff *BridgeEffect) checkChainListening() error {
 	}
 	id2Chains := make(map[uint64]*models.Chain)
 	for _, chain := range eff.chains {
-		id2Chains[*chain.ChainId] = chain
+		id2Chains[chain.ChainId] = chain
 	}
 	chains := make([]*models.Chain, 0)
 	eff.db.Model(&models.Chain{}).Find(&chains)
 	for _, chain := range chains {
-		old, ok := id2Chains[*chain.ChainId]
+		old, ok := id2Chains[chain.ChainId]
 		if !ok {
 			continue
 		}
 		if chain.Height == old.Height && chain.HeightSwap == old.HeightSwap {
-			logs.Error("Chain %d is not listening!", *chain.ChainId)
+			logs.Error("Chain %d is not listening!", chain.ChainId)
 		}
 	}
 	eff.chains = chains

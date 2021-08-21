@@ -19,7 +19,7 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/ontio/ontology-go-sdk"
 	"github.com/ontio/ontology-go-sdk/common"
 	common1 "github.com/ontio/ontology/common"
@@ -178,6 +178,9 @@ func (pro *OntologySdkPro) Oep4Balance(hash string, addr string) (*big.Int, erro
 		}
 		preResult, err := info.sdk.NeoVM.PreExecInvokeNeoVMContract(contractAddr,
 			[]interface{}{"balanceOf", []interface{}{address[:]}})
+		if err != nil {
+			return new(big.Int).SetUint64(0), err
+		}
 		balance, err := preResult.Result.ToInteger()
 		if err != nil {
 			return new(big.Int).SetUint64(0), err

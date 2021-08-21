@@ -1,15 +1,18 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego/logs"
+	"errors"
+	"fmt"
+	"gorm.io/gorm"
 	"poly-bridge/models"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type ExplorerController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *ExplorerController) Transactions() {
@@ -22,8 +25,11 @@ func (c *ExplorerController) Transactions() {
 	}
 
 	relations := make([]*TransactionBriefRelation, 0)
+	if req.PageNo == 0 {
+		req.PageNo = 1
+	}
 	limit := req.PageSize
-	offset := req.PageSize * req.PageNo
+	offset := req.PageSize * (req.PageNo - 1)
 	db.Raw("select wp.*, tr.amount as token_id, tr.asset as src_asset "+
 		"from wrapper_transactions wp "+
 		"left join src_transfers as tr on wp.hash=tr.tx_hash "+
@@ -95,9 +101,21 @@ func (c *ExplorerController) TransactionDetail() {
 
 	startTime := time.Now().UnixNano()
 	relations := make([]*TransactionDetailRelation, 0)
+	tx := &struct{ Hash string }{}
+	err := db.Raw(`select hash from src_transactions where hash=?
+		UNION select s.hash from src_transactions s left join poly_transactions p on p.src_hash=s.hash where p.hash=?
+		UNION select s.hash from src_transactions s left join poly_transactions p on p.src_hash=s.hash
+		left join dst_transactions d on d.poly_hash=p.hash where d.hash=?`,
+		req.Hash, req.Hash, req.Hash).First(tx).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) || tx.Hash == "" {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("relations does not exist"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
 	res := db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash").
-		Where("(src_transactions.hash = ?) or (poly_transactions.hash = ?) or (dst_transactions.hash = ?)", req.Hash, req.Hash, req.Hash).
+		Where("src_transactions.hash = ? ", tx.Hash).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").

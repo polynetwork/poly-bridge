@@ -30,8 +30,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru"
 	"gorm.io/driver/mysql"
@@ -40,16 +40,16 @@ import (
 )
 
 var (
-	db            *gorm.DB
-	chainConfig   = make(map[uint64]*conf.ChainListenConfig)
-	txCounter     *TransactionCounter
-	sdks          = make(map[uint64]*chainsdk.EthereumSdkPro)
-	assets        = make([]*models.Token, 0)
-	inquirerAddrs = make(map[uint64]common.Address)
-	fetcher       *meta.StoreFetcher
-	feeTokens     = make(map[uint64]*models.Token)
-	lruDB         *lru.ARCCache
-	homePageTicker    = time.NewTimer(600 * time.Second)
+	db             *gorm.DB
+	chainConfig    = make(map[uint64]*conf.ChainListenConfig)
+	txCounter      *TransactionCounter
+	sdks           = make(map[uint64]*chainsdk.EthereumSdkPro)
+	assets         = make([]*models.Token, 0)
+	inquirerAddrs  = make(map[uint64]common.Address)
+	fetcher        *meta.StoreFetcher
+	feeTokens      = make(map[uint64]*models.Token)
+	lruDB          *lru.ARCCache
+	homePageTicker = time.NewTimer(600 * time.Second)
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -98,40 +98,42 @@ func Initialize(c *conf.Config) {
 	}
 	lruDB = arcLRU
 
-	fetcher = meta.NewStoreFetcher(db)
-	for _, asset := range assets {
-		if asset.TokenBasic == nil {
-			continue
-		}
-		fetcherTyp := meta.FetcherType(asset.TokenBasic.MetaFetcherType)
-		baseUri := asset.TokenBasic.Meta
-		assetName := asset.TokenBasic.Name
-		fetcher.Register(fetcherTyp, asset.ChainId, assetName, baseUri)
-	}
-
-	txCounter = NewTransactionCounter()
-
-	// only fetcher one kind of NFT asset for each chain
-	homePageItemsExists := make(map[uint64]bool)
-	maxNum := 200
-	cachingHomePageItems := func() {
-		for _, v := range assets {
-			if _, exist := homePageItemsExists[v.ChainId]; exist {
+	go func() {
+		fetcher = meta.NewStoreFetcher(db)
+		for _, asset := range assets {
+			if asset.TokenBasic == nil {
 				continue
 			}
-			if ok, _ := prepareHomepageItems(v, maxNum); ok {
-				homePageItemsExists[v.ChainId] = true
+			fetcherTyp := meta.FetcherType(asset.TokenBasic.MetaFetcherType)
+			baseUri := asset.TokenBasic.Meta
+			assetName := asset.TokenBasic.Name
+			fetcher.Register(fetcherTyp, asset.ChainId, assetName, baseUri)
+		}
+
+		txCounter = NewTransactionCounter()
+
+		// only fetcher one kind of NFT asset for each chain
+		homePageItemsExists := make(map[uint64]bool)
+		maxNum := 200
+		cachingHomePageItems := func() {
+			for _, v := range assets {
+				if _, exist := homePageItemsExists[v.ChainId]; exist {
+					continue
+				}
+				if ok, _ := prepareHomepageItems(v, maxNum); ok {
+					homePageItemsExists[v.ChainId] = true
+				}
 			}
 		}
-	}
-	cachingHomePageItems()
-	go func() {
-		for {
-			select {
-			case <- homePageTicker.C:
-				cachingHomePageItems()
+		cachingHomePageItems()
+		go func() {
+			for {
+				select {
+				case <-homePageTicker.C:
+					cachingHomePageItems()
+				}
 			}
-		}
+		}()
 	}()
 }
 
@@ -231,7 +233,7 @@ var errMap = map[int]string{
 	ErrCodeNodeInvalid: "blockchain node exception",
 }
 
-func input(c *beego.Controller, req interface{}) bool {
+func input(c *web.Controller, req interface{}) bool {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		code := ErrCodeRequest
 		customInput(c, code, errMap[code])
@@ -241,20 +243,20 @@ func input(c *beego.Controller, req interface{}) bool {
 	}
 }
 
-func customInput(c *beego.Controller, code int, msg string) {
+func customInput(c *web.Controller, code int, msg string) {
 	c.Data["json"] = models.MakeErrorRsp(msg)
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 }
 
-func notExist(c *beego.Controller) {
+func notExist(c *web.Controller) {
 	code := ErrCodeNotExist
 	c.Data["json"] = models.MakeErrorRsp(errMap[code])
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 }
 
-func checkPageSize(c *beego.Controller, size int) bool {
+func checkPageSize(c *web.Controller, size int) bool {
 	if size <= 10 {
 		return true
 	}
@@ -285,19 +287,19 @@ func checkNumString(numStr string) (*big.Int, error) {
 	return data, nil
 }
 
-func nodeInvalid(c *beego.Controller) {
+func nodeInvalid(c *web.Controller) {
 	code := ErrCodeNodeInvalid
 	c.Data["json"] = models.MakeErrorRsp(errMap[code])
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
 }
 
-func output(c *beego.Controller, data interface{}) {
+func output(c *web.Controller, data interface{}) {
 	c.Data["json"] = data
 	c.ServeJSON()
 }
 
-func customOutput(c *beego.Controller, code int, msg string) {
+func customOutput(c *web.Controller, code int, msg string) {
 	c.Data["json"] = models.MakeErrorRsp(msg)
 	c.Ctx.ResponseWriter.WriteHeader(code)
 	c.ServeJSON()
@@ -318,6 +320,14 @@ func findFeeToken(cid uint64, hash string) *models.Token {
 		if cid == v.ChainId && hash == v.Hash {
 			return v
 		}
+	}
+	feeToken := new(models.Token)
+	err := db.Model(&models.Token{}).
+		Where("chain_id = ? and hash = ?", cid, hash).
+		Preload("TokenBasic").
+		First(feeToken).Error
+	if err == nil {
+		return feeToken
 	}
 	return nil
 }

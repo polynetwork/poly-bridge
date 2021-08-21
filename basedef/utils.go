@@ -25,7 +25,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	cosmos_types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
 	"github.com/joeqian10/neo3-gogogo/crypto"
@@ -72,11 +73,17 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == OK_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
+		addr, _ := cosmos_types.AccAddressFromHex(value)
+		return addr.String()
 	} else if chainId == NEO3_CROSSCHAIN_ID {
 		addrHex, _ := hex.DecodeString(value)
 		addr := neo3_helper.UInt160FromBytes(addrHex)
 		address := crypto.ScriptHashToAddress(addr, neo3_helper.DefaultAddressVersion)
 		return address
+	} else if chainId == BTC_CROSSCHAIN_ID {
+		addrHex, _ := hex.DecodeString(value)
+		return string(addrHex)
 	}
 	return value
 }
@@ -135,4 +142,49 @@ func GetChainName(id uint64) string {
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
+}
+
+func Address2Hash(chainId uint64, value string) (string, error) {
+	if chainId == ETHEREUM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == NEO_CROSSCHAIN_ID {
+		scripHash, err := helper.AddressToScriptHash(value)
+		if err != nil {
+			return value, err
+		}
+		addrBytes := scripHash.Bytes()
+		addrHex := hex.EncodeToString(addrBytes)
+		return addrHex, nil
+	} else if chainId == BSC_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == HECO_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == ONT_CROSSCHAIN_ID {
+		addr, err := ontcommon.AddressFromBase58(value)
+		if err != nil {
+			return value, err
+		}
+		addrHex := addr.ToHexString()
+		return HexStringReverse(addrHex), nil
+	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
+		//cosmos_types.
+		addr, err := cosmos_types.AccAddressFromBech32(value)
+		if err != nil {
+			return value, err
+		}
+		hash := fmt.Sprint(addr)
+		return hash, nil
+	}
+	return value, nil
+}
+
+func ConfirmEnv(env string) {
+	if ENV != env {
+		logs.Error("Config env(%s) does not match build env(%s)", env, ENV)
+		os.Exit(1)
+	}
+	logs.Info("Current env: %s", ENV)
 }

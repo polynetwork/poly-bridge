@@ -15,18 +15,18 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
 	"encoding/json"
 	"fmt"
 	"poly-bridge/models"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type TokenController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *TokenController) Tokens() {
@@ -72,7 +72,7 @@ func (c *TokenController) TokenBasics() {
 		c.ServeJSON()
 	}
 	tokenBasics := make([]*models.TokenBasic, 0)
-	db.Model(&models.TokenBasic{}).Where("standard = 0").Preload("Tokens").Find(&tokenBasics)
+	db.Model(&models.TokenBasic{}).Where("standard = 0 and property = 1").Preload("Tokens").Find(&tokenBasics)
 	c.Data["json"] = models.MakeTokenBasicsRsp(tokenBasics)
 	c.ServeJSON()
 }

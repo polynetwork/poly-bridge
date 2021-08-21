@@ -20,13 +20,15 @@ package neo3listen
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	neo3_models "github.com/joeqian10/neo3-gogogo/rpc/models"
 	"math/big"
+
+	neo3_models "github.com/joeqian10/neo3-gogogo/rpc/models"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+
+	"github.com/beego/beego/v2/core/logs"
 )
 
 const (

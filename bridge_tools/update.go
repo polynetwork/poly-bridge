@@ -18,8 +18,6 @@
 package main
 
 import (
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"poly-bridge/bridge_tools/conf"
 	"poly-bridge/crosschaindao"
@@ -34,7 +32,7 @@ func startUpdate(cfg *conf.UpdateConfig) {
 	if dbCfg.Debug == true {
 		Logger = Logger.LogMode(logger.Info)
 	}
-	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+	/*db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
@@ -44,7 +42,7 @@ func startUpdate(cfg *conf.UpdateConfig) {
 		&models.NFTProfile{}, &models.TimeStatistic{})
 	if err != nil {
 		panic(err)
-	}
+	}*/
 	dao := crosschaindao.NewCrossChainDao(cfg.Server, cfg.Backup, cfg.DBConfig)
 	if dao == nil {
 		panic("server is invalid")

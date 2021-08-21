@@ -20,7 +20,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/urfave/cli"
 	"os"
 	"os/signal"
@@ -106,7 +106,7 @@ func startServer(ctx *cli.Context) {
 		logs.Info("%s\n", string(conf))
 	}
 	common.SetupChainsSDK(config)
-	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig)
+	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.IPPortConfig, config.RedisConfig)
 }
 
 func waitSignal() os.Signal {

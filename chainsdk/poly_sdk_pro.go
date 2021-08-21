@@ -19,7 +19,7 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/polynetwork/poly-go-sdk/common"
 	"github.com/polynetwork/poly/core/types"
 	"runtime/debug"

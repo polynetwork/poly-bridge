@@ -18,7 +18,7 @@
 package coinpricelisten
 
 import (
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/coinpricedao"

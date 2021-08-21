@@ -15,22 +15,23 @@
  * along with The poly network .  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package http
 
 import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+
 	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/models"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type FeeController struct {
-	beego.Controller
+	web.Controller
 }
 
 func (c *FeeController) GetFee() {
@@ -90,12 +91,15 @@ func (c *FeeController) GetFee() {
 			c.ServeJSON()
 			return
 		}
-		tokenBalance, err := common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
-		if err != nil {
-			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
-			c.ServeJSON()
-			return
+		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
+		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
+			tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+			if err != nil {
+				c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+					getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+				c.ServeJSON()
+				return
+			}
 		}
 		balance, result := new(big.Float).SetString(tokenBalance.String())
 		if !result {
