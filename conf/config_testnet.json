@@ -59,7 +59,7 @@
           "Url": "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea"
         },
         {
-                "Url": "https://ropsten.infura.io/v3/ac76b202a4de4f768bef4b7a81067da1"
+          "Url": "https://ropsten.infura.io/v3/ac76b202a4de4f768bef4b7a81067da1"
         }
       ],
       "ExtendNodes": [
@@ -209,23 +209,23 @@
       "ProxyContract":"4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446"
     },
     {
-            "CCMContract": "0E916fc31F67A59318743ca0A3a33ff8B1279854",
-            "ChainId": 82,
-            "ChainName": "curve",
-            "Defer": 1,
-            "ExtendNodes": [
-            ],
-            "ListenSlot": 1,
-            "Nodes": [
-                {
-                    "Url": "http://40.115.136.96:8546"
-                }
-            ],
-            "ProxyContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
-            "SwapContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
-            "WrapperContract": [
-                "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"
-            ]
+      "CCMContract": "0E916fc31F67A59318743ca0A3a33ff8B1279854",
+      "ChainId": 82,
+      "ChainName": "curve",
+      "Defer": 1,
+      "ExtendNodes": [
+      ],
+      "ListenSlot": 1,
+      "Nodes": [
+        {
+          "Url": "http://40.115.136.96:8546"
+        }
+      ],
+      "ProxyContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
+      "SwapContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
+      "WrapperContract": [
+        "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"
+      ]
     },
     {
       "ChainName":"PLT",
@@ -243,7 +243,7 @@
       "NFTWrapperContract": "0806e6925e6960E06cD4781e22A636bA233B53De",
       "NFTProxyContract": "6e5fB68D6B705A567d75135169cF69574225eBe6",
       "NFTQueryContract": "34B5B0cC2b57d96d3930Ddc66084029170fE6BFD",
-      "CCMContract":"B64EE4b7cf935C51233b6ED9b0732D3Bd26E3442",
+      "CCMContract":"691835c5a5F7452ad2820235D48817E27239F0C2",
       "ProxyContract":"0000000000000000000000000000000000000103"
     }
   ],
@@ -279,14 +279,6 @@
       "Nodes": [
         {
           "Url": "https://api1.binance.com/"
-        }
-      ]
-    },
-    {
-      "MarketName":"coincheck",
-      "Nodes": [
-        {
-          "Url": "https://coincheck.com/"
         }
       ]
     }
@@ -387,3 +379,4 @@
     }
   ]
 }
+
