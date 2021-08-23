@@ -23,6 +23,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/coinpricedao"
 	"poly-bridge/coinpricelisten/binance"
+	"poly-bridge/coinpricelisten/coincheck"
 	"poly-bridge/coinpricelisten/coinmarketcap"
 	"poly-bridge/coinpricelisten/self"
 	"poly-bridge/conf"
@@ -67,6 +68,8 @@ func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket {
 		return coinmarketcap.NewCoinMarketCapSdk(cfg)
 	} else if cfg.MarketName == basedef.MARKET_BINANCE {
 		return binance.NewBinanceSdk(cfg)
+	} else if cfg.MarketName == basedef.MARKET_COINCHECK {
+		return coincheck.NewCoincheckSdk(cfg)
 	} else if cfg.MarketName == basedef.MARKET_SELF {
 		return self.NewSelfSdk(cfg)
 	} else {
@@ -233,8 +236,6 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 			tokenBasic.Ind = 1
 			tokenBasic.Time = time.Now().Unix()
 		}
-	}
-	for _, tokenBasic := range tokenBasics {
 		if tokenBasic.Ind == 0 {
 			logs.Error("Price of token %s is not update", tokenBasic.Name)
 		}

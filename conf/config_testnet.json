@@ -281,6 +281,14 @@
           "Url": "https://api1.binance.com/"
         }
       ]
+    },
+    {
+      "MarketName":"coincheck",
+      "Nodes": [
+        {
+          "Url": "https://coincheck.com/"
+        }
+      ]
     }
   ],
   "FeeUpdateSlot":5,
