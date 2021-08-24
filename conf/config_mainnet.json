@@ -78,7 +78,7 @@
       "ExtendNodes": [
       ],
       "WrapperContract":["4493fb5dc195900938CC23096C7EEdEfc434e283", "B88f13682F3C602aCD84B4b2eEB96A9DD75Afd89"],
-      "SwaperContract": "aC57280B3A657A2e8D1180493C519a476D208F61",
+      "SwapContract": "aC57280B3A657A2e8D1180493C519a476D208F61",
       "CCMContract":"39Cd00c5d0fa3e880B86B6a76224a18128DE89E5",
       "ProxyContract":"28ff66a1b95d7cacf8eded2e658f768f44841212"
     },
