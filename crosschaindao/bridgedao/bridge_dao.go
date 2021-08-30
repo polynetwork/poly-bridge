@@ -511,3 +511,17 @@ func (dao *BridgeDao) GetBTCPrice() (*models.TokenBasic, error) {
 	err := dao.db.Where("name='WBTC'").First(tokenBasicBTC).Error
 	return tokenBasicBTC, err
 }
+func (dao *BridgeDao) GetPropertytokenBasic() ([]*models.TokenBasic, error) {
+	tokenBasics := make([]*models.TokenBasic, 0)
+	err := dao.db.Where("property = ?", 1).
+		Preload("Tokens").
+		Find(&tokenBasics).Error
+	return tokenBasics, err
+}
+func (dao *BridgeDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.Token, error) {
+	token := new(models.Token)
+	err := dao.db.Where("chain_id = ? and hash = ?", chainId, hash).
+		Preload("TokenBasic").
+		First(token).Error
+	return token, err
+}
