@@ -248,7 +248,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	logs.Info("BTCPrice:", BTCPrice)
 	for _, statistic := range tokenStatistics {
 		token, err := this.dao.GetTokenBasicByHash(statistic.ChainId, statistic.Hash)
-		if err == nil {
+		if err != nil {
 			logs.Error("this_dao_GetTokenBasicByHash err", err)
 			continue
 		}
