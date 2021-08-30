@@ -634,35 +634,36 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		}
 		assetTransferStatisticResps := make([]*AssetTransferStatisticResp, 0)
 		for _, tokenStatistic := range tokenStatistics {
-			if tokenStatistic.ChainId == chainStatistic.ChainId {
-				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
-				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
-				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
-				if amountUsd.Cmp(big.NewInt(0)) == 1 {
+			if tokenStatistic.ChainId == tokenStatistic.Token.TokenBasic.ChainId {
+				allAmountUsdTotal.Add(allAmountUsdTotal, new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int))
+			} else {
+				if tokenStatistic.ChainId == chainStatistic.ChainId {
+					amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
+					amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
+					amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
 					amountBtcTotal = new(big.Int).Add(amountBtcTotal, amountBtc)
 					amountUsdTotal = new(big.Int).Add(amountUsdTotal, amountUsd)
-				}
-				assetTransferStatisticResp := &AssetTransferStatisticResp{
-					Amount:     FormatAmount(2, NewBigInt(amount)),
-					AmountBtc:  FormatAmount(4, NewBigInt(amountBtc)),
-					AmountUsd:  FormatAmount(4, NewBigInt(amountUsd)),
-					AmountUsd1: amountUsd,
-				}
-				if tokenStatistic.Token != nil {
-					assetTransferStatisticResp.Name = tokenStatistic.Token.Name
-					assetTransferStatisticResp.Hash = tokenStatistic.Hash
-					if tokenStatistic.Token.TokenBasic != nil {
-						assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
-					} else {
-						logs.Info("MakeTransferInfoResp tokenStatistic_Token_TokenBasic!=nil nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
+					assetTransferStatisticResp := &AssetTransferStatisticResp{
+						Amount:     FormatAmount(2, NewBigInt(amount)),
+						AmountBtc:  FormatAmount(4, NewBigInt(amountBtc)),
+						AmountUsd:  FormatAmount(4, NewBigInt(amountUsd)),
+						AmountUsd1: amountUsd,
 					}
-				} else {
-					logs.Info("MakeTransferInfoResp tokenStatistic_Token nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
+					if tokenStatistic.Token != nil {
+						assetTransferStatisticResp.Name = tokenStatistic.Token.Name
+						assetTransferStatisticResp.Hash = tokenStatistic.Hash
+						if tokenStatistic.Token.TokenBasic != nil {
+							assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
+						} else {
+							logs.Info("MakeTransferInfoResp tokenStatistic_Token_TokenBasic!=nil nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
+						}
+					} else {
+						logs.Info("MakeTransferInfoResp tokenStatistic_Token nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
+					}
+					assetTransferStatisticResps = append(assetTransferStatisticResps, assetTransferStatisticResp)
 				}
-				assetTransferStatisticResps = append(assetTransferStatisticResps, assetTransferStatisticResp)
 			}
 		}
-		allAmountUsdTotal.Add(allAmountUsdTotal, amountUsdTotal)
 
 		for _, assetTransferStatisticResp := range assetTransferStatisticResps {
 			if assetTransferStatisticResp.AmountUsd1.Cmp(big.NewInt(0)) == 1 {

@@ -19,8 +19,11 @@ package crosschainstats
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"net/http"
 	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
@@ -40,12 +43,13 @@ type Stats struct {
 	cfg    *conf.StatsConfig
 	dao    *bridgedao.BridgeDao
 	wg     sync.WaitGroup
+	ipCfg  *conf.IPPortConfig
 }
 
 var ccs *Stats
 
 // Start - Do stats aggregation/calculation
-func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBConfig) {
+func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) {
 	if server != basedef.SERVER_POLY_BRIDGE {
 		panic("CrossChainStats Only runs on bridge server")
 	}
@@ -55,7 +59,7 @@ func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBCo
 
 	dao := bridgedao.NewBridgeDao(dbCfg, false)
 	ctx, cancel := context.WithCancel(context.Background())
-	ccs = &Stats{dao: dao, cfg: cfg, Context: ctx, cancel: cancel}
+	ccs = &Stats{dao: dao, cfg: cfg, Context: ctx, cancel: cancel, ipCfg: ipCfg}
 	ccs.Start()
 }
 
@@ -91,6 +95,9 @@ func (this *Stats) Start() {
 	go this.run(this.cfg.ChainAddressCheckInterval, this.computeChainStatisticAssets)
 	go this.run(this.cfg.AssetStatisticInterval, this.computeAssetStatistics)
 	go this.run(this.cfg.AssetAdressInterval, this.computeAssetStatisticAdress)
+	if basedef.ENV == basedef.MAINNET {
+		go this.run(600, this.startCheckAssetAlarm)
+	}
 }
 
 func (this *Stats) Stop() {
@@ -240,38 +247,55 @@ func (this *Stats) computeTokenStatistics() (err error) {
 	BTCPrice := decimal.NewFromInt(tokenBasicBTC.Price).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 	logs.Info("BTCPrice:", BTCPrice)
 	for _, statistic := range tokenStatistics {
-		in, err := this.dao.CalculateInTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
-		if err != nil {
-			logs.Error("Failed to CalculateInTokenStatistics %w", err)
+		token, err := this.dao.GetTokenBasicByHash(statistic.ChainId, statistic.Hash)
+		if err == nil {
+			logs.Error("this_dao_GetTokenBasicByHash err", err)
+			continue
 		}
-		if in != nil && in.Token != nil && in.Token.TokenBasic != nil {
-			price_new := decimal.New(in.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
-			amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
-			precision_new := decimal.New(int64(1), int32(in.Token.Precision))
-			logs.Info("qwertprecision_new in", precision_new)
-			amount_usd := amount_new.Div(precision_new).Mul(price_new)
-			amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
-			statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
-			statistic.InAmountUsd = addDecimalBigInt(statistic.InAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
-			statistic.InAmountBtc = addDecimalBigInt(statistic.InAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
-			statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
+		price_new := decimal.New(token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
+		precision_new := decimal.New(int64(1), int32(token.Precision))
+		logs.Info("qwertprecision_new in", precision_new)
+		if token.TokenBasic.ChainId == statistic.ChainId {
+			balance, err := getAndRetryBalance(statistic.ChainId, statistic.Hash)
+			if err != nil {
+				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v", statistic.ChainId, statistic.Hash, err)
+			} else {
+				amount_new := decimal.NewFromBigInt(balance, 0)
+				statistic.InAmount = models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt())
+			}
+		} else {
+			in, err := this.dao.CalculateInTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
+			if err != nil {
+				logs.Error("Failed to CalculateInTokenStatistics %w", err)
+			}
+			if in != nil && in.Token != nil && in.Token.TokenBasic != nil {
+				amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
+				statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
+				statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
+			}
 		}
+		amount_usd := decimal.NewFromBigInt(&statistic.InAmount.Int, 0).Mul(price_new)
+		amount_btc := amount_usd.Div(BTCPrice)
+		statistic.InAmountUsd = models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(100)).BigInt())
+		statistic.InAmountBtc = models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(100)).BigInt())
 
 		out, err := this.dao.CalculateOutTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
 		if err != nil {
 			logs.Error("Failed to CalculateOutTokenStatistics %w", err)
 		}
 		if out != nil && out.Token != nil && out.Token.TokenBasic != nil {
-			price_new := decimal.New(out.Token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
-			amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
-			precision_new := decimal.New(int64(1), int32(out.Token.Precision))
-			amount_usd := amount_new.Div(precision_new).Mul(price_new)
-			amount_btc := amount_new.Div(precision_new).Mul(price_new).Div(BTCPrice)
+			if statistic.ChainId == out.Token.TokenBasic.ChainId {
+				statistic.OutAmount = models.NewBigIntFromInt(0)
+			} else {
+				amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
+				statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
+			}
+			amount_usd := decimal.NewFromBigInt(&statistic.OutAmount.Int, 0).Mul(price_new)
+			amount_btc := amount_usd.Div(BTCPrice)
 
-			statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 			statistic.OutCounter = addDecimalInt64(statistic.OutCounter, out.OutCounter)
-			statistic.OutAmountUsd = addDecimalBigInt(statistic.OutAmountUsd, models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(10000)).BigInt()))
-			statistic.OutAmountBtc = addDecimalBigInt(statistic.OutAmountBtc, models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(10000)).BigInt()))
+			statistic.OutAmountUsd = models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(100)).BigInt())
+			statistic.OutAmountBtc = models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(100)).BigInt())
 		}
 		statistic.LastInCheckId = nowInId
 		statistic.LastOutCheckId = nowOutId
@@ -279,7 +303,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		if err != nil {
 			return fmt.Errorf("Failed to SaveTokenStatistic %w", err)
 		}
-
 	}
 	return nil
 }
@@ -522,4 +545,284 @@ func addDecimalInt64(a, b int64) int64 {
 	b_new := decimal.New(b, 0)
 	c := a_new.Add(b_new)
 	return c.IntPart()
+}
+
+type DstChainAsset struct {
+	ChainId     uint64
+	Hash        string
+	TotalSupply *big.Int
+	Balance     *big.Int
+	Flow        *big.Int
+}
+type AssetDetail struct {
+	BasicName  string
+	TokenAsset []*DstChainAsset
+	Difference *big.Int
+	Precision  uint64
+	Price      int64
+	Amount_usd string
+	Reason     string
+}
+
+func (this *Stats) startCheckAssetAlarm() (err error) {
+	logs.Info("StartCheckAsset,start startCheckAsset")
+	if err != nil {
+		return err
+	}
+	resAssetDetails := make([]*AssetDetail, 0)
+	extraAssetDetails := make([]*AssetDetail, 0)
+
+	tokenBasics, err := this.dao.GetPropertytokenBasic()
+	if err != nil {
+		return err
+	}
+	for _, basic := range tokenBasics {
+		assetDetail := new(AssetDetail)
+		dstChainAssets := make([]*DstChainAsset, 0)
+		totalFlow := big.NewInt(0)
+		for _, token := range basic.Tokens {
+			if notToken(token) {
+				continue
+			}
+			if token.Property != int64(1) {
+				continue
+			}
+			chainAsset := new(DstChainAsset)
+			chainAsset.ChainId = token.ChainId
+			chainAsset.Hash = token.Hash
+			balance, err := getAndRetryBalance(token.ChainId, token.Hash)
+			if err != nil {
+				assetDetail.Reason = err.Error()
+				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v", token.ChainId, token.Hash, err)
+				balance = big.NewInt(0)
+			}
+			chainAsset.Balance = balance
+			time.Sleep(time.Second)
+			totalSupply, err := getAndRetryTotalSupply(token.ChainId, token.Hash)
+			if err != nil {
+				assetDetail.Reason = err.Error()
+				totalSupply = big.NewInt(0)
+				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v ", token.ChainId, token.Hash, err)
+			}
+			//specialBasic
+			totalSupply = specialBasic(token, totalSupply)
+			//original asset
+			if !inExtraBasic(token.TokenBasicName) && basic.ChainId == token.ChainId {
+				totalSupply = big.NewInt(0)
+			}
+			chainAsset.TotalSupply = totalSupply
+			chainAsset.Flow = new(big.Int).Sub(totalSupply, balance)
+			totalFlow = new(big.Int).Add(totalFlow, chainAsset.Flow)
+			dstChainAssets = append(dstChainAssets, chainAsset)
+		}
+		assetDetail.Price = basic.Price
+		assetDetail.Precision = basic.Precision
+		assetDetail.TokenAsset = dstChainAssets
+		assetDetail.Difference = totalFlow
+		assetDetail.BasicName = basic.Name
+		//03 (WBTC,USDT)
+		getO3Data(assetDetail, this.ipCfg)
+		if inExtraBasic(assetDetail.BasicName) {
+			extraAssetDetails = append(extraAssetDetails, assetDetail)
+			continue
+		}
+		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
+			assetDetail.Amount_usd = decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).Mul(decimal.New(assetDetail.Price, -8)).StringFixed(0)
+		}
+
+		resAssetDetails = append(resAssetDetails, assetDetail)
+	}
+	err = sendDing(resAssetDetails, this.ipCfg.DingIP)
+	if err != nil {
+		logs.Error("------------sendDingDINg err---------")
+	}
+	logs.Info("CheckAsset rightdata___")
+	for _, assetDetail := range resAssetDetails {
+		logs.Info("CheckAsset:", assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price, assetDetail.Amount_usd)
+		for _, tokenAsset := range assetDetail.TokenAsset {
+			logs.Info("CheckAsset %2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
+		}
+	}
+	logs.Info("CheckAsset wrongdata___")
+	for _, assetDetail := range extraAssetDetails {
+		logs.Info("CheckAsset:", assetDetail.BasicName, assetDetail.Difference, assetDetail.Precision, assetDetail.Price)
+		for _, tokenAsset := range assetDetail.TokenAsset {
+			logs.Info("CheckAsset %2v %-30v %-30v %-30v %-30v\n", tokenAsset.ChainId, tokenAsset.Hash, tokenAsset.TotalSupply, tokenAsset.Balance, tokenAsset.Flow)
+		}
+	}
+	return nil
+}
+func inExtraBasic(name string) bool {
+	extraBasics := []string{"BLES", "GOF", "LEV", "mBTM", "MOZ", "O3", "USDT", "STN", "XMPT"}
+	for _, basic := range extraBasics {
+		if name == basic {
+			return true
+		}
+	}
+	return false
+}
+func specialBasic(token *models.Token, totalSupply *big.Int) *big.Int {
+	presion := decimal.New(1, int32(token.Precision)).BigInt()
+	if token.TokenBasicName == "YNI" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "YNI" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		return new(big.Int).Mul(big.NewInt(1), presion)
+	}
+	if token.TokenBasicName == "DAO" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		return new(big.Int).Mul(big.NewInt(1000), presion)
+	}
+	if token.TokenBasicName == "DAO" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		return new(big.Int).Mul(big.NewInt(1000), presion)
+	}
+	if token.TokenBasicName == "COPR" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		return new(big.Int).Mul(big.NewInt(274400000), presion)
+	}
+	if token.TokenBasicName == "COPR" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DigiCol ERC-721" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DigiCol ERC-721" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DMOD" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DMOD" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		return new(big.Int).Mul(big.NewInt(15000000), presion)
+	}
+	if token.TokenBasicName == "SIL" && token.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("1487520675265330391631", 10)
+		return x
+	}
+	if token.TokenBasicName == "SIL" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		return new(big.Int).Mul(big.NewInt(5001), presion)
+	}
+	if token.TokenBasicName == "DOGK" && token.ChainId == basedef.BSC_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "DOGK" && token.ChainId == basedef.HECO_CROSSCHAIN_ID {
+		x, _ := new(big.Int).SetString("285000000000", 10)
+		return new(big.Int).Mul(x, presion)
+	}
+	if token.TokenBasicName == "SXC" && token.ChainId == basedef.OK_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "SXC" && token.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+	if token.TokenBasicName == "OOE" && token.ChainId == basedef.MATIC_CROSSCHAIN_ID {
+		return big.NewInt(0)
+	}
+
+	return totalSupply
+}
+func notToken(token *models.Token) bool {
+	if token.TokenBasicName == "USDT" && token.Precision != 6 {
+		return true
+	}
+	return false
+}
+func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
+	switch assetDetail.BasicName {
+	case "WBTC":
+		chainAsset := new(DstChainAsset)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		response, err := http.Get(ipCfg.WBTCIP)
+		defer response.Body.Close()
+		if err != nil || response.StatusCode != 200 {
+			logs.Error("Get o3 WBTC err:", err)
+			return
+		}
+		body, _ := ioutil.ReadAll(response.Body)
+		o3WBTC := struct {
+			Balance *big.Int
+		}{}
+		json.Unmarshal(body, &o3WBTC)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		chainAsset.TotalSupply = big.NewInt(0)
+		chainAsset.Balance = big.NewInt(0)
+		chainAsset.Flow = o3WBTC.Balance
+		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
+		assetDetail.Difference.Add(assetDetail.Difference, chainAsset.Flow)
+	case "USDT":
+		chainAsset := new(DstChainAsset)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		response, err := http.Get(ipCfg.USDTIP)
+		defer response.Body.Close()
+		if err != nil || response.StatusCode != 200 {
+			logs.Error("Get o3 USDT err:", err)
+			return
+		}
+		body, _ := ioutil.ReadAll(response.Body)
+		o3USDT := struct {
+			Balance *big.Int
+		}{}
+		json.Unmarshal(body, &o3USDT)
+		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
+		chainAsset.Balance = o3USDT.Balance
+		chainAsset.TotalSupply = big.NewInt(0)
+		chainAsset.Flow = big.NewInt(0)
+		assetDetail.TokenAsset = append(assetDetail.TokenAsset, chainAsset)
+	}
+}
+
+func getAndRetryBalance(chainId uint64, hash string) (*big.Int, error) {
+	balance, err := common.GetBalance(chainId, hash)
+	if err != nil {
+		for i := 0; i < 4; i++ {
+			time.Sleep(time.Second)
+			balance, err = common.GetBalance(chainId, hash)
+			if err == nil {
+				break
+			}
+		}
+	}
+	return balance, err
+}
+
+func getAndRetryTotalSupply(chainId uint64, hash string) (*big.Int, error) {
+	totalSupply, err := common.GetTotalSupply(chainId, hash)
+	if err != nil {
+		for i := 0; i < 2; i++ {
+			time.Sleep(time.Second)
+			totalSupply, err = common.GetTotalSupply(chainId, hash)
+			if err == nil {
+				break
+			}
+		}
+	}
+	return totalSupply, err
+}
+
+func sendDing(assetDetails []*AssetDetail, dingUrl string) error {
+	ss := "[poly_NB]_[mainnet]\n"
+	flag := false
+	for _, assetDetail := range assetDetails {
+		if assetDetail.Reason == "all node is not working" {
+			continue
+		}
+		if assetDetail.Difference.Cmp(big.NewInt(0)) == 1 {
+			usd, _ := decimal.NewFromString(assetDetail.Amount_usd)
+			if usd.Cmp(decimal.NewFromInt32(10000)) == 1 {
+				flag = true
+				ss += fmt.Sprintf("【%v】totalflow:%v $%v\n", assetDetail.BasicName, decimal.NewFromBigInt(assetDetail.Difference, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2), assetDetail.Amount_usd)
+				for _, x := range assetDetail.TokenAsset {
+					ss += "ChainId: " + fmt.Sprintf("%v", x.ChainId) + "\n"
+					ss += "Hash: " + fmt.Sprintf("%v", x.Hash) + "\n"
+					logs.Info("x.TotalSupply:", x.TotalSupply)
+					ss += "TotalSupply: " + decimal.NewFromBigInt(x.TotalSupply, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + " "
+					ss += "Balance: " + decimal.NewFromBigInt(x.Balance, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + " "
+					ss += "Flow: " + decimal.NewFromBigInt(x.Flow, 0).Div(decimal.New(1, int32(assetDetail.Precision))).StringFixed(2) + "\n"
+				}
+			}
+		}
+	}
+	if flag {
+		err := common.PostDingtext(ss, dingUrl)
+		return err
+	}
+	return nil
 }

@@ -40,17 +40,15 @@ type BridgeEffect struct {
 	cfg      *conf.EventEffectConfig
 	db       *gorm.DB
 	redis    *cacheRedis.RedisCache
-	ipCfg    *conf.IPPortConfig
 	redisCfg *conf.RedisConfig
 	chains   []*models.Chain
 	time     int64
 }
 
-func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig, redisCfg *conf.RedisConfig) *BridgeEffect {
+func NewBridgeEffect(cfg *conf.EventEffectConfig, dbCfg *conf.DBConfig, redisCfg *conf.RedisConfig) *BridgeEffect {
 	swapEffect := &BridgeEffect{
 		dbCfg:    dbCfg,
 		cfg:      cfg,
-		ipCfg:    ipCfg,
 		redisCfg: redisCfg,
 		chains:   nil,
 		time:     0,
@@ -102,16 +100,6 @@ func (eff *BridgeEffect) Effect() error {
 	err = eff.checkChainListening()
 	if err != nil {
 		logs.Error("check chain listening- err: %s", err)
-	}
-	if basedef.ENV == basedef.MAINNET {
-		checkTime++
-		if checkTime > 600 {
-			checkTime = 0
-			err = StartCheckAsset(eff.dbCfg, eff.ipCfg)
-			if err != nil {
-				logs.Error("check asset- err: %s", err)
-			}
-		}
 	}
 	counterTime++
 	if counterTime > 180 {
