@@ -72,7 +72,7 @@ func (r *RedisCache) GetCrossTxCounter() (counter int64, err error) {
 func (r *RedisCache) SetAllTransferResp(resp *models.AllTransferStatisticResp) (err error) {
 	key := _TransferStatisticResp
 	jsons, err := json.Marshal(resp)
-	if _, err = r.c.Set(key, string(jsons), time.Second*600).Result(); err != nil {
+	if _, err = r.c.Set(key, string(jsons), time.Second*60).Result(); err != nil {
 		err = errors.New(err.Error() + "add SetAllTransferResp")
 	}
 	return
