@@ -172,35 +172,35 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			var lock *models.ProxyLockEvent
 			if srcTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID && !this.isNFTECCMLockEvent(lockEvent) {
-        // TODO: with retry later
+				// TODO: with retry later
 				lock, _ = this.GetPaletteLockProxyLockEvent(common.HexToHash("0x" + lockEvent.TxHash))
 			} else {
-        for _, v := range proxyLockEvents {
-          if v.TxHash == lockEvent.TxHash {
-            lock = v
-            break
-          }
-        }
-      }
-      if lock != nil {
-         toAssetHash := lock.ToAssetHash
-          srcTransfer := &models.SrcTransfer{}
-          srcTransfer.Time = tt
-          srcTransfer.ChainId = this.GetChainId()
-          srcTransfer.TxHash = lockEvent.TxHash
-          srcTransfer.From = lockEvent.User
-          srcTransfer.To = lockEvent.Contract
-          srcTransfer.Asset = lock.FromAssetHash
-          srcTransfer.Amount = models.NewBigInt(lock.Amount)
-          srcTransfer.DstChainId = uint64(lock.ToChainId)
-          srcTransfer.DstAsset = toAssetHash
-          srcTransfer.DstUser = lock.ToAddress
-          srcTransaction.SrcTransfer = srcTransfer
-          if this.isNFTECCMLockEvent(lockEvent) {
-            srcTransaction.Standard = models.TokenTypeErc721
-            srcTransaction.SrcTransfer.Standard = models.TokenTypeErc721
-          }
-      }
+				for _, v := range proxyLockEvents {
+					if v.TxHash == lockEvent.TxHash {
+						lock = v
+						break
+					}
+				}
+			}
+			if lock != nil {
+				toAssetHash := lock.ToAssetHash
+				srcTransfer := &models.SrcTransfer{}
+				srcTransfer.Time = tt
+				srcTransfer.ChainId = this.GetChainId()
+				srcTransfer.TxHash = lockEvent.TxHash
+				srcTransfer.From = lockEvent.User
+				srcTransfer.To = lockEvent.Contract
+				srcTransfer.Asset = lock.FromAssetHash
+				srcTransfer.Amount = models.NewBigInt(lock.Amount)
+				srcTransfer.DstChainId = uint64(lock.ToChainId)
+				srcTransfer.DstAsset = toAssetHash
+				srcTransfer.DstUser = lock.ToAddress
+				srcTransaction.SrcTransfer = srcTransfer
+				if this.isNFTECCMLockEvent(lockEvent) {
+					srcTransaction.Standard = models.TokenTypeErc721
+					srcTransaction.SrcTransfer.Standard = models.TokenTypeErc721
+				}
+			}
 
 			for _, v := range swapEvents {
 				if v.TxHash == lockEvent.TxHash {
@@ -306,7 +306,11 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 		return nil, nil
 	}
 	wrapperAddress := common.HexToAddress(contractAddr)
-	wrapperContract, err := wrapper_abi.NewIPolyWrapper(wrapperAddress, this.ethSdk.GetClient())
+	client := this.ethSdk.GetClient()
+	if client == nil {
+		return nil, fmt.Errorf("getWrapperEventByBlockNumber1 GetClient error: nil")
+	}
+	wrapperContract, err := wrapper_abi.NewIPolyWrapper(wrapperAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
@@ -357,7 +361,11 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 
 func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
-	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
+	client := this.ethSdk.GetClient()
+	if client == nil {
+		return nil, nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
+	}
+	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
@@ -412,7 +420,11 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 
 func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
 	proxyAddress := common.HexToAddress(contractAddr)
-	proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, this.ethSdk.GetClient())
+	client := this.ethSdk.GetClient()
+	if client == nil {
+		return nil, nil, fmt.Errorf("getProxyEventByBlockNumber GetClient error: nil")
+	}
+	proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, client)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
@@ -532,7 +544,11 @@ func (this *EthereumChainListen) getSwapEventByBlockNumber(contractAddr string, 
 		return nil, nil, nil
 	}
 	swapperContractAddress := common.HexToAddress(contractAddr)
-	swapperContract, err := swapper_abi.NewSwapper(swapperContractAddress, this.ethSdk.GetClient())
+	client := this.ethSdk.GetClient()
+	if client == nil {
+		return nil, nil, fmt.Errorf("getSwapEventByBlockNumber GetClient error: nil")
+	}
+	swapperContract, err := swapper_abi.NewSwapper(swapperContractAddress, client)
 	if err != nil {
 		return nil, nil, fmt.Errorf("getSwapEventByBlockNumber, error: %s", err.Error())
 	}
