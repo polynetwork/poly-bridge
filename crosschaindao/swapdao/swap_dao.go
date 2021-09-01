@@ -52,7 +52,7 @@ func NewSwapDao(dbCfg *conf.DBConfig, backup bool) *SwapDao {
 	return swapDao
 }
 
-func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *SwapDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
 	if !dao.backup {
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
 			res := dao.db.Save(wrapperTransactions)
@@ -74,12 +74,6 @@ func (dao *SwapDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*mod
 		}
 		if dstTransactions != nil && len(dstTransactions) > 0 {
 			res := dao.db.Save(dstTransactions)
-			if res.Error != nil {
-				return res.Error
-			}
-		}
-		if chain != nil {
-			res := dao.db.Updates(chain)
 			if res.Error != nil {
 				return res.Error
 			}

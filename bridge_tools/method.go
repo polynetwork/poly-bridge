@@ -85,7 +85,7 @@ func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandl
 		return err
 	}
 	if save {
-		err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 		if err != nil {
 			return nil
 		}
@@ -158,7 +158,7 @@ func fetchBlock(config *conf.Config) {
 						ch<-false
 					}
 					if save == "true" {
-						err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+						err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 						if err != nil {
 							panic(err)
 						}
@@ -240,7 +240,7 @@ func bingfaSWTH(config *conf.Config) {
 		if err != nil {
 			panic(fmt.Sprintf("bingfaSWTH HandleNewBlock %d err: %v", height, err))
 		}
-		err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 		if err != nil {
 			panic(fmt.Sprintf("bingfaSWTH bingfaSWTH panic panicHeight:%v,flagerr is:%v", height, err))
 		}

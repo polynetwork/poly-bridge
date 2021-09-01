@@ -74,6 +74,10 @@ func (this *OntologyChainListen) GetDefer() uint64 {
 	return this.ontCfg.Defer
 }
 
+func (this *OntologyChainListen) GetBatchSize() uint64 {
+	return this.ontCfg.BatchSize
+}
+
 func (this *OntologyChainListen) isListeningContract(contract string, contracts []string) bool {
 	for _, item := range contracts {
 		if contract == item {

@@ -56,6 +56,10 @@ func (this *SwitcheoChainListen) GetDefer() uint64 {
 	return this.swthCfg.Defer
 }
 
+func (this *SwitcheoChainListen) GetBatchSize() uint64 {
+	return this.swthCfg.BatchSize
+}
+
 func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	block, err := this.swthSdk.GetBlockByHeight(height)
 	if err != nil {

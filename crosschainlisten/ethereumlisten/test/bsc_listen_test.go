@@ -74,5 +74,5 @@ func TestBscListen2(t *testing.T) {
 	if dao == nil {
 		panic("server is not valid")
 	}
-	dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+	dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 }

@@ -55,7 +55,7 @@ func NewBridgeDao(dbCfg *conf.DBConfig, backup bool) *BridgeDao {
 	return swapDao
 }
 
-func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
 	if !dao.backup {
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
 			res := dao.db.Save(wrapperTransactions)
@@ -100,12 +100,6 @@ func (dao *BridgeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*m
 						return res.Error
 					}
 				}
-			}
-		}
-		if chain != nil {
-			res := dao.db.Updates(chain)
-			if res.Error != nil {
-				return res.Error
 			}
 		}
 		return nil
