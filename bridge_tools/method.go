@@ -140,8 +140,9 @@ func fetchBlock(config *conf.Config) {
 
 	g := cogroup.Start(context.Background(), 4, 8, false)
 	for h := height; h <= endheight; h++ {
+		block := uint64(h)
 		g.Insert(retry(func() error {
-			return fetchSingleBlock(uint64(chain), uint64(h), handle, dao, save == "true")
+			return fetchSingleBlock(uint64(chain), block, handle, dao, save == "true")
 		}, 0, 2*time.Second))
 	}
 	g.Wait()
