@@ -18,6 +18,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/urfave/cli"
@@ -32,6 +33,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/devfans/cogroup"
 )
 
 const (
@@ -55,6 +58,55 @@ func executeMethod(method string, ctx *cli.Context) {
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}
+}
+
+func retry(f func() error, count int, duration time.Duration) func(context.Context) error {
+	return func(context.Context) error {
+		i := 0
+		for {
+			i++
+			if i > count && count != 0 {
+				return nil
+			}
+			err := f()
+			if err == nil {
+				return nil
+			}
+			time.Sleep(duration)
+		}
+		return nil
+	}
+}
+
+func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandle, dao crosschaindao.CrossChainDao, save bool) error {
+	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handle.HandleNewBlock(height)
+	if err != nil {
+		logs.Error(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
+		return err
+	}
+	if save {
+		err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		if err != nil {
+			return nil
+		}
+	}
+	fmt.Printf(
+		"Fetch block events success chain %d height %d wrapper %d src %d poly %d dst %d  locks %d unlocks %d \n",
+		chainId, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), locks, unlocks,
+	)
+	for i, tx := range wrapperTransactions {
+		fmt.Printf("wrapper %d: %+v\n", i, *tx)
+	}
+	for i, tx := range srcTransactions {
+		fmt.Printf("src %d: %+v srcTransfer:%+v\n", i, *tx, tx.SrcTransfer)
+	}
+	for i, tx := range polyTransactions {
+		fmt.Printf("poly %d: %+v\n", i, *tx)
+	}
+	for i, tx := range dstTransactions {
+		fmt.Printf("dst %d: %+v\n", i, *tx)
+	}
+	return nil
 }
 
 func fetchBlock(config *conf.Config) {
@@ -81,40 +133,62 @@ func fetchBlock(config *conf.Config) {
 			break
 		}
 	}
+
 	if handle == nil {
 		panic(fmt.Sprintf("chain %d handler is invalid", chain))
 	}
-	for h := height; h <= endheight; h++ {
-		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handle.HandleNewBlock(uint64(h))
-		if err != nil {
-			logs.Error(fmt.Sprintf("HandleNewBlock %d err: %v", h, err))
-			time.Sleep(time.Millisecond * 500)
-			h--
-		}
-		if save == "true" {
-			err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
-			if err != nil {
-				panic(err)
-			}
-		}
 
-		fmt.Printf(
-			"Fetch block events success chain %d height %d wrapper %d src %d poly %d dst %d  locks %d unlocks %d \n",
-			chain, h, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), locks, unlocks,
-		)
-		for i, tx := range wrapperTransactions {
-			fmt.Printf("wrapper %d: %+v\n", i, *tx)
-		}
-		for i, tx := range srcTransactions {
-			fmt.Printf("src %d: %+v srcTransfer:%+v\n", i, *tx, tx.SrcTransfer)
-		}
-		for i, tx := range polyTransactions {
-			fmt.Printf("poly %d: %+v\n", i, *tx)
-		}
-		for i, tx := range dstTransactions {
-			fmt.Printf("dst %d: %+v\n", i, *tx)
-		}
+	g := cogroup.Start(context.Background(), 4, 8, false)
+	for h := height; h <= endheight; h++ {
+		g.Insert(retry(func() error {
+			return fetchSingleBlock(uint64(chain), uint64(h), handle, dao, save == "true")
+		}, 0, 2*time.Second))
 	}
+	g.Wait()
+	/*
+		for hei := height; hei <= endheight; {
+			ch:=make(chan bool,5)
+			for h:=hei;h<hei+5;h++ {
+				go func() {
+					wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handle.HandleNewBlock(uint64(h))
+					if err != nil {
+						logs.Error(fmt.Sprintf("HandleNewBlock %d err: %v", h, err))
+						time.Sleep(time.Millisecond * 500)
+						ch<-false
+					}
+					if save == "true" {
+						err = dao.UpdateEvents(nil, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+						if err != nil {
+							panic(err)
+						}
+					}
+					fmt.Printf(
+						"Fetch block events success chain %d height %d wrapper %d src %d poly %d dst %d  locks %d unlocks %d \n",
+						chain, h, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), locks, unlocks,
+					)
+					for i, tx := range wrapperTransactions {
+						fmt.Printf("wrapper %d: %+v\n", i, *tx)
+					}
+					for i, tx := range srcTransactions {
+						fmt.Printf("src %d: %+v srcTransfer:%+v\n", i, *tx, tx.SrcTransfer)
+					}
+					for i, tx := range polyTransactions {
+						fmt.Printf("poly %d: %+v\n", i, *tx)
+					}
+					for i, tx := range dstTransactions {
+						fmt.Printf("dst %d: %+v\n", i, *tx)
+					}
+					ch<-true
+				}()
+			}
+			for k:=0;k<5;k++{
+				if <-ch ==false{
+					break
+				}
+			}
+			hei+=5
+		}
+	*/
 }
 
 func bingfaSWTH(config *conf.Config) {
