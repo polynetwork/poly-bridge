@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"poly-bridge/cacheRedis"
 
 	"poly-bridge/basedef"
 	"poly-bridge/common"
@@ -84,6 +85,8 @@ func run(ctx *cli.Context) {
 	http.Init()
 	// explorer http
 	explorer.Init()
+	// redis
+	cacheRedis.Init()
 
 	// register http routers
 	web.AddNamespace(

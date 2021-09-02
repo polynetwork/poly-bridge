@@ -35,7 +35,6 @@ import (
 )
 
 var db *gorm.DB
-var redis *cacheRedis.RedisCache
 
 func Init() {
 	dbConfig := conf.GlobalConfig.DBConfig
@@ -48,12 +47,6 @@ func Init() {
 	db, err = gorm.Open(mysql.Open(dbConn), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
-	}
-
-	redisConfig := conf.GlobalConfig.RedisConfig
-	redis, err = cacheRedis.GetRedisClient(redisConfig)
-	if err != nil {
-		logs.Error("GetRedisClient redis err")
 	}
 
 	// Preload chains info
@@ -233,7 +226,7 @@ func (c *ExplorerController) GetCrossTxList() {
 	}
 
 	logs.Info("GetCrossTxList count counter")
-	counter, err := redis.GetCrossTxCounter()
+	counter, err := cacheRedis.Redis.GetCrossTxCounter()
 	if err != nil {
 		logs.Info(err)
 		res := db.Debug().Model(&models.PolyTransaction{}).
@@ -246,7 +239,7 @@ func (c *ExplorerController) GetCrossTxList() {
 			c.ServeJSON()
 			return
 		}
-		err = redis.SetCrossTxCounter(counter)
+		err = cacheRedis.Redis.SetCrossTxCounter(counter)
 		if err != nil {
 			logs.Error(err)
 		}
@@ -379,7 +372,7 @@ func (c *ExplorerController) GetTransferStatistic() {
 	chainStatistics := make([]*models.ChainStatistic, 0)
 	chains := make([]*models.Chain, 0)
 	if transferStatisticReq.Chain == uint64(0) {
-		resp, err := redis.GetAllTransferResp()
+		resp, err := cacheRedis.Redis.GetAllTransferResp()
 		if err == nil && resp != nil {
 			c.Data["json"] = resp
 			c.ServeJSON()
@@ -407,7 +400,7 @@ func (c *ExplorerController) GetTransferStatistic() {
 			return
 		}
 		resp = models.MakeTransferInfoResp(tokenStatistics, chainStatistics, chains)
-		err = redis.SetAllTransferResp(resp)
+		err = cacheRedis.Redis.SetAllTransferResp(resp)
 		if err != nil {
 			logs.Error("redis.SetAllTransferResp err", err)
 		}
