@@ -82,6 +82,10 @@ func (this *O3ChainListen) GetDefer() uint64 {
 	return this.ethCfg.Defer
 }
 
+func (this *O3ChainListen) GetBatchSize() uint64 {
+	return this.ethCfg.BatchSize
+}
+
 func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {
@@ -257,7 +261,12 @@ func (this *O3ChainListen) getECCMEventByBlockNumber(contractAddr string, startH
 
 func (this *O3ChainListen) getProxyEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, []*models.SwapUnlockEvent, error) {
 	proxyAddress := common.HexToAddress(contractAddr)
-	proxyContract, err := swapper_abi.NewSwapProxy(proxyAddress, this.ethSdk.GetClient())
+	backend := this.ethSdk.GetClient()
+	if backend == nil {
+		return nil, nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", "GetClient() return nil")
+	}
+
+	proxyContract, err := swapper_abi.NewSwapProxy(proxyAddress, backend)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}

@@ -60,7 +60,11 @@ func TestSwapEffect_AddSrcTransaction(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	err = dao.UpdateEvents(chain, wrapperTransactions, srcTransactions, nil, nil)
+	err = dao.UpdateEvents(wrapperTransactions, srcTransactions, nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	err = dao.UpdateChain(chain)
 	if err != nil {
 		panic(err)
 	}
@@ -92,7 +96,11 @@ func TestSwapEffect_AddPolyTransaction(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	err = dao.UpdateEvents(chain, nil, nil, polyTransactions, nil)
+	err = dao.UpdateEvents(nil, nil, polyTransactions, nil)
+	if err != nil {
+		panic(err)
+	}
+	err = dao.UpdateChain(chain)
 	if err != nil {
 		panic(err)
 	}
@@ -124,7 +132,11 @@ func TestSwapEffect_AddDstTransaction(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	err = dao.UpdateEvents(chain, nil, nil, nil, dstTransactions)
+	err = dao.UpdateEvents(nil, nil, nil, dstTransactions)
+	if err != nil {
+		panic(err)
+	}
+	err = dao.UpdateChain(chain)
 	if err != nil {
 		panic(err)
 	}

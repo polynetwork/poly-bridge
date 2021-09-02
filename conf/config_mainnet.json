@@ -27,6 +27,7 @@
       "ChainId":0,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://13.92.155.62:20336"
@@ -43,6 +44,7 @@
       "ChainId":2,
       "ListenSlot":5,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://onto-eth.ont.io:10331"
@@ -70,6 +72,7 @@
       "ChainId":17,
       "ListenSlot":5,
       "Defer": 10,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://124.156.210.161:8545"
@@ -87,6 +90,7 @@
       "ChainId":4,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://13.67.34.13:10332"
@@ -112,6 +116,7 @@
       "ChainId":14,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://seed1.neo.org:10332"
@@ -137,6 +142,7 @@
       "ChainId":6,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url":"http://50.18.242.42:8545"
@@ -175,6 +181,7 @@
       "ChainId":5,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url":"http://54.255.5.46:26657"
@@ -191,6 +198,7 @@
       "ChainId":7,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "https://http-mainnet.hecochain.com"
@@ -211,6 +219,7 @@
       "ChainId":3,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://dappnode4.ont.io:20336"
@@ -230,6 +239,7 @@
       "ChainId":12,
       "ListenSlot":2,
       "Defer": 2,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://35.73.164.192:26659"
@@ -249,6 +259,7 @@
       "ChainId": 10,
       "ChainName": "curve",
       "Defer": 2,
+      "BatchSize": 5,
       "ExtendNodes": [
       ],
       "ListenSlot": 1,
@@ -268,6 +279,7 @@
       "ChainId":8,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://13.231.222.1:22000"

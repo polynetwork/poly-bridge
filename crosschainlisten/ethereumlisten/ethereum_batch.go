@@ -72,6 +72,10 @@ func (this *EthereumChainListenBatch) GetDefer() uint64 {
 	return this.ethCfg.Defer
 }
 
+func (this *EthereumChainListenBatch) GetBatchSize() uint64 {
+	return this.ethCfg.BatchSize
+}
+
 func (this *EthereumChainListenBatch) HandleNewBlock(heightStart uint64, heightEnd uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, error) {
 	erc20WrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, heightStart, heightEnd)
 	if err != nil {

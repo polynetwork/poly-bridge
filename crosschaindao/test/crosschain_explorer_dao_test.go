@@ -61,7 +61,11 @@ func TestCrossChain_ExplorerDao(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	err = dao.UpdateEvents(chain, wrapperTransactions, srcTransactions, nil, nil)
+	err = dao.UpdateEvents(wrapperTransactions, srcTransactions, nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	err = dao.UpdateChain(chain)
 	if err != nil {
 		panic(err)
 	}
@@ -87,7 +91,7 @@ func TestCrossChainSrc_ExplorerDao(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	err = dao.UpdateEvents(nil, nil, srcTransactions, nil, nil)
+	err = dao.UpdateEvents(nil, srcTransactions, nil, nil)
 	if err != nil {
 		panic(err)
 	}

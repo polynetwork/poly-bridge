@@ -65,11 +65,7 @@ func NewStakeDao() *StakeDao {
 	return stakeDao
 }
 
-func (dao *StakeDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
-	{
-		json, _ := json.Marshal(chain)
-		fmt.Printf("chain: %s\n", json)
-	}
+func (dao *StakeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
 	{
 		json, _ := json.Marshal(wrapperTransactions)
 		fmt.Printf("wrapperTransactions: %s\n", json)

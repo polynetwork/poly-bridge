@@ -80,6 +80,10 @@ func (this *Neo3ChainListen) GetDefer() uint64 {
 	return this.neoCfg.Defer
 }
 
+func (this *Neo3ChainListen) GetBatchSize() uint64 {
+	return this.neoCfg.BatchSize
+}
+
 func (this *Neo3ChainListen) isListeningContract(contract string, contracts []string) bool {
 	for _, item := range contracts {
 		if contract == item {
