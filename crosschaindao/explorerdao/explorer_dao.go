@@ -178,7 +178,7 @@ func NewExplorerDao(dbCfg *conf.DBConfig, backup bool) *ExplorerDao {
 	return explorerDao
 }
 
-func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *ExplorerDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		srcTransactionsJson, err := json.Marshal(srcTransactions)
 		if err != nil {
@@ -240,29 +240,6 @@ func (dao *ExplorerDao) UpdateEvents(chain *models.Chain, wrapperTransactions []
 			}
 		}
 		res := dao.db.Save(newDstTransactions)
-		if res.Error != nil {
-			return res.Error
-		}
-	}
-	if chain != nil && !dao.backup {
-		chainJson, err := json.Marshal(chain)
-		if err != nil {
-			return err
-		}
-		newChain := new(Chain)
-		err = json.Unmarshal(chainJson, newChain)
-		if err != nil {
-			return err
-		}
-		if chain.HeightSwap > chain.Height {
-			newChain.Height = chain.HeightSwap
-		}
-		newChain.In = uint64(len(srcTransactions))
-		newChain.Out = uint64(len(dstTransactions))
-		res := dao.db.Model(newChain).Updates(map[string]interface{}{
-			"txin":   gorm.Expr("txin + ?", newChain.In),
-			"txout":  gorm.Expr("txout + ?", newChain.Out),
-			"height": gorm.Expr("?", newChain.Height)})
 		if res.Error != nil {
 			return res.Error
 		}

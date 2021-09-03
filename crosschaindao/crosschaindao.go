@@ -28,7 +28,7 @@ import (
 )
 
 type CrossChainDao interface {
-	UpdateEvents(chain *models.Chain, wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error
+	UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error
 	RemoveEvents(srcHashes []string, polyHashes []string, dstHashes []string) error
 	GetChain(chainId uint64) (*models.Chain, error)
 	UpdateChain(chain *models.Chain) error

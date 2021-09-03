@@ -37,6 +37,7 @@
       "ChainName":"Poly",
       "ChainId":0,
       "ListenSlot":1,
+      "BatchSize": 5,
       "Defer": 1,
       "Nodes": [
         {
@@ -53,6 +54,7 @@
       "ChainName":"Ethereum",
       "ChainId":2,
       "ListenSlot":5,
+      "BatchSize": 5,
       "Defer": 4,
       "Nodes": [
         {
@@ -80,6 +82,7 @@
       "ChainName":"NEO",
       "ChainId":5,
       "ListenSlot":1,
+      "BatchSize": 5,
       "Defer": 1,
       "Nodes": [
         {
@@ -102,6 +105,7 @@
       "ChainName":"BSC",
       "ChainId":79,
       "ListenSlot":1,
+      "BatchSize": 5,
       "Defer": 1,
       "Nodes": [
         {
@@ -122,6 +126,7 @@
       "ChainName":"HECO",
       "ChainId":7,
       "ListenSlot":1,
+      "BatchSize": 5,
       "Defer": 1,
       "Nodes": [
         {
@@ -142,6 +147,7 @@
       "ChainName":"Ontology",
       "ChainId":3,
       "ListenSlot":1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://polaris4.ont.io:20336"
@@ -157,6 +163,7 @@
       "ChainName":"Ok",
       "ChainId":200,
       "ListenSlot":2,
+      "BatchSize": 5,
       "Defer": 2,
       "Nodes": [
         {
@@ -173,6 +180,7 @@
       "ChainName":"NEO3",
       "ChainId":88,
       "ListenSlot":1,
+      "BatchSize": 5,
       "Defer": 1,
       "Nodes": [
         {
@@ -195,6 +203,7 @@
       "ChainName":"MATIC",
       "ChainId":202,
       "ListenSlot":5,
+      "BatchSize": 5,
       "Defer": 10,
       "Nodes": [
         {
@@ -213,24 +222,26 @@
       "ChainId": 82,
       "ChainName": "curve",
       "Defer": 1,
-      "ExtendNodes": [
-      ],
       "ListenSlot": 1,
+      "BatchSize": 5,
       "Nodes": [
-        {
-          "Url": "http://40.115.136.96:8546"
-        }
+                {
+                    "Url": "http://40.115.136.96:8546"
+                }
+      ],
+      "ExtendNodes": [
       ],
       "ProxyContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
       "SwapContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
       "WrapperContract": [
-        "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"
+                "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"
       ]
     },
     {
       "ChainName":"PLT",
       "ChainId":107,
       "ListenSlot":1,
+      "BatchSize": 5,
       "Defer": 1,
       "Nodes": [
         {
@@ -279,6 +290,14 @@
       "Nodes": [
         {
           "Url": "https://api1.binance.com/"
+        }
+      ]
+    },
+    {
+      "MarketName":"coincheck",
+      "Nodes": [
+        {
+          "Url": "https://coincheck.com/"
         }
       ]
     }

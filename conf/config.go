@@ -81,6 +81,7 @@ type ChainListenConfig struct {
 	ChainId            uint64
 	ListenSlot         uint64
 	Defer              uint64
+	BatchSize          uint64
 	Nodes              []*Restful
 	ExtendNodes        []*Restful
 	WrapperContract    []string
@@ -206,7 +207,7 @@ type Config struct {
 	Backup                bool
 	LogFile               string
 	HttpConfig            *HttpConfig
-	MetricConfig		  *HttpConfig
+	MetricConfig          *HttpConfig
 	ChainListenConfig     []*ChainListenConfig
 	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig

@@ -178,11 +178,14 @@ func startServer(ctx *cli.Context) {
 					break
 				}
 				chainInfo.Height = end
-				err = db.UpdateEvents(chainInfo, wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+				err = db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 				if err != nil {
 					logs.Error("UpdateEvents on block %d err: %v", chainInfo.Height, err)
-					chainInfo.Height -= end
 					break
+				}
+				if db.UpdateChain(chainInfo) != nil {
+					logs.Error("UpdateChain [chainId:%d, height:%d] err %v", chainInfo.ChainId, chainInfo.Height, err)
+					chainInfo.Height -= end
 				}
 			}
 		}

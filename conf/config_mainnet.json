@@ -27,6 +27,7 @@
       "ChainId":0,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://13.92.155.62:20336"
@@ -43,6 +44,7 @@
       "ChainId":2,
       "ListenSlot":5,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://onto-eth.ont.io:10331"
@@ -69,10 +71,11 @@
       "ChainName":"MATIC",
       "ChainId":17,
       "ListenSlot":5,
-      "Defer": 10,
+      "Defer": 129,
+      "BatchSize": 5,
       "Nodes": [
         {
-          "Url": "http://124.156.210.161:8545"
+          "Url": "http://10.203.0.29:8545"
         }
       ],
       "ExtendNodes": [
@@ -87,16 +90,8 @@
       "ChainId":4,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
-        {
-          "Url": "http://13.67.34.13:10332"
-        },
-        {
-          "Url": "http://seed1.ngd.network:10332"
-        },
-        {
-          "Url": "http://seed5.ngd.network:10332"
-        },
         {
           "Url": "http://wallet.ngd.network:10332"
         }
@@ -112,6 +107,7 @@
       "ChainId":14,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://seed1.neo.org:10332"
@@ -137,6 +133,7 @@
       "ChainId":6,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url":"http://50.18.242.42:8545"
@@ -175,6 +172,7 @@
       "ChainId":5,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url":"http://54.255.5.46:26657"
@@ -191,6 +189,7 @@
       "ChainId":7,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "https://http-mainnet.hecochain.com"
@@ -211,6 +210,7 @@
       "ChainId":3,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://dappnode4.ont.io:20336"
@@ -230,6 +230,7 @@
       "ChainId":12,
       "ListenSlot":2,
       "Defer": 2,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://35.73.164.192:26659"
@@ -245,10 +246,11 @@
       "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
     },
     {
-      "CCMContract": "5fda5277E73FCB07E28135900a6B4Cc170930d8E",
+      "CCMContract": "89D15F45597816C90cbafd32D0Bb8Fc99bE0B76f",
       "ChainId": 10,
       "ChainName": "curve",
       "Defer": 2,
+      "BatchSize": 5,
       "ExtendNodes": [
       ],
       "ListenSlot": 1,
@@ -268,6 +270,7 @@
       "ChainId":8,
       "ListenSlot":1,
       "Defer": 1,
+      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://13.231.222.1:22000"
@@ -313,6 +316,14 @@
       "Nodes": [
         {
           "Url": "https://api1.binance.com/"
+        }
+      ]
+    },
+    {
+      "MarketName":"coincheck",
+      "Nodes": [
+        {
+          "Url": "https://coincheck.com/"
         }
       ]
     },
@@ -409,7 +420,7 @@
       "ChainName":"MATIC",
       "Nodes": [
         {
-          "Url": "http://124.156.210.161:8545"
+          "Url": "http://10.203.0.29:8545"
         }
       ],
       "GasLimit":300000,
@@ -432,7 +443,7 @@
   "IPPortConfig":{
     "WBTCIP":"http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
     "USDTIP":"http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
-    "DingIP": "hhttps://oapi.dingtalk.com/robot/send"
+    "DingIP": "hhttps://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
   },
   "HttpConfig": {
     "Address": "0.0.0.0",
