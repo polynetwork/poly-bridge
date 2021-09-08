@@ -30,6 +30,7 @@ import (
 	"poly-bridge/crosschaindao/bridgedao"
 	"poly-bridge/http/tools"
 	"poly-bridge/models"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -564,6 +565,11 @@ type AssetDetail struct {
 }
 
 func (this *Stats) startCheckAssetAlarm() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error("startCheckAssetAlarm defer recover: %s", string(debug.Stack()))
+		}
+	}()
 	logs.Info("StartCheckAsset,start startCheckAsset")
 	if err != nil {
 		return err
@@ -730,11 +736,11 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		chainAsset := new(DstChainAsset)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 		response, err := http.Get(ipCfg.WBTCIP)
-		defer response.Body.Close()
 		if err != nil || response.StatusCode != 200 {
 			logs.Error("Get o3 WBTC err:", err)
 			return
 		}
+		defer response.Body.Close()
 		body, _ := ioutil.ReadAll(response.Body)
 		o3WBTC := struct {
 			Balance *big.Int
@@ -750,11 +756,11 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		chainAsset := new(DstChainAsset)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 		response, err := http.Get(ipCfg.USDTIP)
-		defer response.Body.Close()
 		if err != nil || response.StatusCode != 200 {
 			logs.Error("Get o3 USDT err:", err)
 			return
 		}
+		defer response.Body.Close()
 		body, _ := ioutil.ReadAll(response.Body)
 		o3USDT := struct {
 			Balance *big.Int
