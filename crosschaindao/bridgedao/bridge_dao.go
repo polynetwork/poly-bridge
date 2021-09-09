@@ -106,17 +106,22 @@ func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransact
 	} else {
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
 			for _, wrapperTransaction := range wrapperTransactions {
-				wrapperTransaction.Status = 0
-				res := dao.db.Updates(wrapperTransaction)
-				if res.Error != nil {
-					return res.Error
+				res := dao.db.Save(wrapperTransaction)
+				if res.RowsAffected > 0 {
+					logs.Info("backup wrapperTransaction hash:%v", wrapperTransaction.Hash)
 				}
 			}
 		}
 		if srcTransactions != nil && len(srcTransactions) > 0 {
-			res := dao.db.Debug().Save(srcTransactions)
-			if res.Error != nil {
-				return res.Error
+			for _, srcTransaction := range srcTransactions {
+				res := dao.db.Debug().Save(srcTransaction)
+				if res.RowsAffected > 0 {
+					err := dao.db.Table("poly_transactions").Where("(poly_transactions.src_hash = ? or poly_transactions.src_key = ?) and poly_transactions.time > ? and poly_transactions.src_chain_id = ?", srcTransaction.Key, srcTransaction.Key, 1622476800, srcTransaction.ChainId).
+						Update("src_hash", srcTransaction.Hash).Error
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 		if polyTransactions != nil && len(polyTransactions) > 0 {
