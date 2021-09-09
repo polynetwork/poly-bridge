@@ -129,6 +129,9 @@ func (ccl *CrossChainListen) SetHeight(height uint64) {
 }
 
 func (ccl *CrossChainListen) Start() {
+	if ccl.backup && ccl.handle.GetChainId() == basedef.POLY_CROSSCHAIN_ID {
+		return
+	}
 	logs.Info("start cross chain listen: %s", ccl.handle.GetChainName())
 	go ccl.ListenChain()
 }
