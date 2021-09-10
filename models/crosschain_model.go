@@ -63,7 +63,7 @@ type SrcTransfer struct {
 	Asset      string  `gorm:"type:varchar(120);not null"`
 	From       string  `gorm:"type:varchar(66);not null"`
 	To         string  `gorm:"type:varchar(66);not null"`
-	Amount     *BigInt `gorm:"type:varchar(64);not null"`
+	Amount     *BigInt `gorm:"type:varchar(80);not null"`
 	DstChainId uint64  `gorm:"type:bigint(20);not null"`
 	DstAsset   string  `gorm:"type:varchar(120);not null"`
 	DstUser    string  `gorm:"type:varchar(66);not null"`
@@ -131,7 +131,7 @@ type DstTransfer struct {
 	Asset    string  `gorm:"type:varchar(120);not null"`
 	From     string  `gorm:"type:varchar(66);not null"`
 	To       string  `gorm:"type:varchar(66);not null"`
-	Amount   *BigInt `gorm:"type:varchar(64);not null"`
+	Amount   *BigInt `gorm:"type:varchar(80);not null"`
 }
 
 type DstSwap struct {
