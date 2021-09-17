@@ -365,7 +365,6 @@ func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, am
 func (dao *BridgeDao) CalculateInTokenStatistics(chainId uint64, hash string, lastId, nowId int64) (*models.TokenStatistic, error) {
 	tokenStatistic := new(models.TokenStatistic)
 	res := dao.db.Raw("select count(*) in_counter,  CONVERT(sum(amount), DECIMAL(37, 0)) as in_amount, chain_id as chain_id, asset as hash  from dst_transfers where  chain_id = ? and asset = ? and id > ? and id <= ? group by chain_id,hash", chainId, hash, lastId, nowId).
-		Preload("Token").Preload("Token.TokenBasic").
 		First(tokenStatistic)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -376,7 +375,6 @@ func (dao *BridgeDao) CalculateInTokenStatistics(chainId uint64, hash string, la
 func (dao *BridgeDao) CalculateOutTokenStatistics(chainId uint64, hash string, lastId, nowId int64) (*models.TokenStatistic, error) {
 	tokenStatistic := new(models.TokenStatistic)
 	res := dao.db.Raw("select count(*) out_counter,  CONVERT(sum(amount), DECIMAL(37, 0)) as out_amount, chain_id as chain_id, asset as hash from src_transfers where chain_id = ? and asset = ? and id > ? and id<= ? group by chain_id,hash", chainId, hash, lastId, nowId).
-		Preload("Token").Preload("Token.TokenBasic").
 		First(tokenStatistic)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
