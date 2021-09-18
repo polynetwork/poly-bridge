@@ -270,7 +270,11 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								tctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								tctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
 								tctransfer.Asset = basedef.HexStringReverse(hex.EncodeToString(asset.Value.([]byte)))
-								tctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
+								if x, ok := amount.Value.(*big.Int); !ok {
+									tctransfer.Amount = models.NewBigIntFromInt(0)
+								} else {
+									tctransfer.Amount = models.NewBigInt(x)
+								}
 								break
 							}
 						}
