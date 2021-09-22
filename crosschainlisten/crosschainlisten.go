@@ -155,18 +155,9 @@ func (ccl *CrossChainListen) ListenChain() {
 func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, err error) {
 	chain := ccl.handle.GetChainId()
 	var locks, unlocks int
-	for c := 3; c > 0; c-- {
-		w, s, p, d, locks, unlocks, err = ccl.handle.HandleNewBlock(height)
-		if err != nil {
-			return
-		}
-		if locks == len(s) && unlocks == len(d) {
-			return
-		}
-		if c > 1 {
-			logs.Warn("Possible missing events for chain %v height %v", chain, height)
-			time.Sleep(time.Second * 5)
-		}
+	w, s, p, d, locks, unlocks, err = ccl.handle.HandleNewBlock(height)
+	if err != nil {
+		return
 	}
 	logs.Error("Possible inconsistent chain %d height %d wrapper %d/%d src %d/%d dst %d/%d", chain, height, len(w), locks, len(s), locks, len(d), unlocks)
 	return
