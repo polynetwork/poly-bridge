@@ -237,9 +237,10 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					break
 				}
 			}
-			if srcTransaction.SrcTransfer != nil || srcTransaction.SrcSwap != nil {
-				srcTransactions = append(srcTransactions, srcTransaction)
-			}
+			//opensrcTransactions
+			//if srcTransaction.SrcTransfer != nil || srcTransaction.SrcSwap != nil {
+			srcTransactions = append(srcTransactions, srcTransaction)
+			//}
 		}
 	}
 	// save unLockEvent to db
@@ -282,9 +283,10 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					dstTransaction.DstTransfer.Standard = models.TokenTypeErc721
 				}
 			}
-			if dstTransaction.DstTransfer != nil {
-				dstTransactions = append(dstTransactions, dstTransaction)
-			}
+			//opendstTransactions
+			//if dstTransaction.DstTransfer != nil {
+			dstTransactions = append(dstTransactions, dstTransaction)
+			//}
 		}
 	}
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(proxyLockEvents), len(proxyUnlockEvents), nil
