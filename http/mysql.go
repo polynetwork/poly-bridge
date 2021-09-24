@@ -19,7 +19,9 @@ package http
 
 import (
 	"fmt"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"strings"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -27,6 +29,7 @@ import (
 )
 
 var db *gorm.DB
+var polyProxy map[string]bool
 
 func Init() {
 	config := conf.GlobalConfig.DBConfig
@@ -40,5 +43,11 @@ func Init() {
 	db, err = gorm.Open(mysql.Open(conn), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
+	}
+
+	proxyConfigs := conf.GlobalConfig.ChainListenConfig
+	for _, v := range proxyConfigs {
+		polyProxy[strings.ToUpper(v.ProxyContract)] = true
+		polyProxy[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
 	}
 }

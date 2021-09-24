@@ -26,9 +26,10 @@ import (
 )
 
 var (
-	STATE_NOTPAY   = -1
-	STATE_NOTCHECK = 0
-	STATE_HASPAY   = 1
+	STATE_NOTPOLYPROXY = -2
+	STATE_NOTPAY       = -1
+	STATE_NOTCHECK     = 0
+	STATE_HASPAY       = 1
 )
 
 type PolySwapResp struct {
@@ -65,15 +66,15 @@ type GetFeeRsp struct {
 	UsdtAmount               string
 	TokenAmount              string
 	TokenAmountWithPrecision string
-	SwapTokenHash string
-	Balance string
-	BalanceWithPrecision string
+	SwapTokenHash            string
+	Balance                  string
+	BalanceWithPrecision     string
 }
 
 type GetFeeReq struct {
-	SrcChainId uint64
-	Hash       string
-	DstChainId uint64
+	SrcChainId    uint64
+	Hash          string
+	DstChainId    uint64
 	SwapTokenHash string
 }
 
@@ -120,9 +121,9 @@ func (sdk *BridgeSdk) CheckFee(checks []*CheckFeeReq) ([]*CheckFeeRsp, error) {
 
 func (sdk *BridgeSdk) GetFee(srcChainId uint64, dstChainId uint64, feeTokenHash string, swapTokenHash string) (*GetFeeRsp, error) {
 	getFeesReq := &GetFeeReq{
-		SrcChainId: srcChainId,
-		DstChainId: dstChainId,
-		Hash: feeTokenHash,
+		SrcChainId:    srcChainId,
+		DstChainId:    dstChainId,
+		Hash:          feeTokenHash,
 		SwapTokenHash: swapTokenHash,
 	}
 	requestJson, err := json.Marshal(getFeesReq)
