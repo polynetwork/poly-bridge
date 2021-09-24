@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math/big"
 	"poly-bridge/cacheRedis"
+	"strings"
 
 	"poly-bridge/basedef"
 	"poly-bridge/common"
@@ -175,8 +176,15 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
+	isPolyProxy := make(map[string]bool, 0)
+
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:8]
+		if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; in {
+			isPolyProxy[srcTransaction.Key] = true
+			isPolyProxy[srcTransaction.Hash] = true
+			isPolyProxy[basedef.HexStringReverse(srcTransaction.Hash)] = true
+		}
 		if prefix == "00000000" {
 			chainId, ok := hash2ChainId[srcTransaction.Key]
 			if ok && chainId == srcTransaction.ChainId {
@@ -213,7 +221,13 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 		checkFee.ChainId = check.ChainId
 		checkFee.Amount = new(big.Float).SetInt64(0)
 		checkFee.MinProxyFee = new(big.Float).SetInt64(0)
-		_, ok := chain2Fees[check.ChainId]
+		_, ok := isPolyProxy[check.Hash]
+		if !ok {
+			checkFee.PayState = -2
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		_, ok = chain2Fees[check.ChainId]
 		if !ok {
 			checkFee.PayState = -1
 			checkFees = append(checkFees, checkFee)
