@@ -517,3 +517,21 @@ func (dao *BridgeDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.
 		First(token).Error
 	return token, err
 }
+
+type ChainAvgTime struct {
+	ChainId uint64
+	AvgTime int64
+}
+
+func (dao *BridgeDao) GetAvgTimeSrc2Poly(timeLast, timeNow int64) ([]*ChainAvgTime, error) {
+	chainAvgTimes := make([]*ChainAvgTime, 0)
+	err := dao.db.Raw("SELECT s.chain_id as chain_id,floor(AVG(p.time-s.time)) as avg_time from poly_transactions p left join src_transactions s on s.hash=p.src_hash where s.hash is not null and p.time >= ? and p.time < ?  group by s.chain_id", timeLast, timeNow).
+		Find(&chainAvgTimes).Error
+	return chainAvgTimes, err
+}
+func (dao *BridgeDao) GetAvgTimePoly2Dst(timeLast, timeNow int64) ([]*ChainAvgTime, error) {
+	chainAvgTimes := make([]*ChainAvgTime, 0)
+	err := dao.db.Raw("SELECT d.chain_id as chain_id,floor(AVG(d.time-p.time)) as avg_time from dst_transactions d left join poly_transactions p on p.hash=d.poly_hash where p.hash is not null  and d.time >= ? and d.time < ?  group by d.chain_id", timeLast, timeNow).
+		Find(&chainAvgTimes).Error
+	return chainAvgTimes, err
+}
