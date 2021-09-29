@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/beego/beego/v2 v2.0.1
-	github.com/btcsuite/btcd v0.20.1-beta
+	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/goleveldb v1.0.0
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/devfans/cogroup v1.1.0
@@ -15,8 +15,8 @@ require (
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
 	github.com/joeqian10/neo3-gogogo v0.3.8
 	github.com/ontio/ontology v1.14.0-beta.0.20210818114002-fedaf66010a7
-	github.com/ontio/ontology-crypto v1.1.0
-	github.com/ontio/ontology-go-sdk v1.12.3
+	github.com/ontio/ontology-crypto v1.2.1
+	github.com/ontio/ontology-go-sdk v1.12.4
 	github.com/polynetwork/bridge-common v0.0.0-20210730081758-77b97bbeb305
 	github.com/polynetwork/cosmos-poly-module v0.0.0-20200827085015-12374709b707
 	github.com/polynetwork/poly v1.3.1
