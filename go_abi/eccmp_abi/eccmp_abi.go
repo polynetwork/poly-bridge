@@ -137,7 +137,7 @@ func bindContext(address common.Address, caller bind.ContractCaller, transactor 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Context *ContextRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Context *ContextRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Context.Contract.ContextCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_Context *ContextRaw) Transact(opts *bind.TransactOpts, method string, par
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Context *ContextCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Context *ContextCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Context.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -172,11 +172,10 @@ func (_Context *ContextTransactorRaw) Transact(opts *bind.TransactOpts, method s
 }
 
 // EthCrossChainManagerProxyABI is the input ABI used to generate the binding from.
-const EthCrossChainManagerProxyABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_ethCrossChainManagerAddr\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_newChainId\",\"type\":\"uint64\"}],\"name\":\"changeManagerChainID\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEthCrossChainManager\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"pause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"pauseEthCrossChainManager\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unpause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unpauseEthCrossChainManager\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newEthCrossChainManagerAddr\",\"type\":\"address\"}],\"name\":\"upgradeEthCrossChainManager\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const EthCrossChainManagerProxyABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_ethCrossChainManagerAddr\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEthCrossChainManager\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"pause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"pauseEthCrossChainManager\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unpause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unpauseEthCrossChainManager\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newEthCrossChainManagerAddr\",\"type\":\"address\"}],\"name\":\"upgradeEthCrossChainManager\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // EthCrossChainManagerProxyFuncSigs maps the 4-byte function signature to its string representation.
 var EthCrossChainManagerProxyFuncSigs = map[string]string{
-	"a2681d28": "changeManagerChainID(uint64)",
 	"87939a7f": "getEthCrossChainManager()",
 	"8f32d59b": "isOwner()",
 	"8da5cb5b": "owner()",
@@ -191,7 +190,7 @@ var EthCrossChainManagerProxyFuncSigs = map[string]string{
 }
 
 // EthCrossChainManagerProxyBin is the compiled bytecode used for deploying new contracts.
-var EthCrossChainManagerProxyBin = "0x608060405234801561001057600080fd5b506040516111663803806111668339818101604052602081101561003357600080fd5b505160006100486001600160e01b036100c416565b600080546001600160a01b0319166001600160a01b0383169081178255604051929350917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3506000805460ff60a01b19169055600180546001600160a01b0319166001600160a01b03929092169190911790556100c8565b3390565b61108f806100d76000396000f3fe608060405234801561001057600080fd5b50600436106100b45760003560e01c806387939a7f1161007157806387939a7f146100ff5780638da5cb5b146101235780638f32d59b1461012b578063a2681d2814610133578063ab59d32d1461015a578063f2fde38b14610180576100b4565b80633b9a80b8146100b95780633f4ba83a146100d55780634390c707146100dd5780635c975abb146100e5578063715018a6146100ed5780638456cb59146100f7575b600080fd5b6100c16101a6565b604080519115158252519081900360200190f35b6100c1610336565b6100c16103a2565b6100c1610532565b6100f5610542565b005b6100c16105d3565b610107610639565b604080516001600160a01b039092168252519081900360200190f35b61010761069c565b6100c16106ab565b6100f56004803603602081101561014957600080fd5b503567ffffffffffffffff166106cf565b6100c16004803603602081101561017057600080fd5b50356001600160a01b031661094e565b6100f56004803603602081101561019657600080fd5b50356001600160a01b0316610c8e565b60006101b06106ab565b6101ef576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b600054600160a01b900460ff1615610241576040805162461bcd60e51b815260206004820152601060248201526f14185d5cd8589b194e881c185d5cd95960821b604482015290519081900360640190fd5b6001546001600160a01b03166102556105d3565b6102905760405162461bcd60e51b8152600401808060200182810382526030815260200180610f846030913960400191505060405180910390fd5b806001600160a01b0316638456cb596040518163ffffffff1660e01b8152600401602060405180830381600087803b1580156102cb57600080fd5b505af11580156102df573d6000803e3d6000fd5b505050506040513d60208110156102f557600080fd5b50516103325760405162461bcd60e51b815260040180806020018281038252602b815260200180611030602b913960400191505060405180910390fd5b5090565b60006103406106ab565b61037f576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b610387610532565b6103935750600161039f565b61039b610ce1565b5060015b90565b60006103ac6106ab565b6103eb576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b600054600160a01b900460ff16610440576040805162461bcd60e51b815260206004820152601460248201527314185d5cd8589b194e881b9bdd081c185d5cd95960621b604482015290519081900360640190fd5b60015460408051631fa5d41d60e11b815290516001600160a01b03909216918291633f4ba83a9160048083019260209291908290030181600087803b15801561048857600080fd5b505af115801561049c573d6000803e3d6000fd5b505050506040513d60208110156104b257600080fd5b50516104ef5760405162461bcd60e51b815260040180806020018281038252602d815260200180610fe3602d913960400191505060405180910390fd5b6104f7610336565b6103325760405162461bcd60e51b8152600401808060200182810382526032815260200180610f526032913960400191505060405180910390fd5b600054600160a01b900460ff1690565b61054a6106ab565b610589576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b60006105dd6106ab565b61061c576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b610624610532565b156106315750600161039f565b61039b610d89565b60008054600160a01b900460ff161561068c576040805162461bcd60e51b815260206004820152601060248201526f14185d5cd8589b194e881c185d5cd95960821b604482015290519081900360640190fd5b506001546001600160a01b031690565b6000546001600160a01b031690565b600080546001600160a01b03166106c0610e13565b6001600160a01b031614905090565b6106d76106ab565b610716576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b600054600160a01b900460ff1661076b576040805162461bcd60e51b815260206004820152601460248201527314185d5cd8589b194e881b9bdd081c185d5cd95960621b604482015290519081900360640190fd5b60015460408051635c975abb60e01b815290516001600160a01b03909216918291635c975abb916004808301926020929190829003018186803b1580156107b157600080fd5b505afa1580156107c5573d6000803e3d6000fd5b505050506040513d60208110156107db57600080fd5b505161088357806001600160a01b0316638456cb596040518163ffffffff1660e01b8152600401602060405180830381600087803b15801561081c57600080fd5b505af1158015610830573d6000803e3d6000fd5b505050506040513d602081101561084657600080fd5b50516108835760405162461bcd60e51b815260040180806020018281038252602f815260200180610fb4602f913960400191505060405180910390fd5b60408051636f31031d60e01b815267ffffffffffffffff8416600482015290516001600160a01b03831691636f31031d9160248083019260209291908290030181600087803b1580156108d557600080fd5b505af11580156108e9573d6000803e3d6000fd5b505050506040513d60208110156108ff57600080fd5b505161094a576040805162461bcd60e51b8152602060048201526015602482015274039b2ba1031b430b4b71024a2103330b4b632b2171605d1b604482015290519081900360640190fd5b5050565b60006109586106ab565b610997576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b600054600160a01b900460ff166109ec576040805162461bcd60e51b815260206004820152601460248201527314185d5cd8589b194e881b9bdd081c185d5cd95960621b604482015290519081900360640190fd5b60015460408051635c975abb60e01b815290516001600160a01b03909216918291635c975abb916004808301926020929190829003018186803b158015610a3257600080fd5b505afa158015610a46573d6000803e3d6000fd5b505050506040513d6020811015610a5c57600080fd5b5051610b0457806001600160a01b0316638456cb596040518163ffffffff1660e01b8152600401602060405180830381600087803b158015610a9d57600080fd5b505af1158015610ab1573d6000803e3d6000fd5b505050506040513d6020811015610ac757600080fd5b5051610b045760405162461bcd60e51b815260040180806020018281038252602f815260200180610fb4602f913960400191505060405180910390fd5b806001600160a01b0316637e724ff3846040518263ffffffff1660e01b815260040180826001600160a01b03166001600160a01b03168152602001915050602060405180830381600087803b158015610b5c57600080fd5b505af1158015610b70573d6000803e3d6000fd5b505050506040513d6020811015610b8657600080fd5b5051610bc35760405162461bcd60e51b8152600401808060200182810382526029815260200180610f036029913960400191505060405180910390fd5b6000839050806001600160a01b0316638f32d59b6040518163ffffffff1660e01b815260040160206040518083038186803b158015610c0157600080fd5b505afa158015610c15573d6000803e3d6000fd5b505050506040513d6020811015610c2b57600080fd5b5051610c685760405162461bcd60e51b815260040180806020018281038252604b815260200180610eb8604b913960600191505060405180910390fd5b5050600180546001600160a01b0319166001600160a01b03939093169290921790915590565b610c966106ab565b610cd5576040805162461bcd60e51b81526020600482018190526024820152600080516020611010833981519152604482015290519081900360640190fd5b610cde81610e17565b50565b600054600160a01b900460ff16610d36576040805162461bcd60e51b815260206004820152601460248201527314185d5cd8589b194e881b9bdd081c185d5cd95960621b604482015290519081900360640190fd5b6000805460ff60a01b191690557f5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa610d6c610e13565b604080516001600160a01b039092168252519081900360200190a1565b600054600160a01b900460ff1615610ddb576040805162461bcd60e51b815260206004820152601060248201526f14185d5cd8589b194e881c185d5cd95960821b604482015290519081900360640190fd5b6000805460ff60a01b1916600160a01b1790557f62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258610d6c5b3390565b6001600160a01b038116610e5c5760405162461bcd60e51b8152600401808060200182810382526026815260200180610f2c6026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b039290921691909117905556fe45746843726f7373436861696e4d616e6167657250726f7879206973206e6f74206f776e6572206f66206e65772045746843726f7373436861696e4d616e6167657220636f6e747261637445746843726f7373436861696e4d616e616765722075706772616465546f4e6577206661696c6564214f776e61626c653a206e6577206f776e657220697320746865207a65726f2061646472657373756e70617573652045746843726f7373436861696e4d616e6167657250726f787920636f6e7472616374206661696c65642170617573652045746843726f7373436861696e4d616e6167657250726f787920636f6e7472616374206661696c6564215061757365206f6c642045746843726f7373436861696e4d616e6167657220636f6e7472616374206661696c656421756e70617573652045746843726f7373436861696e4d616e6167657220636f6e7472616374206661696c6564214f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657270617573652045746843726f7373436861696e4d616e6167657220636f6e7472616374206661696c656421a265627a7a723158209912c574c151da270e940daefb46dbfdd2a4c2b2b7b49bffaec9045c6055abc464736f6c63430005110032"
+var EthCrossChainManagerProxyBin = "0x608060405234801561001057600080fd5b50604051610eb5380380610eb58339818101604052602081101561003357600080fd5b505160006100486001600160e01b036100c416565b600080546001600160a01b0319166001600160a01b0383169081178255604051929350917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3506000805460ff60a01b19169055600180546001600160a01b0319166001600160a01b03929092169190911790556100c8565b3390565b610dde806100d76000396000f3fe608060405234801561001057600080fd5b50600436106100a95760003560e01c80638456cb59116100715780638456cb59146100ec57806387939a7f146100f45780638da5cb5b146101185780638f32d59b14610120578063ab59d32d14610128578063f2fde38b1461014e576100a9565b80633b9a80b8146100ae5780633f4ba83a146100ca5780634390c707146100d25780635c975abb146100da578063715018a6146100e2575b600080fd5b6100b6610174565b604080519115158252519081900360200190f35b6100b6610304565b6100b6610370565b6100b6610500565b6100ea610510565b005b6100b66105a1565b6100fc610607565b604080516001600160a01b039092168252519081900360200190f35b6100fc61066a565b6100b6610679565b6100b66004803603602081101561013e57600080fd5b50356001600160a01b031661069d565b6100ea6004803603602081101561016457600080fd5b50356001600160a01b03166109dd565b600061017e610679565b6101bd576040805162461bcd60e51b81526020600482018190526024820152600080516020610d5f833981519152604482015290519081900360640190fd5b600054600160a01b900460ff161561020f576040805162461bcd60e51b815260206004820152601060248201526f14185d5cd8589b194e881c185d5cd95960821b604482015290519081900360640190fd5b6001546001600160a01b03166102236105a1565b61025e5760405162461bcd60e51b8152600401808060200182810382526030815260200180610cd36030913960400191505060405180910390fd5b806001600160a01b0316638456cb596040518163ffffffff1660e01b8152600401602060405180830381600087803b15801561029957600080fd5b505af11580156102ad573d6000803e3d6000fd5b505050506040513d60208110156102c357600080fd5b50516103005760405162461bcd60e51b815260040180806020018281038252602b815260200180610d7f602b913960400191505060405180910390fd5b5090565b600061030e610679565b61034d576040805162461bcd60e51b81526020600482018190526024820152600080516020610d5f833981519152604482015290519081900360640190fd5b610355610500565b6103615750600161036d565b610369610a30565b5060015b90565b600061037a610679565b6103b9576040805162461bcd60e51b81526020600482018190526024820152600080516020610d5f833981519152604482015290519081900360640190fd5b600054600160a01b900460ff1661040e576040805162461bcd60e51b815260206004820152601460248201527314185d5cd8589b194e881b9bdd081c185d5cd95960621b604482015290519081900360640190fd5b60015460408051631fa5d41d60e11b815290516001600160a01b03909216918291633f4ba83a9160048083019260209291908290030181600087803b15801561045657600080fd5b505af115801561046a573d6000803e3d6000fd5b505050506040513d602081101561048057600080fd5b50516104bd5760405162461bcd60e51b815260040180806020018281038252602d815260200180610d32602d913960400191505060405180910390fd5b6104c5610304565b6103005760405162461bcd60e51b8152600401808060200182810382526032815260200180610ca16032913960400191505060405180910390fd5b600054600160a01b900460ff1690565b610518610679565b610557576040805162461bcd60e51b81526020600482018190526024820152600080516020610d5f833981519152604482015290519081900360640190fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b60006105ab610679565b6105ea576040805162461bcd60e51b81526020600482018190526024820152600080516020610d5f833981519152604482015290519081900360640190fd5b6105f2610500565b156105ff5750600161036d565b610369610ad8565b60008054600160a01b900460ff161561065a576040805162461bcd60e51b815260206004820152601060248201526f14185d5cd8589b194e881c185d5cd95960821b604482015290519081900360640190fd5b506001546001600160a01b031690565b6000546001600160a01b031690565b600080546001600160a01b031661068e610b62565b6001600160a01b031614905090565b60006106a7610679565b6106e6576040805162461bcd60e51b81526020600482018190526024820152600080516020610d5f833981519152604482015290519081900360640190fd5b600054600160a01b900460ff1661073b576040805162461bcd60e51b815260206004820152601460248201527314185d5cd8589b194e881b9bdd081c185d5cd95960621b604482015290519081900360640190fd5b60015460408051635c975abb60e01b815290516001600160a01b03909216918291635c975abb916004808301926020929190829003018186803b15801561078157600080fd5b505afa158015610795573d6000803e3d6000fd5b505050506040513d60208110156107ab57600080fd5b505161085357806001600160a01b0316638456cb596040518163ffffffff1660e01b8152600401602060405180830381600087803b1580156107ec57600080fd5b505af1158015610800573d6000803e3d6000fd5b505050506040513d602081101561081657600080fd5b50516108535760405162461bcd60e51b815260040180806020018281038252602f815260200180610d03602f913960400191505060405180910390fd5b806001600160a01b0316637e724ff3846040518263ffffffff1660e01b815260040180826001600160a01b03166001600160a01b03168152602001915050602060405180830381600087803b1580156108ab57600080fd5b505af11580156108bf573d6000803e3d6000fd5b505050506040513d60208110156108d557600080fd5b50516109125760405162461bcd60e51b8152600401808060200182810382526029815260200180610c526029913960400191505060405180910390fd5b6000839050806001600160a01b0316638f32d59b6040518163ffffffff1660e01b815260040160206040518083038186803b15801561095057600080fd5b505afa158015610964573d6000803e3d6000fd5b505050506040513d602081101561097a57600080fd5b50516109b75760405162461bcd60e51b815260040180806020018281038252604b815260200180610c07604b913960600191505060405180910390fd5b5050600180546001600160a01b0319166001600160a01b03939093169290921790915590565b6109e5610679565b610a24576040805162461bcd60e51b81526020600482018190526024820152600080516020610d5f833981519152604482015290519081900360640190fd5b610a2d81610b66565b50565b600054600160a01b900460ff16610a85576040805162461bcd60e51b815260206004820152601460248201527314185d5cd8589b194e881b9bdd081c185d5cd95960621b604482015290519081900360640190fd5b6000805460ff60a01b191690557f5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa610abb610b62565b604080516001600160a01b039092168252519081900360200190a1565b600054600160a01b900460ff1615610b2a576040805162461bcd60e51b815260206004820152601060248201526f14185d5cd8589b194e881c185d5cd95960821b604482015290519081900360640190fd5b6000805460ff60a01b1916600160a01b1790557f62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258610abb5b3390565b6001600160a01b038116610bab5760405162461bcd60e51b8152600401808060200182810382526026815260200180610c7b6026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b039290921691909117905556fe45746843726f7373436861696e4d616e6167657250726f7879206973206e6f74206f776e6572206f66206e65772045746843726f7373436861696e4d616e6167657220636f6e747261637445746843726f7373436861696e4d616e616765722075706772616465546f4e6577206661696c6564214f776e61626c653a206e6577206f776e657220697320746865207a65726f2061646472657373756e70617573652045746843726f7373436861696e4d616e6167657250726f787920636f6e7472616374206661696c65642170617573652045746843726f7373436861696e4d616e6167657250726f787920636f6e7472616374206661696c6564215061757365206f6c642045746843726f7373436861696e4d616e6167657220636f6e7472616374206661696c656421756e70617573652045746843726f7373436861696e4d616e6167657220636f6e7472616374206661696c6564214f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657270617573652045746843726f7373436861696e4d616e6167657220636f6e7472616374206661696c656421a265627a7a72315820841f9fbdfca5d7407336d6586287f2c843d91abf7fa511071ea8f88986112bb664736f6c63430005110032"
 
 // DeployEthCrossChainManagerProxy deploys a new Ethereum contract, binding an instance of EthCrossChainManagerProxy to it.
 func DeployEthCrossChainManagerProxy(auth *bind.TransactOpts, backend bind.ContractBackend, _ethCrossChainManagerAddr common.Address) (common.Address, *types.Transaction, *EthCrossChainManagerProxy, error) {
@@ -315,7 +314,7 @@ func bindEthCrossChainManagerProxy(address common.Address, caller bind.ContractC
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _EthCrossChainManagerProxy.Contract.EthCrossChainManagerProxyCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -334,7 +333,7 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyRaw) Transact(opts *b
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _EthCrossChainManagerProxy.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -353,12 +352,17 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyTransactorRaw) Transa
 //
 // Solidity: function getEthCrossChainManager() view returns(address)
 func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCaller) GetEthCrossChainManager(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _EthCrossChainManagerProxy.contract.Call(opts, out, "getEthCrossChainManager")
-	return *ret0, err
+	var out []interface{}
+	err := _EthCrossChainManagerProxy.contract.Call(opts, &out, "getEthCrossChainManager")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetEthCrossChainManager is a free data retrieval call binding the contract method 0x87939a7f.
@@ -379,12 +383,17 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCallerSession) GetEth
 //
 // Solidity: function isOwner() view returns(bool)
 func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _EthCrossChainManagerProxy.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _EthCrossChainManagerProxy.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -405,12 +414,17 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCallerSession) IsOwne
 //
 // Solidity: function owner() view returns(address)
 func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _EthCrossChainManagerProxy.contract.Call(opts, out, "owner")
-	return *ret0, err
+	var out []interface{}
+	err := _EthCrossChainManagerProxy.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -431,12 +445,17 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCallerSession) Owner(
 //
 // Solidity: function paused() view returns(bool)
 func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCaller) Paused(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _EthCrossChainManagerProxy.contract.Call(opts, out, "paused")
-	return *ret0, err
+	var out []interface{}
+	err := _EthCrossChainManagerProxy.contract.Call(opts, &out, "paused")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // Paused is a free data retrieval call binding the contract method 0x5c975abb.
@@ -451,27 +470,6 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxySession) Paused() (bo
 // Solidity: function paused() view returns(bool)
 func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyCallerSession) Paused() (bool, error) {
 	return _EthCrossChainManagerProxy.Contract.Paused(&_EthCrossChainManagerProxy.CallOpts)
-}
-
-// ChangeManagerChainID is a paid mutator transaction binding the contract method 0xa2681d28.
-//
-// Solidity: function changeManagerChainID(uint64 _newChainId) returns()
-func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyTransactor) ChangeManagerChainID(opts *bind.TransactOpts, _newChainId uint64) (*types.Transaction, error) {
-	return _EthCrossChainManagerProxy.contract.Transact(opts, "changeManagerChainID", _newChainId)
-}
-
-// ChangeManagerChainID is a paid mutator transaction binding the contract method 0xa2681d28.
-//
-// Solidity: function changeManagerChainID(uint64 _newChainId) returns()
-func (_EthCrossChainManagerProxy *EthCrossChainManagerProxySession) ChangeManagerChainID(_newChainId uint64) (*types.Transaction, error) {
-	return _EthCrossChainManagerProxy.Contract.ChangeManagerChainID(&_EthCrossChainManagerProxy.TransactOpts, _newChainId)
-}
-
-// ChangeManagerChainID is a paid mutator transaction binding the contract method 0xa2681d28.
-//
-// Solidity: function changeManagerChainID(uint64 _newChainId) returns()
-func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyTransactorSession) ChangeManagerChainID(_newChainId uint64) (*types.Transaction, error) {
-	return _EthCrossChainManagerProxy.Contract.ChangeManagerChainID(&_EthCrossChainManagerProxy.TransactOpts, _newChainId)
 }
 
 // Pause is a paid mutator transaction binding the contract method 0x8456cb59.
@@ -770,6 +768,7 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyFilterer) ParseOwners
 	if err := _EthCrossChainManagerProxy.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -903,6 +902,7 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyFilterer) ParsePaused
 	if err := _EthCrossChainManagerProxy.contract.UnpackLog(event, "Paused", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1036,6 +1036,7 @@ func (_EthCrossChainManagerProxy *EthCrossChainManagerProxyFilterer) ParseUnpaus
 	if err := _EthCrossChainManagerProxy.contract.UnpackLog(event, "Unpaused", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1155,7 +1156,7 @@ func bindIEthCrossChainManagerProxy(address common.Address, caller bind.Contract
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _IEthCrossChainManagerProxy.Contract.IEthCrossChainManagerProxyCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -1174,7 +1175,7 @@ func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyRaw) Transact(opts 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _IEthCrossChainManagerProxy.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -1193,12 +1194,17 @@ func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyTransactorRaw) Tran
 //
 // Solidity: function getEthCrossChainManager() view returns(address)
 func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyCaller) GetEthCrossChainManager(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _IEthCrossChainManagerProxy.contract.Call(opts, out, "getEthCrossChainManager")
-	return *ret0, err
+	var out []interface{}
+	err := _IEthCrossChainManagerProxy.contract.Call(opts, &out, "getEthCrossChainManager")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // GetEthCrossChainManager is a free data retrieval call binding the contract method 0x87939a7f.
@@ -1216,14 +1222,13 @@ func (_IEthCrossChainManagerProxy *IEthCrossChainManagerProxyCallerSession) GetE
 }
 
 // IUpgradableECCMABI is the input ABI used to generate the binding from.
-const IUpgradableECCMABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"pause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_newChainId\",\"type\":\"uint64\"}],\"name\":\"setChainId\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unpause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"upgradeToNew\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const IUpgradableECCMABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"pause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"unpause\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"upgradeToNew\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // IUpgradableECCMFuncSigs maps the 4-byte function signature to its string representation.
 var IUpgradableECCMFuncSigs = map[string]string{
 	"8f32d59b": "isOwner()",
 	"8456cb59": "pause()",
 	"5c975abb": "paused()",
-	"6f31031d": "setChainId(uint64)",
 	"3f4ba83a": "unpause()",
 	"7e724ff3": "upgradeToNew(address)",
 }
@@ -1336,7 +1341,7 @@ func bindIUpgradableECCM(address common.Address, caller bind.ContractCaller, tra
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IUpgradableECCM *IUpgradableECCMRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_IUpgradableECCM *IUpgradableECCMRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _IUpgradableECCM.Contract.IUpgradableECCMCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -1355,7 +1360,7 @@ func (_IUpgradableECCM *IUpgradableECCMRaw) Transact(opts *bind.TransactOpts, me
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IUpgradableECCM *IUpgradableECCMCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_IUpgradableECCM *IUpgradableECCMCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _IUpgradableECCM.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -1374,12 +1379,17 @@ func (_IUpgradableECCM *IUpgradableECCMTransactorRaw) Transact(opts *bind.Transa
 //
 // Solidity: function isOwner() view returns(bool)
 func (_IUpgradableECCM *IUpgradableECCMCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _IUpgradableECCM.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _IUpgradableECCM.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -1400,12 +1410,17 @@ func (_IUpgradableECCM *IUpgradableECCMCallerSession) IsOwner() (bool, error) {
 //
 // Solidity: function paused() view returns(bool)
 func (_IUpgradableECCM *IUpgradableECCMCaller) Paused(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _IUpgradableECCM.contract.Call(opts, out, "paused")
-	return *ret0, err
+	var out []interface{}
+	err := _IUpgradableECCM.contract.Call(opts, &out, "paused")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // Paused is a free data retrieval call binding the contract method 0x5c975abb.
@@ -1441,27 +1456,6 @@ func (_IUpgradableECCM *IUpgradableECCMSession) Pause() (*types.Transaction, err
 // Solidity: function pause() returns(bool)
 func (_IUpgradableECCM *IUpgradableECCMTransactorSession) Pause() (*types.Transaction, error) {
 	return _IUpgradableECCM.Contract.Pause(&_IUpgradableECCM.TransactOpts)
-}
-
-// SetChainId is a paid mutator transaction binding the contract method 0x6f31031d.
-//
-// Solidity: function setChainId(uint64 _newChainId) returns(bool)
-func (_IUpgradableECCM *IUpgradableECCMTransactor) SetChainId(opts *bind.TransactOpts, _newChainId uint64) (*types.Transaction, error) {
-	return _IUpgradableECCM.contract.Transact(opts, "setChainId", _newChainId)
-}
-
-// SetChainId is a paid mutator transaction binding the contract method 0x6f31031d.
-//
-// Solidity: function setChainId(uint64 _newChainId) returns(bool)
-func (_IUpgradableECCM *IUpgradableECCMSession) SetChainId(_newChainId uint64) (*types.Transaction, error) {
-	return _IUpgradableECCM.Contract.SetChainId(&_IUpgradableECCM.TransactOpts, _newChainId)
-}
-
-// SetChainId is a paid mutator transaction binding the contract method 0x6f31031d.
-//
-// Solidity: function setChainId(uint64 _newChainId) returns(bool)
-func (_IUpgradableECCM *IUpgradableECCMTransactorSession) SetChainId(_newChainId uint64) (*types.Transaction, error) {
-	return _IUpgradableECCM.Contract.SetChainId(&_IUpgradableECCM.TransactOpts, _newChainId)
 }
 
 // Unpause is a paid mutator transaction binding the contract method 0x3f4ba83a.
@@ -1625,7 +1619,7 @@ func bindOwnable(address common.Address, caller bind.ContractCaller, transactor 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Ownable *OwnableRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Ownable *OwnableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Ownable.Contract.OwnableCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -1644,7 +1638,7 @@ func (_Ownable *OwnableRaw) Transact(opts *bind.TransactOpts, method string, par
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Ownable *OwnableCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Ownable *OwnableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Ownable.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -1663,12 +1657,17 @@ func (_Ownable *OwnableTransactorRaw) Transact(opts *bind.TransactOpts, method s
 //
 // Solidity: function isOwner() view returns(bool)
 func (_Ownable *OwnableCaller) IsOwner(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _Ownable.contract.Call(opts, out, "isOwner")
-	return *ret0, err
+	var out []interface{}
+	err := _Ownable.contract.Call(opts, &out, "isOwner")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // IsOwner is a free data retrieval call binding the contract method 0x8f32d59b.
@@ -1689,12 +1688,17 @@ func (_Ownable *OwnableCallerSession) IsOwner() (bool, error) {
 //
 // Solidity: function owner() view returns(address)
 func (_Ownable *OwnableCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _Ownable.contract.Call(opts, out, "owner")
-	return *ret0, err
+	var out []interface{}
+	err := _Ownable.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -1902,6 +1906,7 @@ func (_Ownable *OwnableFilterer) ParseOwnershipTransferred(log types.Log) (*Owna
 	if err := _Ownable.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2021,7 +2026,7 @@ func bindPausable(address common.Address, caller bind.ContractCaller, transactor
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Pausable *PausableRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Pausable *PausableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Pausable.Contract.PausableCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -2040,7 +2045,7 @@ func (_Pausable *PausableRaw) Transact(opts *bind.TransactOpts, method string, p
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Pausable *PausableCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Pausable *PausableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Pausable.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -2059,12 +2064,17 @@ func (_Pausable *PausableTransactorRaw) Transact(opts *bind.TransactOpts, method
 //
 // Solidity: function paused() view returns(bool)
 func (_Pausable *PausableCaller) Paused(opts *bind.CallOpts) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _Pausable.contract.Call(opts, out, "paused")
-	return *ret0, err
+	var out []interface{}
+	err := _Pausable.contract.Call(opts, &out, "paused")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // Paused is a free data retrieval call binding the contract method 0x5c975abb.
@@ -2211,6 +2221,7 @@ func (_Pausable *PausableFilterer) ParsePaused(log types.Log) (*PausablePaused, 
 	if err := _Pausable.contract.UnpackLog(event, "Paused", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2344,5 +2355,6 @@ func (_Pausable *PausableFilterer) ParseUnpaused(log types.Log) (*PausableUnpaus
 	if err := _Pausable.contract.UnpackLog(event, "Unpaused", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
