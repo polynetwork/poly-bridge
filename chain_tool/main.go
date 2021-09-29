@@ -217,18 +217,18 @@ func handleCmdDeployECCDContract(ctx *cli.Context) error {
 	return updateConfig()
 }
 
-func handleCmdDeployECCMContract(ctx *cli.Context) error {
-	log.Info("start to deploy eccm contract...")
-
-	eccd := common.HexToAddress(cc.ECCD)
-	addr, err := sdk.DeployECCMContract(adm, eccd, cc.SideChainID)
-	if err != nil {
-		return fmt.Errorf("deploy eccm for chain %d failed, err: %v", cc.SideChainID, err)
-	}
-	cc.ECCM = addr.Hex()
-	log.Info("deploy eccm for chain %d success %s", cc.SideChainID, addr.Hex())
-	return updateConfig()
-}
+//func handleCmdDeployECCMContract(ctx *cli.Context) error {
+//	log.Info("start to deploy eccm contract...")
+//
+//	eccd := common.HexToAddress(cc.ECCD)
+//	addr, err := sdk.DeployECCMContract(adm, eccd, cc.SideChainID)
+//	if err != nil {
+//		return fmt.Errorf("deploy eccm for chain %d failed, err: %v", cc.SideChainID, err)
+//	}
+//	cc.ECCM = addr.Hex()
+//	log.Info("deploy eccm for chain %d success %s", cc.SideChainID, addr.Hex())
+//	return updateConfig()
+//}
 
 func handleCmdDeployCCMPContract(ctx *cli.Context) error {
 	log.Info("start to deploy ccmp contract...")
@@ -286,18 +286,18 @@ func handleCmdSetNFTLockProxy(ctx *cli.Context) error {
 	return nil
 }
 
-func handleCmdDeployFeeContract(ctx *cli.Context) error {
-	log.Info("start to deploy erc20 token......")
-
-	addr, err := sdk.DeployERC20(adm)
-	if err != nil {
-		return fmt.Errorf("deploy erc20 token failed, err: %v", err)
-	}
-
-	log.Info("deploy erc20 %s success", addr.Hex())
-	cc.FeeToken = addr.Hex()
-	return updateConfig()
-}
+//func handleCmdDeployFeeContract(ctx *cli.Context) error {
+//	log.Info("start to deploy erc20 token......")
+//
+//	addr, err := sdk.DeployERC20(adm)
+//	if err != nil {
+//		return fmt.Errorf("deploy erc20 token failed, err: %v", err)
+//	}
+//
+//	log.Info("deploy erc20 %s success", addr.Hex())
+//	cc.FeeToken = addr.Hex()
+//	return updateConfig()
+//}
 
 func handleCmdDeployLockProxyContract(ctx *cli.Context) error {
 	log.Info("start to deploy nft lock proxy contract...")

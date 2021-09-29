@@ -316,7 +316,7 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 	if client == nil {
 		return nil, fmt.Errorf("getWrapperEventByBlockNumber1 GetClient error: nil")
 	}
-	wrapperContract, err := wrapper_abi.NewIPolyWrapper(wrapperAddress, client)
+	wrapperContract, err := wrapper_abi.NewPolyWrapper(wrapperAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
