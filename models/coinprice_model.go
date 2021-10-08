@@ -78,7 +78,7 @@ type CheckFeeRequest struct {
 	ChainId                     uint64
 	TxId                        string
 	PolyHash                    string
-	Paid                        float32
+	Paid                        float64
 	Min                         float64
 	Status                      CheckFeeStatus
 	SrcTransaction              *SrcTransaction              `json:"-"`

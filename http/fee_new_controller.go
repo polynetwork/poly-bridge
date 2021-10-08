@@ -71,7 +71,7 @@ func (c *FeeController) NewCheckFee() {
 			} else {
 				v.Status = NOT_PAID
 			}
-			v.Paid, _ = feePay.Float32()
+			v.Paid, _ = feePay.Float64()
 			v.Min, _ = feeMin.Float64()
 		}
 	}
