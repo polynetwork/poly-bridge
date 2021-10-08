@@ -72,6 +72,19 @@ type ChainFee struct {
 	Time           int64       `gorm:"type:bigint(20);not null"`
 }
 
+type CheckFeeStatus int
+
+type CheckFeeRequest struct {
+	ChainId                     uint64
+	TxId                        string
+	PolyHash                    string
+	Paid                        float32
+	Min                         float64
+	Status                      CheckFeeStatus
+	SrcTransaction              *SrcTransaction              `json:"-"`
+	WrapperTransactionWithToken *WrapperTransactionWithToken `json:"-"`
+}
+
 type Token struct {
 	Id              int64       `gorm:"primaryKey;autoIncrement"`
 	Hash            string      `gorm:"uniqueIndex:idx_token;size:66;not null"`
