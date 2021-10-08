@@ -1,3 +1,4 @@
+//go:build mainnet
 // +build mainnet
 
 /*
@@ -33,6 +34,7 @@ const (
 	OK_CROSSCHAIN_ID       = uint64(12)
 	NEO3_CROSSCHAIN_ID     = uint64(14)
 	MATIC_CROSSCHAIN_ID    = uint64(17)
+	ARBITRUM_CROSSCHAIN_ID = uint64(205)
 
 	ENV = "mainnet"
 )

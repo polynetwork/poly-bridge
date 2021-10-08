@@ -23,6 +23,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/polynetwork/bridge-common/metrics"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
@@ -34,7 +35,6 @@ import (
 	"poly-bridge/crosschainlisten/polylisten"
 	"poly-bridge/crosschainlisten/switcheolisten"
 	"poly-bridge/models"
-	"github.com/polynetwork/bridge-common/metrics"
 
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -77,31 +77,23 @@ type ChainHandle interface {
 }
 
 func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
-	if chainListenConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.POLY_CROSSCHAIN_ID {
+	switch chainListenConfig.ChainId {
+	case basedef.POLY_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.NEO_CROSSCHAIN_ID {
+	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
+		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID:
+		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
+	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.BSC_CROSSCHAIN_ID {
-		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.ONT_CROSSCHAIN_ID {
+	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologylisten.NewOntologyChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.OK_CROSSCHAIN_ID {
-		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.O3_CROSSCHAIN_ID {
+	case basedef.O3_CROSSCHAIN_ID:
 		return o3listen.NewO3ChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
+	case basedef.SWITCHEO_CROSSCHAIN_ID:
 		return switcheolisten.NewSwitcheoChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3listen.NewNeo3ChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.MATIC_CROSSCHAIN_ID {
-		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else if chainListenConfig.ChainId == basedef.PLT_CROSSCHAIN_ID {
-		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
-	} else {
+	default:
 		return nil
 	}
 }
