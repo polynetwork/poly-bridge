@@ -433,6 +433,18 @@
       "GasLimit": 120000,
       "ProxyFee": 120,
       "MinFee": 20
+    },
+    {
+      "ChainId": 205,
+      "ChainName": "Arbitrum",
+      "Nodes": [
+        {
+          "Url": "https://rinkeby.arbitrum.io/rpc"
+        }
+      ],
+      "GasLimit": 120000,
+      "ProxyFee": 120,
+      "MinFee": 20
     }
   ]
 }
