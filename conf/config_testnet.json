@@ -278,6 +278,24 @@
       "NFTQueryContract": "34B5B0cC2b57d96d3930Ddc66084029170fE6BFD",
       "CCMContract": "691835c5a5F7452ad2820235D48817E27239F0C2",
       "ProxyContract": "0000000000000000000000000000000000000103"
+    },
+    {
+      "ChainName": "Arbitrum",
+      "ChainId": 205,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "https://rinkeby.arbitrum.io/rpc"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "71c2003f90bA0D2ce8a79DE9a70E7dD41BBfB983"
+      ],
+      "CCMContract": "3A77dB10eAa7436e608a99643Ab2bEB2E901C72C",
+      "ProxyContract": "97f72bA888A26A0F98C67cf15d781dDBFE64B990"
     }
   ],
   "StatsConfig": {
