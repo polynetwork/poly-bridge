@@ -181,7 +181,7 @@ func SyncPolyGenesisHeader2Eth(
 
 	// `epoch` related with the poly validators changing,
 	// we can set it as 0 if poly validators never changed on develop environment.
-	var RCEpoch uint64 = 0
+	var RCEpoch uint32 = 0
 	gB, err := polySDK.GetBlockByHeight(RCEpoch)
 	if err != nil {
 		return err
