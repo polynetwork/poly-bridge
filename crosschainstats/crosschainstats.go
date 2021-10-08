@@ -21,6 +21,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/polynetwork/bridge-common/metrics"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -28,8 +30,8 @@ import (
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/bridgedao"
-	"poly-bridge/http/tools"
 	"poly-bridge/models"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -95,6 +97,9 @@ func (this *Stats) Start() {
 	go this.run(this.cfg.ChainAddressCheckInterval, this.computeChainStatisticAssets)
 	go this.run(this.cfg.AssetStatisticInterval, this.computeAssetStatistics)
 	go this.run(this.cfg.AssetAdressInterval, this.computeAssetStatisticAdress)
+	if this.cfg.CensusTimeLinesInterval != 0 {
+		go this.run(this.cfg.CensusTimeLinesInterval, this.censusTimeLines)
+	}
 	if basedef.ENV == basedef.MAINNET {
 		go this.run(600, this.startCheckAssetAlarm)
 	}
@@ -154,8 +159,8 @@ func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) 
 	}
 	v := new(big.Float).Quo(new(big.Float).SetInt(&token.TotalAmount.Int), new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 	f, _ := v.Float32()
-	tools.Record(f, "total_amount.%s", token.Name)
-	tools.Record(token.TotalCount, "total_count.%s", token.Name)
+	metrics.Record(f, "total_amount.%s", token.Name)
+	metrics.Record(token.TotalCount, "total_count.%s", token.Name)
 	err = this.dao.UpdateTokenBasicStatsWithCheckPoint(token, checkPoint)
 	return
 }
@@ -174,7 +179,7 @@ func (this *Stats) computeTokensStats() (err error) {
 		}
 		v := new(big.Float).Quo(new(big.Float).SetInt(amount), new(big.Float).SetInt64(basedef.Int64FromFigure(int(t.Precision))))
 		f, _ := v.Float32()
-		tools.Record(f, "balance.%s.%v", t.TokenBasicName, t.ChainId)
+		metrics.Record(f, "balance.%s.%v", t.TokenBasicName, t.ChainId)
 		err = this.dao.UpdateTokenAvailableAmount(t.Hash, t.ChainId, amount)
 		if err != nil {
 			logs.Error("Failed to update token available amount for token %s %v %s", t.Hash, t.ChainId, err)
@@ -254,7 +259,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		}
 		price_new := decimal.New(token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 		precision_new := decimal.New(int64(1), int32(token.Precision))
-		logs.Info("qwertprecision_new in", precision_new)
 		if token.TokenBasic.ChainId == statistic.ChainId {
 			balance, err := getAndRetryBalance(statistic.ChainId, statistic.Hash)
 			if err != nil {
@@ -269,7 +273,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			if err != nil {
 				logs.Error("Failed to CalculateInTokenStatistics %w", err)
 			}
-			if in != nil && in.Token != nil && in.Token.TokenBasic != nil {
+			if in != nil {
 				amount_new := decimal.NewFromBigInt(&in.InAmount.Int, 0)
 				statistic.InAmount = addDecimalBigInt(statistic.InAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 				statistic.InCounter = addDecimalInt64(statistic.InCounter, in.InCounter)
@@ -280,12 +284,12 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		statistic.InAmountUsd = models.NewBigInt(amount_usd.Mul(decimal.NewFromInt32(100)).BigInt())
 		statistic.InAmountBtc = models.NewBigInt(amount_btc.Mul(decimal.NewFromInt32(100)).BigInt())
 
-		out, err := this.dao.CalculateOutTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
+		out, err := this.dao.CalculateOutTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastOutCheckId, nowOutId)
 		if err != nil {
 			logs.Error("Failed to CalculateOutTokenStatistics %w", err)
 		}
-		if out != nil && out.Token != nil && out.Token.TokenBasic != nil {
-			if statistic.ChainId != out.Token.TokenBasic.ChainId {
+		if out != nil {
+			if statistic.ChainId != token.TokenBasic.ChainId {
 				amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
 				statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 			}
@@ -564,6 +568,11 @@ type AssetDetail struct {
 }
 
 func (this *Stats) startCheckAssetAlarm() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error("startCheckAssetAlarm defer recover: %s", string(debug.Stack()))
+		}
+	}()
 	logs.Info("StartCheckAsset,start startCheckAsset")
 	if err != nil {
 		return err
@@ -730,11 +739,11 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		chainAsset := new(DstChainAsset)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 		response, err := http.Get(ipCfg.WBTCIP)
-		defer response.Body.Close()
 		if err != nil || response.StatusCode != 200 {
 			logs.Error("Get o3 WBTC err:", err)
 			return
 		}
+		defer response.Body.Close()
 		body, _ := ioutil.ReadAll(response.Body)
 		o3WBTC := struct {
 			Balance *big.Int
@@ -750,11 +759,11 @@ func getO3Data(assetDetail *AssetDetail, ipCfg *conf.IPPortConfig) {
 		chainAsset := new(DstChainAsset)
 		chainAsset.ChainId = basedef.O3_CROSSCHAIN_ID
 		response, err := http.Get(ipCfg.USDTIP)
-		defer response.Body.Close()
 		if err != nil || response.StatusCode != 200 {
 			logs.Error("Get o3 USDT err:", err)
 			return
 		}
+		defer response.Body.Close()
 		body, _ := ioutil.ReadAll(response.Body)
 		o3USDT := struct {
 			Balance *big.Int

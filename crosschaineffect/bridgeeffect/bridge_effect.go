@@ -146,6 +146,7 @@ func (eff *BridgeEffect) updateHash() error {
 		updatePolyTransactions := make([]*models.PolyTransaction, 0)
 		for _, polySrcRelation := range polySrcRelations {
 			if polySrcRelation.SrcTransaction != nil {
+				polySrcRelation.PolyTransaction.Key = polySrcRelation.PolyTransaction.SrcHash
 				polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
 				updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
 			}

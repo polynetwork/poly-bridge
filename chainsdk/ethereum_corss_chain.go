@@ -27,7 +27,6 @@ import (
 	"poly-bridge/go_abi/eccm_abi"
 	"poly-bridge/go_abi/eccmp_abi"
 	erc20lp "poly-bridge/go_abi/lock_proxy_abi"
-	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
 	nftlp "poly-bridge/go_abi/nft_lock_proxy_abi"
 	nftmapping "poly-bridge/go_abi/nft_mapping_abi"
 	nftquery "poly-bridge/go_abi/nft_query_abi"
@@ -65,25 +64,25 @@ func (s *EthereumSdk) DeployECCDContract(key *ecdsa.PrivateKey) (common.Address,
 	return contractAddr, nil
 }
 
-func (s *EthereumSdk) DeployECCMContract(
-	key *ecdsa.PrivateKey,
-	eccd common.Address,
-	chainID uint64,
-) (common.Address, error) {
-
-	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
-	if err != nil {
-		return EmptyAddress, err
-	}
-	contractAddress, tx, _, err := eccm_abi.DeployEthCrossChainManager(auth, s.backend(), eccd, chainID)
-	if err != nil {
-		return EmptyAddress, err
-	}
-	if err := s.waitTxConfirm(tx.Hash()); err != nil {
-		return EmptyAddress, err
-	}
-	return contractAddress, nil
-}
+//func (s *EthereumSdk) DeployECCMContract(
+//	key *ecdsa.PrivateKey,
+//	eccd common.Address,
+//	chainID uint64,
+//) (common.Address, error) {
+//
+//	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
+//	if err != nil {
+//		return EmptyAddress, err
+//	}
+//	contractAddress, tx, _, err := eccm_abi.DeployEthCrossChainManager(auth, s.backend(), eccd, chainID)
+//	if err != nil {
+//		return EmptyAddress, err
+//	}
+//	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+//		return EmptyAddress, err
+//	}
+//	return contractAddress, nil
+//}
 
 func (s *EthereumSdk) DeployECCMPContract(key *ecdsa.PrivateKey, eccmAddress common.Address) (common.Address, error) {
 	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
@@ -580,23 +579,23 @@ func (s *EthereumSdk) SetWrapLockProxy(
 	return tx.Hash(), nil
 }
 
-func (s *EthereumSdk) DeployERC20(key *ecdsa.PrivateKey) (common.Address, error) {
-	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
-	if err != nil {
-		return EmptyAddress, err
-	}
-
-	addr, tx, _, err := erc20.DeployERC20Mintable(auth, s.backend())
-	if err != nil {
-		return EmptyAddress, err
-	}
-
-	if err := s.waitTxConfirm(tx.Hash()); err != nil {
-		return EmptyAddress, err
-	}
-
-	return addr, nil
-}
+//func (s *EthereumSdk) DeployERC20(key *ecdsa.PrivateKey) (common.Address, error) {
+//	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
+//	if err != nil {
+//		return EmptyAddress, err
+//	}
+//
+//	addr, tx, _, err := erc20.DeployERC20Mintable(auth, s.backend())
+//	if err != nil {
+//		return EmptyAddress, err
+//	}
+//
+//	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+//		return EmptyAddress, err
+//	}
+//
+//	return addr, nil
+//}
 
 func (s *EthereumSdk) DeployNFTQueryContract(key *ecdsa.PrivateKey, queryLimit uint64) (common.Address, error) {
 	auth, err := s.makeAuth(key, DefaultDeployGasLimit)

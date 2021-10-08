@@ -20,7 +20,6 @@ package crosschainlisten
 import (
 	"fmt"
 	"math"
-	"poly-bridge/http/tools"
 	"runtime/debug"
 	"time"
 
@@ -35,6 +34,7 @@ import (
 	"poly-bridge/crosschainlisten/polylisten"
 	"poly-bridge/crosschainlisten/switcheolisten"
 	"poly-bridge/models"
+	"github.com/polynetwork/bridge-common/metrics"
 
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -51,7 +51,7 @@ func StartCrossChainListen(server string, backup bool, listenCfg []*conf.ChainLi
 		if chainHandle == nil {
 			panic(fmt.Sprintf("chain %d handler is invalid", cfg.ChainId))
 		}
-		chainListen := NewCrossChainListen(chainHandle, dao)
+		chainListen := NewCrossChainListen(chainHandle, dao, backup)
 		chainListen.Start()
 		chainListens[i] = chainListen
 	}
@@ -111,13 +111,15 @@ type CrossChainListen struct {
 	db     crosschaindao.CrossChainDao
 	exit   chan bool
 	height uint64
+	backup bool
 }
 
-func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao) *CrossChainListen {
+func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao, backup bool) *CrossChainListen {
 	crossChainListen := &CrossChainListen{
 		handle: handle,
 		db:     db,
 		exit:   make(chan bool, 0),
+		backup: backup,
 	}
 	return crossChainListen
 }
@@ -127,6 +129,9 @@ func (ccl *CrossChainListen) SetHeight(height uint64) {
 }
 
 func (ccl *CrossChainListen) Start() {
+	if ccl.backup && ccl.handle.GetChainId() == basedef.POLY_CROSSCHAIN_ID {
+		return
+	}
 	logs.Info("start cross chain listen: %s", ccl.handle.GetChainName())
 	go ccl.ListenChain()
 }
@@ -148,22 +153,13 @@ func (ccl *CrossChainListen) ListenChain() {
 }
 
 func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, err error) {
-	chain := ccl.handle.GetChainId()
-	var locks, unlocks int
-	for c := 3; c > 0; c-- {
-		w, s, p, d, locks, unlocks, err = ccl.handle.HandleNewBlock(height)
-		if err != nil {
-			return
-		}
-		if locks == len(s) && unlocks == len(d) {
-			return
-		}
-		if c > 1 {
-			logs.Warn("Possible missing events for chain %v height %v", chain, height)
-			time.Sleep(time.Second * 5)
-		}
+	// chain := ccl.handle.GetChainId()
+	// var locks, unlocks int
+	w, s, p, d, _, _, err = ccl.handle.HandleNewBlock(height)
+	if err != nil {
+		return
 	}
-	logs.Error("Possible inconsistent chain %d height %d wrapper %d/%d src %d/%d dst %d/%d", chain, height, len(w), locks, len(s), locks, len(d), unlocks)
+	// logs.Error("Possible inconsistent chain %d height %d wrapper %d/%d src %d/%d dst %d/%d", chain, height, len(w), locks, len(s), locks, len(d), unlocks)
 	return
 }
 func (ccl *CrossChainListen) listenChain() (exit bool) {
@@ -188,29 +184,44 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 	if ccl.height != 0 {
 		chain.Height = ccl.height
 	}
+	if ccl.backup {
+		chain.Height -= ccl.handle.GetDefer()
+	}
 	logs.Info("cross chain listen, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
 	ticker := time.NewTicker(time.Second * time.Duration(ccl.handle.GetChainListenSlot()))
 	for {
 		select {
 		case <-ticker.C:
-			var height, err = ccl.handle.GetLatestHeight()
-			if err != nil || height == 0 || height == math.MaxUint64 {
-				logs.Error("listenChain - cannot get chain %s height, err: %s", ccl.handle.GetChainName(), err)
-				continue
+			if ccl.backup {
+				dbchain, err := ccl.db.GetChain(chain.ChainId)
+				if err != nil {
+					continue
+				}
+				height = dbchain.Height
+				if chain.Height >= height-ccl.handle.GetDefer() {
+					continue
+				}
+				logs.Info("backup ListenChain - chain %s db height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
+			} else {
+				height, err = ccl.handle.GetLatestHeight()
+				if err != nil || height == 0 || height == math.MaxUint64 {
+					logs.Error("listenChain - cannot get chain %s height, err: %s", ccl.handle.GetChainName(), err)
+					continue
+				}
+				extendHeight, err := ccl.handle.GetExtendLatestHeight()
+				if err != nil || extendHeight == 0 {
+					logs.Error("ListenChain - cannot get chain %s extend height, err: %s", ccl.handle.GetChainName(), err)
+				} else if extendHeight >= height+21 {
+					logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
+				}
+				metrics.Record(height, "%v.lastest_height", chain.ChainId)
+				metrics.Record(extendHeight, "%v.watch_height", chain.ChainId)
+				metrics.Record(chain.Height, "%v.height", chain.ChainId)
+				if chain.Height >= height-ccl.handle.GetDefer() {
+					continue
+				}
+				logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			}
-			extendHeight, err := ccl.handle.GetExtendLatestHeight()
-			if err != nil || extendHeight == 0 {
-				logs.Error("ListenChain - cannot get chain %s extend height, err: %s", ccl.handle.GetChainName(), err)
-			} else if extendHeight >= height+21 {
-				logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
-			}
-			tools.Record(height, "%v.lastest_height", chain.ChainId)
-			tools.Record(extendHeight, "%v.watch_height", chain.ChainId)
-			tools.Record(chain.Height, "%v.height", chain.ChainId)
-			if chain.Height >= height-ccl.handle.GetDefer() {
-				continue
-			}
-			logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			for chain.Height < height-ccl.handle.GetDefer() {
 				batchSize := ccl.handle.GetBatchSize()
 				if batchSize == 0 {

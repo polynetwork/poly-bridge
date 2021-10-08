@@ -21,6 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"poly-bridge/cacheRedis"
+	"strings"
 
 	"poly-bridge/basedef"
 	"poly-bridge/common"
@@ -95,6 +97,17 @@ func (c *FeeController) GetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
+				tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+				if err != nil {
+					logs.Error("qweasdredis GetTokenBalance err", err)
+				}
+			} else {
+				setErr := cacheRedis.Redis.SetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				if setErr != nil {
+					logs.Error("qweasdredis SetTokenBalance err", setErr)
+				}
+			}
+			if err != nil {
 				c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 					getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
 				c.ServeJSON()
@@ -163,8 +176,15 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	db.Model(&models.SrcTransaction{}).Where("(`key` in ? or `hash` in ?)", requestHashs, requestHashs).Find(&srcTransactions)
 	key2Txhash := make(map[string]string, 0)
+	isPolyProxy := make(map[string]bool, 0)
+
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:8]
+		if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; in {
+			isPolyProxy[srcTransaction.Key] = true
+			isPolyProxy[srcTransaction.Hash] = true
+			isPolyProxy[basedef.HexStringReverse(srcTransaction.Hash)] = true
+		}
 		if prefix == "00000000" {
 			chainId, ok := hash2ChainId[srcTransaction.Key]
 			if ok && chainId == srcTransaction.ChainId {
@@ -201,7 +221,13 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 		checkFee.ChainId = check.ChainId
 		checkFee.Amount = new(big.Float).SetInt64(0)
 		checkFee.MinProxyFee = new(big.Float).SetInt64(0)
-		_, ok := chain2Fees[check.ChainId]
+		_, ok := isPolyProxy[check.Hash]
+		if !ok {
+			checkFee.PayState = -2
+			checkFees = append(checkFees, checkFee)
+			continue
+		}
+		_, ok = chain2Fees[check.ChainId]
 		if !ok {
 			checkFee.PayState = -1
 			checkFees = append(checkFees, checkFee)

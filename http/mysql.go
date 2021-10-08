@@ -19,7 +19,10 @@ package http
 
 import (
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"strings"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -27,6 +30,7 @@ import (
 )
 
 var db *gorm.DB
+var polyProxy map[string]bool
 
 func Init() {
 	config := conf.GlobalConfig.DBConfig
@@ -41,4 +45,16 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
+
+	proxyMap := make(map[string]bool, 0)
+	proxyConfigs := conf.GlobalConfig.ChainListenConfig
+	for _, v := range proxyConfigs {
+		proxyMap[strings.ToUpper(v.ProxyContract)] = true
+		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
+	}
+	polyProxy = proxyMap
+	if len(polyProxy) == 0 {
+		panic("http init polyProxy err,polyProxy is nil")
+	}
+	logs.Info("http init polyProxy:", polyProxy)
 }

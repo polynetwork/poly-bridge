@@ -199,7 +199,12 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								fromAddress, _ := statesNew[1].ToParameter()
 								toAddress := contract
 								asset, _ := statesNew[0].ToParameter()
-								amount, _ := statesNew[5].ToParameter()
+								//TODO nft
+								amount, err := statesNew[5].ToParameter()
+								if err != nil {
+									logs.Error("%v is neo3 nft", tx.Hash[2:])
+									continue
+								}
 								toChainId, _ := statesNew[2].ToParameter()
 								dstUser, _ := statesNew[4].ToParameter()
 								dstAsset, _ := statesNew[3].ToParameter()
@@ -209,6 +214,10 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								fctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								fctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
 								fctransfer.Asset = basedef.HexStringReverse(hex.EncodeToString(asset.Value.([]byte)))
+								//TODO nft
+								if _, ok := amount.Value.(*big.Int); !ok {
+									continue
+								}
 								fctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
 								fctransfer.DstChainId = toChainId.Value.(*big.Int).Uint64()
 								fctransfer.DstUser = hex.EncodeToString(dstUser.Value.([]byte))
@@ -261,7 +270,11 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								tctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								tctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
 								tctransfer.Asset = basedef.HexStringReverse(hex.EncodeToString(asset.Value.([]byte)))
-								tctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
+								if x, ok := amount.Value.(*big.Int); !ok {
+									tctransfer.Amount = models.NewBigIntFromInt(0)
+								} else {
+									tctransfer.Amount = models.NewBigInt(x)
+								}
 								break
 							}
 						}

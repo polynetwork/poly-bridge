@@ -106,23 +106,23 @@ func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransact
 	} else {
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
 			for _, wrapperTransaction := range wrapperTransactions {
-				wrapperTransaction.Status = 0
-				res := dao.db.Updates(wrapperTransaction)
-				if res.Error != nil {
-					return res.Error
+				res := dao.db.Save(wrapperTransaction)
+				if res.RowsAffected > 0 {
+					logs.Info("backup wrapperTransaction hash:%v", wrapperTransaction.Hash)
 				}
 			}
 		}
 		if srcTransactions != nil && len(srcTransactions) > 0 {
-			res := dao.db.Debug().Save(srcTransactions)
-			if res.Error != nil {
-				return res.Error
-			}
-		}
-		if polyTransactions != nil && len(polyTransactions) > 0 {
-			res := dao.db.Save(polyTransactions)
-			if res.Error != nil {
-				return res.Error
+			for _, srcTransaction := range srcTransactions {
+				res := dao.db.Debug().Save(srcTransaction)
+				if res.RowsAffected > 0 {
+					logs.Info("backup srcTransaction hash:%v", srcTransaction.Hash)
+					err := dao.db.Table("poly_transactions").Where("(poly_transactions.src_hash = ? or poly_transactions.key = ?) and poly_transactions.time > ? and poly_transactions.src_chain_id = ?", srcTransaction.Key, srcTransaction.Key, 1622476800, srcTransaction.ChainId).
+						Update("src_hash", srcTransaction.Hash).Error
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 		if dstTransactions != nil && len(dstTransactions) > 0 {
@@ -365,7 +365,6 @@ func (dao *BridgeDao) UpdateTokenAvailableAmount(hash string, chainId uint64, am
 func (dao *BridgeDao) CalculateInTokenStatistics(chainId uint64, hash string, lastId, nowId int64) (*models.TokenStatistic, error) {
 	tokenStatistic := new(models.TokenStatistic)
 	res := dao.db.Raw("select count(*) in_counter,  CONVERT(sum(amount), DECIMAL(37, 0)) as in_amount, chain_id as chain_id, asset as hash  from dst_transfers where  chain_id = ? and asset = ? and id > ? and id <= ? group by chain_id,hash", chainId, hash, lastId, nowId).
-		Preload("Token").Preload("Token.TokenBasic").
 		First(tokenStatistic)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -376,7 +375,6 @@ func (dao *BridgeDao) CalculateInTokenStatistics(chainId uint64, hash string, la
 func (dao *BridgeDao) CalculateOutTokenStatistics(chainId uint64, hash string, lastId, nowId int64) (*models.TokenStatistic, error) {
 	tokenStatistic := new(models.TokenStatistic)
 	res := dao.db.Raw("select count(*) out_counter,  CONVERT(sum(amount), DECIMAL(37, 0)) as out_amount, chain_id as chain_id, asset as hash from src_transfers where chain_id = ? and asset = ? and id > ? and id<= ? group by chain_id,hash", chainId, hash, lastId, nowId).
-		Preload("Token").Preload("Token.TokenBasic").
 		First(tokenStatistic)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -518,4 +516,22 @@ func (dao *BridgeDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.
 		Preload("TokenBasic").
 		First(token).Error
 	return token, err
+}
+
+type ChainAvgTime struct {
+	ChainId uint64
+	AvgTime int64
+}
+
+func (dao *BridgeDao) GetAvgTimeSrc2Poly(timeLast, timeNow int64) ([]*ChainAvgTime, error) {
+	chainAvgTimes := make([]*ChainAvgTime, 0)
+	err := dao.db.Raw("SELECT s.chain_id as chain_id,floor(AVG(p.time-s.time)) as avg_time from poly_transactions p left join src_transactions s on s.hash=p.src_hash where s.hash is not null and p.time >= ? and p.time < ?  group by s.chain_id", timeLast, timeNow).
+		Find(&chainAvgTimes).Error
+	return chainAvgTimes, err
+}
+func (dao *BridgeDao) GetAvgTimePoly2Dst(timeLast, timeNow int64) ([]*ChainAvgTime, error) {
+	chainAvgTimes := make([]*ChainAvgTime, 0)
+	err := dao.db.Raw("SELECT d.chain_id as chain_id,floor(AVG(d.time-p.time)) as avg_time from dst_transactions d left join poly_transactions p on p.hash=d.poly_hash where p.hash is not null  and d.time >= ? and d.time < ?  group by d.chain_id", timeLast, timeNow).
+		Find(&chainAvgTimes).Error
+	return chainAvgTimes, err
 }
