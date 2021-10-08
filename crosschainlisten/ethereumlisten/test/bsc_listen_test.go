@@ -47,7 +47,7 @@ func TestBscListen(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(bscListenConfig)
-	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config.Backup)
 	chainListen.ListenChain()
 }
 
@@ -66,7 +66,7 @@ func TestBscListen2(t *testing.T) {
 		panic("config is not valid")
 	}
 	ethListen := ethereumlisten.NewEthereumChainListen(bscListenConfig)
-	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ethListen.HandleNewBlockBatch(6014032, 6501774)
+	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := ethListen.HandleNewBlock(6014032)
 	if err != nil {
 		panic(err)
 	}
