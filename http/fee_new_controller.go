@@ -25,9 +25,12 @@ func (c *FeeController) NewCheckFee() {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
+		return
 	}
 	for _, v := range mapCheckFeesReq {
 		v.Status = MISSING
+		v.Paid = 0
+		v.Min = 0
 	}
 	srcHashs := make([]string, 0)
 	for k, v := range mapCheckFeesReq {
@@ -39,7 +42,7 @@ func (c *FeeController) NewCheckFee() {
 		}
 		if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; in {
 			v.Status = SKIP
-			logs.Info("check fee poly_hash %s SKIP", k)
+			logs.Info("check fee poly_hash %s SKIP,is not poly proxy", k)
 			continue
 		}
 		v.SrcTransaction = srcTransaction
@@ -52,11 +55,12 @@ func (c *FeeController) NewCheckFee() {
 	for _, chainFee := range chainFees {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
-	for _, v := range mapCheckFeesReq {
+	for k, v := range mapCheckFeesReq {
 		if v.WrapperTransactionWithToken != nil {
 			chainFee, ok := chain2Fees[v.WrapperTransactionWithToken.DstChainId]
 			if !ok {
 				v.Status = NOT_PAID
+				logs.Info("check fee poly_hash %s NOT_PAID,chainFee hasn't DstChainId's fee", k)
 				continue
 			}
 			x := new(big.Int).Mul(&v.WrapperTransactionWithToken.FeeAmount.Int, big.NewInt(v.WrapperTransactionWithToken.FeeToken.TokenBasic.Price))
@@ -66,18 +70,19 @@ func (c *FeeController) NewCheckFee() {
 			feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+			v.Paid, _ = feePay.Float64()
+			v.Min, _ = feeMin.Float64()
 			if feePay.Cmp(feeMin) >= 0 {
 				v.Status = PAID
 			} else {
 				v.Status = NOT_PAID
+				logs.Info("check fee poly_hash %s NOT_PAID,feePay %v < feeMin %v", k, v.Paid, v.Min)
 			}
-			v.Paid, _ = feePay.Float64()
-			v.Min, _ = feeMin.Float64()
 		}
 	}
-
 	c.Data["json"] = mapCheckFeesReq
 	c.ServeJSON()
+	return
 }
 
 func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction, error) {
