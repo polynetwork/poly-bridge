@@ -262,6 +262,7 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 			checkFee.PayState = 1
 		} else {
 			checkFee.PayState = -1
+			logs.Info("check fee PayState = -1 ChainId:%v Hash:%v feePay:%v < feeMin:%v", check.ChainId, check.Hash, feePay, feeMin)
 		}
 		checkFee.Amount = feePay
 		checkFee.MinProxyFee = feeMin

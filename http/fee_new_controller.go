@@ -40,7 +40,7 @@ func (c *FeeController) NewCheckFee() {
 			logs.Info("check fee poly_hash %s MISSING,hasn't src_Transaction %s", k, err)
 			continue
 		}
-		if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; in {
+		if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; !in {
 			v.Status = SKIP
 			logs.Info("check fee poly_hash %s SKIP,is not poly proxy", k)
 			continue
