@@ -2,8 +2,8 @@ package crosschainstats
 
 import (
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/polynetwork/bridge-common/metrics"
 	"math/big"
-	"poly-bridge/http/tools"
 )
 
 func (this *Stats) censusAssetLines() (err error) {
@@ -15,8 +15,8 @@ func (this *Stats) censusAssetLines() (err error) {
 	}
 	for _, sourceTokenStatistic := range sourceTokenStatistics {
 		if sourceTokenStatistic.InAmount.Cmp(big.NewInt(0)) >= 0 {
-			tools.Record(new(big.Int).Div(&sourceTokenStatistic.InAmount.Int, big.NewInt(100)), "locked_asset_InAmount.%s", sourceTokenStatistic.TokenBasicName)
-			tools.Record(new(big.Int).Div(&sourceTokenStatistic.InAmountUsd.Int, big.NewInt(10000)), "locked_asset_InAmountUsd.%s", sourceTokenStatistic.TokenBasicName)
+			metrics.Record(new(big.Int).Div(&sourceTokenStatistic.InAmount.Int, big.NewInt(100)), "locked_asset_InAmount.%s", sourceTokenStatistic.TokenBasicName)
+			metrics.Record(new(big.Int).Div(&sourceTokenStatistic.InAmountUsd.Int, big.NewInt(10000)), "locked_asset_InAmountUsd.%s", sourceTokenStatistic.TokenBasicName)
 		}
 	}
 	return nil
