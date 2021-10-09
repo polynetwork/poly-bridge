@@ -100,6 +100,9 @@ func (this *Stats) Start() {
 	if this.cfg.CensusTimeLinesInterval != 0 {
 		go this.run(this.cfg.CensusTimeLinesInterval, this.censusTimeLines)
 	}
+	if this.cfg.CensusAssetLinesInterval != 0 {
+		go this.run(this.cfg.CensusAssetLinesInterval, this.censusAssetLines)
+	}
 	if basedef.ENV == basedef.MAINNET {
 		go this.run(600, this.startCheckAssetAlarm)
 	}

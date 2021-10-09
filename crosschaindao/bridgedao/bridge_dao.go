@@ -535,3 +535,16 @@ func (dao *BridgeDao) GetAvgTimePoly2Dst(timeLast, timeNow int64) ([]*ChainAvgTi
 		Find(&chainAvgTimes).Error
 	return chainAvgTimes, err
 }
+
+type TokenStatisticWithName struct {
+	TokenBasicName string
+	InAmount       *models.BigInt
+	InAmountUsd    *models.BigInt
+}
+
+func (dao *BridgeDao) GetSourceTokenStatistics() ([]*TokenStatisticWithName, error) {
+	sourceTokenStatistics := make([]*TokenStatisticWithName, 0)
+	err := dao.db.Raw("SELECT b.token_basic_name,a.in_amount,a.in_amount_usd from token_statistics left join tokens b on a.chain_id=b.chain_id and a.`hash`=b.`hash` left join token_basics c on b.token_basic_name=c.`name` where c.chain_id=a.chain_id").
+		Find(&sourceTokenStatistics).Error
+	return sourceTokenStatistics, err
+}

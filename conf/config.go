@@ -180,6 +180,7 @@ type StatsConfig struct {
 	AssetStatisticInterval    int64 // AssetStatistic aggregation interval in seconds
 	AssetAdressInterval       int64 // AssetAdress aggregation interval in seconds
 	CensusTimeLinesInterval   int64 // CensusTimeLines interval in seconds
+	CensusAssetLinesInterval  int64 // CensusAssetLinesInterval interval in seconds
 }
 
 type EventEffectConfig struct {
