@@ -20,7 +20,6 @@ package crosschainlisten
 import (
 	"fmt"
 	"math"
-	"poly-bridge/http/tools"
 	"runtime/debug"
 	"time"
 
@@ -35,6 +34,7 @@ import (
 	"poly-bridge/crosschainlisten/polylisten"
 	"poly-bridge/crosschainlisten/switcheolisten"
 	"poly-bridge/models"
+	"github.com/polynetwork/bridge-common/metrics"
 
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -153,13 +153,13 @@ func (ccl *CrossChainListen) ListenChain() {
 }
 
 func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, err error) {
-	chain := ccl.handle.GetChainId()
-	var locks, unlocks int
-	w, s, p, d, locks, unlocks, err = ccl.handle.HandleNewBlock(height)
+	// chain := ccl.handle.GetChainId()
+	// var locks, unlocks int
+	w, s, p, d, _, _, err = ccl.handle.HandleNewBlock(height)
 	if err != nil {
 		return
 	}
-	logs.Error("Possible inconsistent chain %d height %d wrapper %d/%d src %d/%d dst %d/%d", chain, height, len(w), locks, len(s), locks, len(d), unlocks)
+	// logs.Error("Possible inconsistent chain %d height %d wrapper %d/%d src %d/%d dst %d/%d", chain, height, len(w), locks, len(s), locks, len(d), unlocks)
 	return
 }
 func (ccl *CrossChainListen) listenChain() (exit bool) {
@@ -214,9 +214,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				} else if extendHeight >= height+21 {
 					logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 				}
-				tools.Record(height, "%v.lastest_height", chain.ChainId)
-				tools.Record(extendHeight, "%v.watch_height", chain.ChainId)
-				tools.Record(chain.Height, "%v.height", chain.ChainId)
+				metrics.Record(height, "%v.lastest_height", chain.ChainId)
+				metrics.Record(extendHeight, "%v.watch_height", chain.ChainId)
+				metrics.Record(chain.Height, "%v.height", chain.ChainId)
 				if chain.Height >= height-ccl.handle.GetDefer() {
 					continue
 				}

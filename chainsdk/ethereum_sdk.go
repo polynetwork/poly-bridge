@@ -21,16 +21,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/polynetwork/eth-contracts/go_abi/erc20_abi"
+	//"github.com/polynetwork/eth-contracts/go_abi/erc20_abi"
 	"math/big"
-	"poly-bridge/chainsdk/usdt_abi"
 )
 
 type EthereumSdk struct {
@@ -152,46 +150,46 @@ func (ec *EthereumSdk) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
 	return gasLimit, err
 }
 
-func (ec *EthereumSdk) Erc20Info(hash string) (string, string, int64, string, error) {
-	erc20Address := common.HexToAddress(hash)
-	erc20Contract, err := usdt_abi.NewTetherToken(erc20Address, ec.rawClient)
-	if err != nil {
-		return "", "", 0, "", err
-	}
-	name, err := erc20Contract.Name(&bind.CallOpts{})
-	if err != nil {
-		return "", "", 0, "", err
-	}
-	/*
-		totolSupply, err := erc20Contract.TotalSupply(&bind.CallOpts{})
-		if err != nil {
-			return "", "", 0, "", err
-		}
-	*/
-	decimal, err := erc20Contract.Decimals(&bind.CallOpts{})
-	if err != nil {
-		return "", "", 0, "", err
-	}
-	symbol, err := erc20Contract.Symbol(&bind.CallOpts{})
-	if err != nil {
-		return "", "", 0, "", err
-	}
-	return hash, name, decimal.Int64(), symbol, nil
-}
+//func (ec *EthereumSdk) Erc20Info(hash string) (string, string, int64, string, error) {
+//	erc20Address := common.HexToAddress(hash)
+//	erc20Contract, err := usdt_abi.NewTetherToken(erc20Address, ec.rawClient)
+//	if err != nil {
+//		return "", "", 0, "", err
+//	}
+//	name, err := erc20Contract.Name(&bind.CallOpts{})
+//	if err != nil {
+//		return "", "", 0, "", err
+//	}
+//	/*
+//		totolSupply, err := erc20Contract.TotalSupply(&bind.CallOpts{})
+//		if err != nil {
+//			return "", "", 0, "", err
+//		}
+//	*/
+//	decimal, err := erc20Contract.Decimals(&bind.CallOpts{})
+//	if err != nil {
+//		return "", "", 0, "", err
+//	}
+//	symbol, err := erc20Contract.Symbol(&bind.CallOpts{})
+//	if err != nil {
+//		return "", "", 0, "", err
+//	}
+//	return hash, name, decimal.Int64(), symbol, nil
+//}
 
-func (ec *EthereumSdk) Erc20Balance(erc20 string, addr string) (uint64, error) {
-	erc20Address := common.HexToAddress(erc20)
-	erc20Contract, err := erc20_abi.NewERC20(erc20Address, ec.rawClient)
-	if err != nil {
-		return 0, fmt.Errorf("erc20 address is not right")
-	}
-	userAddress := common.HexToAddress(addr)
-	balance, err := erc20Contract.BalanceOf(&bind.CallOpts{}, userAddress)
-	if err != nil {
-		return 0, err
-	}
-	return balance.Uint64(), nil
-}
+//func (ec *EthereumSdk) Erc20Balance(erc20 string, addr string) (uint64, error) {
+//	erc20Address := common.HexToAddress(erc20)
+//	erc20Contract, err := erc20_abi.NewERC20(erc20Address, ec.rawClient)
+//	if err != nil {
+//		return 0, fmt.Errorf("erc20 address is not right")
+//	}
+//	userAddress := common.HexToAddress(addr)
+//	balance, err := erc20Contract.BalanceOf(&bind.CallOpts{}, userAddress)
+//	if err != nil {
+//		return 0, err
+//	}
+//	return balance.Uint64(), nil
+//}
 
 func (ec *EthereumSdk) EthBalance(addr string) (*big.Int, error) {
 	var result hexutil.Big

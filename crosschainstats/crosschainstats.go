@@ -21,6 +21,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/polynetwork/bridge-common/metrics"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -28,7 +30,6 @@ import (
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/bridgedao"
-	"poly-bridge/http/tools"
 	"poly-bridge/models"
 	"runtime/debug"
 	"sync"
@@ -161,8 +162,8 @@ func (this *Stats) computeTokenBasicStats(token *models.TokenBasic) (err error) 
 	}
 	v := new(big.Float).Quo(new(big.Float).SetInt(&token.TotalAmount.Int), new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 	f, _ := v.Float32()
-	tools.Record(f, "total_amount.%s", token.Name)
-	tools.Record(token.TotalCount, "total_count.%s", token.Name)
+	metrics.Record(f, "total_amount.%s", token.Name)
+	metrics.Record(token.TotalCount, "total_count.%s", token.Name)
 	err = this.dao.UpdateTokenBasicStatsWithCheckPoint(token, checkPoint)
 	return
 }
@@ -181,7 +182,7 @@ func (this *Stats) computeTokensStats() (err error) {
 		}
 		v := new(big.Float).Quo(new(big.Float).SetInt(amount), new(big.Float).SetInt64(basedef.Int64FromFigure(int(t.Precision))))
 		f, _ := v.Float32()
-		tools.Record(f, "balance.%s.%v", t.TokenBasicName, t.ChainId)
+		metrics.Record(f, "balance.%s.%v", t.TokenBasicName, t.ChainId)
 		err = this.dao.UpdateTokenAvailableAmount(t.Hash, t.ChainId, amount)
 		if err != nil {
 			logs.Error("Failed to update token available amount for token %s %v %s", t.Hash, t.ChainId, err)

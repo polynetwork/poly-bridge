@@ -33,7 +33,7 @@ import (
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/crosschainlisten"
 	"poly-bridge/crosschainstats"
-	"poly-bridge/http/tools"
+	"github.com/polynetwork/bridge-common/metrics"
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
@@ -83,7 +83,7 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
-	tools.Init()
+	metrics.Init("bridge")
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
 	crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
@@ -94,13 +94,6 @@ func startServer(ctx *cli.Context) {
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.RedisConfig)
 	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig, config.IPPortConfig)
-
-	// register http routers
-	web.AddNamespace(
-		web.NewNamespace("/v1",
-			tools.GetRouter(),
-		),
-	)
 
 	metricConfig := config.MetricConfig
 	if metricConfig == nil {

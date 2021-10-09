@@ -2,7 +2,7 @@ package crosschainstats
 
 import (
 	"github.com/beego/beego/v2/core/logs"
-	"poly-bridge/http/tools"
+	"github.com/polynetwork/bridge-common/metrics"
 	"time"
 )
 
@@ -22,7 +22,7 @@ func (this *Stats) censusTimeLines() (err error) {
 	if chainAvgTimes != nil {
 		for _, srcAvgTime := range chainAvgTimes {
 			if name, ok := chains[srcAvgTime.ChainId]; ok {
-				tools.Record(srcAvgTime.AvgTime, "avg_src_to_poly.%s", name)
+				metrics.Record(srcAvgTime.AvgTime, "avg_src_to_poly.%s", name)
 			}
 		}
 	}
@@ -30,7 +30,7 @@ func (this *Stats) censusTimeLines() (err error) {
 	if chainAvgTimes != nil {
 		for _, polyAvgTime := range chainAvgTimes {
 			if name, ok := chains[polyAvgTime.ChainId]; ok {
-				tools.Record(polyAvgTime.AvgTime, "avg_poly_to_dst.%s", name)
+				metrics.Record(polyAvgTime.AvgTime, "avg_poly_to_dst.%s", name)
 			}
 		}
 	}
