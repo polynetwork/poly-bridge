@@ -55,7 +55,12 @@ func (c *FeeController) NewCheckFee() {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	for k, v := range mapCheckFeesReq {
-		if v.WrapperTransactionWithToken != nil {
+		if v.WrapperTransactionWithToken == nil {
+			if v.SrcTransaction != nil {
+				//has src_transaction but not wrapper_transaction
+				v.Status = NOT_PAID
+			}
+		} else {
 			chainFee, ok := chain2Fees[v.WrapperTransactionWithToken.DstChainId]
 			if !ok {
 				v.Status = NOT_PAID
@@ -126,8 +131,6 @@ func checkFeewrapperTransaction(srcHashs []string, mapCheckFeesReq map[string]*m
 				v.WrapperTransactionWithToken = wrapper
 				break
 			}
-			//has src_transaction but not wrapper_transaction
-			v.Status = NOT_PAID
 		}
 	}
 }
