@@ -59,6 +59,8 @@ func (c *FeeController) NewCheckFee() {
 			if v.SrcTransaction != nil {
 				//has src_transaction but not wrapper_transaction
 				v.Status = NOT_PAID
+				logs.Info("check fee poly_hash %s NOT_PAID,src_transaction but not wrapper_transaction", k)
+				continue
 			}
 		} else {
 			chainFee, ok := chain2Fees[v.WrapperTransactionWithToken.DstChainId]
@@ -111,10 +113,10 @@ func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction
 	}
 
 	srcTransaction := new(models.SrcTransaction)
-	res := db.Table("dst_transactions").
+	res := db.Debug().Table("src_transactions").
+		Joins("inner join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("inner join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
 		Where("dst_transactions.hash = ?", transaction.Hash).
-		Joins("inner join poly_transactions on dst_transactions.poly_hash = poly_transactions.hash").
-		Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.hash").
 		First(srcTransaction)
 	if res.Error != nil {
 		return nil, res.Error
