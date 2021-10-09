@@ -156,19 +156,17 @@ func (this *EthereumChainListen) GetPaletteLockProxyUnlockEvent(hash common.Hash
 }
 
 func unpackLockEvent(enc []byte, ab abi.Event) (*LockEvent, error) {
-	if unpacked, err := ab.Inputs.Unpack(enc); err == nil {
-		event := abi.ConvertType(unpacked[0], new(LockEvent)).(*LockEvent)
-		return event, nil
-	} else {
+	event := new(LockEvent)
+	if err := ab.Inputs.Unpack(event, enc); err != nil {
 		return nil, err
 	}
+	return event, nil
 }
 
 func unpackUnlockEvent(enc []byte, ab abi.Event) (*UnlockEvent, error) {
-	if unpacked, err := ab.Inputs.Unpack(enc); err == nil {
-		event := abi.ConvertType(unpacked[0], new(UnlockEvent)).(*UnlockEvent)
-		return event, err
-	} else {
+	event := new(UnlockEvent)
+	if err := ab.Inputs.Unpack(event, enc); err != nil {
 		return nil, err
 	}
+	return event, nil
 }
