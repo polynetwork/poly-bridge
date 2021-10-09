@@ -51,7 +51,13 @@ func Init() {
 	for _, v := range proxyConfigs {
 		proxyMap[strings.ToUpper(v.ProxyContract)] = true
 		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
+		proxyMap[strings.ToUpper(v.SwapContract)] = true
+		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.SwapContract))] = true
+		proxyMap[strings.ToUpper(v.NFTProxyContract)] = true
+		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.NFTProxyContract))] = true
 	}
+	//src_transations'contract didn't listen
+	proxyMap[""] = true
 	polyProxy = proxyMap
 	if len(polyProxy) == 0 {
 		panic("http init polyProxy err,polyProxy is nil")
