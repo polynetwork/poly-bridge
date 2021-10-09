@@ -27,21 +27,18 @@ func (c *FeeController) NewCheckFee() {
 		c.ServeJSON()
 		return
 	}
-	for _, v := range mapCheckFeesReq {
-		v.Status = MISSING
-		v.Paid = 0
-		v.Min = 0
-	}
 	srcHashs := make([]string, 0)
 	for k, v := range mapCheckFeesReq {
 		srcTransaction, err := checkFeeSrcTransaction(v.ChainId, v.TxId)
 		if err != nil {
+			//has not listen src_transaction
 			v.Status = MISSING
 			logs.Info("check fee poly_hash %s MISSING,hasn't src_Transaction %s", k, err)
 			continue
 		}
 		if len(polyProxy) > 0 {
 			if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; !in {
+				//is not poly proxy
 				v.Status = SKIP
 				logs.Info("check fee poly_hash %s SKIP,is not poly proxy", k)
 				continue
@@ -129,6 +126,8 @@ func checkFeewrapperTransaction(srcHashs []string, mapCheckFeesReq map[string]*m
 				v.WrapperTransactionWithToken = wrapper
 				break
 			}
+			//has src_transaction but not wrapper_transaction
+			v.Status = NOT_PAID
 		}
 	}
 }
