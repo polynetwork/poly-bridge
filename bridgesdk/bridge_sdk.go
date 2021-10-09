@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"poly-bridge/models"
 	"strings"
 )
 
@@ -117,6 +118,37 @@ func (sdk *BridgeSdk) CheckFee(checks []*CheckFeeReq) ([]*CheckFeeRsp, error) {
 		return nil, err
 	}
 	return checkFeesRsp.CheckFees, nil
+}
+
+func (sdk *BridgeSdk) NewCheckFee(checks map[string]*models.CheckFeeRequest) (map[string]*models.CheckFeeRequest, error) {
+	checkFeesReq := checks
+	requestJson, err := json.Marshal(checkFeesReq)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", sdk.url+"newcheckfee", strings.NewReader(string(requestJson)))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accepts", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("response status code: %d", resp.StatusCode)
+	}
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	var checkFeesRsp map[string]*models.CheckFeeRequest
+	err = json.Unmarshal(respBody, &checkFeesRsp)
+	if err != nil {
+		return nil, err
+	}
+	return checkFeesRsp, nil
 }
 
 func (sdk *BridgeSdk) GetFee(srcChainId uint64, dstChainId uint64, feeTokenHash string, swapTokenHash string) (*GetFeeRsp, error) {
