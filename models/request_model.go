@@ -18,7 +18,6 @@
 package models
 
 import (
-	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
 
@@ -561,9 +560,6 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 			bbb := decimal.NewFromBigInt(&transaction.WrapperTransaction.FeeAmount.Int, 0)
 			feeAmount := bbb.Div(precision)
 			transactionRsp.FeeAmount = feeAmount.String()
-			fmt.Println("precision:", precision.String())
-			fmt.Println("bbb:", bbb.String())
-			fmt.Println("feeAmount:", feeAmount.String())
 		}
 	}
 	if transaction.SrcTransaction != nil {
