@@ -129,7 +129,7 @@ func checkFeewrapperTransaction(srcHashs []string, mapCheckFeesReq map[string]*m
 	db.Table("wrapper_transactions").Where("hash in ?", srcHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	for _, v := range mapCheckFeesReq {
 		for _, wrapper := range wrapperTransactionWithTokens {
-			if v.SrcTransaction.Hash == wrapper.Hash {
+			if v.SrcTransaction != nil && v.SrcTransaction.Hash == wrapper.Hash {
 				v.WrapperTransactionWithToken = wrapper
 				break
 			}
