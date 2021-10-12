@@ -77,7 +77,6 @@ type ChainHandle interface {
 }
 
 func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
-	logs.Info("wuyachi: chainListenConfig.ChainId:%d", chainListenConfig.ChainId)
 	switch chainListenConfig.ChainId {
 	case basedef.POLY_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)

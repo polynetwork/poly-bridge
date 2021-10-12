@@ -286,7 +286,7 @@
       "ChainName": "Arbitrum",
       "ChainId": 19,
       "ListenSlot": 1,
-      "Defer": 1,
+      "Defer": 5,
       "BatchSize": 5,
       "Nodes": [
         {
@@ -295,11 +295,12 @@
       ],
       "ExtendNodes": [],
       "WrapperContract": [
-        "",
-        "Cf018d59B4728d073bd961ABe6A8024A8F0A3cdB"
+        "Cf018d59B4728d073bd961ABe6A8024A8F0A3cdB",
+        "0f8C16BA16E58525Eb2aDc231ff360cfa00bB527"
       ],
       "CCMContract": "7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
-      "ProxyContract": "2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03"
+      "ProxyContract": "2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
+      "SwapContract": "7E418a9926c8D1cbd09CC93E8051cC3BbdfE3854"
     }
   ],
   "StatsConfig": {
