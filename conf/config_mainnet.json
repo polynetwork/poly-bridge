@@ -466,7 +466,7 @@
           "Url": "https://arb1.arbitrum.io/rpc"
         }
       ],
-      "GasLimit": 1200000,
+      "GasLimit": 3500000,
       "ProxyFee": 140,
       "MinFee": 40
     }
