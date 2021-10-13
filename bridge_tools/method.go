@@ -27,9 +27,11 @@ import (
 	"gorm.io/gorm/logger"
 	"os"
 	"poly-bridge/basedef"
+	"poly-bridge/coinpricelisten/coinmarketcap"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
+	"poly-bridge/models"
 	"strconv"
 	"strings"
 	"time"
@@ -55,6 +57,8 @@ func executeMethod(method string, ctx *cli.Context) {
 		fetchBlock(config)
 	case "bingfaSWTH":
 		bingfaSWTH(config)
+	case "initcoinmarketid":
+		initcoinmarketid(config)
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}
@@ -146,50 +150,6 @@ func fetchBlock(config *conf.Config) {
 		}, 0, 2*time.Second))
 	}
 	g.Wait()
-	/*
-		for hei := height; hei <= endheight; {
-			ch:=make(chan bool,5)
-			for h:=hei;h<hei+5;h++ {
-				go func() {
-					wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handle.HandleNewBlock(uint64(h))
-					if err != nil {
-						logs.Error(fmt.Sprintf("HandleNewBlock %d err: %v", h, err))
-						time.Sleep(time.Millisecond * 500)
-						ch<-false
-					}
-					if save == "true" {
-						err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
-						if err != nil {
-							panic(err)
-						}
-					}
-					fmt.Printf(
-						"Fetch block events success chain %d height %d wrapper %d src %d poly %d dst %d  locks %d unlocks %d \n",
-						chain, h, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), locks, unlocks,
-					)
-					for i, tx := range wrapperTransactions {
-						fmt.Printf("wrapper %d: %+v\n", i, *tx)
-					}
-					for i, tx := range srcTransactions {
-						fmt.Printf("src %d: %+v srcTransfer:%+v\n", i, *tx, tx.SrcTransfer)
-					}
-					for i, tx := range polyTransactions {
-						fmt.Printf("poly %d: %+v\n", i, *tx)
-					}
-					for i, tx := range dstTransactions {
-						fmt.Printf("dst %d: %+v\n", i, *tx)
-					}
-					ch<-true
-				}()
-			}
-			for k:=0;k<5;k++{
-				if <-ch ==false{
-					break
-				}
-			}
-			hei+=5
-		}
-	*/
 }
 
 func bingfaSWTH(config *conf.Config) {
@@ -245,5 +205,49 @@ func bingfaSWTH(config *conf.Config) {
 			panic(fmt.Sprintf("bingfaSWTH bingfaSWTH panic panicHeight:%v,flagerr is:%v", height, err))
 		}
 		fmt.Printf("bingfaSWTH ing.....nowHeight:%v /n", height)
+	}
+}
+
+func initcoinmarketid(config *conf.Config) {
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+
+	var coinmarketsdk *coinmarketcap.CoinMarketCapSdk
+	for _, coinconfig := range config.CoinPriceListenConfig {
+		if coinconfig.MarketName == basedef.MARKET_COINMARKETCAP {
+			coinmarketsdk = coinmarketcap.NewCoinMarketCapSdk(coinconfig)
+			break
+		}
+	}
+	listings, err := coinmarketsdk.ListingsLatest()
+	if err != nil {
+		logs.Error("coinmarketsdk.ListingsLatest error")
+		return
+	}
+	coinName2Id := make(map[string]int, 0)
+	for _, listing := range listings {
+		coinName2Id[listing.Name] = listing.ID
+	}
+	priceMarkets := make([]*models.PriceMarket, 0)
+	err = db.Find(&priceMarkets).
+		Error
+	if err != nil {
+		logs.Error("db.Find(&priceMarkets) err", err)
+	}
+	for _, priceMarket := range priceMarkets {
+		if priceMarket.MarketName == basedef.MARKET_COINMARKETCAP {
+			if marketid, ok := coinName2Id[priceMarket.Name]; ok {
+				err := db.Model(&models.PriceMarket{}).Where("name = ? and market_name= ?", priceMarket.Name, basedef.MARKET_COINMARKETCAP).Update("coin_market_id", marketid).
+					Error
+				if err != nil {
+					logs.Error("Update marketid err %v,Name %v,marketid", err, priceMarket.Name, marketid)
+				}
+			}
+		}
 	}
 }
