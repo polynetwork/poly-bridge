@@ -144,19 +144,19 @@ var (
 	}
 
 	GasValueFlag = cli.Uint64Flag{
-		Name: "gasValue",
+		Name:  "gasValue",
 		Usage: "new gas price if the estimated gas price is not enough, the value should be nGwei, e.g: 4 denotes add 4000000000wei",
 		Value: 0,
 	}
 
 	EpochFlag = cli.Uint64Flag{
-		Name: "epoch",
+		Name:  "epoch",
 		Usage: "set okex epoch",
 		Value: 0,
 	}
 
 	TxHashFlag = cli.StringFlag{
-		Name: "hash",
+		Name:  "hash",
 		Usage: "set tx hash",
 	}
 )
@@ -190,11 +190,11 @@ var (
 		Action: handleCmdDeployECCDContract,
 	}
 
-	CmdDeployECCMContract = cli.Command{
-		Name:   "deployECCM",
-		Usage:  "admin account deploy ethereum cross chain manage contract.",
-		Action: handleCmdDeployECCMContract,
-	}
+	//CmdDeployECCMContract = cli.Command{
+	//	Name:   "deployECCM",
+	//	Usage:  "admin account deploy ethereum cross chain manage contract.",
+	//	Action: handleCmdDeployECCMContract,
+	//}
 
 	CmdDeployCCMPContract = cli.Command{
 		Name:   "deployCCMP",
@@ -231,14 +231,14 @@ var (
 		},
 	}
 
-	CmdDeployFeeContract = cli.Command{
-		Name:   "deployFee",
-		Usage:  "admin account deploy new mintable erc20 contract.",
-		Action: handleCmdDeployFeeContract,
-		//Flags: []cli.Flag{
-		//	FeeTokenFlag,
-		//},
-	}
+	//CmdDeployFeeContract = cli.Command{
+	//	Name:   "deployFee",
+	//	Usage:  "admin account deploy new mintable erc20 contract.",
+	//	Action: handleCmdDeployFeeContract,
+	//	//Flags: []cli.Flag{
+	//	//	FeeTokenFlag,
+	//	//},
+	//}
 
 	CmdDeployLockProxyContract = cli.Command{
 		Name:   "deployNFTLockProxy",
@@ -537,8 +537,8 @@ var (
 	}
 
 	CmdAddGas = cli.Command{
-		Name: "addGas",
-		Usage: "add gas price",
+		Name:   "addGas",
+		Usage:  "add gas price",
 		Action: handleCmdAddGas,
 		Flags: []cli.Flag{
 			TxHashFlag,

@@ -20,6 +20,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"poly-bridge/basedef"
 	"poly-bridge/models"
 
 	"github.com/beego/beego/v2/server/web"
@@ -39,6 +40,15 @@ func (c *StatisticController) ExpectTime() {
 	}
 	var expectTime models.TimeStatistic
 	db.Where("src_chain_id = ? and dst_chain_id = ?", expectTimeReq.SrcChainId, expectTimeReq.DstChainId).First(&expectTime)
+
+	if expectTime.Time == 0 {
+		if expectTimeReq.SrcChainId == basedef.ARBITRUM_CROSSCHAIN_ID {
+			expectTime.Time = 1500 * 100000000
+		} else {
+			expectTime.Time = 100 * 100000000
+		}
+	}
+
 	c.Data["json"] = models.MakeExpectTimeRsp(expectTime.SrcChainId, expectTime.DstChainId, (expectTime.Time)/100000000)
 	c.ServeJSON()
 }

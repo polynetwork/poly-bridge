@@ -1,3 +1,4 @@
+//go:build devnet
 // +build devnet
 
 /*
@@ -31,6 +32,7 @@ const (
 	OK_CROSSCHAIN_ID       = uint64(90)
 	MATIC_CROSSCHAIN_ID    = uint64(13)
 	PLT_CROSSCHAIN_ID      = uint64(107)
+	ARBITRUM_CROSSCHAIN_ID = uint64(205)
 
 	ENV = "devnet"
 )

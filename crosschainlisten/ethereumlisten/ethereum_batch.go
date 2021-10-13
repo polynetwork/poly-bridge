@@ -252,7 +252,7 @@ func (this *EthereumChainListenBatch) getWrapperEventByBlockNumber1(contractAddr
 		return nil, nil
 	}
 	wrapperAddress := common.HexToAddress(contractAddr)
-	wrapperContract, err := wrapper_abi.NewIPolyWrapper(wrapperAddress, this.ethSdk.GetClient())
+	wrapperContract, err := wrapper_abi.NewPolyWrapper(wrapperAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
