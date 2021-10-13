@@ -53,6 +53,7 @@ type PriceMarket struct {
 	Id             int64       `gorm:"primaryKey;autoIncrement"`
 	TokenBasicName string      `gorm:"uniqueIndex:idx_tokenmarket;size:64;not null"`
 	MarketName     string      `gorm:"uniqueIndex:idx_tokenmarket;size:64;not null"`
+	CoinMarketId   int         `gorm:"type:int(32)"`
 	Name           string      `gorm:"size:64;not null"`
 	Price          int64       `gorm:"type:bigint(20);not null"`
 	Ind            uint64      `gorm:"type:bigint(20);not null"`
