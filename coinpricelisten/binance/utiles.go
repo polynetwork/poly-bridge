@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 )
 
 type BinanceSdk struct {
@@ -97,7 +98,7 @@ func (sdk *BinanceSdk) GetMarketName() string {
 	return basedef.MARKET_BINANCE
 }
 
-func (this *BinanceSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
+func (this *BinanceSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
 	quotes, err := this.QuotesLatest()
 	if err != nil {
 		return nil, err
@@ -108,12 +109,12 @@ func (this *BinanceSdk) GetCoinPrice(coins []string) (map[string]float64, error)
 	}
 	coinPrice := make(map[string]float64, 0)
 	for _, coin := range coins {
-		price, ok := coinSymbol2Price[coin]
+		price, ok := coinSymbol2Price[coin.PriceMarketName]
 		if !ok {
 			logs.Warn("There is no coin price %s in Binance!", coin)
 			continue
 		}
-		coinPrice[coin] = price
+		coinPrice[coin.PriceMarketName] = price
 	}
 	return coinPrice, nil
 }

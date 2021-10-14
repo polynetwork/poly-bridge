@@ -59,7 +59,7 @@ func StopCoinPriceListen() {
 }
 
 type PriceMarket interface {
-	GetCoinPrice(coins []string) (map[string]float64, error)
+	GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error)
 	GetMarketName() string
 }
 
@@ -181,18 +181,26 @@ func (cpl *CoinPriceListen) listenPrice() (exit bool) {
 }
 
 func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) error {
-	marketCoins := make(map[string][]string)
-	marketCoinPrices := make(map[string]*models.PriceMarket)
+
+	marketCoins := make(map[string][]models.NameAndmarketId)
+	marketCoinPrices := make(map[string][]*models.PriceMarket)
 	for _, tokenBasic := range tokenBasics {
 		for _, priceMarket := range tokenBasic.PriceMarkets {
-			coins, ok := marketCoins[priceMarket.MarketName]
+			_, ok := marketCoins[priceMarket.MarketName]
 			if !ok {
-				coins = make([]string, 0)
-				marketCoins[priceMarket.MarketName] = coins
+				marketCoins[priceMarket.MarketName] = make([]models.NameAndmarketId, 0)
 			}
-			coins = append(coins, priceMarket.Name)
-			marketCoins[priceMarket.MarketName] = coins
-			marketCoinPrices[priceMarket.MarketName+priceMarket.Name] = priceMarket
+			nameAndmarketId := models.NameAndmarketId{
+				priceMarket.Name,
+				priceMarket.CoinMarketId,
+			}
+			marketCoins[priceMarket.MarketName] = append(marketCoins[priceMarket.MarketName], nameAndmarketId)
+
+			_, ok = marketCoinPrices[priceMarket.MarketName+priceMarket.Name]
+			if !ok {
+				marketCoinPrices[priceMarket.MarketName+priceMarket.Name] = make([]*models.PriceMarket, 0)
+			}
+			marketCoinPrices[priceMarket.MarketName+priceMarket.Name] = append(marketCoinPrices[priceMarket.MarketName+priceMarket.Name], priceMarket)
 			priceMarket.Ind = 0
 			tokenBasic.Ind = 0
 		}
@@ -210,15 +218,17 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 		}
 		logs.Info("get coin price of market: %s successful", market)
 		for name, price := range coinPrices {
-			tokenPrice := marketCoinPrices[market+name]
+			tokenPrices, ok := marketCoinPrices[market+name]
 			if !ok {
 				logs.Error("there is no coins of market: %s and token: %s", market, name)
 				continue
 			}
 			price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(basedef.PRICE_PRECISION))).Int64()
-			tokenPrice.Price = price
-			tokenPrice.Time = time.Now().Unix()
-			tokenPrice.Ind = 1
+			for _, tokenPrice := range tokenPrices {
+				tokenPrice.Price = price
+				tokenPrice.Time = time.Now().Unix()
+				tokenPrice.Ind = 1
+			}
 		}
 	}
 	for _, tokenBasic := range tokenBasics {

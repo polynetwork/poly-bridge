@@ -160,3 +160,8 @@ type TimeStatistic struct {
 	DstChainId uint64 `gorm:"uniqueIndex:idx_chains;type:bigint(20);not null"`
 	Time       uint64 `gorm:"type:bigint(20);not null"`
 }
+
+type NameAndmarketId struct {
+	PriceMarketName string
+	CoinMarketId    int
+}
