@@ -19,11 +19,51 @@ package models
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"net/http"
 	"poly-bridge/basedef"
+	"poly-bridge/conf"
 	"poly-bridge/utils/decimal"
+	"strings"
 )
+
+type Request struct {
+	JsonRpc string      `json:"jsonrpc"`
+	Method  string      `json:"method"`
+	Params  interface{} `json:"params"`
+	Id      uint        `json:"id"`
+}
+
+type RPCError struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+type Response struct {
+	Error  *RPCError       `json:"error"`
+	ID     int             `json:"id"`
+	Result json.RawMessage `json:"result,omitempty"`
+}
+
+// TxnReceipt is the receipt obtained over JSON/RPC from the ethereum client
+type TxnReceipt struct {
+	BlockHash         *common.Hash    `json:"blockHash"`
+	BlockNumber       *hexutil.Big    `json:"blockNumber"`
+	ContractAddress   *common.Address `json:"contractAddress"`
+	CumulativeGasUsed *hexutil.Big    `json:"cumulativeGasUsed"`
+	GasUsed           *hexutil.Big    `json:"gasUsed"`
+	TransactionHash   *common.Hash    `json:"transactionHash"`
+	TransactionIndex  *hexutil.Uint   `json:"transactionIndex"`
+	From              *common.Address `json:"from"`
+	To                *common.Address `json:"to"`
+	Status            *hexutil.Big    `json:"status"`
+	L1BlockNumber     *hexutil.Big    `json:"l1BlockNumber"`
+}
 
 var chainsNamesCache = map[uint64]string{}
 
@@ -137,4 +177,53 @@ func NullToZero(a **BigInt) {
 	if *a == nil {
 		*a = NewBigInt(new(big.Int).SetInt64(0))
 	}
+}
+
+func GetL1BlockNumberOfArbitrumTx(hash string) (uint64, error) {
+	txHash := common.HexToHash(hash)
+	paras := []interface{}{txHash}
+
+	reqPara := &Request{
+		JsonRpc: "2.0",
+		Method:  "eth_getTransactionReceipt",
+		Params:  paras,
+		Id:      1,
+	}
+	reqJson, err := json.Marshal(reqPara)
+	arbitrumConfig := conf.GlobalConfig.GetChainListenConfig(basedef.ARBITRUM_CROSSCHAIN_ID)
+	req, err := http.NewRequest("POST", arbitrumConfig.Nodes[0].Url, strings.NewReader(string(reqJson)))
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Accepts", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return 0, fmt.Errorf("RPC response status code: %d", resp.StatusCode)
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+	rpcRes := new(Response)
+	err = decoder.Decode(&rpcRes)
+	if err != nil {
+		return 0, fmt.Errorf("GetL1BlockNumberOfArbitrumTx, decode rpcRes failed. err: %s", err)
+	}
+
+	receipt := new(TxnReceipt)
+	err = json.Unmarshal(rpcRes.Result, receipt)
+	if err != nil {
+		return 0, fmt.Errorf("GetL1BlockNumberOfArbitrumTx, unmarshal rpcRes.Result err: %s", err)
+	}
+
+	if receipt.L1BlockNumber == nil {
+		return 0, fmt.Errorf("GetL1BlockNumberOfArbitrumTx failed, receipt.L1BlockNumber is nil")
+	}
+	l1BlockNumber := receipt.L1BlockNumber.ToInt().Uint64()
+	return l1BlockNumber, nil
 }
