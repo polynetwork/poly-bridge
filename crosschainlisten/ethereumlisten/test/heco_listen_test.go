@@ -46,6 +46,6 @@ func TestHecoListen(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config.Backup)
 	chainListen.ListenChain()
 }

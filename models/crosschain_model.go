@@ -48,7 +48,7 @@ type SrcTransaction struct {
 	User        string       `gorm:"type:varchar(66);not null"`
 	DstChainId  uint64       `gorm:"type:bigint(20);not null"`
 	Contract    string       `gorm:"type:varchar(66);not null"`
-	Key         string       `gorm:"type:varchar(8192);not null"`
+	Key         string       `gorm:"index;size:128;not null"`
 	Param       string       `gorm:"type:varchar(8192);not null"`
 	SrcTransfer *SrcTransfer `gorm:"foreignKey:TxHash;references:Hash"`
 	SrcSwap     *SrcSwap     `gorm:"foreignKey:TxHash;references:Hash"`

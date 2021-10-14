@@ -19,6 +19,7 @@ var (
 	ontologySdk *chainsdk.OntologySdkPro
 	maticSdk    *chainsdk.EthereumSdkPro
 	swthSdk     *chainsdk.SwitcheoSdkPro
+	arbitrumSdk *chainsdk.EthereumSdkPro
 	config      *conf.Config
 )
 
@@ -95,7 +96,6 @@ func newChainSdks(config *conf.Config) {
 		urls := swthConfig.GetNodesUrl()
 		swthSdk = chainsdk.NewSwitcheoSdkPro(urls, swthConfig.ListenSlot, swthConfig.ChainId)
 	}
-
 	{
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf != nil {
@@ -104,6 +104,14 @@ func newChainSdks(config *conf.Config) {
 		} else {
 			logs.Error("Missing plt chain sdk config")
 		}
+	}
+	{
+		arbitrumConfig := config.GetChainListenConfig(basedef.ARBITRUM_CROSSCHAIN_ID)
+		if arbitrumConfig == nil {
+			panic("chain is invalid")
+		}
+		urls := arbitrumConfig.GetNodesUrl()
+		arbitrumSdk = chainsdk.NewEthereumSdkPro(urls, arbitrumConfig.ListenSlot, arbitrumConfig.ChainId)
 	}
 }
 
@@ -163,6 +171,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return maticSdk.Erc20Balance(hash, maticConfig.ProxyContract)
+	}
+	if chainId == basedef.ARBITRUM_CROSSCHAIN_ID {
+		arbitrumConfig := config.GetChainListenConfig(basedef.ARBITRUM_CROSSCHAIN_ID)
+		if arbitrumConfig == nil {
+			panic("chain is invalid")
+		}
+		return arbitrumSdk.Erc20Balance(hash, arbitrumConfig.ProxyContract)
 	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
@@ -224,6 +239,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return maticSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.ARBITRUM_CROSSCHAIN_ID {
+		arbitrumConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
+		if arbitrumConfig == nil {
+			panic("chain is invalid")
+		}
+		return arbitrumSdk.Erc20TotalSupply(hash)
 	}
 	return new(big.Int).SetUint64(0), nil
 }

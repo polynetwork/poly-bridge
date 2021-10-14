@@ -1,3 +1,4 @@
+//go:build testnet
 // +build testnet
 
 /*
@@ -33,6 +34,7 @@ const (
 	OK_CROSSCHAIN_ID       = uint64(200)
 	MATIC_CROSSCHAIN_ID    = uint64(202)
 	SWITCHEO_CROSSCHAIN_ID = uint64(1000) // No testnet for cosmos
+	ARBITRUM_CROSSCHAIN_ID = uint64(205)
 
 	ENV = "testnet"
 )

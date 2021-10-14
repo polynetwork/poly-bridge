@@ -46,6 +46,6 @@ func TestPolyListen(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(polyListenConfig)
-	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao)
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config.Backup)
 	chainListen.ListenChain()
 }

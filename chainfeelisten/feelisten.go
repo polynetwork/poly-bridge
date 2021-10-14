@@ -71,27 +71,19 @@ type ChainFee interface {
 }
 
 func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
-	if cfg.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+	switch cfg.ChainId {
+	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
+		basedef.MATIC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID:
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.NEO_CROSSCHAIN_ID {
+	case basedef.NEO_CROSSCHAIN_ID:
 		return neofee.NewNeoFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.BSC_CROSSCHAIN_ID {
-		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.HECO_CROSSCHAIN_ID {
-		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.ONT_CROSSCHAIN_ID {
-		return ontologyfee.NewOntologyFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.OK_CROSSCHAIN_ID {
-		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
-		return switcheofee.NewSwitcheoFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3fee.NewNeo3Fee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.MATIC_CROSSCHAIN_ID {
-		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else if cfg.ChainId == basedef.PLT_CROSSCHAIN_ID {
-		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
-	} else {
+	case basedef.ONT_CROSSCHAIN_ID:
+		return ontologyfee.NewOntologyFee(cfg, feeUpdateSlot)
+	case basedef.SWITCHEO_CROSSCHAIN_ID:
+		return switcheofee.NewSwitcheoFee(cfg, feeUpdateSlot)
+	default:
 		return nil
 	}
 }
