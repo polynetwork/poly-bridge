@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 	"strings"
 )
 
@@ -83,10 +84,10 @@ func (sdk *SelfSdk) GetMarketName() string {
 	return basedef.MARKET_SELF
 }
 
-func (sdk *SelfSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
+func (sdk *SelfSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
 	coinIds := make([]string, 0)
 	for _, coin := range coins {
-		coinIds = append(coinIds, coin)
+		coinIds = append(coinIds, coin.PriceMarketName)
 	}
 	//
 	requestCoinIds := strings.Join(coinIds, ",")
@@ -98,12 +99,12 @@ func (sdk *SelfSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
 	}
 	coinPrice := make(map[string]float64, 0)
 	for _, coin := range coins {
-		price, ok := coinSymbol2Price[coin]
+		price, ok := coinSymbol2Price[coin.PriceMarketName]
 		if !ok {
 			logs.Warn("There is no coin price %s in self!", coin)
 			continue
 		}
-		coinPrice[coin] = price
+		coinPrice[coin.PriceMarketName] = price
 	}
 	return coinPrice, nil
 }

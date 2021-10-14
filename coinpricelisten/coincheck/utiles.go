@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 	"reflect"
 )
 
@@ -85,7 +86,7 @@ func (c *CoincheckSdk) GetMarketName() string {
 	return basedef.MARKET_COINCHECK
 }
 
-func (c *CoincheckSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
+func (c *CoincheckSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
 	rates, err := c.QuotesLatest()
 	if err != nil {
 		return nil, err
@@ -104,12 +105,12 @@ func (c *CoincheckSdk) GetCoinPrice(coins []string) (map[string]float64, error) 
 		supportedCoinsMap[fieldType.Name] = struct{}{}
 	}
 	for _, coin := range coins {
-		if _, ok := supportedCoinsMap[coin]; !ok {
+		if _, ok := supportedCoinsMap[coin.PriceMarketName]; !ok {
 			logs.Warn("%s price is not available in Coincheck!", coin)
 			continue
 		}
-		coinJpyRate := valueOfRate.FieldByName(coin).Float()
-		coinPrice[coin], _ = new(big.Float).Quo(big.NewFloat(coinJpyRate), usdJpyRate).Float64()
+		coinJpyRate := valueOfRate.FieldByName(coin.PriceMarketName).Float()
+		coinPrice[coin.PriceMarketName], _ = new(big.Float).Quo(big.NewFloat(coinJpyRate), usdJpyRate).Float64()
 	}
 	return coinPrice, nil
 }

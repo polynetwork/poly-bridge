@@ -26,6 +26,7 @@ import (
 	"net/url"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 	"strings"
 )
 
@@ -76,12 +77,12 @@ func (sdk *CoinMarketCapSdk) ListingsLatest() ([]*Listing, error) {
 
 func (sdk *CoinMarketCapSdk) listingsLatest(node int) ([]*Listing, error) {
 	allListing := make([]*Listing, 0)
-	aa , err := sdk.listingsLatest1(node, 1, 5000)
+	aa, err := sdk.listingsLatest1(node, 1, 5000)
 	if err != nil {
 		return nil, err
 	}
 	allListing = append(allListing, aa...)
-	bb , err := sdk.listingsLatest1(node, 5000, 5000)
+	bb, err := sdk.listingsLatest1(node, 5000, 5000)
 	if err != nil {
 		return nil, err
 	}
@@ -173,25 +174,18 @@ func (sdk *CoinMarketCapSdk) GetMarketName() string {
 	return basedef.MARKET_COINMARKETCAP
 }
 
-func (sdk *CoinMarketCapSdk) GetCoinPrice(coins []string) (map[string]float64, error) {
-	listings, err := sdk.ListingsLatest()
-	if err != nil {
-		return nil, err
-	}
-	//
-	coinName2Id := make(map[string]string, 0)
-	for _, listing := range listings {
-		coinName2Id[listing.Name] = fmt.Sprintf("%d", listing.ID)
-	}
-	//
+func (sdk *CoinMarketCapSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
 	coinIds := make([]string, 0)
+	coinInId := make(map[int]bool, 0)
 	for _, coin := range coins {
-		coinId, ok := coinName2Id[coin]
-		if !ok {
-			logs.Warn("There is no coin %s in CoinMarketCap!", coin)
+		if coin.CoinMarketId <= 0 {
 			continue
 		}
-		coinIds = append(coinIds, coinId)
+		if _, ok := coinInId[coin.CoinMarketId]; ok {
+			continue
+		}
+		coinInId[coin.CoinMarketId] = true
+		coinIds = append(coinIds, fmt.Sprintf("%d", coin.CoinMarketId))
 	}
 	//
 	requestCoinIds := strings.Join(coinIds, ",")
