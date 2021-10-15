@@ -214,6 +214,19 @@ type AssetStatistic struct {
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
+type LockTokenStatistics struct {
+	Id             int64   `gorm:"primaryKey;autoIncrement"`
+	Hash           string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
+	ChainId        uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
+	LockProxyHash  string  `gorm:"type:varchar(66);not null"`
+	LockProxyChain string  `gorm:"type:varchar(32);not null"`
+	InAmount       *BigInt `gorm:"type:varchar(64);not null"`
+	InAmountBtc    *BigInt `gorm:"type:varchar(64);not null"`
+	InAmountUsd    *BigInt `gorm:"type:varchar(64);not null"`
+	UpdateTime     uint64  `gorm:"type:bigint(20);not null"`
+	Token          *Token  `gorm:"foreignKey:Hash,ChainId;references:Hash,ChainId"`
+}
+
 type AssetInfo struct {
 	Amount         *BigInt
 	Txnum          uint64

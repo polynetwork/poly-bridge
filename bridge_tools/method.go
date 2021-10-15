@@ -59,6 +59,8 @@ func executeMethod(method string, ctx *cli.Context) {
 		bingfaSWTH(config)
 	case "initcoinmarketid":
 		initcoinmarketid(config)
+	case "migrateLockTokenStatisticTable":
+		migrateLockTokenStatisticTable(config)
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}
@@ -250,4 +252,21 @@ func initcoinmarketid(config *conf.Config) {
 			}
 		}
 	}
+}
+
+func migrateLockTokenStatisticTable(config *conf.Config) {
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		logs.Error("Open mysql err", err)
+	}
+	err = db.Debug().AutoMigrate(
+		&models.LockTokenStatistics{},
+	)
+	checkError(err, "Creating tables")
 }
