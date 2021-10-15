@@ -216,9 +216,9 @@ type AssetStatistic struct {
 
 type LockTokenStatistics struct {
 	Id             int64   `gorm:"primaryKey;autoIncrement"`
-	Hash           string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
-	ChainId        uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
-	LockProxyHash  string  `gorm:"type:varchar(66);not null"`
+	Hash           string  `gorm:"uniqueIndex:idx_locktoken;size:66;not null"`
+	ChainId        uint64  `gorm:"uniqueIndex:idx_locktoken;type:bigint(20);not null"`
+	LockProxyHash  string  `gorm:"uniqueIndex:idx_locktoken;type:varchar(66);not null"`
 	LockProxyChain string  `gorm:"type:varchar(32);not null"`
 	InAmount       *BigInt `gorm:"type:varchar(64);not null"`
 	InAmountBtc    *BigInt `gorm:"type:varchar(64);not null"`
