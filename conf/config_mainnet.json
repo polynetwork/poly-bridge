@@ -475,12 +475,14 @@
   "IPPortConfig":{
     "WBTCIP":"http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
     "USDTIP":"http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
-    "DingIP": "hhttps://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6"
+    "DingIP": "hhttps://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6",
+    "LargeTxAmountAlarmDingIP": "https://oapi.dingtalk.com/robot/send?access_token=9892e047c0f57dd76fa0817b1a9aedc17a3ba71098b27b2f487de1279ea9b134"
   },
   "HttpConfig": {
     "Address": "0.0.0.0",
     "Port": 8081
   },
+  "LargeTxAmount" : 1000000,
   "LogFile": "logs/bridge.log",
   "RunMode": "prod"
 }

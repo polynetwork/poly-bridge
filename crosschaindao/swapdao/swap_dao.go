@@ -285,3 +285,7 @@ func (dao *SwapDao) UpdateNFTProfileTokenName(oldName, newName string) {
 		Where("token_basic_name = ?", oldName).
 		Update("token_basic_name", newName)
 }
+
+func (dao *SwapDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.Token, error) {
+	return nil, nil
+}

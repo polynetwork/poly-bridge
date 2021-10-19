@@ -86,7 +86,7 @@ func startServer(ctx *cli.Context) {
 	metrics.Init("bridge")
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
-	crosschainlisten.StartCrossChainListen(config.Server, config.Backup, config.ChainListenConfig, config.DBConfig)
+	crosschainlisten.StartCrossChainListen(config)
 	if config.Backup {
 		return
 	}

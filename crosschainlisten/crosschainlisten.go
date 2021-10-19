@@ -19,8 +19,11 @@ package crosschainlisten
 
 import (
 	"fmt"
+	"github.com/shopspring/decimal"
 	"math"
+	"poly-bridge/common"
 	"runtime/debug"
+	"strconv"
 	"time"
 
 	"github.com/polynetwork/bridge-common/metrics"
@@ -41,17 +44,17 @@ import (
 
 var chainListens [13]*CrossChainListen
 
-func StartCrossChainListen(server string, backup bool, listenCfg []*conf.ChainListenConfig, dbCfg *conf.DBConfig) {
-	dao := crosschaindao.NewCrossChainDao(server, backup, dbCfg)
+func StartCrossChainListen(config *conf.Config) {
+	dao := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	for i, cfg := range listenCfg {
+	for i, cfg := range config.ChainListenConfig {
 		chainHandle := NewChainHandle(cfg)
 		if chainHandle == nil {
 			panic(fmt.Sprintf("chain %d handler is invalid", cfg.ChainId))
 		}
-		chainListen := NewCrossChainListen(chainHandle, dao, backup)
+		chainListen := NewCrossChainListen(chainHandle, dao, config)
 		chainListen.Start()
 		chainListens[i] = chainListen
 	}
@@ -103,15 +106,15 @@ type CrossChainListen struct {
 	db     crosschaindao.CrossChainDao
 	exit   chan bool
 	height uint64
-	backup bool
+	config *conf.Config
 }
 
-func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao, backup bool) *CrossChainListen {
+func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao, config *conf.Config) *CrossChainListen {
 	crossChainListen := &CrossChainListen{
 		handle: handle,
 		db:     db,
 		exit:   make(chan bool, 0),
-		backup: backup,
+		config: config,
 	}
 	return crossChainListen
 }
@@ -121,7 +124,7 @@ func (ccl *CrossChainListen) SetHeight(height uint64) {
 }
 
 func (ccl *CrossChainListen) Start() {
-	if ccl.backup && ccl.handle.GetChainId() == basedef.POLY_CROSSCHAIN_ID {
+	if ccl.config.Backup && ccl.handle.GetChainId() == basedef.POLY_CROSSCHAIN_ID {
 		return
 	}
 	logs.Info("start cross chain listen: %s", ccl.handle.GetChainName())
@@ -176,7 +179,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 	if ccl.height != 0 {
 		chain.Height = ccl.height
 	}
-	if ccl.backup {
+	if ccl.config.Backup {
 		chain.Height -= ccl.handle.GetDefer()
 	}
 	logs.Info("cross chain listen, chain: %s, dao: %s......", ccl.handle.GetChainName(), ccl.db.Name())
@@ -184,7 +187,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 	for {
 		select {
 		case <-ticker.C:
-			if ccl.backup {
+			if ccl.config.Backup {
 				dbchain, err := ccl.db.GetChain(chain.ChainId)
 				if err != nil {
 					continue
@@ -237,6 +240,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							logs.Error("UpdateEvents on block %d err: %v", height, err)
 							ch <- false
 						} else {
+							if !ccl.config.Backup {
+								go ccl.checkLargeTransaction(srcTransactions)
+							}
 							ch <- true
 						}
 
@@ -265,4 +271,59 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			return true
 		}
 	}
+}
+
+func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.SrcTransaction) {
+	if basedef.ENV != basedef.MAINNET {
+		return
+	}
+	if srcTransactions != nil && len(srcTransactions) > 0 {
+		for _, v := range srcTransactions {
+			if v.SrcTransfer != nil {
+				token, err := ccl.db.GetTokenBasicByHash(v.SrcTransfer.ChainId, v.SrcTransfer.Asset)
+				if err == nil {
+					amount := decimal.NewFromBigInt(&v.SrcTransfer.Amount.Int, 0).
+						Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).
+						Mul(decimal.NewFromInt(token.TokenBasic.Price)).
+						Div(decimal.NewFromInt(100000000))
+
+					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
+						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.IPPortConfig.LargeTxAmountAlarmDingIP, ccl.config.LargeTxAmount, amount); err != nil {
+							logs.Error("send BigTxAmount alert err.", err)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, dingUrl string, largeTxAmount int64, amount decimal.Decimal) error {
+	exceedingAmount := strconv.FormatInt(largeTxAmount, 10)
+	if amount.Cmp(decimal.NewFromInt(1000000)) >= 0 {
+		exceedingAmount = "100w"
+	} else if amount.Cmp(decimal.NewFromInt(5000000)) >= 0 {
+		exceedingAmount = "500w"
+	} else if amount.Cmp(decimal.NewFromInt(10000000)) >= 0 {
+		exceedingAmount = "1000w"
+	}
+	ss := "A large transaction exceeding " + exceedingAmount + " USD was detected.\n"
+	srcChainName := strconv.FormatUint(srcTransaction.ChainId, 10)
+	srcChain, err := ccl.db.GetChain(srcTransaction.ChainId)
+	if err == nil {
+		srcChainName = srcChain.Name
+	}
+	dstChainName := strconv.FormatUint(srcTransaction.DstChainId, 10)
+	dstChain, err := ccl.db.GetChain(srcTransaction.DstChainId)
+	if err == nil {
+		dstChainName = dstChain.Name
+	}
+	ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
+	ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
+		Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
+	ss += "Hash: " + srcTransaction.Hash + "\n"
+	ss += "User: " + srcTransaction.User + "\n"
+	ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
+	logs.Warn(ss)
+	return common.PostDingtext(ss, dingUrl)
 }

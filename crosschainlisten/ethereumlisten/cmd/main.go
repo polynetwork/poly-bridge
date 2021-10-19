@@ -136,7 +136,7 @@ func startServer(ctx *cli.Context) {
 	if chainHandler == nil {
 		panic("chain handler is invalid")
 	}
-	chainListen = crosschainlisten.NewCrossChainListen(chainHandler, db, config.Backup)
+	chainListen = crosschainlisten.NewCrossChainListen(chainHandler, db, config)
 	chainListen.SetHeight(height)
 	chainListen.Start()
 }

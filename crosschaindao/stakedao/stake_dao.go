@@ -89,6 +89,10 @@ func (dao *StakeDao) RemoveEvents(srcHashes []string, polyHashes []string, dstHa
 	return nil
 }
 
+func (dao *StakeDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.Token, error) {
+	return nil, nil
+}
+
 func (dao *StakeDao) GetChain(chainId uint64) (*models.Chain, error) {
 	return dao.chains[chainId], nil
 }
