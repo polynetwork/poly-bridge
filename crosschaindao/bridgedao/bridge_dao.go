@@ -550,14 +550,14 @@ func (dao *BridgeDao) GetSourceTokenStatistics() ([]*TokenStatisticWithName, err
 	return sourceTokenStatistics, err
 }
 
-func (dao *BridgeDao) GetLockTokenStatistics() ([]*models.LockTokenStatistics, error) {
-	lockTokenStatistics := make([]*models.LockTokenStatistics, 0)
+func (dao *BridgeDao) GetLockTokenStatistics() ([]*models.LockTokenStatistic, error) {
+	lockTokenStatistics := make([]*models.LockTokenStatistic, 0)
 	err := dao.db.Find(&lockTokenStatistics).
 		Error
 	return lockTokenStatistics, err
 }
 
-func (dao *BridgeDao) SaveLockTokenStatistics(lockTokenStatistics []*models.LockTokenStatistics) error {
+func (dao *BridgeDao) SaveLockTokenStatistics(lockTokenStatistics []*models.LockTokenStatistic) error {
 	err := dao.db.Save(lockTokenStatistics).Error
 	return err
 }

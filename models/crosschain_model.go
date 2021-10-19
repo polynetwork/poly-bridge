@@ -214,7 +214,7 @@ type AssetStatistic struct {
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
-type LockTokenStatistics struct {
+type LockTokenStatistic struct {
 	Id          int64   `gorm:"primaryKey;autoIncrement"`
 	Hash        string  `gorm:"uniqueIndex:idx_locktoken;size:66;not null"`
 	ChainId     uint64  `gorm:"uniqueIndex:idx_locktoken;type:bigint(20);not null"`

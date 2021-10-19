@@ -22,6 +22,7 @@ type chainhashproxy struct {
 }
 
 func (this *Stats) computeLockTokenStatistics() (err error) {
+	logs.Info("start computeLockTokenStatistics")
 	lockTokenStatistics, err := this.dao.GetLockTokenStatistics()
 	if err != nil {
 		return fmt.Errorf("Failed to GetLockTokenStatistics %w", err)
@@ -72,7 +73,7 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 				}
 				if _, ok := proxychainhashMap[b]; !ok {
 					proxychainhashMap[b] = true
-					lockTokenStatistic := new(models.LockTokenStatistics)
+					lockTokenStatistic := new(models.LockTokenStatistic)
 					lockTokenStatistic.ChainId = k.chainId
 					lockTokenStatistic.Hash = k.hash
 					lockTokenStatistic.ItemProxy = proxyBalance.ItemProxy
@@ -113,6 +114,7 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 	if err != nil {
 		logs.Error("SaveLockTokenStatistics err", err)
 	}
+	logs.Info("end computeLockTokenStatistics")
 	return nil
 }
 
