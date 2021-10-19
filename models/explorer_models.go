@@ -766,7 +766,7 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 
 type LockTokenResp struct {
 	ChainId      uint64 `json:"chainId"`
-	InAmountUsd  *big.Int
+	InAmountUsd  *BigInt
 	InAmountUsd1 string `json:"amountUsd"`
 	TokenNum     int    `json:"tokenNum"`
 	ProxyNum     int    `json:"proxyNum"`
@@ -774,10 +774,10 @@ type LockTokenResp struct {
 
 func MakeLockTokenListResp(lockTokenResps []*LockTokenResp) []*LockTokenResp {
 	sort.Slice(lockTokenResps, func(i, j int) bool {
-		return lockTokenResps[i].InAmountUsd.Cmp(lockTokenResps[j].InAmountUsd) == 1
+		return (&lockTokenResps[i].InAmountUsd.Int).Cmp(&lockTokenResps[j].InAmountUsd.Int) == 1
 	})
 	for _, lockTokenResp := range lockTokenResps {
-		lockTokenResp.InAmountUsd1 = decimal.NewFromBigInt(lockTokenResp.InAmountUsd, -4).String()
+		lockTokenResp.InAmountUsd1 = decimal.NewFromBigInt(&lockTokenResp.InAmountUsd.Int, -4).String()
 	}
 	return lockTokenResps
 }
