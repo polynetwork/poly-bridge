@@ -30,6 +30,7 @@ package models
 import (
 	"encoding/json"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/basedef"
 	"sort"
@@ -761,4 +762,51 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 		return assetInfo.AssetStatistics[i].AmountUsd1.Cmp(assetInfo.AssetStatistics[j].AmountUsd1) == 1
 	})
 	return assetInfo
+}
+
+type LockTokenResp struct {
+	ChainId      uint64 `json:"chainId"`
+	InAmountUsd  *big.Int
+	InAmountUsd1 string `json:"amountUsd"`
+	TokenNum     int    `json:"tokenNum"`
+	ProxyNum     int    `json:"proxyNum"`
+}
+
+func MakeLockTokenListResp(lockTokenResps []*LockTokenResp) []*LockTokenResp {
+	sort.Slice(lockTokenResps, func(i, j int) bool {
+		return lockTokenResps[i].InAmountUsd.Cmp(lockTokenResps[j].InAmountUsd) == 1
+	})
+	for _, lockTokenResp := range lockTokenResps {
+		lockTokenResp.InAmountUsd1 = decimal.NewFromBigInt(lockTokenResp.InAmountUsd, 10000).String()
+	}
+	return lockTokenResps
+}
+
+type LockTokenInfoReq struct {
+	ChainId uint64 `json:"chainId"`
+}
+type LockTokenInfoResp struct {
+	ChainId   uint64
+	TokenName string
+	Hash      string
+	ItemProxy string
+	AmountUsd string
+}
+
+func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTokenInfoResp {
+	sort.Slice(lockTokenStatistics, func(i, j int) bool {
+		return (&lockTokenStatistics[i].InAmountUsd.Int).Cmp(&lockTokenStatistics[j].InAmountUsd.Int) == 1
+	})
+	lockTokenInfoResps := make([]*LockTokenInfoResp, 0)
+
+	for _, lockTokenStatistic := range lockTokenStatistics {
+		resp := new(LockTokenInfoResp)
+		resp.ChainId = lockTokenStatistic.ChainId
+		resp.Hash = lockTokenStatistic.Hash
+		resp.TokenName = lockTokenStatistic.Token.TokenBasicName
+		resp.ItemProxy = lockTokenStatistic.ItemProxy
+		resp.AmountUsd = decimal.NewFromBigInt(&lockTokenStatistic.InAmountUsd.Int, 10000).String()
+		lockTokenInfoResps = append(lockTokenInfoResps, resp)
+	}
+	return lockTokenInfoResps
 }
