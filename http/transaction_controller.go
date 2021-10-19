@@ -271,7 +271,7 @@ func (c *TransactionController) TransactionOfHash() {
 			c.Data["json"] = "transaction does not exist"
 			c.Ctx.ResponseWriter.WriteHeader(400)
 		} else {
-			c.Data["json"] = models.MakeTransactionRsp(srcPolyDstRelation, chainsMap)
+			c.Data["json"] = resp
 		}
 		c.ServeJSON()
 		return
