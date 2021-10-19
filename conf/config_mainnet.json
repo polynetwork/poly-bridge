@@ -482,7 +482,7 @@
     "Address": "0.0.0.0",
     "Port": 8081
   },
-  "LargeTxAmount" : 1000000,
+  "LargeTxAmount" : 100000,
   "LogFile": "logs/bridge.log",
   "RunMode": "prod"
 }
