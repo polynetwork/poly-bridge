@@ -84,6 +84,9 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == BTC_CROSSCHAIN_ID {
 		addrHex, _ := hex.DecodeString(value)
 		return string(addrHex)
+	} else if chainId == ARBITRUM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -152,6 +155,9 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		}
 		hash := fmt.Sprint(addr)
 		return hash, nil
+	} else if chainId == ARBITRUM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
