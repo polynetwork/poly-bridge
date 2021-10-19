@@ -306,7 +306,8 @@
     "ChainStatisticInterval": 600,
     "TokenAmountCheckInterval": 300,
     "TokenBasicStatsInterval": 600,
-    "TokenStatisticInterval": 600
+    "TokenStatisticInterval": 600,
+    "LockTokenStatisticInterval": 300
   },
   "EventEffectConfig": {
     "HowOld": 3600,

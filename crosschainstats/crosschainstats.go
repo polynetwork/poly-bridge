@@ -93,6 +93,7 @@ func (this *Stats) Start() {
 	go this.run(this.cfg.TokenBasicStatsInterval, this.computeStats)
 	go this.run(this.cfg.TokenAmountCheckInterval, this.computeTokensStats)
 	go this.run(this.cfg.TokenStatisticInterval, this.computeTokenStatistics)
+	go this.run(this.cfg.LockTokenStatisticInterval, this.computeLockTokenStatistics)
 	go this.run(this.cfg.ChainStatisticInterval, this.computeChainStatistics)
 	go this.run(this.cfg.ChainAddressCheckInterval, this.computeChainStatisticAssets)
 	go this.run(this.cfg.AssetStatisticInterval, this.computeAssetStatistics)

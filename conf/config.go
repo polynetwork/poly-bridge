@@ -76,6 +76,11 @@ type Restful struct {
 	Key string
 }
 
+type OtherItemProxy struct {
+	ItemName  string
+	ItemProxy string
+}
+
 type ChainListenConfig struct {
 	ChainName          string
 	ChainId            uint64
@@ -87,6 +92,7 @@ type ChainListenConfig struct {
 	WrapperContract    []string
 	CCMContract        string
 	ProxyContract      string
+	OtherProxyContract []*OtherItemProxy
 	NFTWrapperContract string
 	NFTProxyContract   string
 	NFTQueryContract   string
@@ -172,15 +178,16 @@ func (cfg *FeeListenConfig) GetNodesKey() []string {
 }
 
 type StatsConfig struct {
-	TokenBasicStatsInterval   int64 // Chain token basic stats aggregation interval in seconds
-	TokenAmountCheckInterval  int64 // Chain token stats aggregation interval in seconds
-	TokenStatisticInterval    int64 // TokenStatistic aggregation interval in seconds
-	ChainStatisticInterval    int64 // ChainStatisticInterval except asset aggregation interval in seconds
-	ChainAddressCheckInterval int64 // ChainStatistic's asset Interval aggregation interval in seconds
-	AssetStatisticInterval    int64 // AssetStatistic aggregation interval in seconds
-	AssetAdressInterval       int64 // AssetAdress aggregation interval in seconds
-	CensusTimeLinesInterval   int64 // CensusTimeLines interval in seconds
-	CensusAssetLinesInterval  int64 // CensusAssetLinesInterval interval in seconds
+	TokenBasicStatsInterval    int64 // Chain token basic stats aggregation interval in seconds
+	TokenAmountCheckInterval   int64 // Chain token stats aggregation interval in seconds
+	TokenStatisticInterval     int64 // TokenStatistic aggregation interval in seconds
+	LockTokenStatisticInterval int64 // All lockproxy aggregation interval in seconds
+	ChainStatisticInterval     int64 // ChainStatisticInterval except asset aggregation interval in seconds
+	ChainAddressCheckInterval  int64 // ChainStatistic's asset Interval aggregation interval in seconds
+	AssetStatisticInterval     int64 // AssetStatistic aggregation interval in seconds
+	AssetAdressInterval        int64 // AssetAdress aggregation interval in seconds
+	CensusTimeLinesInterval    int64 // CensusTimeLines interval in seconds
+	CensusAssetLinesInterval   int64 // CensusAssetLinesInterval interval in seconds
 }
 
 type EventEffectConfig struct {
