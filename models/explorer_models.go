@@ -765,11 +765,11 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 }
 
 type LockTokenResp struct {
-	ChainId      uint64 `json:"chainId"`
-	InAmountUsd  *BigInt
-	InAmountUsd1 string `json:"amountUsd"`
-	TokenNum     int    `json:"tokenNum"`
-	ProxyNum     int    `json:"proxyNum"`
+	ChainId      uint64  `json:"chainId"`
+	InAmountUsd  *BigInt `json:"-"`
+	InAmountUsd1 string  `json:"amountUsd"`
+	TokenNum     int     `json:"tokenNum"`
+	ProxyNum     int     `json:"proxyNum"`
 }
 
 func MakeLockTokenListResp(lockTokenResps []*LockTokenResp) []*LockTokenResp {
