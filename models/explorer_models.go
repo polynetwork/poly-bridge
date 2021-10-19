@@ -777,7 +777,7 @@ func MakeLockTokenListResp(lockTokenResps []*LockTokenResp) []*LockTokenResp {
 		return lockTokenResps[i].InAmountUsd.Cmp(lockTokenResps[j].InAmountUsd) == 1
 	})
 	for _, lockTokenResp := range lockTokenResps {
-		lockTokenResp.InAmountUsd1 = decimal.NewFromBigInt(lockTokenResp.InAmountUsd, 10000).String()
+		lockTokenResp.InAmountUsd1 = decimal.NewFromBigInt(lockTokenResp.InAmountUsd, -4).String()
 	}
 	return lockTokenResps
 }
@@ -805,7 +805,7 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 		resp.Hash = lockTokenStatistic.Hash
 		resp.TokenName = lockTokenStatistic.Token.TokenBasicName
 		resp.ItemProxy = lockTokenStatistic.ItemProxy
-		resp.AmountUsd = decimal.NewFromBigInt(&lockTokenStatistic.InAmountUsd.Int, 10000).String()
+		resp.AmountUsd = decimal.NewFromBigInt(&lockTokenStatistic.InAmountUsd.Int, -4).String()
 		lockTokenInfoResps = append(lockTokenInfoResps, resp)
 	}
 	return lockTokenInfoResps

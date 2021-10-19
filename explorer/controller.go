@@ -440,7 +440,7 @@ func (c *ExplorerController) GetTransferStatistic() {
 
 func (c *ExplorerController) GetLockTokenList() {
 	lockTokenResps := make([]*models.LockTokenResp, 0)
-	res := db.Raw("select  chain_id,sum(in_amount_usd),COUNT(DISTINCT(`hash`)) as token_num,COUNT(DISTINCT(`item_proxy`)) as proxy_num from lock_token_statistics where in_amount_usd >0 group by chain_id").
+	res := db.Raw("select  chain_id,sum(in_amount_usd) as in_amount_usd,COUNT(DISTINCT(`hash`)) as token_num,COUNT(DISTINCT(`item_proxy`)) as proxy_num from lock_token_statistics where in_amount_usd >0 group by chain_id").
 		Scan(&lockTokenResps)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("GetLockTokenList does not exist"))
