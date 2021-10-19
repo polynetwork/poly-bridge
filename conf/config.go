@@ -197,9 +197,10 @@ type HttpConfig struct {
 }
 
 type IPPortConfig struct {
-	WBTCIP string
-	USDTIP string
-	DingIP string
+	WBTCIP                   string
+	USDTIP                   string
+	DingIP                   string
+	LargeTxAmountAlarmDingIP string
 }
 
 type Config struct {
@@ -207,6 +208,7 @@ type Config struct {
 	Env                   string
 	RunMode               string
 	Backup                bool
+	LargeTxAmount         int64
 	LogFile               string
 	HttpConfig            *HttpConfig
 	MetricConfig          *HttpConfig

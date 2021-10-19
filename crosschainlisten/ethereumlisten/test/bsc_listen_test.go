@@ -47,7 +47,7 @@ func TestBscListen(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(bscListenConfig)
-	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config.Backup)
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config)
 	chainListen.ListenChain()
 }
 
