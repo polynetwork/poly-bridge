@@ -448,6 +448,8 @@ func (c *ExplorerController) GetLockTokenList() {
 		c.ServeJSON()
 		return
 	}
+	jsonlockTokenResps, _ := json.Marshal(lockTokenResps)
+	logs.Info("qqqqqqqqqqqjsonlockTokenResps", string(jsonlockTokenResps))
 	c.Data["json"] = models.MakeLockTokenListResp(lockTokenResps)
 	c.ServeJSON()
 }
