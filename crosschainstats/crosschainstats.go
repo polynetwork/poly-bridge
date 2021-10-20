@@ -41,17 +41,18 @@ import (
 
 type Stats struct {
 	context.Context
-	cancel context.CancelFunc
-	cfg    *conf.StatsConfig
-	dao    *bridgedao.BridgeDao
-	wg     sync.WaitGroup
-	ipCfg  *conf.IPPortConfig
+	cancel   context.CancelFunc
+	cfg      *conf.StatsConfig
+	dao      *bridgedao.BridgeDao
+	wg       sync.WaitGroup
+	ipCfg    *conf.IPPortConfig
+	chainCfg []*conf.ChainListenConfig
 }
 
 var ccs *Stats
 
 // Start - Do stats aggregation/calculation
-func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig) {
+func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBConfig, ipCfg *conf.IPPortConfig, chainCfg []*conf.ChainListenConfig) {
 	if server != basedef.SERVER_POLY_BRIDGE {
 		panic("CrossChainStats Only runs on bridge server")
 	}
@@ -61,7 +62,7 @@ func StartCrossChainStats(server string, cfg *conf.StatsConfig, dbCfg *conf.DBCo
 
 	dao := bridgedao.NewBridgeDao(dbCfg, false)
 	ctx, cancel := context.WithCancel(context.Background())
-	ccs = &Stats{dao: dao, cfg: cfg, Context: ctx, cancel: cancel, ipCfg: ipCfg}
+	ccs = &Stats{dao: dao, cfg: cfg, Context: ctx, cancel: cancel, ipCfg: ipCfg, chainCfg: chainCfg}
 	ccs.Start()
 }
 
