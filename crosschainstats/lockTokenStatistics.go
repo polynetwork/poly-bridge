@@ -41,7 +41,6 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 						token.Hash,
 					}
 					chainhashMap[a] = true
-					break
 				}
 			}
 
