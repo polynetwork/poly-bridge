@@ -7,22 +7,56 @@ import (
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/common"
+	"poly-bridge/conf"
 	"poly-bridge/models"
 	"time"
 )
 
-type chainhash struct {
-	chainId uint64
-	hash    string
-}
 type chainhashproxy struct {
-	chainId uint64
-	hash    string
-	proxy   string
+	chainId   uint64
+	hash      string
+	ItemProxy string
+}
+
+var itemProxy2ItemName map[string]string
+
+func assembleLockToken(chainid uint64, hash string, chainCfg []*conf.ChainListenConfig) []chainhashproxy {
+	x := make([]chainhashproxy, 0)
+	for _, chain := range chainCfg {
+		if chain.ChainId == chainid {
+			a := chainhashproxy{
+				chainid,
+				hash,
+				chain.ProxyContract,
+			}
+			x = append(x, a)
+			for _, other := range chain.OtherProxyContract {
+				a := chainhashproxy{
+					chainid,
+					hash,
+					other.ItemProxy,
+				}
+				x = append(x, a)
+			}
+		}
+	}
+	return x
+}
+
+func initItemProxyMap(chainCfg []*conf.ChainListenConfig) {
+	mapItemProxy := make(map[string]string)
+	for _, chain := range chainCfg {
+		for _, other := range chain.OtherProxyContract {
+			mapItemProxy[other.ItemProxy] = other.ItemName
+		}
+		mapItemProxy[chain.ProxyContract] = "poly"
+	}
+	itemProxy2ItemName = mapItemProxy
 }
 
 func (this *Stats) computeLockTokenStatistics() (err error) {
 	logs.Info("start computeLockTokenStatistics")
+	initItemProxyMap(this.chainCfg)
 	lockTokenStatistics, err := this.dao.GetLockTokenStatistics()
 	if err != nil {
 		return fmt.Errorf("Failed to GetLockTokenStatistics %w", err)
@@ -31,29 +65,8 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to GetTokenBasics %w", err)
 	}
-	chainhashMap := make(map[chainhash]bool)
-	for _, tokenBasic := range tokenBasics {
-		if tokenBasic.Standard == uint8(0) && tokenBasic.ChainId != uint64(0) && tokenBasic.Tokens != nil {
-			for _, token := range tokenBasic.Tokens {
-				if token.ChainId == tokenBasic.ChainId {
-					a := chainhash{
-						token.ChainId,
-						token.Hash,
-					}
-					chainhashMap[a] = true
-				}
-			}
-
-		}
-	}
 	proxychainhashMap := make(map[chainhashproxy]bool)
 	for _, lockTokenStatistic := range lockTokenStatistics {
-		a := chainhash{
-			lockTokenStatistic.ChainId,
-			lockTokenStatistic.Hash,
-		}
-		chainhashMap[a] = false
-
 		b := chainhashproxy{
 			lockTokenStatistic.ChainId,
 			lockTokenStatistic.Hash,
@@ -61,26 +74,26 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 		}
 		proxychainhashMap[b] = true
 	}
-	for k, v := range chainhashMap {
-		if v {
-			proxyBalances := getAndRetryAllLockProxyBalance(k.chainId, k.hash)
-			for _, proxyBalance := range proxyBalances {
-				b := chainhashproxy{
-					k.chainId,
-					k.hash,
-					proxyBalance.ItemProxy,
-				}
-				if _, ok := proxychainhashMap[b]; !ok {
-					proxychainhashMap[b] = true
-					lockTokenStatistic := new(models.LockTokenStatistic)
-					lockTokenStatistic.ChainId = k.chainId
-					lockTokenStatistic.Hash = k.hash
-					lockTokenStatistic.ItemProxy = proxyBalance.ItemProxy
-					lockTokenStatistic.ItemName = proxyBalance.ItemName
-					lockTokenStatistic.InAmount = models.NewBigInt(proxyBalance.Amount)
-					lockTokenStatistics = append(lockTokenStatistics, lockTokenStatistic)
+	for _, tokenBasic := range tokenBasics {
+		if tokenBasic.Standard == uint8(0) && tokenBasic.ChainId != uint64(0) && tokenBasic.Tokens != nil {
+			for _, token := range tokenBasic.Tokens {
+				if token.ChainId == tokenBasic.ChainId {
+					chainProxySlice := assembleLockToken(token.ChainId, token.Hash, this.chainCfg)
+					for _, v := range chainProxySlice {
+						if _, ok := proxychainhashMap[v]; !ok {
+							proxychainhashMap[v] = true
+							lockTokenStatistic := new(models.LockTokenStatistic)
+							lockTokenStatistic.ChainId = v.chainId
+							lockTokenStatistic.Hash = v.hash
+							lockTokenStatistic.ItemProxy = v.ItemProxy
+							lockTokenStatistic.ItemName = itemProxy2ItemName[v.ItemProxy]
+							lockTokenStatistic.InAmount = models.NewBigIntFromInt(0)
+							lockTokenStatistics = append(lockTokenStatistics, lockTokenStatistic)
+						}
+					}
 				}
 			}
+
 		}
 	}
 	tokenBasicBTC, err := this.dao.GetBTCPrice()
@@ -129,25 +142,4 @@ func getAndRetryProxyBalance(chainId uint64, hash string, itemProxy string) (*bi
 		}
 	}
 	return balance, err
-}
-func getAndRetryAllLockProxyBalance(chainId uint64, hash string) []*common.ProxyBalance {
-	chpMap := make(map[chainhashproxy]bool)
-	resultProxyBalances := make([]*common.ProxyBalance, 0)
-	for i := 0; i < 2; i++ {
-		proxyBalances := common.GetAllLockProxyBalance(chainId, hash)
-		for _, proxyBalance := range proxyBalances {
-			b := chainhashproxy{
-				chainId,
-				hash,
-				proxyBalance.ItemProxy,
-			}
-			if _, ok := chpMap[b]; !ok {
-				resultProxyBalances = append(resultProxyBalances, proxyBalance)
-				chpMap[b] = true
-			}
-
-		}
-		time.Sleep(time.Millisecond * 500)
-	}
-	return resultProxyBalances
 }
