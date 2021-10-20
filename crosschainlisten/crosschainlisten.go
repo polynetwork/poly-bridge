@@ -319,6 +319,20 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		dstChainName = dstChain.Name
 	}
 	ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
+	txType := "SWAP"
+	if srcTransaction.SrcSwap != nil {
+		switch srcTransaction.SrcSwap.Type {
+		case basedef.SWAP_SWAP:
+			txType = "SWAP"
+		case basedef.SWAP_ROLLBACK:
+			txType = "ROLLBACK"
+		case basedef.SWAP_ADDLIQUIDITY:
+			txType = "ADDLIQUIDITY"
+		case basedef.SWAP_REMOVELIQUIDITY:
+			txType = "REMOVELIQUIDITY"
+		}
+	}
+	ss += "Type: " + txType + "\n"
 	ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
 		Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
 	ss += "Hash: " + srcTransaction.Hash + "\n"
