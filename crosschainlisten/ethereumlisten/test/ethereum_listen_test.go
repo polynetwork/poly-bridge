@@ -47,7 +47,7 @@ func TestEthereumListen(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config.Backup)
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config)
 	chainListen.ListenChain()
 }
 
@@ -70,7 +70,7 @@ func TestEthereumListen_StartStop(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config.Backup)
+	chainListen := crosschainlisten.NewCrossChainListen(chainHandle, dao, config)
 	chainListen.Start()
 	time.Sleep(15 * time.Second)
 	//chainListen.Stop()

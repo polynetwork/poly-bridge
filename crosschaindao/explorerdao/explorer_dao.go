@@ -396,6 +396,10 @@ func (dao *ExplorerDao) RemoveTokens(tokens []string) error {
 	return nil
 }
 
+func (dao *ExplorerDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.Token, error) {
+	return nil, nil
+}
+
 func (dao *ExplorerDao) Name() string {
 	return basedef.SERVER_EXPLORER
 }

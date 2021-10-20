@@ -31,6 +31,7 @@ type CrossChainDao interface {
 	UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error
 	RemoveEvents(srcHashes []string, polyHashes []string, dstHashes []string) error
 	GetChain(chainId uint64) (*models.Chain, error)
+	GetTokenBasicByHash(chainId uint64, hash string) (*models.Token, error)
 	UpdateChain(chain *models.Chain) error
 	AddChains(chain []*models.Chain, chainFees []*models.ChainFee) error
 	AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error
