@@ -219,6 +219,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcSwapTransfer.DstChainId = v.ToChainId
 					srcSwapTransfer.DstUser = v.ToAddress
 					srcSwapTransfer.PoolId = v.ToPoolId
+					srcSwapTransfer.Type = v.Type
 					srcTransaction.SrcSwap = srcSwapTransfer
 
 					wrapperTransaction := &models.WrapperTransaction{}
