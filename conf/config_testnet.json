@@ -298,6 +298,25 @@
       ],
       "CCMContract": "3A77dB10eAa7436e608a99643Ab2bEB2E901C72C",
       "ProxyContract": "97f72bA888A26A0F98C67cf15d781dDBFE64B990"
+    },
+    {
+      "ChainName": "XDai",
+      "ChainId": 206,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "https://sokol.poa.network"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "",
+        "a7eDA65F94A2a334a0de42d479585b65D27b2249"
+      ],
+      "CCMContract": "F87527a74215777391fE4AfD082FeeED3E5A0ca5",
+      "ProxyContract": "52B3048eeF2E53bAF430B0bA4752999F244d1709"
     }
   ],
   "StatsConfig": {
