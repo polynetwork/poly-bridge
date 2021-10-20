@@ -105,7 +105,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 				switch uint64(fchainid) {
 				case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID,
 					basedef.O3_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID,
-					basedef.PLT_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID:
+					basedef.PLT_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID:
 					mctx.SrcHash = states[3].(string)
 				default:
 					mctx.SrcHash = basedef.HexStringReverse(states[3].(string))
