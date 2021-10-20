@@ -266,7 +266,7 @@ func migrateLockTokenStatisticTable(config *conf.Config) {
 		logs.Error("Open mysql err", err)
 	}
 	err = db.Debug().AutoMigrate(
-		&models.LockTokenStatistics{},
+		&models.LockTokenStatistic{},
 	)
 	checkError(err, "Creating tables")
 }
