@@ -13,6 +13,8 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/getcrosstxlist/", &ExplorerController{}, "post:GetCrossTxList"),
 		web.NSRouter("/gettokentxlist/", &ExplorerController{}, "post:GetTokenTxList"),
 		web.NSRouter("/getaddresstxlist/", &ExplorerController{}, "post:GetAddressTxList"),
+		web.NSRouter("/getlocktokenlist/", &ExplorerController{}, "get:GetLockTokenList"),
+		web.NSRouter("/getlocktokeninfo/", &ExplorerController{}, "get:GetLockTokenInfo"),
 	)
 	return ns
 }

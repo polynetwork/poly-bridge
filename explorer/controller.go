@@ -437,3 +437,41 @@ func (c *ExplorerController) GetTransferStatistic() {
 	c.Data["json"] = models.MakeTransferInfoResp(tokenStatistics, chainStatistics, chains)
 	c.ServeJSON()
 }
+
+func (c *ExplorerController) GetLockTokenList() {
+	lockTokenResps := make([]*models.LockTokenResp, 0)
+	res := db.Raw("select  chain_id,CONVERT(sum(in_amount_usd), DECIMAL(37, 0)) as in_amount_usd,COUNT(DISTINCT(`hash`)) as token_num,COUNT(DISTINCT(`item_proxy`)) as proxy_num from lock_token_statistics where in_amount_usd >0 group by chain_id").
+		Scan(&lockTokenResps)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("GetLockTokenList does not exist"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	c.Data["json"] = models.MakeLockTokenListResp(lockTokenResps)
+	c.ServeJSON()
+}
+
+func (c *ExplorerController) GetLockTokenInfo() {
+	var lockTokenInfoReq models.LockTokenInfoReq
+	if len(c.Ctx.Input.Query("chainId")) == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("GetLockTokenStatistic request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	if chainId, err := strconv.Atoi(c.Ctx.Input.Query("chainId")); err == nil {
+		lockTokenInfoReq.ChainId = uint64(chainId)
+	}
+	lockTokenStatistics := make([]*models.LockTokenStatistic, 0)
+	res := db.Where("chain_id = ? and in_amount_usd > 0", lockTokenInfoReq.ChainId).
+		Preload("Token").
+		Find(&lockTokenStatistics)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("lockTokenStatistics does not exist"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	c.Data["json"] = models.MakeLockTokenInfoResp(lockTokenStatistics)
+	c.ServeJSON()
+}
