@@ -467,6 +467,18 @@
       "GasLimit": 120000,
       "ProxyFee": 140,
       "MinFee": 20
+    },
+    {
+      "ChainId": 206,
+      "ChainName": "XDai",
+      "Nodes": [
+        {
+          "Url": "https://sokol.poa.network"
+        }
+      ],
+      "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 20
     }
   ],
   "LargeTxAmount" : 10
