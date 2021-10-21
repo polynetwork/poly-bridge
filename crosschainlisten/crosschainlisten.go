@@ -300,12 +300,12 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 
 func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, dingUrl string, largeTxAmount int64, amount decimal.Decimal) error {
 	exceedingAmount := strconv.FormatInt(largeTxAmount, 10)
-	if amount.Cmp(decimal.NewFromInt(1000000)) >= 0 {
-		exceedingAmount = "100w"
+	if amount.Cmp(decimal.NewFromInt(10000000)) >= 0 {
+		exceedingAmount = "1000w"
 	} else if amount.Cmp(decimal.NewFromInt(5000000)) >= 0 {
 		exceedingAmount = "500w"
-	} else if amount.Cmp(decimal.NewFromInt(10000000)) >= 0 {
-		exceedingAmount = "1000w"
+	} else if amount.Cmp(decimal.NewFromInt(1000000)) >= 0 {
+		exceedingAmount = "100w"
 	}
 	ss := "A large transaction exceeding " + exceedingAmount + " USD was detected.\n"
 	srcChainName := strconv.FormatUint(srcTransaction.ChainId, 10)
