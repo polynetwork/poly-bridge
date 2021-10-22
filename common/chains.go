@@ -470,26 +470,25 @@ func GetAllLockProxyBalance(chainId uint64, hash string) []*ProxyBalance {
 }
 
 func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error) {
-	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+	switch chainId {
+	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		return ethereumSdk.Erc20Balance(hash, proxy)
-	}
-	if chainId == basedef.MATIC_CROSSCHAIN_ID {
+	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.Erc20Balance(hash, proxy)
-	}
-	if chainId == basedef.BSC_CROSSCHAIN_ID {
+	case basedef.BSC_CROSSCHAIN_ID:
 		return bscSdk.Erc20Balance(hash, proxy)
-	}
-	if chainId == basedef.HECO_CROSSCHAIN_ID {
+	case basedef.HECO_CROSSCHAIN_ID:
 		return hecoSdk.Erc20Balance(hash, proxy)
-	}
-	if chainId == basedef.OK_CROSSCHAIN_ID {
+	case basedef.OK_CROSSCHAIN_ID:
 		return okSdk.Erc20Balance(hash, proxy)
-	}
-	if chainId == basedef.NEO_CROSSCHAIN_ID {
+	case basedef.NEO_CROSSCHAIN_ID:
 		return neoSdk.Nep5Balance(hash, proxy)
-	}
-	if chainId == basedef.ONT_CROSSCHAIN_ID {
+	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologySdk.Oep4Balance(hash, proxy)
+	case basedef.ARBITRUM_CROSSCHAIN_ID:
+		return arbitrumSdk.Erc20Balance(hash, proxy)
+
+	default:
+		return new(big.Int).SetUint64(0), nil
 	}
-	return new(big.Int).SetUint64(0), nil
 }
