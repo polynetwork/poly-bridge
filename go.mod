@@ -27,6 +27,7 @@ require (
 	github.com/urfave/cli v1.22.4
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.8
+	github.com/Zilliqa/gozilliqa-sdk v1.2.1-0.20210927032600-4c733f2cb879
 )
 
 replace (

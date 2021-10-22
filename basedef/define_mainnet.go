@@ -35,6 +35,7 @@ const (
 	NEO3_CROSSCHAIN_ID     = uint64(14)
 	MATIC_CROSSCHAIN_ID    = uint64(17)
 	ARBITRUM_CROSSCHAIN_ID = uint64(19)
+	ZILLIQA_CROSSCHAIN_ID = uint64(111)
 
 	ENV = "mainnet"
 )
