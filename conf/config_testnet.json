@@ -355,6 +355,25 @@
       ],
       "CCMContract": "f37D8C2d072b74d6532541B70319ef08f9F6a4a8",
       "ProxyContract": "80a53FD352597AbA3dD52c722119865a8ed82632"
+    },
+    {
+      "ChainName": "Optimistic",
+      "ChainId": 210,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "https://kovan.optimism.io"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "",
+        "E324EF8cd52833DD117e8ca87b483E78b30C3696"
+      ],
+      "CCMContract": "C8042579D6b60E0e35161F228827E3Fa0F51d5B6",
+      "ProxyContract": "8a85143cA6ec1e181C3A5Ae4042ca999bFbF571B"
     }
   ],
   "StatsConfig": {
@@ -524,6 +543,18 @@
       "Nodes": [
         {
           "Url": "https://rpc.testnet.fantom.network"
+        }
+      ],
+      "GasLimit": 120000,
+      "ProxyFee": 140,
+      "MinFee": 20
+    },
+    {
+      "ChainId": 210,
+      "ChainName": "Optimistic",
+      "Nodes": [
+        {
+          "Url": "https://kovan.optimism.io"
         }
       ],
       "GasLimit": 120000,

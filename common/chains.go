@@ -24,6 +24,7 @@ var (
 	xdaiSdk     *chainsdk.EthereumSdkPro
 	fantomSdk   *chainsdk.EthereumSdkPro
 	avaxSdk     *chainsdk.EthereumSdkPro
+	optimisticSdk *chainsdk.EthereumSdkPro
 	config      *conf.Config
 )
 
@@ -149,6 +150,14 @@ func newChainSdks(config *conf.Config) {
 		urls := avaxConfig.GetNodesUrl()
 		avaxSdk = chainsdk.NewEthereumSdkPro(urls, avaxConfig.ListenSlot, avaxConfig.ChainId)
 	}
+	{
+		optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
+		if optimisticConfig == nil {
+			panic("chain is invalid")
+		}
+		urls := optimisticConfig.GetNodesUrl()
+		optimisticSdk = chainsdk.NewEthereumSdkPro(urls, optimisticConfig.ListenSlot, optimisticConfig.ChainId)
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -243,6 +252,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return avaxSdk.Erc20Balance(hash, avaxConfig.ProxyContract)
 	}
+	if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
+		optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
+		if optimisticConfig == nil {
+			panic("chain is invalid")
+		}
+		return optimisticSdk.Erc20Balance(hash, optimisticConfig.ProxyContract)
+	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf == nil {
@@ -332,6 +348,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return avaxSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
+		optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
+		if optimisticConfig == nil {
+			panic("chain is invalid")
+		}
+		return optimisticSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -367,6 +390,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return fantomSdk.Erc20Balance(hash, proxy)
 	case basedef.AVAX_CROSSCHAIN_ID:
 		return avaxSdk.Erc20Balance(hash, proxy)
+	case basedef.OPTIMISTIC_CROSSCHAIN_ID:
+		return optimisticSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
