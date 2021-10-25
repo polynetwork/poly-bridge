@@ -162,6 +162,14 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	return value, nil
 }
 
+//lock item_proxy use
+func Proxy2Address(chainId uint64, proxy string) string {
+	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID {
+		proxy = HexStringReverse(proxy)
+	}
+	return Hash2Address(chainId, proxy)
+}
+
 func ConfirmEnv(env string) {
 	if ENV != env {
 		logs.Error("Config env(%s) does not match build env(%s)", env, ENV)

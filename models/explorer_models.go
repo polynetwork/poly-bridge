@@ -804,7 +804,7 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 		resp.ChainId = lockTokenStatistic.ChainId
 		resp.Hash = lockTokenStatistic.Hash
 		resp.TokenName = lockTokenStatistic.Token.Name
-		resp.ItemProxy = lockTokenStatistic.ItemProxy
+		resp.ItemProxy = basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy)
 		resp.AmountUsd = decimal.NewFromBigInt(&lockTokenStatistic.InAmountUsd.Int, -4).String()
 		lockTokenInfoResps = append(lockTokenInfoResps, resp)
 	}
