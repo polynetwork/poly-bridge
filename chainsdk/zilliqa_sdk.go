@@ -2,27 +2,31 @@ package chainsdk
 
 import (
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
+	"github.com/beego/beego/v2/core/logs"
+	"strconv"
 )
 
 type ZilliqaSdk struct {
 	client *provider.Provider
 }
 
-func NewZilliqaSdk(url string) (*ZilliqaSdk, error) {
+func NewZilliqaSdk(url string) *ZilliqaSdk {
 	zilClient := provider.NewProvider(url)
 	return &ZilliqaSdk{
 		client: zilClient,
-	}, nil
+	}
 }
 
-func (client *ZilliqaSdk) GetCurrentBlockHeight() (uint64, error) {
-	client.client.
-	var result hexutil.Big
-	err := ec.rpcClient.CallContext(context.Background(), &result, "eth_blockNumber")
-	for err != nil {
-		return 0, err
+func (zs *ZilliqaSdk) GetCurrentBlockHeight() (uint64, error) {
+	txBlock, err := zs.client.GetLatestTxBlock()
+	if err != nil {
+		logs.Error("ZilliqaSdk GetCurrentBlockHeight - cannot getLatestTxBlock, err: %s\n", err.Error())
 	}
-	return (*big.Int)(&result).Uint64(), err
+	blockNumber, err1 := strconv.ParseUint(txBlock.Header.BlockNum, 10, 32)
+	if err1 != nil {
+		logs.Error("ZilliqaSdk GetCurrentBlockHeight - cannot parse block height, err: %s\n", err1.Error())
+	}
+	return blockNumber, err
 }
+
+
