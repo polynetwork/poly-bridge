@@ -42,7 +42,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 )
 
-var chainListens [14]*CrossChainListen
+var chainListens []*CrossChainListen
 
 func StartCrossChainListen(config *conf.Config) {
 	dao := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
@@ -84,7 +84,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 	case basedef.POLY_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
-		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID:
+		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID,
+		basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
