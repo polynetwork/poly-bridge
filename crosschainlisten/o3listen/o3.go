@@ -108,7 +108,7 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 	dstTransactions := make([]*models.DstTransaction, 0)
 	for _, lockEvent := range eccmLockEvents {
 		if lockEvent.Method == _eth_crosschainlock {
-			logs.Info("(lock) from chain: %s, txhash: %s, txid: %s", this.GetChainName(), lockEvent.TxHash, lockEvent.Txid)
+			logs.Info("(lock) from chain: %s, height: %d, txhash: %s, txid: %s", this.GetChainName(), height, lockEvent.TxHash, lockEvent.Txid)
 			srcTransaction := &models.SrcTransaction{}
 			srcTransaction.ChainId = this.GetChainId()
 			srcTransaction.Hash = lockEvent.TxHash
@@ -150,7 +150,7 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 	// save unLockEvent to db
 	for _, unLockEvent := range eccmUnLockEvents {
 		if unLockEvent.Method == _eth_crosschainunlock {
-			logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), unLockEvent.TxHash)
+			logs.Info("(unlock) to chain: %s, height: %d, txhash: %s", this.GetChainName(), height, unLockEvent.TxHash)
 			dstTransaction := &models.DstTransaction{}
 			dstTransaction.ChainId = this.GetChainId()
 			dstTransaction.Hash = unLockEvent.TxHash

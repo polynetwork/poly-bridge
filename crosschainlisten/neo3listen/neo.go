@@ -176,7 +176,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					eventName := notify.EventName
 					switch eventName {
 					case _neo_crosschainlock:
-						logs.Info("(lock) from chain: %s, txhash: %s", this.GetChainName(), tx.Hash[2:])
+						logs.Info("(lock) from chain: %s, height:%d, txhash: %s", this.GetChainName(), height, tx.Hash[2:])
 						if len(states) < 5 {
 							continue
 						}
@@ -240,7 +240,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						fctx.SrcTransfer = fctransfer
 						srcTransactions = append(srcTransactions, fctx)
 					case _neo_crosschainunlock:
-						logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), tx.Hash[2:])
+						logs.Info("(unlock) to chain: %s, height:%d, txhash: %s", this.GetChainName(), height, tx.Hash[2:])
 						if len(states) < 3 {
 							continue
 						}

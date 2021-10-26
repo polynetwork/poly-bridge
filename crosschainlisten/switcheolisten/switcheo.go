@@ -84,7 +84,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 	for _, lockEvent := range ccmLockEvent {
 		if lockEvent.Method == _switcheo_crosschainlock {
-			logs.Info("from chain: %d, txhash: %s\n", this.GetChainName(), lockEvent.TxHash)
+			logs.Info("from chain: %d, height: %d, txhash: %s\n", this.GetChainName(), height, lockEvent.TxHash)
 			srcTransfer := &models.SrcTransfer{}
 			for _, v := range lockEvents {
 				if v.TxHash == lockEvent.TxHash {
@@ -119,7 +119,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 	for _, unLockEvent := range ccmUnlockEvent {
 		if unLockEvent.Method == _switcheo_crosschainunlock {
-			logs.Info("to chain: %s, txhash: %s\n", this.GetChainName(), unLockEvent.TxHash)
+			logs.Info("to chain: %s, height: %d, txhash: %s\n", this.GetChainName(), height, unLockEvent.TxHash)
 			dstTransfer := &models.DstTransfer{}
 			for _, v := range unlockEvents {
 				if v.TxHash == unLockEvent.TxHash {
