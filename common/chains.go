@@ -241,7 +241,7 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		return maticSdk.Erc20TotalSupply(hash)
 	}
 	if chainId == basedef.ARBITRUM_CROSSCHAIN_ID {
-		arbitrumConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
+		arbitrumConfig := config.GetChainListenConfig(basedef.ARBITRUM_CROSSCHAIN_ID)
 		if arbitrumConfig == nil {
 			panic("chain is invalid")
 		}
