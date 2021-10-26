@@ -84,7 +84,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 			if notify.ContractAddress == this.polyCfg.CCMContract {
 				states := notify.States.([]interface{})
 				contractMethod, _ := states[0].(string)
-				logs.Info("chain: %s, tx hash: %s", this.GetChainName(), event.TxHash)
+				logs.Info("chain: %s, height: %d, tx hash: %s", this.GetChainName(), height, event.TxHash)
 				if contractMethod != "makeProof" && contractMethod != "btcTxToRelay" {
 					continue
 				}

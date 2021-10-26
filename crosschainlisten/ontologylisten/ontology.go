@@ -111,7 +111,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				contractMethod = this.parseOntolofyMethod(contractMethod)
 				switch contractMethod {
 				case ont_wrapper_lock:
-					logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), event.TxHash)
+					logs.Info("(wrapper) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 					if len(states) < 8 {
 						continue
 					}
@@ -142,7 +142,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				contractMethod, _ := states[0].(string)
 				switch contractMethod {
 				case _ont_crosschainlock:
-					logs.Info("(lock) from chain: %s, txhash: %s", this.GetChainName(), event.TxHash)
+					logs.Info("(lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 					if len(states) < 7 {
 						continue
 					}
@@ -200,7 +200,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransaction.SrcTransfer = srcTransfer
 					srcTransactions = append(srcTransactions, srcTransaction)
 				case _ont_crosschainunlock:
-					logs.Info("(unlock) to chain: %s, txhash: %s", this.GetChainName(), event.TxHash)
+					logs.Info("(unlock) to chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 					if len(states) < 6 {
 						continue
 					}

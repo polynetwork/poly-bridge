@@ -123,7 +123,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 					contractMethod := this.parseNeoMethod(notify.State.Value[0].Value)
 					switch contractMethod {
 					case _poly_wrapper_lock:
-						logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), tx.Txid[2:])
+						logs.Info("(wrapper) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, tx.Txid[2:])
 						if len(notify.State.Value) < 8 {
 							continue
 						}
@@ -178,7 +178,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 					contractMethod := this.parseNeoMethod(notify.State.Value[0].Value)
 					switch contractMethod {
 					case _neo_crosschainlock:
-						logs.Info("(lock) from chain: %s, txhash: %s", this.GetChainName(), tx.Txid[2:])
+						logs.Info("(lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, tx.Txid[2:])
 						if len(notify.State.Value) < 6 {
 							continue
 						}
