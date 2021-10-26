@@ -235,6 +235,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							ch <- false
 							return
 						}
+						logs.Info("HandleNewBlock [chainName: %s, height: %d]. \n"+
+							"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
+							chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
 						err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 						if err != nil {
 							logs.Error("UpdateEvents on block %d err: %v", height, err)
