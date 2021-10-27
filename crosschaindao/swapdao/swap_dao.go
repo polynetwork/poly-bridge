@@ -24,6 +24,7 @@ import (
 	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
 )
@@ -177,7 +178,7 @@ func (dao *SwapDao) AddChains(chain []*models.Chain, chainFees []*models.ChainFe
 	return nil
 }
 
-func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
+func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap, servercfg *serverconf.Config) error {
 	if tokens != nil && len(tokens) > 0 {
 		for _, basic := range tokens {
 			for _, token := range basic.Tokens {

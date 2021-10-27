@@ -19,6 +19,7 @@ package main
 
 import (
 	"poly-bridge/bridge_tools/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
 	"strings"
@@ -28,7 +29,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func startDeploy(cfg *conf.DeployConfig) {
+func startDeploy(cfg *conf.DeployConfig, servercfg *serverconf.Config) {
 	dbCfg := cfg.DBConfig
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -70,6 +71,6 @@ func startDeploy(cfg *conf.DeployConfig) {
 			token.Hash = strings.ToLower(token.Hash)
 		}
 	}
-	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps)
+	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps, servercfg)
 	dao.AddChains(cfg.Chains, cfg.ChainFees)
 }
