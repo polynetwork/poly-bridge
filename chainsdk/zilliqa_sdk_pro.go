@@ -2,10 +2,11 @@ package chainsdk
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/beego/beego/v2/core/logs"
-	"math/big"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+	"runtime/debug"
 	"sync"
+	"time"
 )
 
 
@@ -52,6 +53,28 @@ func (pro *ZilliqaSdkPro) selection() {
 	}
 }
 
+func (pro *ZilliqaSdkPro) NodeSelection() {
+	for {
+		pro.nodeSelection()
+	}
+}
+
+func (pro *ZilliqaSdkPro) nodeSelection() {
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error("node selection, recover info: %s", string(debug.Stack()))
+		}
+	}()
+	logs.Debug("node selection of chain : %d......", pro.id)
+	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot))
+	for {
+		select {
+		case <-ticker.C:
+			pro.selection()
+		}
+	}
+}
+
 func (pro *ZilliqaSdkPro) GetLatestHeight() (uint64, error) {
 	info := pro.GetLatest()
 	if info == nil {
@@ -60,13 +83,48 @@ func (pro *ZilliqaSdkPro) GetLatestHeight() (uint64, error) {
 	return info.latestHeight, nil
 }
 
-
-func (client *ZilliqaSdkPro) GetCurrentBlockHeight() (uint64, error) {
-	client.client.
-	var result hexutil.Big
-	err := ec.rpcClient.CallContext(context.Background(), &result, "eth_blockNumber")
-	for err != nil {
-		return 0, err
+func (pro *ZilliqaSdkPro) GetLatest() *ZilliqaInfo {
+	pro.mutex.Lock()
+	defer func() {
+		pro.mutex.Unlock()
+	}()
+	height := uint64(0)
+	var latestInfo *ZilliqaInfo = nil
+	for _, info := range pro.infos {
+		if info != nil && info.latestHeight > height {
+			height = info.latestHeight
+			latestInfo = info
+		}
 	}
-	return (*big.Int)(&result).Uint64(), err
+	return latestInfo
+}
+
+func (pro *ZilliqaSdkPro) GetInfoByHeight(height uint64) (*ZilliqaInfo, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		index := height
+		_, err := info.sdk.GetBlock(index)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return info, nil
+		}
+	}
+	return nil, fmt.Errorf("all node is not working")
+}
+
+func (pro *ZilliqaSdkPro) GetBlockByHeight(height uint64) (*ctypes.ResultBlock, error) {
+	info, err := pro.GetInfoByHeight(height)
+	if err != nil {
+		logs.Error("GetInfoByHeight err: %v", err)
+	} else {
+		index := int64(height)
+		block, _ := info.sdk.Block(&index)
+		return block, nil
+	}
+	return nil, fmt.Errorf("all node is not working")
 }
