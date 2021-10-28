@@ -3,6 +3,7 @@ module poly-bridge
 go 1.14
 
 require (
+	github.com/Zilliqa/gozilliqa-sdk v1.2.1-0.20210927032600-4c733f2cb879
 	github.com/beego/beego/v2 v2.0.1
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/goleveldb v1.0.0
@@ -27,7 +28,6 @@ require (
 	github.com/urfave/cli v1.22.4
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.8
-	github.com/Zilliqa/gozilliqa-sdk v1.2.1-0.20210927032600-4c733f2cb879
 )
 
 replace (

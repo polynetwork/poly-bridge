@@ -9,13 +9,12 @@ import (
 	"time"
 )
 
-
 type ZilliqaInfo struct {
-	sdk *ZilliqaSdk
+	sdk          *ZilliqaSdk
 	latestHeight uint64
 }
 
-func NewZilliqaInfo(url string) (*ZilliqaInfo) {
+func NewZilliqaInfo(url string) *ZilliqaInfo {
 	sdk := NewZilliqaSdk(url)
 	return &ZilliqaInfo{
 		sdk:          sdk,
@@ -123,7 +122,7 @@ func (pro *ZilliqaSdkPro) GetBlockByHeight(height uint64) (*ctypes.ResultBlock, 
 		logs.Error("GetInfoByHeight err: %v", err)
 	} else {
 		index := int64(height)
-		block, _ := info.sdk.Block(&index)
+		block, _ := info.sdk.GetBlock(index)
 		return block, nil
 	}
 	return nil, fmt.Errorf("all node is not working")
