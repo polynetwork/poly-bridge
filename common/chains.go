@@ -22,6 +22,7 @@ var (
 	arbitrumSdk *chainsdk.EthereumSdkPro
 	zilliqaSdk  *chainsdk.ZilliqaSdkPro
 	xdaiSdk     *chainsdk.EthereumSdkPro
+	fantomSdk   *chainsdk.EthereumSdkPro
 	config      *conf.Config
 )
 
@@ -132,6 +133,14 @@ func newChainSdks(config *conf.Config) {
 		urls := zilliqaCfg.GetNodesUrl()
 		zilliqaSdk = chainsdk.NewZilliqaSdkPro(urls, zilliqaCfg.ListenSlot, zilliqaCfg.ChainId)
 	}
+	{
+		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+		if fantomConfig == nil {
+			panic("chain is invalid")
+		}
+		urls := fantomConfig.GetNodesUrl()
+		fantomSdk = chainsdk.NewEthereumSdkPro(urls, fantomConfig.ListenSlot, fantomConfig.ChainId)
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -212,6 +221,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return zilliqaSdk.Erc20Balance(hash, zilliqaCfg.ProxyContract)
 	}
+	if chainId == basedef.FANTOM_CROSSCHAIN_ID {
+		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+		if fantomConfig == nil {
+			panic("chain is invalid")
+		}
+		return fantomSdk.Erc20Balance(hash, fantomConfig.ProxyContract)
+	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf == nil {
@@ -280,12 +296,26 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return arbitrumSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.FANTOM_CROSSCHAIN_ID {
+		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+		if fantomConfig == nil {
+			panic("chain is invalid")
+		}
+		return fantomSdk.Erc20TotalSupply(hash)
+	}
 	if chainId == basedef.XDAI_CROSSCHAIN_ID {
 		xdaiConfig := config.GetChainListenConfig(basedef.XDAI_CROSSCHAIN_ID)
 		if xdaiConfig == nil {
 			panic("chain is invalid")
 		}
 		return xdaiSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.FANTOM_CROSSCHAIN_ID {
+		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+		if fantomConfig == nil {
+			panic("chain is invalid")
+		}
+		return fantomSdk.Erc20TotalSupply(hash)
 	}
 	return new(big.Int).SetUint64(0), nil
 }
@@ -318,6 +348,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return xdaiSdk.Erc20Balance(hash, proxy)
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		return zilliqaSdk.Erc20Balance(hash, proxy)
+	case basedef.FANTOM_CROSSCHAIN_ID:
+		return fantomSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
