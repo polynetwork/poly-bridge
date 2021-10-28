@@ -130,7 +130,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	wrapperTransactions = append(wrapperTransactions, nftWrapperTransactions...)
 
 	for _, item := range wrapperTransactions {
-		logs.Info("(wrapper) from chain: %s, height: %d - %d, txhash: %s", this.GetChainName(), startHeight, endHeight, item.Hash)
+		logs.Info("(wrapper) from chain: %s, height: %d, txhash: %s", this.GetChainName(), item.BlockHeight, item.Hash)
 		item.Time = blockTimer[item.BlockHeight]
 		item.SrcChainId = this.GetChainId()
 		item.Status = basedef.STATE_SOURCE_DONE
