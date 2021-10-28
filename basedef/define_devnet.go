@@ -33,6 +33,7 @@ const (
 	MATIC_CROSSCHAIN_ID    = uint64(13)
 	PLT_CROSSCHAIN_ID      = uint64(107)
 	ARBITRUM_CROSSCHAIN_ID = uint64(205)
+	XDAI_CROSSCHAIN_ID     = uint64(206)
 
 	ENV = "devnet"
 )
