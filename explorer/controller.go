@@ -326,6 +326,23 @@ func (c *ExplorerController) GetCrossTx() {
 			dstTransaction.DstTransfer = new(models.DstTransfer)
 		}
 	}
+
+	if srcTransaction.DstChainId == basedef.O3_CROSSCHAIN_ID {
+		relatedPolyTransaction := new(models.PolyTransaction)
+		err = db.Where("src_hash = ?", relation.DstHash).First(relatedPolyTransaction).Error
+		if err == nil {
+			relation.RelatedPolyHash = relatedPolyTransaction.Hash
+		}
+	}
+
+	if srcTransaction.ChainId == basedef.O3_CROSSCHAIN_ID {
+		relatedDstTransaction := new(models.DstTransaction)
+		err = db.Where("hash = ?", relation.SrcHash).First(relatedDstTransaction).Error
+		if err == nil {
+			relation.RelatedPolyHash = relatedDstTransaction.PolyHash
+		}
+	}
+
 	toToken := new(models.Token)
 	err = db.Where("hash = ? and chain_id =?", relation.ToTokenHash, relation.ToChainId).
 		First(toToken).Error
