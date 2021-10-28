@@ -42,7 +42,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 )
 
-var chainListens [13]*CrossChainListen
+var chainListens [14]*CrossChainListen
 
 func StartCrossChainListen(config *conf.Config) {
 	dao := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
