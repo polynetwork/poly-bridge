@@ -20,13 +20,14 @@ package main
 import (
 	"gorm.io/gorm/logger"
 	"poly-bridge/bridge_tools/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschaindao/swapdao"
 	"poly-bridge/models"
 	"strings"
 )
 
-func startUpdate(cfg *conf.UpdateConfig) {
+func startUpdate(cfg *conf.UpdateConfig, servercfg *serverconf.Config) {
 	dbCfg := cfg.DBConfig
 	Logger := logger.Default
 	if dbCfg.Debug == true {
@@ -54,7 +55,7 @@ func startUpdate(cfg *conf.UpdateConfig) {
 		}
 	}
 	dao.RemoveTokens(cfg.RemoveTokens)
-	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps)
+	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps, servercfg)
 	dao.AddChains(cfg.Chains, cfg.ChainFees)
 	dao.RemoveTokenMaps(cfg.RemoveTokenMaps)
 

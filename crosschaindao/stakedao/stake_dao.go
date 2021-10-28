@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"poly-bridge/basedef"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/models"
 )
 
@@ -102,7 +103,7 @@ func (dao *StakeDao) UpdateChain(chain *models.Chain) error {
 	return nil
 }
 
-func (dao *StakeDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
+func (dao *StakeDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap, servercfg *serverconf.Config) error {
 	return nil
 }
 

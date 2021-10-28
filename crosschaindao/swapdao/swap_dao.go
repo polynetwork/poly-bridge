@@ -22,10 +22,14 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/coinpricelisten/coinmarketcap"
 	"poly-bridge/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
+	"time"
 )
 
 type SwapDao struct {
@@ -177,7 +181,8 @@ func (dao *SwapDao) AddChains(chain []*models.Chain, chainFees []*models.ChainFe
 	return nil
 }
 
-func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
+//now mainnet use polyswap
+func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap, servercfg *serverconf.Config) error {
 	if tokens != nil && len(tokens) > 0 {
 		for _, basic := range tokens {
 			for _, token := range basic.Tokens {
@@ -185,6 +190,50 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.T
 				token.Property = basic.Property
 				if basic.Standard == models.TokenTypeErc721 {
 					token.Name = basic.Name
+				}
+			}
+		}
+		if servercfg != nil {
+			var coinmarketsdk *coinmarketcap.CoinMarketCapSdk
+			for _, coinconfig := range servercfg.CoinPriceListenConfig {
+				if coinconfig.MarketName == basedef.MARKET_COINMARKETCAP {
+					coinmarketsdk = coinmarketcap.NewCoinMarketCapSdk(coinconfig)
+					break
+				}
+			}
+			for _, tokenBasic := range tokens {
+				if tokenBasic != nil && tokenBasic.PriceMarkets != nil && len(tokenBasic.PriceMarkets) > 0 && tokenBasic.Standard == models.TokenTypeErc20 {
+					for _, priceMarket := range tokenBasic.PriceMarkets {
+						if priceMarket.MarketName == basedef.MARKET_COINMARKETCAP && priceMarket.CoinMarketId > 0 {
+							fmt.Printf("start update token:%v CoinMarketId:%v coinmarketcap price\n", tokenBasic.Name, priceMarket.CoinMarketId)
+							coinIds := make([]string, 0)
+							coinIds = append(coinIds, fmt.Sprintf("%d", priceMarket.CoinMarketId))
+							requestCoinIds := strings.Join(coinIds, ",")
+							quotes, err := coinmarketsdk.QuotesLatest(requestCoinIds)
+							coinName2Price := make(map[string]float64)
+							if err != nil {
+								for _, v := range quotes {
+									name := v.Name
+									if v.Quote == nil || v.Quote["USD"] == nil {
+										fmt.Printf(" There is no price for coin %s in CoinMarketCap!\n", name)
+										continue
+									}
+									coinName2Price[name] = v.Quote["USD"].Price
+								}
+							}
+							for name, price := range coinName2Price {
+								price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(basedef.PRICE_PRECISION))).Int64()
+								if priceMarket.Name == name {
+									priceMarket.Price = price
+									priceMarket.Time = time.Now().Unix()
+									priceMarket.Ind = 1
+									tokenBasic.Price = price
+									break
+								}
+							}
+							fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price\n", tokenBasic.Name, priceMarket.CoinMarketId)
+						}
+					}
 				}
 			}
 		}

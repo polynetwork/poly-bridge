@@ -20,6 +20,7 @@ package crosschaindao
 import (
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/crosschaindao/bridgedao"
 	"poly-bridge/crosschaindao/explorerdao"
 	"poly-bridge/crosschaindao/stakedao"
@@ -34,7 +35,7 @@ type CrossChainDao interface {
 	GetTokenBasicByHash(chainId uint64, hash string) (*models.Token, error)
 	UpdateChain(chain *models.Chain) error
 	AddChains(chain []*models.Chain, chainFees []*models.ChainFee) error
-	AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error
+	AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap, servercfg *serverconf.Config) error
 	RemoveTokens(tokens []string) error
 	RemoveTokenMaps(tokenMaps []*models.TokenMap) error
 	Name() string

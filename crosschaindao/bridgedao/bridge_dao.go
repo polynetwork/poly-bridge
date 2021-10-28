@@ -27,6 +27,7 @@ import (
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
 )
@@ -201,7 +202,7 @@ func (dao *BridgeDao) AddChains(chain []*models.Chain, chainFees []*models.Chain
 	return nil
 }
 
-func (dao *BridgeDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
+func (dao *BridgeDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap, servercfg *serverconf.Config) error {
 	if tokens != nil && len(tokens) > 0 {
 		res := dao.db.Save(tokens)
 		if res.Error != nil {
