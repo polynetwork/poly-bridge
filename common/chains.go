@@ -22,6 +22,7 @@ var (
 	arbitrumSdk *chainsdk.EthereumSdkPro
 	xdaiSdk     *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
+	fantomSdk   *chainsdk.EthereumSdkPro
 	config      *conf.Config
 )
 
@@ -131,6 +132,14 @@ func newChainSdks(config *conf.Config) {
 		urls := optimisticConfig.GetNodesUrl()
 		optimisticSdk = chainsdk.NewEthereumSdkPro(urls, optimisticConfig.ListenSlot, optimisticConfig.ChainId)
 	}
+	{
+		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+		if fantomConfig == nil {
+			panic("chain is invalid")
+		}
+		urls := fantomConfig.GetNodesUrl()
+		fantomSdk = chainsdk.NewEthereumSdkPro(urls, fantomConfig.ListenSlot, fantomConfig.ChainId)
+	}
 
 }
 
@@ -211,6 +220,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return optimisticSdk.Erc20Balance(hash, optimisticConfig.ProxyContract)
+	}
+	if chainId == basedef.FANTOM_CROSSCHAIN_ID {
+		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+		if fantomConfig == nil {
+			panic("chain is invalid")
+		}
+		return fantomSdk.Erc20Balance(hash, fantomConfig.ProxyContract)
 	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
@@ -294,6 +310,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return optimisticSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.FANTOM_CROSSCHAIN_ID {
+		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+		if fantomConfig == nil {
+			panic("chain is invalid")
+		}
+		return fantomSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -325,6 +348,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return xdaiSdk.Erc20Balance(hash, proxy)
 	case basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		return optimisticSdk.Erc20Balance(hash, proxy)
+	case basedef.FANTOM_CROSSCHAIN_ID:
+		return fantomSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}

@@ -336,6 +336,25 @@
       ],
       "CCMContract": "bA6F835ECAE18f5Fc5eBc074e5A0B94422a13126",
       "ProxyContract": "509fB7A017e33f18101dDC0d28Ac06aEaf6Edb4B"
+    },
+    {
+      "ChainName": "Fantom",
+      "ChainId": 208,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "https://rpc.testnet.fantom.network"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "",
+        "FAddf0cfb08F92779560db57BE6b2C7303aaD266"
+      ],
+      "CCMContract": "D9A3d265a1127051F620e700B5a461af4991EaAE",
+      "ProxyContract": "4a76E52600C6285029c8f7c52183cf86282cA5b8"
     }
   ],
   "StatsConfig": {
@@ -509,6 +528,18 @@
       ],
       "GasLimit": 120000,
       "ProxyFee": 120,
+      "MinFee": 20
+    },
+    {
+      "ChainId": 208,
+      "ChainName": "Fantom",
+      "Nodes": [
+        {
+          "Url": "https://rpc.testnet.fantom.network"
+        }
+      ],
+      "GasLimit": 120000,
+      "ProxyFee": 140,
       "MinFee": 20
     }
   ],
