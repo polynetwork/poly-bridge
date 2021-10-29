@@ -178,7 +178,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	if srcPolyDstRelations != nil && len(srcPolyDstRelations) > 0 {
-		jsonsrcPoly, _ := json.Marshal(srcPolyDstRelations[:3])
+		jsonsrcPoly, _ := json.Marshal(srcPolyDstRelations)
 		logs.Info("debugqqqqq srcPolyDstRelations:", string(jsonsrcPoly))
 	}
 	var transactionNum int64
