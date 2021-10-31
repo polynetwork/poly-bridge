@@ -3,7 +3,6 @@ package chainsdk
 import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -116,14 +115,12 @@ func (pro *ZilliqaSdkPro) GetInfoByHeight(height uint64) (*ZilliqaInfo, error) {
 	return nil, fmt.Errorf("all node is not working")
 }
 
-func (pro *ZilliqaSdkPro) GetBlockByHeight(height uint64) (*ctypes.ResultBlock, error) {
+func (pro *ZilliqaSdkPro) GetBlockByHeight(height uint64) (*ZilBlock, error) {
 	info, err := pro.GetInfoByHeight(height)
 	if err != nil {
 		logs.Error("GetInfoByHeight err: %v", err)
-	} else {
-		index := int64(height)
-		block, _ := info.sdk.GetBlock(index)
-		return block, nil
+		return nil, fmt.Errorf("Zilliqa all node is not working")
 	}
-	return nil, fmt.Errorf("all node is not working")
+	block, _ := info.sdk.GetBlock(height)
+	return block, nil
 }

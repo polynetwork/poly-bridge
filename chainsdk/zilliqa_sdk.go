@@ -6,6 +6,7 @@ import (
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/Zilliqa/gozilliqa-sdk/util"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/shopspring/decimal"
 	"math/big"
 	"strconv"
 	"strings"
@@ -34,18 +35,35 @@ func (zs *ZilliqaSdk) GetCurrentBlockHeight() (uint64, error) {
 	return blockNumber, err
 }
 
-func (zs *ZilliqaSdk) GetBlock(height uint64) ([]core.Transaction, error) {
+type ZilBlock struct {
+	Timestamp    uint64
+	Transactions []core.Transaction
+}
+
+func (zs *ZilliqaSdk) GetBlock(height uint64) (*ZilBlock, error) {
+	zilBlock := new(ZilBlock)
+	txBlockT, err := zs.client.GetTxBlock(strconv.FormatUint(height, 10))
+	if err != nil {
+		return nil, err
+	}
+	timestamp, err := decimal.NewFromString(txBlockT.Header.Timestamp)
+	if err != nil {
+		return nil, err
+	}
+	tt := timestamp.Div(decimal.New(1, 6)).BigInt().Uint64()
+	zilBlock.Timestamp = tt
 	transactions, err := zs.client.GetTxnBodiesForTxBlock(strconv.FormatUint(height, 10))
 	if err != nil {
 		if strings.Contains(err.Error(), "TxBlock has no transactions") {
-			logs.Info("ZilliqaSdk no transaction in block %d\n", height)
-			return []core.Transaction{},err
+			logs.Error("ZilliqaSdk no transaction in block %d\n", height)
+			return nil, err
 		} else {
-			logs.Info("ZilliqaSdk get transactions for tx block %d failed: %s\n", height, err.Error())
-			return []core.Transaction{},err
+			logs.Error("ZilliqaSdk get transactions for tx block %d failed: %s\n", height, err.Error())
+			return nil, err
 		}
 	}
-	return transactions,nil
+	zilBlock.Transactions = transactions
+	return zilBlock, nil
 }
 
 func (s *ZilliqaSyncManager) fetchLockDepositEvents(height uint64) bool {
@@ -107,5 +125,3 @@ func (s *ZilliqaSyncManager) fetchLockDepositEvents(height uint64) bool {
 
 	return true
 }
-
-
