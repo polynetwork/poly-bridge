@@ -123,7 +123,7 @@ func fetchBlock(config *conf.Config) {
 	if endheight < height {
 		endheight = height
 	}
-	if height == 0 || chain == 0 {
+	if height == 0 {
 		panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
 	}
 
