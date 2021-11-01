@@ -39,3 +39,7 @@ const (
 
 	ENV = "devnet"
 )
+
+const (
+	HTTP_SERVER_NUM = 1
+)

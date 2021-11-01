@@ -39,3 +39,7 @@ const (
 
 	ENV = "mainnet"
 )
+
+const (
+	HTTP_SERVER_NUM = 2
+)

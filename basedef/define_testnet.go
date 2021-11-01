@@ -42,3 +42,7 @@ const (
 
 	ENV = "testnet"
 )
+
+const (
+	HTTP_SERVER_NUM = 1
+)
