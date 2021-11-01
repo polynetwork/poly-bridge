@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Zilliqa/gozilliqa-sdk/bech32"
 	"github.com/Zilliqa/gozilliqa-sdk/util"
+	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -13,6 +14,18 @@ import (
 	"strconv"
 	"strings"
 )
+
+const (
+	zilliqa_cross_chain = "CrossChainEvent"
+)
+
+type ZilliqaCrossTransfer struct {
+	key     string //txIndex
+	hash    []byte //txId
+	param   []byte //value
+	toChain uint32
+	height  uint64
+}
 
 type ZilliqaChainListen struct {
 	zliCfg *conf.ChainListenConfig
@@ -155,24 +168,24 @@ func (this *ZilliqaChainListen) getzilliqaCCMLockEventByBlockNumber(height uint6
 			// 1. contract address should be cross chain manager
 			// 2. event name should be CrossChainEvent
 			toAddr, _ := bech32.ToBech32Address(event.Address)
-			if toAddr == s.crossChainManagerAddress {
+			if toAddr == this.zliCfg.CCMContract {
 				if event.EventName != "CrossChainEvent" {
 					continue
 				}
-				log.Infof("ZilliqaSyncManager found event on cross chain manager: %+v\n", event)
+				logs.Info("ZilliqaChainListen found event on cross chain: %+v\n", event)
 				// todo parse event to struct CrossTransfer
-				crossTx := &CrossTransfer{}
+				crossTx := &ZilliqaCrossTransfer{}
 				for _, param := range event.Params {
 					switch param.VName {
 					case "txId":
 						index := big.NewInt(0)
 						index.SetBytes(util.DecodeHex(param.Value.(string)))
-						crossTx.txIndex = tools.EncodeBigInt(index)
+						crossTx.key = EncodeBigInt(index)
 					case "toChainId":
 						toChainId, _ := strconv.ParseUint(param.Value.(string), 10, 32)
 						crossTx.toChain = uint32(toChainId)
 					case "rawdata":
-						crossTx.value = util.DecodeHex(param.Value.(string))
+						crossTx.param = util.DecodeHex(param.Value.(string))
 					}
 				}
 				crossTx.height = height
@@ -293,4 +306,11 @@ func (this *ZilliqaChainListen) GetExtendLatestHeight() (uint64, error) {
 		return this.GetLatestHeight()
 	}
 	return this.GetLatestHeight()
+}
+
+func EncodeBigInt(b *big.Int) string {
+	if b.Uint64() == 0 {
+		return "00"
+	}
+	return hex.EncodeToString(b.Bytes())
 }
