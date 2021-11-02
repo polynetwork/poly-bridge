@@ -38,6 +38,7 @@ const (
 	XDAI_CROSSCHAIN_ID     = uint64(206)
 	ZILLIQA_CROSSCHAIN_ID  = uint64(111)
 	FANTOM_CROSSCHAIN_ID   = uint64(208)
+	AVAX_CROSSCHAIN_ID     = uint64(209)
 
 	ENV = "testnet"
 )

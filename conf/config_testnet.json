@@ -336,6 +336,25 @@
       ],
       "CCMContract": "1C84D74084c3C3301BE4777A568D78211189c871",
       "ProxyContract": "4a76E52600C6285029c8f7c52183cf86282cA5b8"
+    },
+    {
+      "ChainName": "Avax",
+      "ChainId": 209,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "https://api.avax-test.network/ext/bc/C/rpc"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "",
+        "ac0a6759696569B3729177ba6844D41FF6D57844"
+      ],
+      "CCMContract": "f37D8C2d072b74d6532541B70319ef08f9F6a4a8",
+      "ProxyContract": "80a53FD352597AbA3dD52c722119865a8ed82632"
     }
   ],
   "StatsConfig": {
