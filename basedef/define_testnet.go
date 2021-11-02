@@ -38,6 +38,7 @@ const (
 	XDAI_CROSSCHAIN_ID     = uint64(206)
 	OPTIMISTIC_CROSSCHAIN_ID = uint64(207)
 	FANTOM_CROSSCHAIN_ID   = uint64(208)
+	AVAX_CROSSCHAIN_ID     = uint64(209)
 
 	ENV = "testnet"
 )

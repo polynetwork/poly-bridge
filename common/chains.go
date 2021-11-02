@@ -23,6 +23,7 @@ var (
 	xdaiSdk     *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
 	fantomSdk   *chainsdk.EthereumSdkPro
+	avaxSdk     *chainsdk.EthereumSdkPro
 	config      *conf.Config
 )
 
@@ -140,7 +141,14 @@ func newChainSdks(config *conf.Config) {
 		urls := fantomConfig.GetNodesUrl()
 		fantomSdk = chainsdk.NewEthereumSdkPro(urls, fantomConfig.ListenSlot, fantomConfig.ChainId)
 	}
-
+	{
+		avaxConfig := config.GetChainListenConfig(basedef.AVAX_CROSSCHAIN_ID)
+		if avaxConfig == nil {
+			panic("chain is invalid")
+		}
+		urls := avaxConfig.GetNodesUrl()
+		avaxSdk = chainsdk.NewEthereumSdkPro(urls, avaxConfig.ListenSlot, avaxConfig.ChainId)
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -227,6 +235,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return fantomSdk.Erc20Balance(hash, fantomConfig.ProxyContract)
+	}
+	if chainId == basedef.AVAX_CROSSCHAIN_ID {
+		avaxConfig := config.GetChainListenConfig(basedef.AVAX_CROSSCHAIN_ID)
+		if avaxConfig == nil {
+			panic("chain is invalid")
+		}
+		return avaxSdk.Erc20Balance(hash, avaxConfig.ProxyContract)
 	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
@@ -317,6 +332,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return fantomSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.AVAX_CROSSCHAIN_ID {
+		avaxConfig := config.GetChainListenConfig(basedef.AVAX_CROSSCHAIN_ID)
+		if avaxConfig == nil {
+			panic("chain is invalid")
+		}
+		return avaxSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -350,6 +372,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return optimisticSdk.Erc20Balance(hash, proxy)
 	case basedef.FANTOM_CROSSCHAIN_ID:
 		return fantomSdk.Erc20Balance(hash, proxy)
+	case basedef.AVAX_CROSSCHAIN_ID:
+		return avaxSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
