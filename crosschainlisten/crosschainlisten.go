@@ -49,14 +49,14 @@ func StartCrossChainListen(config *conf.Config) {
 	if dao == nil {
 		panic("server is not valid")
 	}
-	for i, cfg := range config.ChainListenConfig {
+	for _, cfg := range config.ChainListenConfig {
 		chainHandle := NewChainHandle(cfg)
 		if chainHandle == nil {
 			panic(fmt.Sprintf("chain %d handler is invalid", cfg.ChainId))
 		}
 		chainListen := NewCrossChainListen(chainHandle, dao, config)
 		chainListen.Start()
-		chainListens[i] = chainListen
+		chainListens = append(chainListens, chainListen)
 	}
 }
 
