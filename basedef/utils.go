@@ -214,10 +214,6 @@ func GetChainName(id uint64) string {
 		return "Neo3"
 	case PLT_CROSSCHAIN_ID:
 		return "PLT"
-	case ARBITRUM_CROSSCHAIN_ID:
-		return "Arbitrum"
-	case XDAI_CROSSCHAIN_ID:
-		return "XDai"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
