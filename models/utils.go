@@ -174,6 +174,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 			return feeString + " POA"
 		}
 		return feeString + " XDai"
+	case basedef.ZILLIQA_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 12)
+		return fee_new.Div(precision_new).String() + " ZIL"
 	case basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
