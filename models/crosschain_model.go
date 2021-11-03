@@ -186,6 +186,7 @@ type PolyTxRelation struct {
 	WrapperTransaction *WrapperTransaction `gorm:"foreignKey:SrcHash;references:Hash"`
 	SrcTransaction     *SrcTransaction     `gorm:"foreignKey:SrcHash;references:Hash"`
 	PolyHash           string
+	RelatedPolyHash    string
 	PolyTransaction    *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
 	DstHash            string
 	DstTransaction     *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`

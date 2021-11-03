@@ -96,14 +96,17 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	query := func(tx *gorm.DB) *gorm.DB {
-		return tx.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+		u := db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
 			Where("`from` in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses).
-			Where("src_transfers.chain_id = ? and src_transfers.dst_chain_id = ? and src_transfers.asset in ?",
-				req.SrcChainId,
-				req.DstChainId,
-				req.Assets,
-			),
-		).
+			Where("src_transfers.asset in ?", req.Assets)
+
+		if req.SrcChainId > 0 {
+			u = u.Where("src_transfers.chain_id = ?", req.SrcChainId)
+		}
+		if req.DstChainId > 0 {
+			u = u.Where("src_transfers.dst_chain_id = ?", req.DstChainId)
+		}
+		return tx.Table("(?) as u", u).
 			Where("src_transactions.standard = ?", 0).
 			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
 			Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
@@ -157,7 +160,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 		c.ServeJSON()
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	db.Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
 		Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses)).
 		Where("src_transactions.standard = ?", 0).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
@@ -177,6 +180,10 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Limit(transactionsOfAddressReq.PageSize).Offset(transactionsOfAddressReq.PageSize * transactionsOfAddressReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
+	if srcPolyDstRelations != nil && len(srcPolyDstRelations) > 0 {
+		jsonsrcPoly, _ := json.Marshal(srcPolyDstRelations)
+		logs.Info("debugqqqqq srcPolyDstRelations:", string(jsonsrcPoly))
+	}
 	var transactionNum int64
 	db.Model(&models.SrcTransfer{}).Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).Count(&transactionNum)
 	chains := make([]*models.Chain, 0)

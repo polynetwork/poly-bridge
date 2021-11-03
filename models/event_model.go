@@ -40,6 +40,7 @@ type ECCMUnlockEvent struct {
 	Fee      uint64
 }
 type ProxyLockEvent struct {
+	BlockNumber   uint64
 	Method        string
 	TxHash        string
 	FromAddress   string
@@ -51,6 +52,7 @@ type ProxyLockEvent struct {
 	DstUser       string
 }
 type ProxyUnlockEvent struct {
+	BlockNumber uint64
 	Method      string
 	TxHash      string
 	ToAssetHash string
@@ -59,6 +61,7 @@ type ProxyUnlockEvent struct {
 }
 
 type SwapLockEvent struct {
+	BlockNumber   uint64
 	Type          uint64
 	TxHash        string
 	FromAddress   string

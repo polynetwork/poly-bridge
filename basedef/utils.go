@@ -88,6 +88,9 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == ARBITRUM_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == XDAI_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	} else if chainId == ZILLIQA_CROSSCHAIN_ID {
 		addr, err := bech32.ToBech32Address(value)
 		if err == nil {
@@ -165,11 +168,22 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == ARBITRUM_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == XDAI_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	} else if chainId == ZILLIQA_CROSSCHAIN_ID {
 		addr, err := bech32.FromBech32Addr(value)
 		return addr, err
 	}
 	return value, nil
+}
+
+//lock item_proxy use
+func Proxy2Address(chainId uint64, proxy string) string {
+	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID {
+		proxy = HexStringReverse(proxy)
+	}
+	return Hash2Address(chainId, proxy)
 }
 
 func ConfirmEnv(env string) {

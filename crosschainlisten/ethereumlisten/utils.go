@@ -137,6 +137,7 @@ func crossChainEvent2ProxyLockEvent(
 
 func convertLockProxyEvent(evt *nftlp.PolyNFTLockProxyLockEvent) *models.ProxyLockEvent {
 	return &models.ProxyLockEvent{
+		BlockNumber:   evt.Raw.BlockNumber,
 		Method:        _eth_lock,
 		TxHash:        evt.Raw.TxHash.String()[2:],
 		FromAddress:   evt.FromAddress.String()[2:],
@@ -166,6 +167,7 @@ func verifyAndExecuteEvent2ProxyUnlockEvent(
 
 func convertUnlockProxyEvent(evt *nftlp.PolyNFTLockProxyUnlockEvent) *models.ProxyUnlockEvent {
 	return &models.ProxyUnlockEvent{
+		BlockNumber: evt.Raw.BlockNumber,
 		Method:      _eth_unlock,
 		TxHash:      evt.Raw.TxHash.String()[2:],
 		ToAssetHash: strings.ToLower(evt.ToAssetHash.String()[2:]),

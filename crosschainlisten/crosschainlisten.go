@@ -85,7 +85,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 	case basedef.POLY_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
-		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID:
+		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
@@ -235,10 +235,13 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					go func(height uint64) {
 						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.HandleNewBlock(height)
 						if err != nil {
-							logs.Error("HandleNewBlock %d err: %v", height, err)
+							logs.Error("HandleNewBlock chain：%s, height: %d err: %v", ccl.handle.GetChainName(), height, err)
 							ch <- false
 							return
 						}
+						logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
+							"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
+							chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
 						err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 						if err != nil {
 							logs.Error("UpdateEvents on block %d err: %v", height, err)
@@ -304,12 +307,12 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 
 func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, dingUrl string, largeTxAmount int64, amount decimal.Decimal) error {
 	exceedingAmount := strconv.FormatInt(largeTxAmount, 10)
-	if amount.Cmp(decimal.NewFromInt(1000000)) >= 0 {
-		exceedingAmount = "100w"
+	if amount.Cmp(decimal.NewFromInt(10000000)) >= 0 {
+		exceedingAmount = "1000w"
 	} else if amount.Cmp(decimal.NewFromInt(5000000)) >= 0 {
 		exceedingAmount = "500w"
-	} else if amount.Cmp(decimal.NewFromInt(10000000)) >= 0 {
-		exceedingAmount = "1000w"
+	} else if amount.Cmp(decimal.NewFromInt(1000000)) >= 0 {
+		exceedingAmount = "100w"
 	}
 	ss := "A large transaction exceeding " + exceedingAmount + " USD was detected.\n"
 	srcChainName := strconv.FormatUint(srcTransaction.ChainId, 10)
@@ -323,6 +326,20 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		dstChainName = dstChain.Name
 	}
 	ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
+	txType := "SWAP"
+	if srcTransaction.SrcSwap != nil {
+		switch srcTransaction.SrcSwap.Type {
+		case basedef.SWAP_SWAP:
+			txType = "SWAP"
+		case basedef.SWAP_ROLLBACK:
+			txType = "ROLLBACK"
+		case basedef.SWAP_ADDLIQUIDITY:
+			txType = "ADDLIQUIDITY"
+		case basedef.SWAP_REMOVELIQUIDITY:
+			txType = "REMOVELIQUIDITY"
+		}
+	}
+	ss += "Type: " + txType + "\n"
 	ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
 		Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
 	ss += "Hash: " + srcTransaction.Hash + "\n"

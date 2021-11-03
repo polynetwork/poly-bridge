@@ -19,12 +19,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/urfave/cli"
 	"os"
 	"poly-bridge/bridge_tools/conf"
+	serverconf "poly-bridge/conf"
 	"runtime"
 	"strings"
-
-	"github.com/urfave/cli"
 )
 
 var (
@@ -36,8 +36,13 @@ var (
 
 	configPathFlag = cli.StringFlag{
 		Name:  "cliconfig",
-		Usage: "Server config file `<path>`",
+		Usage: "tools config file `<path>`",
 		Value: "./bridge_tools/conf/config_transactions.json",
+	}
+
+	configServerPathFlag = cli.StringFlag{
+		Name:  "configserver",
+		Usage: "Server config file `<path>`",
 	}
 
 	methodFlag = cli.StringFlag{
@@ -77,6 +82,7 @@ func setupApp() *cli.App {
 	app.Flags = []cli.Flag{
 		logLevelFlag,
 		configPathFlag,
+		configServerPathFlag,
 		logDirFlag,
 		cmdFlag,
 		methodFlag,
@@ -103,7 +109,9 @@ func startServer(ctx *cli.Context) {
 			fmt.Printf("startServer - read config failed!")
 			return
 		}
-		startDeploy(config)
+		configserverFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverconfig := serverconf.NewConfig(configserverFile)
+		startDeploy(config, serverconfig)
 		dumpStatus(config.DBConfig)
 	} else if cmd == 2 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
@@ -120,7 +128,9 @@ func startServer(ctx *cli.Context) {
 			fmt.Printf("startServer - read config failed!")
 			return
 		}
-		startUpdateToken(config)
+		configserverFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverconfig := serverconf.NewConfig(configserverFile)
+		startUpdateToken(config, serverconfig)
 		dumpStatus(config.DBConfig)
 	} else if cmd == 4 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
@@ -129,7 +139,9 @@ func startServer(ctx *cli.Context) {
 			fmt.Printf("startServer - read config failed!")
 			return
 		}
-		startUpdate(config)
+		configserverFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverconfig := serverconf.NewConfig(configserverFile)
+		startUpdate(config, serverconfig)
 		dumpStatus(config.DBConfig)
 	} else if cmd == 5 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))

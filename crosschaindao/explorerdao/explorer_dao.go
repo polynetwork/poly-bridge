@@ -25,6 +25,7 @@ import (
 	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/models"
 )
 
@@ -304,7 +305,7 @@ func (dao *ExplorerDao) UpdateChain(chain *models.Chain) error {
 	return nil
 }
 
-func (dao *ExplorerDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
+func (dao *ExplorerDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap, servercfg *serverconf.Config) error {
 	explorerTokens, explorerTokenMaps := dao.BuildTokens(tokens)
 	if explorerTokens != nil && len(explorerTokens) > 0 {
 		res := dao.db.Save(explorerTokens)

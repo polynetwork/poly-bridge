@@ -27,6 +27,7 @@ import (
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
+	serverconf "poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
 )
@@ -115,13 +116,17 @@ func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransact
 		if srcTransactions != nil && len(srcTransactions) > 0 {
 			for _, srcTransaction := range srcTransactions {
 				res := dao.db.Debug().Save(srcTransaction)
-				if res.RowsAffected > 0 {
-					logs.Info("backup srcTransaction hash:%v", srcTransaction.Hash)
-					err := dao.db.Table("poly_transactions").Where("(poly_transactions.src_hash = ? or poly_transactions.key = ?) and poly_transactions.time > ? and poly_transactions.src_chain_id = ?", srcTransaction.Key, srcTransaction.Key, 1622476800, srcTransaction.ChainId).
-						Update("src_hash", srcTransaction.Hash).Error
-					if err != nil {
-						return err
+				if res.RowsAffected == 0 {
+					res = dao.db.Debug().Model(&srcTransaction).Where("`hash` = ?", srcTransaction.Hash).Update("`key`", srcTransaction.Key)
+					if res.RowsAffected == 0 {
+						continue
 					}
+				}
+				logs.Info("backup srcTransaction hash:%v", srcTransaction.Hash)
+				err := dao.db.Table("poly_transactions").Where("(poly_transactions.src_hash = ? or poly_transactions.key = ?) and poly_transactions.time > ? and poly_transactions.src_chain_id = ?", srcTransaction.Key, srcTransaction.Key, 1622476800, srcTransaction.ChainId).
+					Update("src_hash", srcTransaction.Hash).Error
+				if err != nil {
+					return err
 				}
 			}
 		}
@@ -201,7 +206,7 @@ func (dao *BridgeDao) AddChains(chain []*models.Chain, chainFees []*models.Chain
 	return nil
 }
 
-func (dao *BridgeDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap) error {
+func (dao *BridgeDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.TokenMap, servercfg *serverconf.Config) error {
 	if tokens != nil && len(tokens) > 0 {
 		res := dao.db.Save(tokens)
 		if res.Error != nil {

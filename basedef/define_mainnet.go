@@ -36,6 +36,7 @@ const (
 	MATIC_CROSSCHAIN_ID    = uint64(17)
 	ZILLIQA_CROSSCHAIN_ID  = uint64(18)
 	ARBITRUM_CROSSCHAIN_ID = uint64(19)
+	XDAI_CROSSCHAIN_ID     = uint64(20)
 
 	ENV = "mainnet"
 )

@@ -291,6 +291,9 @@ func (eff *BridgeEffect) doStatistic() error {
 	}
 	newTimeStatistics := make([]*models.TimeStatistic, 0)
 	for _, item := range timeStatistics {
+		if item.Time < 0 {
+			continue
+		}
 		newTimeStatistics = append(newTimeStatistics, &models.TimeStatistic{
 			SrcChainId: item.SrcChainId,
 			DstChainId: item.DstChainId,
