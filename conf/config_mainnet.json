@@ -482,6 +482,14 @@
     "Address": "0.0.0.0",
     "Port": 8081
   },
+  "BotConfig": {
+    "DingUrl": "https://oapi.dingtalk.com/robot/send?access_token=85415855e5cc0be656143c501d7f2009941aa7b07cba0bf60c0423b184d3ac44",
+    "Interval": 20,
+    "DetailUrl": "https://explorer.poly.network/api/v1/bot?page_size=100",
+    "FinishUrl": "https://explorer.poly.network/api/v1/botfinishtx?",
+    "ApiToken": "34b9cb0156c9264979a4345cb4e191",
+    "CheckFrom": 1
+  },
   "LargeTxAmount" : 100000,
   "LogFile": "logs/bridge.log",
   "RunMode": "prod"
