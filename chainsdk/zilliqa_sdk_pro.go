@@ -3,6 +3,7 @@ package chainsdk
 import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"math/big"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -19,6 +20,10 @@ func NewZilliqaInfo(url string) *ZilliqaInfo {
 		sdk:          sdk,
 		latestHeight: 0,
 	}
+}
+
+func (info *ZilliqaInfo) GetLastHeight() (uint64, error) {
+	return info.sdk.GetCurrentBlockHeight()
 }
 
 type ZilliqaSdkPro struct {
@@ -123,4 +128,34 @@ func (pro *ZilliqaSdkPro) GetBlockByHeight(height uint64) (*ZilBlock, error) {
 	}
 	block, _ := info.sdk.GetBlock(height)
 	return block, nil
+}
+
+func (pro *ZilliqaSdkPro) Erc20Balance(tokenhash, addrhash string) (*big.Int, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	var err error
+	for i := 0; i < 3; i++ {
+		if info != nil {
+			balance, err := info.sdk.GetTokenBalance(tokenhash, addrhash)
+			if err != nil {
+				info.latestHeight = 0
+				info = pro.GetLatest()
+			} else {
+				return balance, nil
+			}
+		} else {
+			info = pro.GetLatest()
+		}
+	}
+	return new(big.Int).SetUint64(0), err
+}
+
+func (pro *ZilliqaSdkPro) GetMinimumGasPrice() (string, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return "", fmt.Errorf("all node is not working")
+	}
+	return info.sdk.GetMinimumGasPrice()
 }

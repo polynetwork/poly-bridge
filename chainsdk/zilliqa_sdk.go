@@ -1,25 +1,29 @@
 package chainsdk
 
 import (
-	"github.com/Zilliqa/gozilliqa-sdk/bech32"
+	"encoding/json"
+	"fmt"
 	"github.com/Zilliqa/gozilliqa-sdk/core"
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
-	"github.com/Zilliqa/gozilliqa-sdk/util"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/shopspring/decimal"
+	"io/ioutil"
 	"math/big"
+	"net/http"
 	"strconv"
 	"strings"
 )
 
 type ZilliqaSdk struct {
 	client *provider.Provider
+	url    string
 }
 
 func NewZilliqaSdk(url string) *ZilliqaSdk {
 	zilClient := provider.NewProvider(url)
 	return &ZilliqaSdk{
 		client: zilClient,
+		url:    url,
 	}
 }
 
@@ -66,62 +70,81 @@ func (zs *ZilliqaSdk) GetBlock(height uint64) (*ZilBlock, error) {
 	return zilBlock, nil
 }
 
-func (s *ZilliqaSyncManager) fetchLockDepositEvents(height uint64) bool {
-	transactions, err := s.zilSdk.GetTxnBodiesForTxBlock(strconv.FormatUint(height, 10))
+func (zs *ZilliqaSdk) GetMinimumGasPrice() (string, error) {
+	return zs.client.GetMinimumGasPrice()
+}
+
+func (zs *ZilliqaSdk) GetTokenBalance(tokenhash, addrhash string) (*big.Int, error) {
+	/*	curl -X POST \
+		https://api.zilliqa.com/ \
+			-H 'cache-control: no-cache' \
+			-H 'content-type: application/json' \
+			-H 'postman-token: cbe304e8-0db3-11bb-2fe3-ecbbbe4d4a35' \
+			-d '{
+			"id": "1",
+				"jsonrpc": "2.0",
+				"method": "GetSmartContractSubState",
+				"params": ["75fa7d8ba6bed4a68774c758a5e43cfb6633d9d6","balances",["0x7772ba52a3474203e3bd41a6821bc51d56d9895f"]]
+		}'
+	*/
+	addrhash = "0x" + addrhash
+	url := zs.url
+	type zilBalancereq struct {
+		Id      string      `json:"id"`
+		Jsonrpc string      `json:"jsonrpc"`
+		Method  string      `json:"method"`
+		Params  interface{} `json:"params"`
+	}
+
+	b := [3]interface{}{}
+	b[0] = tokenhash
+	b[1] = "balances"
+	b[2] = []string{addrhash}
+
+	x := &zilBalancereq{
+		"1",
+		"2.0",
+		"GetSmartContractSubState",
+		b,
+	}
+	requestJson, err := json.Marshal(x)
 	if err != nil {
-		if strings.Contains(err.Error(), "TxBlock has no transactions") {
-			log.Infof("ZilliqaSyncManager no transaction in block %d\n", height)
-			return true
-		} else {
-			log.Infof("ZilliqaSyncManager get transactions for tx block %d failed: %s\n", height, err.Error())
-			return false
-		}
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
+	}
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(requestJson)))
+	if err != nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
+	}
+	req.Header.Add("cache-control", "no-cache")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("postman-token", "cbe304e8-0db3-11bb-2fe3-ecbbbe4d4a35")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
 	}
 
-	for _, transaction := range transactions {
-		if !transaction.Receipt.Success {
-			continue
-		}
-		events := transaction.Receipt.EventLogs
-		for _, event := range events {
-			// 1. contract address should be cross chain manager
-			// 2. event name should be CrossChainEvent
-			toAddr, _ := bech32.ToBech32Address(event.Address)
-			if toAddr == s.crossChainManagerAddress {
-				if event.EventName != "CrossChainEvent" {
-					continue
-				}
-				log.Infof("ZilliqaSyncManager found event on cross chain manager: %+v\n", event)
-				// todo parse event to struct CrossTransfer
-				crossTx := &CrossTransfer{}
-				for _, param := range event.Params {
-					switch param.VName {
-					case "txId":
-						index := big.NewInt(0)
-						index.SetBytes(util.DecodeHex(param.Value.(string)))
-						crossTx.txIndex = tools.EncodeBigInt(index)
-					case "toChainId":
-						toChainId, _ := strconv.ParseUint(param.Value.(string), 10, 32)
-						crossTx.toChain = uint32(toChainId)
-					case "rawdata":
-						crossTx.value = util.DecodeHex(param.Value.(string))
-					}
-				}
-				crossTx.height = height
-				crossTx.txId = util.DecodeHex(transaction.ID)
-				log.Infof("ZilliqaSyncManager parsed cross tx is: %+v\n", crossTx)
-				sink := common.NewZeroCopySink(nil)
-				crossTx.Serialization(sink)
-				err1 := s.db.PutRetry(sink.Bytes())
-				if err1 != nil {
-					log.Errorf("ZilliqaSyncManager fetchLockDepositEvents - this.db.PutRetry error: %s", err)
-				}
-				log.Infof("ZilliqaSyncManager fetchLockDepositEvent -  height: %d", height)
-			} else {
-				log.Infof("ZilliqaSyncManager found event but not on cross chain manager, ignore: %+v\n", event)
-			}
-		}
+	type respblance struct {
+		Balances map[string]string
 	}
-
-	return true
+	type zilBalanceresp struct {
+		Id      string
+		Jsonrpc string
+		Result  *respblance
+	}
+	zilBalance := new(zilBalanceresp)
+	err = json.Unmarshal(respBody, zilBalance)
+	if err != nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
+	}
+	amount, err := decimal.NewFromString((zilBalance.Result.Balances)[addrhash])
+	if err != nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
+	}
+	return amount.BigInt(), nil
 }

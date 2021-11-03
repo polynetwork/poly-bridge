@@ -20,6 +20,7 @@ var (
 	maticSdk    *chainsdk.EthereumSdkPro
 	swthSdk     *chainsdk.SwitcheoSdkPro
 	arbitrumSdk *chainsdk.EthereumSdkPro
+	zilliqaSdk  *chainsdk.ZilliqaSdkPro
 	config      *conf.Config
 )
 
@@ -113,6 +114,14 @@ func newChainSdks(config *conf.Config) {
 		urls := arbitrumConfig.GetNodesUrl()
 		arbitrumSdk = chainsdk.NewEthereumSdkPro(urls, arbitrumConfig.ListenSlot, arbitrumConfig.ChainId)
 	}
+	{
+		zilliqaCfg := config.GetChainListenConfig(basedef.ZILLIQA_CROSSCHAIN_ID)
+		if zilliqaCfg == nil {
+			panic("zilliqa GetChainListenConfig chain is invalid")
+		}
+		urls := zilliqaCfg.GetNodesUrl()
+		zilliqaSdk = chainsdk.NewZilliqaSdkPro(urls, zilliqaCfg.ListenSlot, zilliqaCfg.ChainId)
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -178,6 +187,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return arbitrumSdk.Erc20Balance(hash, arbitrumConfig.ProxyContract)
+	}
+	if chainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+		zilliqaCfg := config.GetChainListenConfig(basedef.ZILLIQA_CROSSCHAIN_ID)
+		if zilliqaCfg == nil {
+			panic("zilliqa GetChainListenConfig chain is invalid")
+		}
+		return zilliqaSdk.Erc20Balance(hash, zilliqaCfg.ProxyContract)
 	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
@@ -490,6 +506,9 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	}
 	if chainId == basedef.ONT_CROSSCHAIN_ID {
 		return ontologySdk.Oep4Balance(hash, proxy)
+	}
+	if chainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+		return zilliqaSdk.Erc20Balance(hash, proxy)
 	}
 	return new(big.Int).SetUint64(0), nil
 }
