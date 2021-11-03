@@ -394,13 +394,14 @@ type CrossTxReq struct {
 }
 
 type CrossTxResp struct {
-	Transfer       *CrossTransferResp `json:"crosstransfer"`
-	Fchaintx       *FChainTxResp      `json:"fchaintx"`
-	Fchaintx_valid bool               `json:"fchaintx_valid"`
-	Mchaintx       *MChainTxResp      `json:"mchaintx"`
-	Mchaintx_valid bool               `json:"mchaintx_valid"`
-	Tchaintx       *TChainTxResp      `json:"tchaintx"`
-	Tchaintx_valid bool               `json:"tchaintx_valid"`
+	Transfer        *CrossTransferResp `json:"crosstransfer"`
+	Fchaintx        *FChainTxResp      `json:"fchaintx"`
+	Fchaintx_valid  bool               `json:"fchaintx_valid"`
+	Mchaintx        *MChainTxResp      `json:"mchaintx"`
+	Mchaintx_valid  bool               `json:"mchaintx_valid"`
+	Tchaintx        *TChainTxResp      `json:"tchaintx"`
+	Tchaintx_valid  bool               `json:"tchaintx_valid"`
+	RelatedPolyHash string             `json:"relatedPolyHash"`
 }
 
 type TransferStatisticReq struct {
@@ -415,6 +416,7 @@ func MakeCrossTxResp(srcPolyDst *PolyTxRelation) *CrossTxResp {
 		Transfer: &CrossTransferResp{
 			CrossTxType: 0,
 		},
+		RelatedPolyHash: srcPolyDst.RelatedPolyHash,
 	}
 	tx := srcPolyDst
 	if tx.SrcTransaction != nil {
