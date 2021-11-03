@@ -183,3 +183,44 @@ func ConfirmEnv(env string) {
 	}
 	logs.Info("Current env: %s", ENV)
 }
+
+func GetChainName(id uint64) string {
+	switch id {
+	case POLY_CROSSCHAIN_ID:
+		return "Poly"
+	case ETHEREUM_CROSSCHAIN_ID:
+		return "Ethereum"
+	case ONT_CROSSCHAIN_ID:
+		return "Ontology"
+	case NEO_CROSSCHAIN_ID:
+		return "Neo"
+	case BSC_CROSSCHAIN_ID:
+		return "Bsc"
+	case HECO_CROSSCHAIN_ID:
+		return "Heco"
+	case O3_CROSSCHAIN_ID:
+		return "O3"
+	case OK_CROSSCHAIN_ID:
+		return "OK"
+	case MATIC_CROSSCHAIN_ID:
+		return "Polygon"
+	case ARBITRUM_CROSSCHAIN_ID:
+		return "Arbitrum"
+	case XDAI_CROSSCHAIN_ID:
+		return "XDai"
+	case BTC_CROSSCHAIN_ID:
+		return "BTC"
+	case NEO3_CROSSCHAIN_ID:
+		return "Neo3"
+	case PLT_CROSSCHAIN_ID:
+		return "PLT"
+	case OPTIMISTIC_CROSSCHAIN_ID:
+		return "Optimistic"
+	case FANTOM_CROSSCHAIN_ID:
+		return "Fantom"
+	case AVAX_CROSSCHAIN_ID:
+		return "AVAX"
+	default:
+		return fmt.Sprintf("Unknown(%d)", id)
+	}
+}

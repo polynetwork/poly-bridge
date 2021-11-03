@@ -198,6 +198,15 @@ type EventEffectConfig struct {
 	TimeStatisticSlot int64
 }
 
+type BotConfig struct {
+	DingUrl   string
+	CheckFrom int64
+	DetailUrl string
+	FinishUrl string
+	ApiToken  string
+	Interval  int64
+}
+
 type HttpConfig struct {
 	Address string
 	Port    int
@@ -227,6 +236,7 @@ type Config struct {
 	EventEffectConfig     *EventEffectConfig
 	StatsConfig           *StatsConfig
 	DBConfig              *DBConfig
+	BotConfig             *BotConfig
 	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
 }
