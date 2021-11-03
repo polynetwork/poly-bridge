@@ -165,8 +165,8 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 				srcTransaction.Standard = srcTransfer.Standard
 				srcTransaction.SrcTransfer = srcTransfer
 			}
+			srcTransactions = append(srcTransactions, srcTransaction)
 		}
-		srcTransactions = append(srcTransactions, srcTransaction)
 	}
 	return srcTransactions
 }
