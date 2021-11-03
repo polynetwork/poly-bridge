@@ -1,5 +1,7 @@
 package basedef
 
+import "fmt"
+
 var (
 	PRICE_PRECISION = int64(100000000)
 	FEE_PRECISION   = int64(100000000)
@@ -49,3 +51,26 @@ const (
 	SWAP_REMOVELIQUIDITY
 	SWAP_ROLLBACK
 )
+
+func GetStateName(state int) string {
+	switch state {
+	case STATE_FINISHED:
+		return "Finished"
+	case STATE_PENDDING:
+		return "Pending"
+	case STATE_SOURCE_DONE:
+		return "SrcDone"
+	case STATE_SOURCE_CONFIRMED:
+		return "SrcConfirmed"
+	case STATE_POLY_CONFIRMED:
+		return "PolyConfirmed"
+	case STATE_DESTINATION_DONE:
+		return "DestDone"
+	case STATE_WAIT:
+		return "WAIT"
+	case STATE_SKIP:
+		return "SKIP"
+	default:
+		return fmt.Sprintf("Unknown(%d)", state)
+	}
+}

@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
 	goredis "github.com/go-redis/redis"
 	"math/big"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -17,6 +19,7 @@ const (
 	_TransferStatisticResp = "TransferStatisticRes"
 	//getfee TokenBalance time.Hour*72
 	_TokenBalance = "TokenBalance"
+	TxCheckBot    = "TxCheckBot"
 )
 
 type RedisCache struct {
@@ -25,6 +28,7 @@ type RedisCache struct {
 }
 
 var Redis *RedisCache
+var mutex sync.Mutex
 
 func Init() {
 	redisConfig := conf.GlobalConfig.RedisConfig
@@ -128,4 +132,52 @@ func (r *RedisCache) SetTokenBalance(dstChainId uint64, dstTokenHash string, tok
 func formatTokenBalanceKey(dstChainId uint64, dstTokenHash string) string {
 	key := fmt.Sprintf("%s_%d_%s", _TokenBalance, dstChainId, dstTokenHash)
 	return key
+}
+
+func (r *RedisCache) Get(key string) (string, error) {
+	res, err := r.c.Get(key).Result()
+	if err != nil {
+		logs.Error("Get key %s err: %s", key, err)
+		return "", err
+	}
+	return res, nil
+}
+
+func (r *RedisCache) Set(key string, value string, expiration time.Duration) (string, error) {
+	set, err := r.c.Set(key, value, expiration).Result()
+	if err != nil {
+		logs.Error("Set key %s err: %s", key, err)
+		return "", err
+	}
+	return set, nil
+}
+
+func (r *RedisCache) Expire(key string, expiration time.Duration) (bool, error) {
+	result, err := r.c.Expire(key, expiration).Result()
+	if err != nil {
+		return false, err
+	}
+	return result, nil
+}
+
+func (r *RedisCache) Lock(key string, value string, expiration time.Duration) (bool, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	isSet, err := r.c.SetNX(key, value, expiration).Result()
+	if err != nil {
+		logs.Error("Lock err:%s", err)
+		return false, err
+	}
+	return isSet, nil
+}
+
+func (r *RedisCache) UnLock(key string) (int64, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	cnt, err := r.c.Del(key).Result()
+	if err != nil {
+		logs.Error("UnLock err:%s", err)
+		return 0, err
+	}
+	return cnt, nil
 }

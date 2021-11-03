@@ -42,21 +42,21 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 )
 
-var chainListens [14]*CrossChainListen
+var chainListens []*CrossChainListen
 
 func StartCrossChainListen(config *conf.Config) {
 	dao := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	for i, cfg := range config.ChainListenConfig {
+	for _, cfg := range config.ChainListenConfig {
 		chainHandle := NewChainHandle(cfg)
 		if chainHandle == nil {
 			panic(fmt.Sprintf("chain %d handler is invalid", cfg.ChainId))
 		}
 		chainListen := NewCrossChainListen(chainHandle, dao, config)
 		chainListen.Start()
-		chainListens[i] = chainListen
+		chainListens = append(chainListens, chainListen)
 	}
 }
 
@@ -84,7 +84,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 	case basedef.POLY_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
-		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID:
+		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID,
+		basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
