@@ -20,6 +20,7 @@ package basedef
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/Zilliqa/gozilliqa-sdk/bech32"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -90,6 +91,12 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == XDAI_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == ZILLIQA_CROSSCHAIN_ID {
+		addr, err := bech32.ToBech32Address(value)
+		if err == nil {
+			return addr
+		}
+		return value
 	}
 	return value
 }
@@ -164,6 +171,9 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == XDAI_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == ZILLIQA_CROSSCHAIN_ID {
+		addr, err := bech32.FromBech32Addr(value)
+		return addr, err
 	}
 	return value, nil
 }

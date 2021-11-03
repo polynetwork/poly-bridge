@@ -31,6 +31,7 @@ import (
 	"poly-bridge/chainfeelisten/neofee"
 	"poly-bridge/chainfeelisten/ontologyfee"
 	"poly-bridge/chainfeelisten/switcheofee"
+	"poly-bridge/chainfeelisten/zilliqafee"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 
@@ -84,6 +85,9 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		return ontologyfee.NewOntologyFee(cfg, feeUpdateSlot)
 	case basedef.SWITCHEO_CROSSCHAIN_ID:
 		return switcheofee.NewSwitcheoFee(cfg, feeUpdateSlot)
+	case basedef.ZILLIQA_CROSSCHAIN_ID:
+		return zilliqafee.NewZilliqaFee(cfg, feeUpdateSlot)
+
 	default:
 		return nil
 	}

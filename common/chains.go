@@ -20,6 +20,7 @@ var (
 	maticSdk    *chainsdk.EthereumSdkPro
 	swthSdk     *chainsdk.SwitcheoSdkPro
 	arbitrumSdk *chainsdk.EthereumSdkPro
+	zilliqaSdk  *chainsdk.ZilliqaSdkPro
 	xdaiSdk     *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
 	fantomSdk   *chainsdk.EthereumSdkPro
@@ -125,6 +126,15 @@ func newChainSdks(config *conf.Config) {
 		urls := xdaiConfig.GetNodesUrl()
 		xdaiSdk = chainsdk.NewEthereumSdkPro(urls, xdaiConfig.ListenSlot, xdaiConfig.ChainId)
 	}
+
+	{
+		zilliqaCfg := config.GetChainListenConfig(basedef.ZILLIQA_CROSSCHAIN_ID)
+		if zilliqaCfg == nil {
+			panic("zilliqa GetChainListenConfig chain is invalid")
+		}
+		urls := zilliqaCfg.GetNodesUrl()
+		zilliqaSdk = chainsdk.NewZilliqaSdkPro(urls, zilliqaCfg.ListenSlot, zilliqaCfg.ChainId)
+	}
 	{
 		optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
 		if optimisticConfig == nil {
@@ -221,6 +231,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return xdaiSdk.Erc20Balance(hash, xdaiConfig.ProxyContract)
+	}
+	if chainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+		zilliqaCfg := config.GetChainListenConfig(basedef.ZILLIQA_CROSSCHAIN_ID)
+		if zilliqaCfg == nil {
+			panic("zilliqa GetChainListenConfig chain is invalid")
+		}
+		return zilliqaSdk.Erc20Balance(hash, zilliqaCfg.ProxyContract)
 	}
 	if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
 		optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
@@ -368,6 +385,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return arbitrumSdk.Erc20Balance(hash, proxy)
 	case basedef.XDAI_CROSSCHAIN_ID:
 		return xdaiSdk.Erc20Balance(hash, proxy)
+	case basedef.ZILLIQA_CROSSCHAIN_ID:
+		return zilliqaSdk.Erc20Balance(hash, proxy)
 	case basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		return optimisticSdk.Erc20Balance(hash, proxy)
 	case basedef.FANTOM_CROSSCHAIN_ID:
