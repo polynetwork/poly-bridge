@@ -231,7 +231,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					go func(height uint64) {
 						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.HandleNewBlock(height)
 						if err != nil {
-							logs.Error("HandleNewBlock %d err: %v", height, err)
+							logs.Error("HandleNewBlock chain：%s, height: %d err: %v", ccl.handle.GetChainName(), height, err)
 							ch <- false
 							return
 						}
