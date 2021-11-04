@@ -49,6 +49,9 @@ func Init() {
 	proxyMap := make(map[string]bool, 0)
 	proxyConfigs := conf.GlobalConfig.ChainListenConfig
 	for _, v := range proxyConfigs {
+		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+			continue
+		}
 		proxyMap[strings.ToUpper(v.ProxyContract)] = true
 		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
 		proxyMap[strings.ToUpper(v.SwapContract)] = true
