@@ -28,6 +28,7 @@ import (
 )
 
 var GlobalConfig *Config
+var PolyProxy map[string]bool
 
 var (
 	ConfigPathFlag = cli.StringFlag{
@@ -281,5 +282,27 @@ func NewConfig(filePath string) *Config {
 		return nil
 	}
 	GlobalConfig = config
+	initPolyProxy()
 	return config
+}
+
+func initPolyProxy() {
+	if len(PolyProxy) > 0 {
+		return
+	}
+	PolyProxy = make(map[string]bool, 0)
+	proxyConfigs := GlobalConfig.ChainListenConfig
+	for _, v := range proxyConfigs {
+		PolyProxy[strings.ToUpper(v.ProxyContract)] = true
+		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
+		PolyProxy[strings.ToUpper(v.SwapContract)] = true
+		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.SwapContract))] = true
+		PolyProxy[strings.ToUpper(v.NFTProxyContract)] = true
+		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.NFTProxyContract))] = true
+	}
+	if len(PolyProxy) == 0 {
+		panic("init PolyProxy err,polyProxy is nil")
+	}
+	PolyProxy[""] = true
+	logs.Info("init polyProxy:", PolyProxy)
 }
