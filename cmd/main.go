@@ -86,10 +86,12 @@ func startServer(ctx *cli.Context) {
 	metrics.Init("bridge")
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
-	crosschainlisten.StartCrossChainListen(config)
 	if config.Backup {
+		crosschainlisten.StartCrossChainListen(config)
+		crosschainlisten.StartCrossChainListenPatch(config)
 		return
 	}
+	crosschainlisten.StartCrossChainListen(config)
 	coinpricelisten.StartCoinPriceListen(config.Server, config.CoinPriceUpdateSlot, config.CoinPriceListenConfig, config.DBConfig)
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.RedisConfig)

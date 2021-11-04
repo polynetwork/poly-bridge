@@ -50,7 +50,6 @@ type BotController struct {
 
 func init() {
 	LOCAL_IPV4 = getLocalIp()
-	fmt.Println("localIPV4:" + LOCAL_IPV4)
 	logs.Info("localIPV4：%s", LOCAL_IPV4)
 }
 
