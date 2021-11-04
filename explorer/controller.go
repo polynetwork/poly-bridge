@@ -204,7 +204,7 @@ func (c *ExplorerController) GetCrossTxList() {
 		Where("src_transactions.standard = ?", 0).
 		Joins("left join src_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Order("src_transactions.id desc").
+		Order("poly_transactions.id desc").
 		Limit(crossTxListReq.PageSize).Offset((crossTxListReq.PageNo - 1) * crossTxListReq.PageSize).
 		Find(&srcPolyDstRelations)
 	if res.RowsAffected == 0 {
