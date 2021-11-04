@@ -34,6 +34,7 @@ func patchWrapperMissingTx(dao *bridgedao.BridgeDao) {
 	if err != nil {
 		logs.Error("filterMissingWrapperTransactions err:" + err.Error())
 	}
+	logs.Info("find %d TXs missing wrapper event", len(txs))
 	for _, tx := range txs {
 		logs.Info("srcTransactions hash: %s missing wrapper_transactions", tx.Hash)
 		handler := handlerMap[tx.ChainId]

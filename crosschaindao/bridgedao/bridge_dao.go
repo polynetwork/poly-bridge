@@ -575,7 +575,7 @@ func (dao *BridgeDao) FilterMissingWrapperTransactions() ([]*models.SrcTransacti
 	ignoreSrcChainIds := []uint64{basedef.O3_CROSSCHAIN_ID, basedef.SWITCHEO_CROSSCHAIN_ID}
 	ignoreDstChainIds := []uint64{basedef.SWITCHEO_CROSSCHAIN_ID}
 
-	polyProxies := make([]string, len(conf.PolyProxy))
+	var polyProxies []string
 	for k, _ := range conf.PolyProxy {
 		polyProxies = append(polyProxies, k)
 	}
