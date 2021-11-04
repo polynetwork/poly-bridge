@@ -6,6 +6,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
 )
@@ -36,8 +37,8 @@ func (c *FeeController) NewCheckFee() {
 			logs.Info("check fee poly_hash %s MISSING,hasn't src_Transaction %s", k, err)
 			continue
 		}
-		if len(polyProxy) > 0 {
-			if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; !in {
+		if len(conf.PolyProxy) > 0 {
+			if _, in := conf.PolyProxy[strings.ToUpper(srcTransaction.Contract)]; !in {
 				//is not poly proxy
 				v.Status = SKIP
 				logs.Info("check fee poly_hash %s SKIP,is not poly proxy", k)
