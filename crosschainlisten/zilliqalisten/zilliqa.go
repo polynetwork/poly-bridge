@@ -3,6 +3,7 @@ package zilliqalisten
 import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -124,7 +125,7 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 							toChainId, _ := strconv.ParseUint(param.Value.(string), 10, 64)
 							srcTransaction.DstChainId = toChainId
 						case "rawdata":
-							srcTransaction.Param = param.Value.(string)
+							srcTransaction.Param = param.Value.(string)[2:]
 						case "sender":
 							srcTransaction.User = param.Value.(string)[2:]
 						case "proxyOrAssetContract":
@@ -199,7 +200,7 @@ func (this *ZilliqaChainListen) getzilliqaDstTransactionByBlockNumber(height uin
 					for _, param := range event.Params {
 						switch param.VName {
 						case "crossChainTxHash":
-							dstTransaction.PolyHash = param.Value.(string)[2:]
+							dstTransaction.PolyHash = basedef.HexStringReverse(param.Value.(string)[2:])
 						case "fromChainId":
 							srcChainId, _ := strconv.ParseUint(param.Value.(string), 10, 64)
 							dstTransaction.SrcChainId = srcChainId
@@ -234,8 +235,8 @@ func (this *ZilliqaChainListen) getzilliqaDstTransactionByBlockNumber(height uin
 				dstTransaction.Standard = dstTransfer.Standard
 				dstTransaction.DstTransfer = dstTransfer
 			}
+			dstTransactions = append(dstTransactions, dstTransaction)
 		}
-		dstTransactions = append(dstTransactions, dstTransaction)
 	}
 	return dstTransactions
 }
