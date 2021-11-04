@@ -295,7 +295,7 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 	}
 
 	var count int
-	err = db.Raw("select count(1) from poly_transactions where  src_chain_id=? and `key` ='' and src_hash like '%00000000' and time<tt", chainId, tt).
+	err = db.Raw("select count(1) from poly_transactions where  src_chain_id=? and `key` ='' and src_hash like '%00000000' and time<?", chainId, tt).
 		Find(&count).Error
 	if err != nil {
 		panic(fmt.Sprintf("db.Raw err,%v", err))
@@ -308,7 +308,7 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 	flag := 0
 	for i := 0; i < x; i++ {
 		srcs := make([]*y, 0)
-		err = db.Raw("select id,src_hash from poly_transactions where  src_chain_id=? and `key` ='' and src_hash like '%00000000' and time<tt limit 100", chainId, tt).
+		err = db.Raw("select id,src_hash from poly_transactions where  src_chain_id=? and `key` ='' and src_hash like '%00000000' and time<? limit 100", chainId, tt).
 			Find(&srcs).Error
 		if err != nil {
 			panic(fmt.Sprintf("Find srcs err,%v", err))
