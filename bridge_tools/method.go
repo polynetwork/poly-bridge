@@ -286,7 +286,7 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 	Logger := logger.Default
 	dbCfg := config.DBConfig
 	if dbCfg.Debug == true {
-		Logger = Logger.LogMode(logger.Info)
+		Logger = Logger.LogMode(logger.Warn)
 	}
 	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
 		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
@@ -316,7 +316,7 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 		if len(srcs) > 0 {
 			for _, v := range srcs {
 				rightSrcHash := basedef.HexStringReverse(v.SrcHash)
-				err = db.Raw("update poly_transactions set src_hash=? where id=? and src_hash=?", rightSrcHash, v.Id, v.SrcHash).
+				err = db.Exec("update poly_transactions set src_hash=? where id=? and src_hash=?", rightSrcHash, v.Id, v.SrcHash).
 					Error
 				if err != nil {
 					panic(fmt.Sprintf("update poly_transactions err,%v", err))
