@@ -248,9 +248,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							logs.Error("UpdateEvents on block %d err: %v", height, err)
 							ch <- false
 						} else {
-							if !ccl.config.Backup {
-								go ccl.checkLargeTransaction(srcTransactions)
-							}
+							go ccl.checkLargeTransaction(srcTransactions)
 							ch <- true
 						}
 
