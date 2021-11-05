@@ -18,10 +18,10 @@
 package crosschainlisten
 
 import (
-	"fmt"
 	"github.com/shopspring/decimal"
 	"math"
 	"poly-bridge/common"
+	"poly-bridge/crosschainlisten/zilliqalisten"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -42,21 +42,22 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 )
 
-var chainListens [14]*CrossChainListen
+var chainListens = make([]*CrossChainListen, 0)
 
 func StartCrossChainListen(config *conf.Config) {
 	dao := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	for i, cfg := range config.ChainListenConfig {
+	for _, cfg := range config.ChainListenConfig {
 		chainHandle := NewChainHandle(cfg)
 		if chainHandle == nil {
-			panic(fmt.Sprintf("chain %d handler is invalid", cfg.ChainId))
+			logs.Error("chain %d handler is invalid", cfg.ChainId)
+			continue
 		}
 		chainListen := NewCrossChainListen(chainHandle, dao, config)
 		chainListen.Start()
-		chainListens[i] = chainListen
+		chainListens = append(chainListens, chainListen)
 	}
 }
 
@@ -96,6 +97,9 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return switcheolisten.NewSwitcheoChainListen(chainListenConfig)
 	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3listen.NewNeo3ChainListen(chainListenConfig)
+	case basedef.ZILLIQA_CROSSCHAIN_ID:
+		return zilliqalisten.NewZilliqaChainListen(chainListenConfig)
+
 	default:
 		return nil
 	}

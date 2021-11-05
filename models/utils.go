@@ -174,6 +174,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 			return feeString + " POA"
 		}
 		return feeString + " XDai"
+	case basedef.ZILLIQA_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 12)
+		return fee_new.Div(precision_new).String() + " ZIL"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()
