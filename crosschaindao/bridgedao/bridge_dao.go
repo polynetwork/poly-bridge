@@ -117,7 +117,7 @@ func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransact
 			for _, srcTransaction := range srcTransactions {
 				res := dao.db.Debug().Save(srcTransaction)
 				if res.RowsAffected == 0 {
-					res = dao.db.Debug().Model(&srcTransaction).Where("`hash` = ?", srcTransaction.Hash).Update("`key`", srcTransaction.Key)
+					res = dao.db.Debug().Model(&models.SrcTransaction{}).Where("hash = ?", srcTransaction.Hash).Update("key", srcTransaction.Key)
 					if res.RowsAffected == 0 {
 						continue
 					}
