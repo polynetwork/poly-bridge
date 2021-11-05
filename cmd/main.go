@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"poly-bridge/cacheRedis"
 	"runtime"
 	"syscall"
 
@@ -83,6 +84,9 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
+	//initialize redis
+	cacheRedis.Init()
+
 	metrics.Init("bridge")
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
