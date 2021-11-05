@@ -20,10 +20,12 @@ package crosschainlisten
 import (
 	"github.com/shopspring/decimal"
 	"math"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/polynetwork/bridge-common/metrics"
@@ -285,6 +287,11 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 	}
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		for _, v := range srcTransactions {
+			if existed, err := cacheRedis.Redis.Exists(cacheRedis.LargeTxAlarmPrefix + strings.ToLower(v.Hash)); err == nil && existed {
+				logs.Info("large TX hash: %s alarm has been sent.", v.Hash)
+				return
+			}
+
 			if v.SrcTransfer != nil {
 				token, err := ccl.db.GetTokenBasicByHash(v.SrcTransfer.ChainId, v.SrcTransfer.Asset)
 				if err == nil {
@@ -296,6 +303,10 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
 						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.IPPortConfig.LargeTxAmountAlarmDingIP, ccl.config.LargeTxAmount, amount); err != nil {
 							logs.Error("send BigTxAmount alert err.", err)
+						} else {
+							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(v.Hash), "done", time.Hour); err != nil {
+								logs.Error("mark large TX hash: %s alarm done err: %s", v.Hash, err)
+							}
 						}
 					}
 				}
