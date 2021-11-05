@@ -141,7 +141,7 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 				for _, param := range event.Params {
 					switch param.VName {
 					case "fromAssetHash":
-						srcTransfer.Asset = param.Value.(string)
+						srcTransfer.Asset = param.Value.(string)[2:]
 					case "fromAddress":
 						srcTransfer.From = param.Value.(string)[2:]
 					case "amount":
