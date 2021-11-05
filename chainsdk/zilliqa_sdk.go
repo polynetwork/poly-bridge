@@ -59,7 +59,6 @@ func (zs *ZilliqaSdk) GetBlock(height uint64) (*ZilBlock, error) {
 	transactions, err := zs.client.GetTxnBodiesForTxBlock(strconv.FormatUint(height, 10))
 	if err != nil {
 		if strings.Contains(err.Error(), "TxBlock has no transactions") {
-			logs.Info("ZilliqaSdk no transaction in block %d", height)
 			return &ZilBlock{
 				tt,
 				[]core.Transaction{},
