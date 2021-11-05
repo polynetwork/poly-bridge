@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"poly-bridge/cacheRedis"
 	"runtime"
 	"syscall"
 
@@ -71,6 +72,7 @@ func StartServer(ctx *cli.Context) {
 }
 
 func startServer(ctx *cli.Context) {
+	cacheRedis.Init()
 	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
 	if config == nil {
