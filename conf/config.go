@@ -293,6 +293,10 @@ func initPolyProxy() {
 	PolyProxy = make(map[string]bool, 0)
 	proxyConfigs := GlobalConfig.ChainListenConfig
 	for _, v := range proxyConfigs {
+		//some chain only listen,don't need our relayer cross
+		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+			continue
+		}
 		PolyProxy[strings.ToUpper(v.ProxyContract)] = true
 		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
 		PolyProxy[strings.ToUpper(v.SwapContract)] = true
