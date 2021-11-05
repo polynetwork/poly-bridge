@@ -61,6 +61,8 @@ func executeMethod(method string, ctx *cli.Context) {
 		initcoinmarketid(config)
 	case "migrateLockTokenStatisticTable":
 		migrateLockTokenStatisticTable(config)
+	case "updateZilliqaPolyOldData":
+		updateZilliqaPolyOldData(config)
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}
@@ -269,4 +271,65 @@ func migrateLockTokenStatisticTable(config *conf.Config) {
 		&models.LockTokenStatistic{},
 	)
 	checkError(err, "Creating tables")
+}
+
+func updateZilliqaPolyOldData(config *conf.Config) {
+	tt, err := strconv.ParseInt(os.Getenv("END_TIME"), 10, 64)
+	if err != nil {
+		panic(fmt.Sprintf("ParseInt err,%v", err))
+	}
+	chainId, err := strconv.Atoi(os.Getenv("CHAINID"))
+	if err != nil {
+		panic(fmt.Sprintf("ParseInt err,%v", err))
+	}
+
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Warn)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(fmt.Sprintf("db err,%v", err))
+	}
+
+	var count int
+	err = db.Raw("select count(1) from poly_transactions where  src_chain_id=? and `key` ='' and src_hash like '%00000000' and time<?", chainId, tt).
+		Find(&count).Error
+	if err != nil {
+		panic(fmt.Sprintf("db.Raw err,%v", err))
+	}
+	x := count/100 + 1
+	type y struct {
+		Id      int64
+		SrcHash string
+	}
+	flag := 0
+	for i := 0; i < x; i++ {
+		srcs := make([]*y, 0)
+		err = db.Raw("select id,src_hash from poly_transactions where  src_chain_id=? and `key` ='' and src_hash like '%00000000' and time<? limit 100", chainId, tt).
+			Find(&srcs).Error
+		if err != nil {
+			panic(fmt.Sprintf("Find srcs err,%v", err))
+		}
+		if len(srcs) > 0 {
+			for _, v := range srcs {
+				rightSrcHash := basedef.HexStringReverse(v.SrcHash)
+				err = db.Exec("update poly_transactions set src_hash=? where id=? and src_hash=?", rightSrcHash, v.Id, v.SrcHash).
+					Error
+				if err != nil {
+					panic(fmt.Sprintf("update poly_transactions err,%v", err))
+				}
+			}
+			logs.Info("success update id :", srcs[0].Id)
+		} else {
+			logs.Info("len(srcs)=0,end")
+			flag++
+		}
+		if flag >= 2 {
+			logs.Info("flag >=2")
+			break
+		}
+	}
 }

@@ -36,6 +36,7 @@ const (
 	SWITCHEO_CROSSCHAIN_ID = uint64(1000) // No testnet for cosmos
 	ARBITRUM_CROSSCHAIN_ID = uint64(205)
 	XDAI_CROSSCHAIN_ID     = uint64(206)
+	ZILLIQA_CROSSCHAIN_ID  = uint64(111)
 
 	ENV = "testnet"
 )
