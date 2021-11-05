@@ -145,6 +145,12 @@ func (zs *ZilliqaSdk) GetTokenBalance(tokenhash, addrhash string) (*big.Int, err
 	if err != nil {
 		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
 	}
+	if zilBalance.Result == nil || zilBalance.Result.Balances == nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
+	}
+	if _, ok := (zilBalance.Result.Balances)[addrhash]; !ok {
+		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
+	}
 	amount, err := decimal.NewFromString((zilBalance.Result.Balances)[addrhash])
 	if err != nil {
 		return new(big.Int).SetUint64(0), fmt.Errorf("zil GetTokenBalance err %v", err)
