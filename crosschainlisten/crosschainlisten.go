@@ -282,9 +282,6 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 }
 
 func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.SrcTransaction) {
-	if basedef.ENV != basedef.MAINNET {
-		return
-	}
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		for _, v := range srcTransactions {
 			if existed, err := cacheRedis.Redis.Exists(cacheRedis.LargeTxAlarmPrefix + strings.ToLower(v.Hash)); err == nil && existed {
