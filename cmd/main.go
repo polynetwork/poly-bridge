@@ -72,7 +72,6 @@ func StartServer(ctx *cli.Context) {
 }
 
 func startServer(ctx *cli.Context) {
-	cacheRedis.Init()
 	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
 	if config == nil {
@@ -85,6 +84,9 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
+	//initialize redis
+	cacheRedis.Init()
+
 	metrics.Init("bridge")
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
