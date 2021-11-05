@@ -31,12 +31,17 @@ func (zs *ZilliqaSdk) GetCurrentBlockHeight() (uint64, error) {
 	txBlock, err := zs.client.GetLatestTxBlock()
 	if err != nil {
 		logs.Error("ZilliqaSdk GetCurrentBlockHeight - cannot getLatestTxBlock, err: %s\n", err.Error())
+		return 0, err
 	}
-	blockNumber, err1 := strconv.ParseUint(txBlock.Header.BlockNum, 10, 32)
-	if err1 != nil {
-		logs.Error("ZilliqaSdk GetCurrentBlockHeight - cannot parse block height, err: %s\n", err1.Error())
+	if txBlock.Header.BlockNum != "" {
+		blockNumber, err1 := strconv.ParseUint(txBlock.Header.BlockNum, 10, 32)
+		if err1 != nil {
+			logs.Error("ZilliqaSdk GetCurrentBlockHeight - cannot parse block height, err: %s\n", err1.Error())
+			return 0, err1
+		}
+		return blockNumber, nil
 	}
-	return blockNumber, err
+	return 0, err
 }
 
 type ZilBlock struct {
