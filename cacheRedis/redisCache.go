@@ -18,8 +18,9 @@ const (
 	_CrossTxCounter        = "CrossTxCounter"
 	_TransferStatisticResp = "TransferStatisticRes"
 	//getfee TokenBalance time.Hour*72
-	_TokenBalance = "TokenBalance"
-	TxCheckBot    = "TxCheckBot"
+	_TokenBalance      = "TokenBalance"
+	TxCheckBot         = "TxCheckBot"
+	LargeTxAlarmPrefix = "LargeTxAlarm_"
 )
 
 type RedisCache struct {
@@ -143,13 +144,34 @@ func (r *RedisCache) Get(key string) (string, error) {
 	return res, nil
 }
 
-func (r *RedisCache) Set(key string, value string, expiration time.Duration) (string, error) {
-	set, err := r.c.Set(key, value, expiration).Result()
+func (r *RedisCache) Set(key string, value string, expiration time.Duration) (bool, error) {
+	err := r.c.Set(key, value, expiration).Err()
 	if err != nil {
 		logs.Error("Set key %s err: %s", key, err)
-		return "", err
+		return false, err
 	}
-	return set, nil
+	return true, nil
+}
+
+func (r *RedisCache) Del(key string) (int64, error) {
+	cnt, err := r.c.Del(key).Result()
+	if err != nil {
+		logs.Error("Del key: %s err: %s", key, err)
+		return 0, err
+	}
+	return cnt, nil
+}
+
+func (r *RedisCache) Exists(key string) (bool, error) {
+	existed, err := r.c.Exists(key).Result()
+	if err != nil {
+		logs.Error("check key: %s exists err: %s", key, err)
+		return false, err
+	}
+	if existed == 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (r *RedisCache) Expire(key string, expiration time.Duration) (bool, error) {
