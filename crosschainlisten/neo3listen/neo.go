@@ -94,6 +94,7 @@ func (this *Neo3ChainListen) isListeningContract(contract string, contracts []st
 }
 
 func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	logs.Info("HandleNewBlock NEO3 height=%d", height)
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
@@ -106,10 +107,12 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
 	for _, tx := range block.Tx {
+		logs.Info("tx hash: %s", tx.Hash)
 		appLog, err := this.neoSdk.GetApplicationLog(tx.Hash)
 		if err != nil || appLog == nil {
 			continue
 		}
+		logs.Info("txHash[%s] applog:%+v", tx.Hash, appLog.Executions)
 		for _, exeitem := range appLog.Executions {
 			if exeitem.VMState == "FAULT" {
 				continue
