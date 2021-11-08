@@ -38,7 +38,7 @@ const (
 	_neo_lock2            = "LockEvent"
 	_neo_unlock           = "UnlockEvent"
 	_neo_unlock2          = "Unlock"
-	_poly_wrapper_lock    = "PolyWrapperLock"
+	_poly_wrapper_lock    = "polyWrapperLock"
 )
 
 type Neo3ChainListen struct {
