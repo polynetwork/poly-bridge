@@ -124,6 +124,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					}
 					notify.State.Convert()
 					states := notify.State.Value.([]neo3_models.InvokeStack)
+					logs.Info("states:%+v", states)
 					if len(states) < 0 {
 						continue
 					}
