@@ -329,7 +329,7 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 		from = 3
 	}
 	endBsc := tt - conf.GlobalConfig.EventEffectConfig.HowOld2
-	query := db.Table("src_transactions").
+	query := db.Debug().Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
 		Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
