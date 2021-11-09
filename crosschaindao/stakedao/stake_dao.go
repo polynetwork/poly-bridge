@@ -94,6 +94,10 @@ func (dao *StakeDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.T
 	return nil, nil
 }
 
+func (dao *StakeDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
+	return nil, nil
+}
+
 func (dao *StakeDao) GetChain(chainId uint64) (*models.Chain, error) {
 	return dao.chains[chainId], nil
 }
