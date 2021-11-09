@@ -524,6 +524,18 @@ func (dao *BridgeDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.
 	return token, err
 }
 
+func (dao *BridgeDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
+	dstTransaction := new(models.DstTransaction)
+	res := dao.db.Where("hash = ?", hash).First(dstTransaction)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, fmt.Errorf("no record!")
+	}
+	return dstTransaction, nil
+}
+
 type ChainAvgTime struct {
 	ChainId uint64
 	AvgTime int64
