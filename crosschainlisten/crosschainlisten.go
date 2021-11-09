@@ -290,6 +290,11 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 				return
 			}
 
+			if ccl.isO3SwapTx(v) {
+				logs.Info("hash: %s is O3Swap, skip large TX check.", v.Hash)
+				return
+			}
+
 			if v.SrcTransfer != nil {
 				token, err := ccl.db.GetTokenBasicByHash(v.SrcTransfer.ChainId, v.SrcTransfer.Asset)
 				if err == nil {
@@ -311,6 +316,16 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 			}
 		}
 	}
+}
+
+func (ccl *CrossChainListen) isO3SwapTx(src *models.SrcTransaction) bool {
+	if src.ChainId != basedef.O3_CROSSCHAIN_ID {
+		return false
+	}
+	if dst, err := ccl.db.GetDstTransactionByHash(src.Hash); err == nil && dst != nil {
+		return true
+	}
+	return false
 }
 
 func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, dingUrl string, largeTxAmount int64, amount decimal.Decimal) error {

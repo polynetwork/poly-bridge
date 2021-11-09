@@ -401,6 +401,10 @@ func (dao *ExplorerDao) GetTokenBasicByHash(chainId uint64, hash string) (*model
 	return nil, nil
 }
 
+func (dao *ExplorerDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
+	return nil, nil
+}
+
 func (dao *ExplorerDao) Name() string {
 	return basedef.SERVER_EXPLORER
 }
