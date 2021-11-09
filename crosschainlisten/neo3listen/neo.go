@@ -136,32 +136,32 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							continue
 						}
 						tchainId := big.NewInt(0)
-						if states[3].Type == "Integer" {
-							tchainId, _ = new(big.Int).SetString(states[3].Value.(string), 10)
+						if states[2].Type == "Integer" {
+							tchainId, _ = new(big.Int).SetString(states[2].Value.(string), 10)
 						} else {
-							tchainId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[3].Value.(string)), 16)
+							tchainId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[2].Value.(string)), 16)
 						}
 						serverId := big.NewInt(0)
-						if states[7].Type == "Integer" {
-							serverId, _ = new(big.Int).SetString(states[7].Value.(string), 10)
+						if states[6].Type == "Integer" {
+							serverId, _ = new(big.Int).SetString(states[6].Value.(string), 10)
 						} else {
-							serverId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[7].Value.(string)), 16)
+							serverId, _ = new(big.Int).SetString(basedef.HexStringReverse(states[6].Value.(string)), 16)
 						}
 						if serverId == nil {
 							serverId = new(big.Int).SetUint64(0)
 						}
-						asset := basedef.HexStringReverse(states[1].Value.(string))
+						asset := basedef.HexStringReverse(states[0].Value.(string))
 						amount := big.NewInt(0)
-						if states[6].Type == "Integer" {
-							amount, _ = new(big.Int).SetString(states[6].Value.(string), 10)
+						if states[4].Type == "Integer" {
+							amount, _ = new(big.Int).SetString(states[4].Value.(string), 10)
 						} else {
-							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(states[6].Value.(string)), 16)
+							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(states[4].Value.(string)), 16)
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 							Hash:         tx.Hash[2:],
-							User:         states[2].Value.(string),
+							User:         states[1].Value.(string),
 							DstChainId:   tchainId.Uint64(),
-							DstUser:      states[4].Value.(string),
+							DstUser:      states[3].Value.(string),
 							FeeTokenHash: asset,
 							FeeAmount:    models.NewBigInt(amount),
 							ServerId:     serverId.Uint64(),
