@@ -344,11 +344,20 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	if err == nil {
 		srcChainName = srcChain.Name
 	}
+
 	dstChainName := strconv.FormatUint(srcTransaction.DstChainId, 10)
 	dstChain, err := ccl.db.GetChain(srcTransaction.DstChainId)
 	if err == nil {
 		dstChainName = dstChain.Name
 	}
+	if srcTransaction.SrcSwap != nil && srcTransaction.SrcSwap.DstChainId != 0 {
+		dstChainName = strconv.FormatUint(srcTransaction.SrcSwap.DstChainId, 10)
+		dstChain, err := ccl.db.GetChain(srcTransaction.DstChainId)
+		if err == nil {
+			dstChainName = dstChain.Name
+		}
+	}
+
 	ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
 	txType := "SWAP"
 	if srcTransaction.SrcSwap != nil {
