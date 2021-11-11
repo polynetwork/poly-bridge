@@ -164,6 +164,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.ARBITRUM_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
+	case basedef.FANTOM_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " ETH"
 	//case basedef.OPTIMISTIC_CROSSCHAIN_ID:
 	//	precision_new := decimal.New(1, 18)
 	//	return fee_new.Div(precision_new).String() + " ETH"
@@ -177,6 +180,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 12)
 		return fee_new.Div(precision_new).String() + " ZIL"
+	case basedef.AVAX_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " ETH"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()

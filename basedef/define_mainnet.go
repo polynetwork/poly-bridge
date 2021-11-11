@@ -37,6 +37,8 @@ const (
 	ZILLIQA_CROSSCHAIN_ID  = uint64(18)
 	ARBITRUM_CROSSCHAIN_ID = uint64(19)
 	XDAI_CROSSCHAIN_ID     = uint64(20)
+	AVAX_CROSSCHAIN_ID     = uint64(21)
+	FANTOM_CROSSCHAIN_ID   = uint64(22)
 
 	ENV = "mainnet"
 )
