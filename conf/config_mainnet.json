@@ -301,6 +301,44 @@
       "CCMContract": "7ceA671DABFBa880aF6723bDdd6B9f4caA15C87B",
       "ProxyContract": "2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
       "SwapContract": "7E418a9926c8D1cbd09CC93E8051cC3BbdfE3854"
+    },
+    {
+      "ChainName": "Avax",
+      "ChainId": 21,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "10.203.16.4:9650"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "287Bd66753f0cA8e9C2171D782DF39e4C28cfd65",
+        "f06587dE89e289Ce480CDf21109A14547eb33A0d"
+      ],
+      "CCMContract": "2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac",
+      "ProxyContract": "d3b90E2603D265Bf46dBC788059AC12D52B6AC57"
+    },
+    {
+      "ChainName": "Fantom",
+      "ChainId": 22,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "10.203.16.9:18545"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "287Bd66753f0cA8e9C2171D782DF39e4C28cfd65",
+        "f06587dE89e289Ce480CDf21109A14547eb33A0d"
+      ],
+      "CCMContract": "2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac",
+      "ProxyContract": "d3b90E2603D265Bf46dBC788059AC12D52B6AC57"
     }
   ],
   "StatsConfig": {
@@ -470,6 +508,30 @@
       "GasLimit": 3500000,
       "ProxyFee": 140,
       "MinFee": 40
+    },
+    {
+      "ChainId": 21,
+      "ChainName": "Avax",
+      "Nodes": [
+        {
+          "Url": "10.203.16.4:9650"
+        }
+      ],
+      "GasLimit": 120000,
+      "ProxyFee": 140,
+      "MinFee": 20
+    },
+    {
+      "ChainId": 22,
+      "ChainName": "Fantom",
+      "Nodes": [
+        {
+          "Url": "10.203.16.9:18545"
+        }
+      ],
+      "GasLimit": 120000,
+      "ProxyFee": 140,
+      "MinFee": 20
     }
   ],
   "IPPortConfig":{
