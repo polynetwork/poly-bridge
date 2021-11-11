@@ -236,6 +236,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return fantomSdk.Erc20Balance(hash, fantomConfig.ProxyContract)
 	}
+	if chainId == basedef.AVAX_CROSSCHAIN_ID {
+		avaxConfig := config.GetChainListenConfig(basedef.AVAX_CROSSCHAIN_ID)
+		if avaxConfig == nil {
+			panic("chain is invalid")
+		}
+		return avaxSdk.Erc20Balance(hash, avaxConfig.ProxyContract)
+	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf == nil {
@@ -303,13 +310,6 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return arbitrumSdk.Erc20TotalSupply(hash)
-	}
-	if chainId == basedef.FANTOM_CROSSCHAIN_ID {
-		fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
-		if fantomConfig == nil {
-			panic("chain is invalid")
-		}
-		return fantomSdk.Erc20TotalSupply(hash)
 	}
 	if chainId == basedef.XDAI_CROSSCHAIN_ID {
 		xdaiConfig := config.GetChainListenConfig(basedef.XDAI_CROSSCHAIN_ID)
