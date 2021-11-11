@@ -36,7 +36,8 @@ type NftJson struct {
 	Attributes  []*Attribute `json:"attributes"`
 }
 
-func Nft(cfg *conf.Config, runflag string) {
+func Nft(cfg *conf.Config) {
+	runflag := os.Getenv("runflag")
 	if runflag == "" {
 		panic(fmt.Sprintf("runflag is null "))
 	}
@@ -121,6 +122,8 @@ func createNft() {
 			}
 			//Txnum
 			user.Txnum = num
+			//EffectAmountUsd
+			user.EffectAmountUsd = models.NewBigIntFromInt(0)
 			err = db.Save(user).Error
 			if err != nil {
 				logs.Error("db.Save(user) err", err)
@@ -333,7 +336,7 @@ func signNft(nftCfg *conf.NftConfig) {
 				panic(fmt.Sprint("crypto.Sign Error:", err))
 			}
 
-			v.Nftsig = string(sig)
+			v.Nftsig = common.BytesToAddress(sig).String()
 			err = db.Save(v).Error
 			if err != nil {
 				logs.Error("save sign nftUser err", err)

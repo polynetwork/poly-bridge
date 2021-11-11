@@ -264,7 +264,7 @@ type TransactionOnAddress struct {
 
 type NftUser struct {
 	Id              int64   `gorm:"primaryKey;autoIncrement"`
-	NftId           int     `gorm:"uniqueIndex:nftusers_nftid;type:int;not null"`
+	NftId           int     `gorm:"index:nftusers_nftid;type:int;not null"`
 	ChainId         uint64  `gorm:"type:bigint(20);not null"`
 	Addrhash        string  `gorm:"type:varchar(66);not null"`
 	Address         string  `gorm:"uniqueIndex:nftusers_address;;type:varchar(66);not null"`
