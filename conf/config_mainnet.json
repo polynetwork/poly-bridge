@@ -310,7 +310,7 @@
       "BatchSize": 5,
       "Nodes": [
         {
-          "Url": "10.203.16.4:9650"
+          "Url": "http://10.203.16.4:9650/ext/bc/C/rpc"
         }
       ],
       "ExtendNodes": [],
@@ -514,7 +514,7 @@
       "ChainName": "Avax",
       "Nodes": [
         {
-          "Url": "10.203.16.4:9650"
+          "Url": "http://10.203.16.4:9650/ext/bc/C/rpc"
         }
       ],
       "GasLimit": 120000,
