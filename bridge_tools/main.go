@@ -98,8 +98,9 @@ func setupApp() *cli.App {
 func startServer(ctx *cli.Context) {
 	cmd := ctx.GlobalInt(getFlagName(cmdFlag))
 	method := ctx.GlobalString("method")
+	runflag := ctx.GlobalString("runflag")
 	if method != "" {
-		executeMethod(method, ctx)
+		executeMethod(method, runflag, ctx)
 		return
 	}
 	if cmd == 1 {

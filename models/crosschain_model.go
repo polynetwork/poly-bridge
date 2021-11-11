@@ -261,3 +261,16 @@ type TransactionOnAddress struct {
 	Direct    uint32
 	Precision uint64
 }
+
+type NftUser struct {
+	Id              int64   `gorm:"primaryKey;autoIncrement"`
+	NftId           int     `gorm:"uniqueIndex:nftusers_nftid;type:int;not null"`
+	ChainId         uint64  `gorm:"type:bigint(20);not null"`
+	Addrhash        string  `gorm:"type:varchar(66);not null"`
+	Address         string  `gorm:"uniqueIndex:nftusers_address;;type:varchar(66);not null"`
+	Txnum           uint64  `gorm:"type:bigint(20);not null"`
+	FirstTime       uint64  `gorm:"type:bigint(20);not null"`
+	TxAmountUsd     *BigInt `gorm:"type:varchar(64);not null"`
+	EffectAmountUsd *BigInt `gorm:"type:varchar(64);not null"`
+	Nftsig          string  `gorm:"size:128;not null"`
+}
