@@ -239,6 +239,7 @@ type Config struct {
 	BotConfig             *BotConfig
 	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
+	NftConfig             *NftConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
@@ -282,4 +283,13 @@ func NewConfig(filePath string) *Config {
 	}
 	GlobalConfig = config
 	return config
+}
+
+type NftConfig struct {
+	Description string
+	ExternalUrl string
+	Image       string
+	Name        string
+	AwsUrl      string
+	Pwd         string
 }
