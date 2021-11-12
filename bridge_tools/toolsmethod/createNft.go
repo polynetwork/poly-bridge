@@ -326,7 +326,7 @@ func signNft(nftCfg *conf.NftConfig) {
 
 			// expect
 			prefixedHash := crypto.Keccak256Hash(
-				[]byte(fmt.Sprintf("POLYNFT Signed Message:%v", len(hash))),
+				[]byte(fmt.Sprintf("\x19Ethereum Signed Message:\n%v", len(hash))),
 				hash.Bytes(),
 			)
 
