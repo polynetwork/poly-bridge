@@ -20,10 +20,12 @@ package crosschainlisten
 import (
 	"github.com/shopspring/decimal"
 	"math"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/polynetwork/bridge-common/metrics"
@@ -282,11 +284,18 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 }
 
 func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.SrcTransaction) {
-	if basedef.ENV != basedef.MAINNET {
-		return
-	}
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		for _, v := range srcTransactions {
+			if existed, err := cacheRedis.Redis.Exists(cacheRedis.LargeTxAlarmPrefix + strings.ToLower(v.Hash)); err == nil && existed {
+				logs.Info("large TX hash: %s alarm has been sent.", v.Hash)
+				return
+			}
+
+			if ccl.isO3SwapTx(v) {
+				logs.Info("hash: %s is O3Swap, skip large TX check.", v.Hash)
+				return
+			}
+
 			if v.SrcTransfer != nil {
 				token, err := ccl.db.GetTokenBasicByHash(v.SrcTransfer.ChainId, v.SrcTransfer.Asset)
 				if err == nil {
@@ -298,12 +307,26 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
 						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.IPPortConfig.LargeTxAmountAlarmDingIP, ccl.config.LargeTxAmount, amount); err != nil {
 							logs.Error("send BigTxAmount alert err.", err)
+						} else {
+							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(v.Hash), "done", time.Hour); err != nil {
+								logs.Error("mark large TX hash: %s alarm done err: %s", v.Hash, err)
+							}
 						}
 					}
 				}
 			}
 		}
 	}
+}
+
+func (ccl *CrossChainListen) isO3SwapTx(src *models.SrcTransaction) bool {
+	if src.ChainId != basedef.O3_CROSSCHAIN_ID {
+		return false
+	}
+	if dst, err := ccl.db.GetDstTransactionByHash(src.Hash); err == nil && dst != nil {
+		return true
+	}
+	return false
 }
 
 func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, dingUrl string, largeTxAmount int64, amount decimal.Decimal) error {
@@ -321,11 +344,20 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	if err == nil {
 		srcChainName = srcChain.Name
 	}
+
 	dstChainName := strconv.FormatUint(srcTransaction.DstChainId, 10)
 	dstChain, err := ccl.db.GetChain(srcTransaction.DstChainId)
 	if err == nil {
 		dstChainName = dstChain.Name
 	}
+	if srcTransaction.SrcSwap != nil && srcTransaction.SrcSwap.DstChainId != 0 {
+		dstChainName = strconv.FormatUint(srcTransaction.SrcSwap.DstChainId, 10)
+		dstChain, err := ccl.db.GetChain(srcTransaction.DstChainId)
+		if err == nil {
+			dstChainName = dstChain.Name
+		}
+	}
+
 	ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
 	txType := "SWAP"
 	if srcTransaction.SrcSwap != nil {

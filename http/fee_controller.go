@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math/big"
 	"poly-bridge/cacheRedis"
+	"poly-bridge/conf"
 	"strings"
 
 	"poly-bridge/basedef"
@@ -180,7 +181,7 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 
 	for _, srcTransaction := range srcTransactions {
 		prefix := srcTransaction.Key[0:8]
-		if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; in {
+		if _, in := conf.PolyProxy[strings.ToUpper(srcTransaction.Contract)]; in {
 			isPolyProxy[srcTransaction.Key] = true
 			isPolyProxy[srcTransaction.Hash] = true
 			isPolyProxy[basedef.HexStringReverse(srcTransaction.Hash)] = true

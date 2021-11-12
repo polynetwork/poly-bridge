@@ -48,6 +48,7 @@ func StartFeeListen(server string, feeUpdateSlot int64, feeListenCfgs []*conf.Fe
 	}
 	chainFees := make([]ChainFee, 0)
 	for _, cfg := range feeListenCfgs {
+		logs.Info("cfg:%+v", *cfg)
 		chainFee := NewChainFee(cfg, feeUpdateSlot)
 		if chainFee == nil {
 			panic("chain fee is not valid")
