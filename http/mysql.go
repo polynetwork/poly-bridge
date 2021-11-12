@@ -19,18 +19,13 @@ package http
 
 import (
 	"fmt"
-	"github.com/beego/beego/v2/core/logs"
-	"poly-bridge/basedef"
-	"poly-bridge/conf"
-	"strings"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"poly-bridge/conf"
 )
 
 var db *gorm.DB
-var polyProxy map[string]bool
 
 func Init() {
 	config := conf.GlobalConfig.DBConfig
@@ -45,26 +40,4 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
-
-	proxyMap := make(map[string]bool, 0)
-	proxyConfigs := conf.GlobalConfig.ChainListenConfig
-	for _, v := range proxyConfigs {
-		//some chain only listen,don't need our relayer cross
-		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
-			continue
-		}
-		proxyMap[strings.ToUpper(v.ProxyContract)] = true
-		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
-		proxyMap[strings.ToUpper(v.SwapContract)] = true
-		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.SwapContract))] = true
-		proxyMap[strings.ToUpper(v.NFTProxyContract)] = true
-		proxyMap[strings.ToUpper(basedef.HexStringReverse(v.NFTProxyContract))] = true
-	}
-	//src_transations'contract didn't listen
-	proxyMap[""] = true
-	polyProxy = proxyMap
-	if len(polyProxy) == 0 {
-		panic("http init polyProxy err,polyProxy is nil")
-	}
-	logs.Info("http init polyProxy:", polyProxy)
 }

@@ -338,3 +338,7 @@ func (dao *SwapDao) UpdateNFTProfileTokenName(oldName, newName string) {
 func (dao *SwapDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.Token, error) {
 	return nil, nil
 }
+
+func (dao *SwapDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
+	return nil, nil
+}

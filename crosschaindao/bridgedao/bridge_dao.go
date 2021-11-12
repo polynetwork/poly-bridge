@@ -30,6 +30,7 @@ import (
 	serverconf "poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
+	"time"
 )
 
 type BridgeDao struct {
@@ -523,6 +524,18 @@ func (dao *BridgeDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.
 	return token, err
 }
 
+func (dao *BridgeDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
+	dstTransaction := new(models.DstTransaction)
+	res := dao.db.Where("hash = ?", hash).First(dstTransaction)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, fmt.Errorf("no record!")
+	}
+	return dstTransaction, nil
+}
+
 type ChainAvgTime struct {
 	ChainId uint64
 	AvgTime int64
@@ -565,4 +578,29 @@ func (dao *BridgeDao) GetLockTokenStatistics() ([]*models.LockTokenStatistic, er
 func (dao *BridgeDao) SaveLockTokenStatistics(lockTokenStatistics []*models.LockTokenStatistic) error {
 	err := dao.db.Save(lockTokenStatistics).Error
 	return err
+}
+
+func (dao *BridgeDao) FilterMissingWrapperTransactions() ([]*models.SrcTransaction, error) {
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	startTime := time.Now().Add(-time.Hour * 24).Unix()
+	endTime := time.Now().Add(-time.Hour).Unix()
+	ignoreSrcChainIds := []uint64{basedef.O3_CROSSCHAIN_ID, basedef.SWITCHEO_CROSSCHAIN_ID}
+	ignoreDstChainIds := []uint64{basedef.SWITCHEO_CROSSCHAIN_ID}
+
+	var polyProxies []string
+	for k, _ := range conf.PolyProxy {
+		polyProxies = append(polyProxies, k)
+	}
+
+	res := dao.db.Debug().Where("time > ? and time < ?", startTime, endTime).
+		Where("chain_id not in ? and dst_chain_id not in ?", ignoreSrcChainIds, ignoreDstChainIds).
+		Where("(select count(1) from wrapper_transactions where src_transactions.hash=wrapper_transactions.hash) = 0").
+		Where("contract in ?", polyProxies).
+		Find(&srcTransactions)
+
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	return srcTransactions, res.Error
 }

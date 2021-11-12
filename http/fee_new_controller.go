@@ -6,6 +6,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
 )
@@ -36,8 +37,8 @@ func (c *FeeController) NewCheckFee() {
 			logs.Info("check fee poly_hash %s MISSING,hasn't src_Transaction %s", k, err)
 			continue
 		}
-		if len(polyProxy) > 0 {
-			if _, in := polyProxy[strings.ToUpper(srcTransaction.Contract)]; !in {
+		if len(conf.PolyProxy) > 0 {
+			if _, in := conf.PolyProxy[strings.ToUpper(srcTransaction.Contract)]; !in {
 				//is not poly proxy
 				v.Status = SKIP
 				logs.Info("check fee poly_hash %s SKIP,is not poly proxy", k)
@@ -76,13 +77,29 @@ func (c *FeeController) NewCheckFee() {
 			feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+
+			FluctuatingFeeMin := feeMin
+			excludeChainIds := map[uint64]interface{}{basedef.BSC_CROSSCHAIN_ID: nil, basedef.ARBITRUM_CROSSCHAIN_ID: nil, basedef.ETHEREUM_CROSSCHAIN_ID: nil}
+			polyTx := new(models.PolyTransaction)
+			res := db.Model(&models.PolyTransaction{}).
+				Where("hash =?", v.PolyHash).First(polyTx)
+			if res.Error == nil {
+				if _, ok := excludeChainIds[polyTx.DstChainId]; !ok {
+					FluctuatingFeeMin = new(big.Float).Mul(FluctuatingFeeMin, new(big.Float).SetFloat64(0.9))
+				}
+			}
+
 			v.Paid, _ = feePay.Float64()
-			v.Min, _ = feeMin.Float64()
+			v.Min, _ = FluctuatingFeeMin.Float64()
 			if feePay.Cmp(feeMin) >= 0 {
 				v.Status = PAID
+				logs.Info("check fee poly_hash %s PAID,feePay %v >= feeMin %v", k, v.Paid, v.Min)
+			} else if feePay.Cmp(FluctuatingFeeMin) >= 0 {
+				v.Status = PAID
+				logs.Info("check fee poly_hash %s PAID,feePay %v >= FluctuatingFeeMin %v", k, v.Paid, v.Min)
 			} else {
 				v.Status = NOT_PAID
-				logs.Info("check fee poly_hash %s NOT_PAID,feePay %v < feeMin %v", k, v.Paid, v.Min)
+				logs.Info("check fee poly_hash %s NOT_PAID,feePay %v < FluctuatingFeeMin %v", k, v.Paid, v.Min)
 			}
 		}
 	}
