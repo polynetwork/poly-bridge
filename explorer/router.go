@@ -18,6 +18,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/getaddresstxlist/", &ExplorerController{}, "post:GetAddressTxList"),
 		web.NSRouter("/getlocktokenlist/", &ExplorerController{}, "get:GetLockTokenList"),
 		web.NSRouter("/getlocktokeninfo/", &ExplorerController{}, "get:GetLockTokenInfo"),
+		web.NSRouter("/getnftsign/", &ExplorerController{}, "get:GetNftSign"),
 		web.NSRouter("/bot/", &BotController{}, "get:BotPage"),
 		web.NSRouter("/bottxs/", &BotController{}, "get:GetTxs"),
 		web.NSRouter("/botcheck/", &BotController{}, "get:CheckTxs"),
