@@ -815,5 +815,6 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 
 type NftSignReq struct {
 	// in: query
+	ChainId uint64 `json:"chainId"`
 	Address string `json:"address"`
 }
