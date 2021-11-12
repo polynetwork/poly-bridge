@@ -1245,3 +1245,7 @@ func MakeBottxsRsp(pageSize int, pageNo int, totalPage int, totalCount int, tran
 	rsp["Transactions"] = txs
 	return rsp
 }
+
+type SendTxDataReq struct {
+	PolyHash string `json:"polyhash"`
+}

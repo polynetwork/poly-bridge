@@ -458,3 +458,22 @@ func (c *TransactionController) TransactionsOfAsset() {
 		(int(transactionNum)+transactionsOfAssetReq.PageSize-1)/transactionsOfAssetReq.PageSize, int(transactionNum), srcPolyDstRelations)
 	c.ServeJSON()
 }
+
+func (c *TransactionController) SendTxData(){
+	var sendTxDataReq models.SendTxDataReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &sendTxDataReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	if sendTxDataReq.PolyHash[:2]=="0x"||sendTxDataReq.PolyHash[:2]=="0X"{
+		sendTxDataReq.PolyHash=sendTxDataReq.PolyHash[2:]
+	}
+	var polyTransaction models.PolyTransaction
+	res:=db.Where("hash = ?",sendTxDataReq.PolyHash).First(&polyTransaction)
+	if res.RowsAffected==0{
+
+	}
+}
