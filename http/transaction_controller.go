@@ -33,6 +33,12 @@ type TransactionController struct {
 	web.Controller
 }
 
+func (c *TransactionController) return400(message string) {
+	c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf(message))
+	c.Ctx.ResponseWriter.WriteHeader(400)
+	c.ServeJSON()
+}
+
 func (c *TransactionController) Transactions() {
 	var transactionsReq models.WrapperTransactionsReq
 	var err error
@@ -463,9 +469,7 @@ func (c *TransactionController) SendTxData(){
 	var sendTxDataReq models.SendTxDataReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &sendTxDataReq); err != nil {
-		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
-		c.Ctx.ResponseWriter.WriteHeader(400)
-		c.ServeJSON()
+		c.return400("request parameter is invalid!")
 		return
 	}
 	if sendTxDataReq.PolyHash[:2]=="0x"||sendTxDataReq.PolyHash[:2]=="0X"{
@@ -474,6 +478,9 @@ func (c *TransactionController) SendTxData(){
 	var polyTransaction models.PolyTransaction
 	res:=db.Where("hash = ?",sendTxDataReq.PolyHash).First(&polyTransaction)
 	if res.RowsAffected==0{
-
+		c.return400("request parameter is invalid!")
+		return
 	}
+
+
 }
