@@ -566,9 +566,12 @@
   "BotConfig": {
     "DingUrl": "https://oapi.dingtalk.com/robot/send?access_token=85415855e5cc0be656143c501d7f2009941aa7b07cba0bf60c0423b184d3ac44",
     "Interval": 20,
-    "DetailUrl": "https://explorer.poly.network/testnet/api/v1/bot?page_size=100",
-    "FinishUrl": "https://explorer.poly.network/testnet/api/v1/botfinishtx?",
-    "ApiToken": "njnfsd7fswf75fsfbw6f7w",
-    "CheckFrom": 1
+    "CheckFrom": 3,
+    "BaseUrl" : "https://explorer.poly.network/testnet/",
+    "DetailUrl": "api/v1/bot?page_size=100",
+    "FinishUrl": "api/v1/botfinishtx?",
+    "MarkAsPaidUrl": "api/v1/botmarkunmarktxaspaid?",
+    "TxUrl": "tx/",
+    "ApiToken": "njnfsd7fswf75fsfbw6f7w"
   }
 }
