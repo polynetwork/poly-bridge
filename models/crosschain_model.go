@@ -272,5 +272,6 @@ type NftUser struct {
 	FirstTime       uint64  `gorm:"type:bigint(20);not null"`
 	TxAmountUsd     *BigInt `gorm:"type:varchar(64);not null"`
 	EffectAmountUsd *BigInt `gorm:"type:varchar(64);not null"`
-	Nftsig          string  `gorm:"size:128;not null"`
+	Nftsig          string  `gorm:"size:132;not null"`
+	IsClaim         uint64  `gorm:"type:bigint(20);not null"`
 }
