@@ -87,9 +87,13 @@ func (c *BotController) BotPage() {
 		if checkFeeError != nil {
 			err = checkFeeError
 		} else {
-
 			rows := make([]string, len(txs))
-			for i, entry := range txs {
+			for i, tx := range txs {
+				entry, err := getSrcPolyDstRelation(tx)
+				if err != nil {
+					logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, err)
+					continue
+				}
 				tx := models.ParseBotTx(entry, fees)
 				rows[i] = fmt.Sprintf(
 					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 13)),
@@ -107,6 +111,7 @@ func (c *BotController) BotPage() {
 					tx.Duration,
 					tx.PolyHash,
 				)
+
 			}
 			pages := count / pageSize
 			if count%pageSize != 0 {
@@ -203,21 +208,29 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 	if err != nil {
 		return
 	}
+
+	srcTransactions := make([]*models.SrcTransaction, 0)
+	err = db.Table("src_transactions").Where("hash in ?", hashes).Find(&srcTransactions).Error
+	if err != nil {
+		return
+	}
 	o3Hashes := []string{}
-	for _, tx := range wrapperTransactionWithTokens {
-		if tx.DstChainId == basedef.O3_CROSSCHAIN_ID {
+	for _, tx := range srcTransactions {
+		if tx.ChainId == basedef.O3_CROSSCHAIN_ID {
 			o3Hashes = append(o3Hashes, tx.Hash)
 		}
 	}
+
+	o3SrcHash2DstChainId := make(map[string]uint64, 0)
 	if len(o3Hashes) > 0 {
-		srcHashes, err := getSwapSrcTransactions(o3Hashes)
+		o3SrcHash2DstChainId, err = getSwapSrcTransactions(o3Hashes)
 		o3srcs := []string{}
-		for _, v := range srcHashes {
-			o3srcs = append(o3srcs, v)
+		for hash, _ := range o3SrcHash2DstChainId {
+			o3srcs = append(o3srcs, hash)
 		}
 
 		o3txs := make([]*models.WrapperTransactionWithToken, 0)
-		err = db.Table("wrapper_transactions").Where("hash in ?", hashes).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&o3txs).Error
+		err = db.Table("wrapper_transactions").Where("hash in ?", o3srcs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&o3txs).Error
 		if err != nil {
 			return nil, err
 		}
@@ -233,12 +246,9 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 
 	fees = make(map[string]models.CheckFeeResult, 0)
 	for _, tx := range wrapperTransactionWithTokens {
-		if tx.DstChainId == basedef.O3_CROSSCHAIN_ID {
-			continue
-		}
 		chainId := tx.DstChainId
 		if chainId == basedef.O3_CROSSCHAIN_ID {
-			chainId = tx.SrcChainId
+			chainId = o3SrcHash2DstChainId[tx.Hash]
 		}
 
 		chainFee, ok := chain2Fees[chainId]
@@ -270,20 +280,31 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 	return
 }
 
-func getSwapSrcTransactions(o3Hashs []string) (map[string]string, error) {
-	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	res := db.Table("dst_transactions").
+func getSwapSrcTransactions(o3Hashs []string) (map[string]uint64, error) {
+	o3SrcTransaction := make([]*models.SrcTransaction, 0)
+	err := db.Table("src_transactions").
+		Where("src_transactions.hash in ?", o3Hashs).Find(&o3SrcTransaction).Error
+	if err != nil {
+		return nil, err
+	}
+
+	srcPolyDstRelation := make([]*models.SrcPolyDstRelation, 0)
+	err = db.Table("src_transactions").
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash").
 		Where("dst_transactions.hash in ?", o3Hashs).
-		Joins("inner join poly_transactions on dst_transactions.poly_hash = poly_transactions.hash").
-		Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.hash").
-		Find(&srcPolyDstRelations)
-	if res.Error != nil {
-		return nil, res.Error
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Find(&srcPolyDstRelation).Error
+	if err != nil {
+		return nil, err
 	}
-	checkHashes := make(map[string]string, 0)
-	for _, srcPolyDstRelation := range srcPolyDstRelations {
-		checkHashes[srcPolyDstRelation.DstHash] = srcPolyDstRelation.SrcHash
+	checkHashes := make(map[string]uint64, 0)
+	for _, relation := range srcPolyDstRelation {
+		for _, src := range o3SrcTransaction {
+			if relation.DstHash == src.Hash {
+				checkHashes[relation.SrcHash] = src.DstChainId
+			}
+		}
 	}
 	return checkHashes, nil
 }
@@ -308,7 +329,7 @@ func (c *BotController) GetTxs() {
 		if checkFeeError != nil {
 			err = checkFeeError
 		} else {
-			c.Data["json"] = models.MakeBottxsRsp(pageSize, pageNo,
+			c.Data["json"] = c.makeBottxsRsp(pageSize, pageNo,
 				(count+pageSize-1)/pageSize, count, txs, fees)
 			c.ServeJSON()
 			return
@@ -320,46 +341,70 @@ func (c *BotController) GetTxs() {
 	c.ServeJSON()
 }
 
-func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*models.SrcPolyDstRelation, int, error) {
+func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*models.TxHashChainIdPair, int, error) {
 	skips := append(skip, basedef.STATE_FINISHED, basedef.STATE_SKIP)
-	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	tt := time.Now().Unix()
 	end := tt - conf.GlobalConfig.EventEffectConfig.HowOld
 	if from == 0 {
 		from = 3
 	}
 	endBsc := tt - conf.GlobalConfig.EventEffectConfig.HowOld2
-	query := db.Table("src_transactions").
-		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
+
+	txs := make([]*models.TxHashChainIdPair, 0)
+	var count1, count2 int
+	db.Raw("? UNION ?",
+		db.Table("src_transactions").
+			Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
+			Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
+			Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
+			Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
+			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+			Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash"),
+		db.Table("src_transactions").
+			Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
+			Where("src_transactions.chain_id = ?", basedef.O3_CROSSCHAIN_ID).
+			Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
+			Where("src_transactions.time < ?", end).
+			Where("(select count(1) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0").
+			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash"),
+	).Limit(pageSize).Offset(pageSize * pageNo).Order("src_transactions.time desc").Find(&txs)
+
+	db.Table("src_transactions").Select("COUNT(*)").
 		Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
-		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
-		Preload("WrapperTransaction").
-		Preload("SrcTransaction").
-		Preload("SrcTransaction.SrcTransfer").
-		Preload("PolyTransaction").
-		Preload("DstTransaction").
-		Preload("DstTransaction.DstTransfer").
-		Preload("Token").
-		Preload("Token.TokenBasic").
-		Preload("FeeToken")
-	res := query.
-		Limit(pageSize).Offset(pageSize * pageNo).
-		Order("src_transactions.time desc").
-		Find(&srcPolyDstRelations)
-	if res.Error != nil {
-		return nil, 0, res.Error
+		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").Scan(&count1)
+	db.Table("src_transactions").Select("COUNT(*)").
+		Where("src_transactions.chain_id = ?", basedef.O3_CROSSCHAIN_ID).
+		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
+		Where("src_transactions.time < ?", end).
+		Where("(select count(1) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Scan(&count2)
+	return txs, count1 + count2, nil
+}
+
+func (c *BotController) makeBottxsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*models.TxHashChainIdPair, fees map[string]models.CheckFeeResult) map[string]interface{} {
+	rsp := map[string]interface{}{}
+	rsp["PageSize"] = pageSize
+	rsp["PageNo"] = pageNo
+	rsp["TotalPage"] = totalPage
+	rsp["TotalCount"] = totalCount
+	txs := make([]models.BotTx, len(transactions))
+	for i, tx := range transactions {
+		srcPolyDstRelation, err := getSrcPolyDstRelation(tx)
+		if err != nil {
+			logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, err)
+			continue
+		}
+		txs[i] = models.ParseBotTx(srcPolyDstRelation, fees)
 	}
-	var transactionNum int64
-	err := query.Count(&transactionNum).Error
-	if err != nil {
-		return nil, 0, err
-	}
-	return srcPolyDstRelations, int(transactionNum), nil
+	rsp["Transactions"] = txs
+	return rsp
 }
 
 func (c *BotController) CheckTxs() {
@@ -370,6 +415,46 @@ func (c *BotController) CheckTxs() {
 		c.Data["json"] = "Success"
 	}
 	c.ServeJSON()
+}
+
+func getSrcPolyDstRelation(tx *models.TxHashChainIdPair) (*models.SrcPolyDstRelation, error) {
+	hash := tx.SrcHash
+	if tx.SrcChainId == basedef.O3_CROSSCHAIN_ID {
+		originTx := new(models.TxHashChainIdPair)
+		err := db.Debug().Table("src_transactions").
+			Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
+			Where("dst_transactions.hash = ?", tx.SrcHash).
+			Joins("LEFT JOIN poly_transactions on src_transactions.hash=poly_transactions.src_hash").
+			Joins("LEFT JOIN dst_transactions on dst_transactions.poly_hash=poly_transactions.hash").
+			Order("src_transactions.time desc").Find(&originTx).Error
+		if err == nil {
+			hash = originTx.SrcHash
+		}
+	}
+	srcPolyDstRelation := new(models.SrcPolyDstRelation)
+	err := db.Debug().Table("src_transactions").
+		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, wrapper_transactions.fee_token_hash as fee_token_hash").
+		Where("src_transactions.hash = ?", hash).
+		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+		Preload("WrapperTransaction").
+		Preload("SrcTransaction").
+		Preload("SrcTransaction.SrcTransfer").
+		Preload("PolyTransaction").
+		Preload("DstTransaction").
+		Preload("DstTransaction.DstTransfer").
+		Preload("Token").
+		Preload("Token.TokenBasic").
+		Preload("FeeToken").
+		Order("src_transactions.time desc").
+		Find(&srcPolyDstRelation).Error
+	if err == nil && tx.SrcChainId == basedef.O3_CROSSCHAIN_ID {
+		srcPolyDstRelation.SrcHash = tx.SrcHash
+		srcPolyDstRelation.PolyHash = tx.PolyHash
+	}
+	return srcPolyDstRelation, err
 }
 
 func (c *BotController) RunChecks() {
@@ -438,7 +523,14 @@ func (c *BotController) checkTxs() (err error) {
 			continue
 		}
 		ALARMS[tx.SrcHash] = struct{}{}
-		entry := models.ParseBotTx(tx, fees)
+
+		srcPolyDstRelation, err := getSrcPolyDstRelation(tx)
+		if err != nil {
+			logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, err)
+			continue
+		}
+
+		entry := models.ParseBotTx(srcPolyDstRelation, fees)
 		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
 		body := fmt.Sprintf(
 			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v\n- Poly %v\n",

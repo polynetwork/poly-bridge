@@ -57,6 +57,12 @@ type TokenBasicRsp struct {
 	Tokens       []*TokenRsp
 }
 
+type TxHashChainIdPair struct {
+	SrcHash    string
+	PolyHash   string
+	SrcChainId uint64
+}
+
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
 	price := new(big.Float).Quo(new(big.Float).SetInt64(tokenBasic.Price), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenBasicRsp := &TokenBasicRsp{
@@ -1230,18 +1236,4 @@ func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
 		}
 	}
 	return v
-}
-
-func MakeBottxsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*SrcPolyDstRelation, fees map[string]CheckFeeResult) map[string]interface{} {
-	rsp := map[string]interface{}{}
-	rsp["PageSize"] = pageSize
-	rsp["PageNo"] = pageNo
-	rsp["TotalPage"] = totalPage
-	rsp["TotalCount"] = totalCount
-	txs := make([]BotTx, len(transactions))
-	for i, tx := range transactions {
-		txs[i] = ParseBotTx(tx, fees)
-	}
-	rsp["Transactions"] = txs
-	return rsp
 }
