@@ -336,7 +336,7 @@ func signNft(nftCfg *conf.NftConfig) {
 				panic(fmt.Sprint("crypto.Sign Error:", err))
 			}
 
-			v.Nftsig = common.BytesToAddress(sig).String()
+			v.Nftsig = fmt.Sprintf("%x", sig)
 			err = db.Save(v).Error
 			if err != nil {
 				logs.Error("save sign nftUser err", err)
