@@ -50,6 +50,7 @@ var (
 	feeTokens      = make(map[uint64]*models.Token)
 	lruDB          *lru.ARCCache
 	homePageTicker = time.NewTimer(600 * time.Second)
+	nativeHash     = []string{"0000000000000000000000000000000000000000", "0000000000000000000000000000000000000103"}
 )
 
 func NewDB(cfg *conf.DBConfig) *gorm.DB {
@@ -75,7 +76,7 @@ func NewDB(cfg *conf.DBConfig) *gorm.DB {
 	}
 
 	feeTokenList := make([]*models.Token, 0)
-	db.Where("hash=?", nativeHash).
+	db.Where("hash in ?", nativeHash).
 		Preload("TokenBasic").
 		Find(&feeTokenList)
 	for _, v := range feeTokenList {
@@ -312,7 +313,7 @@ func getPageNo(totalNo, pageSize int) int {
 func findFeeToken(cid uint64, hash string) *models.Token {
 	feeTokens := make([]*models.Token, 0)
 	db.Model(&models.Token{}).
-		Where("hash = ?", nativeHash).
+		Where("hash in ?", nativeHash).
 		Preload("TokenBasic").
 		Find(&feeTokens)
 

@@ -30,8 +30,8 @@ func MakeErrorRsp(messgae string) *ErrorRsp {
 }
 
 type AssetItems struct {
-	Asset *AssetRsp
-	Items []*Item
+	Asset   *AssetRsp
+	Items   []*Item
 	HasMore bool
 }
 
