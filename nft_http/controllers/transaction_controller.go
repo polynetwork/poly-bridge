@@ -136,8 +136,6 @@ func (c *TransactionController) TransactionsOfState() {
 	output(&c.Controller, data)
 }
 
-const nativeHash = "0000000000000000000000000000000000000000"
-
 func findSrcPolyDstRelation(wrapTxs []*models.WrapperTransaction) []*SrcPolyDstRelation {
 	list := make([]*SrcPolyDstRelation, len(wrapTxs))
 	srcTxHashs := make([]string, 0)

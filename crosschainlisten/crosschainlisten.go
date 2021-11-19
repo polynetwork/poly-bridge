@@ -26,6 +26,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/polynetwork/bridge-common/metrics"
@@ -87,7 +88,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 	case basedef.POLY_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
-		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID:
+		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
@@ -108,11 +109,12 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 }
 
 type CrossChainListen struct {
-	handle ChainHandle
-	db     crosschaindao.CrossChainDao
-	exit   chan bool
-	height uint64
-	config *conf.Config
+	handle  ChainHandle
+	db      crosschaindao.CrossChainDao
+	exit    chan bool
+	height  uint64
+	config  *conf.Config
+	dingMux sync.Mutex
 }
 
 func NewCrossChainListen(handle ChainHandle, db crosschaindao.CrossChainDao, config *conf.Config) *CrossChainListen {
@@ -283,6 +285,8 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 }
 
 func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.SrcTransaction) {
+	ccl.dingMux.Lock()
+	defer ccl.dingMux.Unlock()
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		for _, v := range srcTransactions {
 			if existed, err := cacheRedis.Redis.Exists(cacheRedis.LargeTxAlarmPrefix + strings.ToLower(v.Hash)); err == nil && existed {
@@ -351,7 +355,7 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	}
 	if srcTransaction.SrcSwap != nil && srcTransaction.SrcSwap.DstChainId != 0 {
 		dstChainName = strconv.FormatUint(srcTransaction.SrcSwap.DstChainId, 10)
-		dstChain, err := ccl.db.GetChain(srcTransaction.DstChainId)
+		dstChain, err := ccl.db.GetChain(srcTransaction.SrcSwap.DstChainId)
 		if err == nil {
 			dstChainName = dstChain.Name
 		}
