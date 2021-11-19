@@ -26,6 +26,7 @@ import (
 )
 
 var db *gorm.DB
+var relayUrl string
 
 func Init() {
 	config := conf.GlobalConfig.DBConfig
@@ -39,5 +40,10 @@ func Init() {
 	db, err = gorm.Open(mysql.Open(conn), &gorm.Config{Logger: Logger})
 	if err != nil {
 		panic(err)
+	}
+
+	relayUrl=conf.GlobalConfig.RelayUrl
+	if relayUrl==""{
+		panic("relayUrl is null")
 	}
 }

@@ -240,6 +240,7 @@ type Config struct {
 	BotConfig             *BotConfig
 	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
+	RelayUrl			  string
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

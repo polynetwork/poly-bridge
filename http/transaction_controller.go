@@ -34,7 +34,7 @@ type TransactionController struct {
 }
 
 func (c *TransactionController) return400(message string) {
-	c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf(message))
+	c.Data["json"] = models.MakeErrorRsp(message)
 	c.Ctx.ResponseWriter.WriteHeader(400)
 	c.ServeJSON()
 }
@@ -465,22 +465,28 @@ func (c *TransactionController) TransactionsOfAsset() {
 	c.ServeJSON()
 }
 
-func (c *TransactionController) SendTxData(){
-	var sendTxDataReq models.SendTxDataReq
+func (c *TransactionController) GetManualTxData(){
+	var manualTxDataReq models.ManualTxDataReq
 	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &sendTxDataReq); err != nil {
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &manualTxDataReq); err != nil {
 		c.return400("request parameter is invalid!")
 		return
 	}
-	if sendTxDataReq.PolyHash[:2]=="0x"||sendTxDataReq.PolyHash[:2]=="0X"{
-		sendTxDataReq.PolyHash=sendTxDataReq.PolyHash[2:]
+	if manualTxDataReq.PolyHash[:2]=="0x"||manualTxDataReq.PolyHash[:2]=="0X"{
+		manualTxDataReq.PolyHash=manualTxDataReq.PolyHash[2:]
 	}
-	var polyTransaction models.PolyTransaction
-	res:=db.Where("hash = ?",sendTxDataReq.PolyHash).First(&polyTransaction)
+	res:=db.Model(&models.PolyTransaction{}).Select("hash").Where("hash = ?",manualTxDataReq.PolyHash)
 	if res.RowsAffected==0{
-		c.return400("request parameter is invalid!")
+		c.return400(fmt.Sprintf("%v is not polyhash",manualTxDataReq.PolyHash))
 		return
 	}
+	res=db.Model(&models.DstTransaction{}).Select("hash").Where("src_hash = ?",manualTxDataReq.PolyHash)
+	if res.RowsAffected!=0{
+		c.return400(fmt.Sprintf("%v was submitted to dst chain",manualTxDataReq.PolyHash))
+		return
+	}
+
+
 
 
 }
