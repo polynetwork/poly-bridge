@@ -789,6 +789,7 @@ type LockTokenInfoReq struct {
 }
 type LockTokenInfoResp struct {
 	ChainId   uint64
+	ChainName string
 	TokenName string
 	Hash      string
 	ItemProxy string
@@ -804,6 +805,7 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 	for _, lockTokenStatistic := range lockTokenStatistics {
 		resp := new(LockTokenInfoResp)
 		resp.ChainId = lockTokenStatistic.ChainId
+		resp.ChainName=ChainId2Name(resp.ChainId)
 		resp.Hash = lockTokenStatistic.Hash
 		resp.TokenName = lockTokenStatistic.Token.Name
 		resp.ItemProxy = basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy)
