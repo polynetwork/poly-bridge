@@ -768,6 +768,7 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 
 type LockTokenResp struct {
 	ChainId      uint64  `json:"chainId"`
+	ChainName    string  `json:"chainName"`
 	InAmountUsd  *BigInt `json:"-"`
 	InAmountUsd1 string  `json:"amountUsd"`
 	TokenNum     int     `json:"tokenNum"`
@@ -779,6 +780,7 @@ func MakeLockTokenListResp(lockTokenResps []*LockTokenResp) []*LockTokenResp {
 		return (&lockTokenResps[i].InAmountUsd.Int).Cmp(&lockTokenResps[j].InAmountUsd.Int) == 1
 	})
 	for _, lockTokenResp := range lockTokenResps {
+		lockTokenResp.ChainName = ChainId2Name(lockTokenResp.ChainId)
 		lockTokenResp.InAmountUsd1 = decimal.NewFromBigInt(&lockTokenResp.InAmountUsd.Int, -4).String()
 	}
 	return lockTokenResps
@@ -805,7 +807,7 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 	for _, lockTokenStatistic := range lockTokenStatistics {
 		resp := new(LockTokenInfoResp)
 		resp.ChainId = lockTokenStatistic.ChainId
-		resp.ChainName=ChainId2Name(resp.ChainId)
+		resp.ChainName = ChainId2Name(resp.ChainId)
 		resp.Hash = lockTokenStatistic.Hash
 		resp.TokenName = lockTokenStatistic.Token.Name
 		resp.ItemProxy = basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy)
