@@ -477,12 +477,13 @@ func (c *TransactionController) GetManualTxData() {
 	if manualTxDataReq.PolyHash[:2] == "0x" || manualTxDataReq.PolyHash[:2] == "0X" {
 		manualTxDataReq.PolyHash = manualTxDataReq.PolyHash[2:]
 	}
-	res := db.Model(&models.PolyTransaction{}).Select("hash").Where("hash = ?", manualTxDataReq.PolyHash)
+	var x string
+	res := db.Model(&models.PolyTransaction{}).Select("hash").Where("hash = ?", manualTxDataReq.PolyHash).First(&x)
 	if res.RowsAffected == 0 {
 		c.return400(fmt.Sprintf("%v is not polyhash", manualTxDataReq.PolyHash))
 		return
 	}
-	res = db.Model(&models.DstTransaction{}).Select("hash").Where("src_hash = ?", manualTxDataReq.PolyHash)
+	res = db.Model(&models.DstTransaction{}).Select("hash").Where("src_hash = ?", manualTxDataReq.PolyHash).First(&x)
 	if res.RowsAffected != 0 {
 		c.return400(fmt.Sprintf("%v was submitted to dst chain", manualTxDataReq.PolyHash))
 		return
