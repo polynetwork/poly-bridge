@@ -498,8 +498,8 @@ func (c *TransactionController) GetManualTxData() {
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
-		c.Data["json"] = string(body)
-		c.ServeJSON()
+		c.Ctx.Output.Header("Content-Type", "application/json; charset=utf-8")
+		c.Ctx.Output.Body(body)
 		return
 	}
 	c.return400(fmt.Sprintf("%v getManualData timeout", manualTxDataReq.PolyHash))
