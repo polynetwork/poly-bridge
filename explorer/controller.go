@@ -492,3 +492,28 @@ func (c *ExplorerController) GetLockTokenInfo() {
 	c.Data["json"] = models.MakeLockTokenInfoResp(lockTokenStatistics)
 	c.ServeJSON()
 }
+
+func (c *ExplorerController) GetNftSign() {
+	var nftSignReq models.NftSignReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &nftSignReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	if nftSignReq.Address[:2] == "0x" || nftSignReq.Address[:2] == "0X" {
+		nftSignReq.Address = nftSignReq.Address[2:]
+	}
+	var sign string
+	res := db.Model(&models.NftUser{}).
+		Select("nftsig").Where("address = ? and chain_id = ?", nftSignReq.Address, nftSignReq.ChainId).
+		First(&sign)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("%v does not exist", nftSignReq.Address))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	c.Data["json"] = sign
+	c.ServeJSON()
+}

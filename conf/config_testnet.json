@@ -570,5 +570,13 @@
     "FinishUrl": "https://explorer.poly.network/testnet/api/v1/botfinishtx?",
     "ApiToken": "njnfsd7fswf75fsfbw6f7w",
     "CheckFrom": 1
+  },
+  "NftConfig":{
+    "Description": "Description",
+    "ExternalUrl": "ExternalUrl",
+    "Image": "https://www.baidu.com/",
+    "Name": "POLYNFT",
+    "AwsUrl": "https://aws.com/",
+    "Pwd": "0xd3c0196b81dba3c2811c0a39536e4dc47d640e3099a9331821d40fd1d6ab66gc"
   }
 }
