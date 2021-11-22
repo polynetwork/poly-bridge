@@ -309,7 +309,7 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 						Div(decimal.NewFromInt(100000000))
 
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
-						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.IPPortConfig.LargeTxAmountAlarmDingIP, ccl.config.LargeTxAmount, amount); err != nil {
+						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.LargeTxAmount, amount); err != nil {
 							logs.Error("send LargeTxAmount alarm err:", err)
 						} else {
 							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(v.Hash), "done", time.Hour); err != nil {
@@ -333,7 +333,7 @@ func (ccl *CrossChainListen) isO3SwapTx(src *models.SrcTransaction) bool {
 	return false
 }
 
-func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, dingUrl string, largeTxAmount int64, amount decimal.Decimal) error {
+func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, largeTxAmount int64, amount decimal.Decimal) error {
 	exceedingAmount := strconv.FormatInt(largeTxAmount, 10)
 	if amount.Cmp(decimal.NewFromInt(10000000)) >= 0 {
 		exceedingAmount = "1000w"
@@ -384,10 +384,11 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	//ss += "User: " + srcTransaction.User + "\n"
 	//ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
 
-	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %d %s (%d USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
+	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %s %s (%d USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
 		title,
 		token.Name,
-		txType, decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))), token.Name, amount,
+		txType,
+		decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String(), token.Name, amount.String(),
 		srcTransaction.Hash,
 		srcTransaction.User,
 		time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
@@ -397,10 +398,10 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	btns := []map[string]string{
 		{
 			"title":     "ListAll",
-			"actionURL": "",
+			"actionURL": "https://explorer.poly.network/testnet/txlist",
 		},
 	}
-	return common.PostDingCard(title, body, btns, conf.GlobalConfig.BotConfig.DingUrl)
+	return common.PostDingCard(title, body, btns, conf.GlobalConfig.IPPortConfig.LargeTxAmountAlarmDingIP)
 }
 
 //func PostDingCard(title, body string, btns interface{}) error {
