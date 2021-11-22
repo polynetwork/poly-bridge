@@ -181,6 +181,32 @@ func (c *BotController) FinishTx() {
 	c.ServeJSON()
 }
 
+func (c *BotController) MarkTxAsPaid() {
+	tx := c.Ctx.Input.Query("tx")
+	token := c.Ctx.Input.Query("token")
+	var err error
+	if token == conf.GlobalConfig.BotConfig.ApiToken {
+		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsPaidPrefix + tx)
+		if exists {
+			err = fmt.Errorf("Tx: %s  have been marked as paid", tx)
+		} else {
+			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsPaidPrefix+tx, "markAsPaidByBot", 0)
+			if err != nil {
+				logs.Error("Mark Tx: %s as paid err: %s:", tx, err)
+			}
+		}
+	} else {
+		err = fmt.Errorf("Access denied")
+	}
+	resp := fmt.Sprintf("Success: mark %s as paid", tx)
+	if err != nil {
+		resp = fmt.Sprintf("Tx %s Error %s", tx, err.Error())
+	}
+	c.Data["json"] = models.MakeErrorRsp(resp)
+	c.ServeJSON()
+
+}
+
 func (c *BotController) CheckFees() {
 	hashes := []string{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &hashes)
@@ -281,6 +307,9 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 }
 
 func getSwapSrcTransactions(o3Hashs []string) (map[string]uint64, error) {
+	//firstHalf
+	//secondHalfSrcHash2DstChainId:=make(map[string]uint64,0)
+
 	o3SrcTransaction := make([]*models.SrcTransaction, 0)
 	err := db.Table("src_transactions").
 		Where("src_transactions.hash in ?", o3Hashs).Find(&o3SrcTransaction).Error
@@ -352,7 +381,7 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 
 	txs := make([]*models.TxHashChainIdPair, 0)
 	var count1, count2 int
-	db.Raw("? UNION ?",
+	db.Debug().Raw("(?) UNION (?)",
 		db.Table("src_transactions").
 			Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
 			Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
@@ -360,7 +389,8 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 			Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
 			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-			Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash"),
+			Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+			Order("src_transactions.time desc").Limit(pageSize).Offset(pageSize*pageNo),
 		db.Table("src_transactions").
 			Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
 			Where("src_transactions.chain_id = ?", basedef.O3_CROSSCHAIN_ID).
@@ -368,17 +398,18 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 			Where("src_transactions.time < ?", end).
 			Where("(select count(1) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0").
 			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash"),
-	).Limit(pageSize).Offset(pageSize * pageNo).Order("src_transactions.time desc").Find(&txs)
+			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+			Order("src_transactions.time desc").Limit(pageSize).Offset(pageSize*pageNo),
+	).Find(&txs)
 
-	db.Table("src_transactions").Select("COUNT(*)").
+	db.Debug().Table("src_transactions").Select("COUNT(*)").
 		Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
 		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").Scan(&count1)
-	db.Table("src_transactions").Select("COUNT(*)").
+	db.Debug().Table("src_transactions").Select("COUNT(*)").
 		Where("src_transactions.chain_id = ?", basedef.O3_CROSSCHAIN_ID).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("src_transactions.time < ?", end).
@@ -450,10 +481,10 @@ func getSrcPolyDstRelation(tx *models.TxHashChainIdPair) (*models.SrcPolyDstRela
 		Preload("FeeToken").
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelation).Error
-	if err == nil && tx.SrcChainId == basedef.O3_CROSSCHAIN_ID {
-		srcPolyDstRelation.SrcHash = tx.SrcHash
-		srcPolyDstRelation.PolyHash = tx.PolyHash
-	}
+	//if err == nil && tx.SrcChainId == basedef.O3_CROSSCHAIN_ID {
+	//	srcPolyDstRelation.SrcHash = tx.SrcHash
+	//	srcPolyDstRelation.PolyHash = tx.PolyHash
+	//}
 	return srcPolyDstRelation, err
 }
 
@@ -545,22 +576,28 @@ func (c *BotController) checkTxs() (err error) {
 			entry.PolyHash,
 		)
 
+		baseUrl := conf.GlobalConfig.BotConfig.BaseUrl
+		apiToken := conf.GlobalConfig.BotConfig.ApiToken
 		btns := []map[string]string{
 			map[string]string{
 				"title":     "ListAll",
-				"actionURL": conf.GlobalConfig.BotConfig.DetailUrl,
+				"actionURL": baseUrl + conf.GlobalConfig.BotConfig.DetailUrl,
 			},
 			map[string]string{
 				"title":     "MarkAsSkipped",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", conf.GlobalConfig.BotConfig.FinishUrl, conf.GlobalConfig.BotConfig.ApiToken, entry.Hash),
+				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
 			},
 			map[string]string{
 				"title":     "MarkAsWaiting",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=wait", conf.GlobalConfig.BotConfig.FinishUrl, conf.GlobalConfig.BotConfig.ApiToken, entry.Hash),
+				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=wait", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
+			},
+			map[string]string{
+				"title":     "MarkAsPaid",
+				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s", baseUrl+conf.GlobalConfig.BotConfig.MarkAsPaidUrl, apiToken, entry.Hash),
 			},
 			map[string]string{
 				"title":     "Open",
-				"actionURL": "https://explorer.poly.network/tx/" + entry.Hash,
+				"actionURL": baseUrl + conf.GlobalConfig.BotConfig.TxUrl + entry.Hash,
 			},
 		}
 

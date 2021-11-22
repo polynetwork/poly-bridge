@@ -6,6 +6,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"strings"
@@ -56,6 +57,15 @@ func (c *FeeController) NewCheckFee() {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	for k, v := range mapCheckFeesReq {
+		if v.SrcTransaction != nil {
+			exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsPaidPrefix + v.SrcTransaction.Hash)
+			if exists {
+				logs.Info("check fee poly_hash %s marked as paid", k)
+				v.Status = PAID
+				continue
+			}
+		}
+
 		if v.WrapperTransactionWithToken == nil {
 			if v.SrcTransaction != nil {
 				//has src_transaction but not wrapper_transaction

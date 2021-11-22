@@ -578,10 +578,13 @@
   "BotConfig": {
     "DingUrl": "https://oapi.dingtalk.com/robot/send?access_token=85415855e5cc0be656143c501d7f2009941aa7b07cba0bf60c0423b184d3ac44",
     "Interval": 20,
-    "DetailUrl": "https://explorer.poly.network/api/v1/bot?page_size=100",
-    "FinishUrl": "https://explorer.poly.network/api/v1/botfinishtx?",
-    "ApiToken": "34b9cb0156c9264979a4345cb4e191",
-    "CheckFrom": 1
+    "CheckFrom": 3,
+    "BaseUrl" : "https://explorer.poly.network/",
+    "DetailUrl": "api/v1/bot?page_size=100",
+    "FinishUrl": "api/v1/botfinishtx?",
+    "MarkAsPaidUrl": "api/v1/botmarktxaspaid?",
+    "TxUrl": "tx/",
+    "ApiToken": "34b9cb0156c9264979a4345cb4e191"
   },
   "LargeTxAmount" : 100000,
   "LogFile": "logs/bridge.log",
