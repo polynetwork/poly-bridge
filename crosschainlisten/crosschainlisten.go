@@ -18,6 +18,7 @@
 package crosschainlisten
 
 import (
+	"fmt"
 	"github.com/shopspring/decimal"
 	"math"
 	"poly-bridge/cacheRedis"
@@ -309,7 +310,7 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
 						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.IPPortConfig.LargeTxAmountAlarmDingIP, ccl.config.LargeTxAmount, amount); err != nil {
-							logs.Error("send BigTxAmount alert err.", err)
+							logs.Error("send LargeTxAmount alarm err:", err)
 						} else {
 							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(v.Hash), "done", time.Hour); err != nil {
 								logs.Error("mark large TX hash: %s alarm done err: %s", v.Hash, err)
@@ -341,7 +342,7 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	} else if amount.Cmp(decimal.NewFromInt(1000000)) >= 0 {
 		exceedingAmount = "100w"
 	}
-	ss := "A large transaction exceeding " + exceedingAmount + " USD was detected.\n"
+	//ss := "A large transaction exceeding " + exceedingAmount + " USD was detected.\n"
 	srcChainName := strconv.FormatUint(srcTransaction.ChainId, 10)
 	srcChain, err := ccl.db.GetChain(srcTransaction.ChainId)
 	if err == nil {
@@ -361,7 +362,8 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		}
 	}
 
-	ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
+	title := fmt.Sprintf("Large transaction exceeding %s USD (%s->%s)", exceedingAmount, srcChainName, dstChainName)
+	//ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
 	txType := "SWAP"
 	if srcTransaction.SrcSwap != nil {
 		switch srcTransaction.SrcSwap.Type {
@@ -375,12 +377,62 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 			txType = "REMOVELIQUIDITY"
 		}
 	}
-	ss += "Type: " + txType + "\n"
-	ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
-		Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
-	ss += "Hash: " + srcTransaction.Hash + "\n"
-	ss += "User: " + srcTransaction.User + "\n"
-	ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
-	logs.Warn(ss)
-	return common.PostDingtext(ss, dingUrl)
+	//ss += "Type: " + txType + "\n"
+	//ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
+	//	Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
+	//ss += "Hash: " + srcTransaction.Hash + "\n"
+	//ss += "User: " + srcTransaction.User + "\n"
+	//ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
+
+	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %d %s (%d USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
+		title,
+		token.Name,
+		txType, decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))), token.Name, amount,
+		srcTransaction.Hash,
+		srcTransaction.User,
+		time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
+	)
+	logs.Info(body)
+
+	btns := []map[string]string{
+		{
+			"title":     "ListAll",
+			"actionURL": "",
+		},
+	}
+	return common.PostDingCard(title, body, btns, conf.GlobalConfig.BotConfig.DingUrl)
 }
+
+//func PostDingCard(title, body string, btns interface{}) error {
+//	payload := map[string]interface{}{}
+//	payload["msgtype"] = "actionCard"
+//	card := map[string]interface{}{}
+//	card["title"] = title
+//	card["text"] = body
+//	card["hideAvatar"] = 0
+//	card["btns"] = btns
+//	payload["actionCard"] = card
+//	return postDing(payload)
+//}
+//
+//func postDing(payload interface{}) error {
+//	data, err := json.Marshal(payload)
+//	if err != nil {
+//		return err
+//	}
+//	req, err := http.NewRequest("POST", conf.GlobalConfig.BotConfig.DingUrl, bytes.NewBuffer(data))
+//	req.Header.Set("Content-Type", "application/json")
+//
+//	client := &http.Client{}
+//	resp, err := client.Do(req)
+//	if err != nil {
+//		return err
+//	}
+//	defer resp.Body.Close()
+//	respBody, err := ioutil.ReadAll(resp.Body)
+//	if err != nil {
+//		return err
+//	}
+//	logs.Info("PostDing response Body:", string(respBody))
+//	return nil
+//}
