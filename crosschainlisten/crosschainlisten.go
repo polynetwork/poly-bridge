@@ -18,6 +18,7 @@
 package crosschainlisten
 
 import (
+	"fmt"
 	"github.com/shopspring/decimal"
 	"math"
 	"poly-bridge/cacheRedis"
@@ -308,8 +309,8 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 						Div(decimal.NewFromInt(100000000))
 
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
-						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.IPPortConfig.LargeTxAmountAlarmDingIP, ccl.config.LargeTxAmount, amount); err != nil {
-							logs.Error("send BigTxAmount alert err.", err)
+						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.LargeTxAmount, amount); err != nil {
+							logs.Error("send LargeTxAmount alarm err:", err)
 						} else {
 							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(v.Hash), "done", time.Hour); err != nil {
 								logs.Error("mark large TX hash: %s alarm done err: %s", v.Hash, err)
@@ -332,7 +333,7 @@ func (ccl *CrossChainListen) isO3SwapTx(src *models.SrcTransaction) bool {
 	return false
 }
 
-func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, dingUrl string, largeTxAmount int64, amount decimal.Decimal) error {
+func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *models.SrcTransaction, token *models.Token, largeTxAmount int64, amount decimal.Decimal) error {
 	exceedingAmount := strconv.FormatInt(largeTxAmount, 10)
 	if amount.Cmp(decimal.NewFromInt(10000000)) >= 0 {
 		exceedingAmount = "1000w"
@@ -341,7 +342,7 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	} else if amount.Cmp(decimal.NewFromInt(1000000)) >= 0 {
 		exceedingAmount = "100w"
 	}
-	ss := "A large transaction exceeding " + exceedingAmount + " USD was detected.\n"
+	//ss := "A large transaction exceeding " + exceedingAmount + " USD was detected.\n"
 	srcChainName := strconv.FormatUint(srcTransaction.ChainId, 10)
 	srcChain, err := ccl.db.GetChain(srcTransaction.ChainId)
 	if err == nil {
@@ -361,7 +362,8 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		}
 	}
 
-	ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
+	title := fmt.Sprintf("Large transaction exceeding %s USD (%s->%s)", exceedingAmount, srcChainName, dstChainName)
+	//ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
 	txType := "SWAP"
 	if srcTransaction.SrcSwap != nil {
 		switch srcTransaction.SrcSwap.Type {
@@ -375,12 +377,32 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 			txType = "REMOVELIQUIDITY"
 		}
 	}
-	ss += "Type: " + txType + "\n"
-	ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
-		Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
-	ss += "Hash: " + srcTransaction.Hash + "\n"
-	ss += "User: " + srcTransaction.User + "\n"
-	ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
-	logs.Warn(ss)
-	return common.PostDingtext(ss, dingUrl)
+	//ss += "Type: " + txType + "\n"
+	//ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
+	//	Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
+	//ss += "Hash: " + srcTransaction.Hash + "\n"
+	//ss += "User: " + srcTransaction.User + "\n"
+	//ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
+
+	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %d %s (%d USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
+		title,
+		token.Name,
+		txType,
+		decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))), token.Name, amount,
+		srcTransaction.Hash,
+		srcTransaction.User,
+		time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
+	)
+	logs.Info(body)
+	if err := cacheRedis.Redis.Push(cacheRedis.LargeTxList, body); err != nil {
+		logs.Error("Save LargeTx[hash: %s] err: %s", srcTransaction.Hash, err)
+	}
+
+	btns := []map[string]string{
+		{
+			"title":     "ListAll",
+			"actionURL": "https://explorer.poly.network/testnet/txlist",
+		},
+	}
+	return common.PostDingCard(title, body, btns, conf.GlobalConfig.IPPortConfig.LargeTxAmountAlarmDingIP)
 }

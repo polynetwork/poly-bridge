@@ -568,10 +568,6 @@ func (c *BotController) checkTxs() (err error) {
 		if err != nil {
 			logs.Error("Post dingtalk error %s", err)
 		}
-
-		if basedef.ENV == basedef.TESTNET {
-			break
-		}
 	}
 
 	/*
