@@ -241,6 +241,7 @@ type Config struct {
 	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
 	NftConfig             *NftConfig
+	RelayUrl			  string
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

@@ -20,6 +20,8 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
 	"time"
@@ -31,6 +33,12 @@ import (
 
 type TransactionController struct {
 	web.Controller
+}
+
+func (c *TransactionController) return400(message string) {
+	c.Data["json"] = models.MakeErrorRsp(message)
+	c.Ctx.ResponseWriter.WriteHeader(400)
+	c.ServeJSON()
 }
 
 func (c *TransactionController) Transactions() {
@@ -457,4 +465,42 @@ func (c *TransactionController) TransactionsOfAsset() {
 	c.Data["json"] = models.MakeTransactionOfUnfinishedRsp(transactionsOfAssetReq.PageSize, transactionsOfAssetReq.PageNo,
 		(int(transactionNum)+transactionsOfAssetReq.PageSize-1)/transactionsOfAssetReq.PageSize, int(transactionNum), srcPolyDstRelations)
 	c.ServeJSON()
+}
+
+func (c *TransactionController) GetManualTxData() {
+	var manualTxDataReq models.ManualTxDataReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &manualTxDataReq); err != nil {
+		c.return400("request parameter is invalid!")
+		return
+	}
+	if manualTxDataReq.PolyHash[:2] == "0x" || manualTxDataReq.PolyHash[:2] == "0X" {
+		manualTxDataReq.PolyHash = manualTxDataReq.PolyHash[2:]
+	}
+	res := db.Model(&models.PolyTransaction{}).Select("hash").Where("hash = ?", manualTxDataReq.PolyHash)
+	if res.RowsAffected == 0 {
+		c.return400(fmt.Sprintf("%v is not polyhash", manualTxDataReq.PolyHash))
+		return
+	}
+	res = db.Model(&models.DstTransaction{}).Select("hash").Where("src_hash = ?", manualTxDataReq.PolyHash)
+	if res.RowsAffected != 0 {
+		c.return400(fmt.Sprintf("%v was submitted to dst chain", manualTxDataReq.PolyHash))
+		return
+	}
+	url := relayUrl + "/api/v1/getManualData?polyhash=" + manualTxDataReq.PolyHash
+	for i := 0; i < 2; i++ {
+		resp, err := http.Get(url)
+		if err != nil {
+			logs.Error("getManualData polyhash:", manualTxDataReq.PolyHash, "err:", err)
+			time.Sleep(time.Millisecond * 500)
+			continue
+		}
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		c.Data["json"] = string(body)
+		c.ServeJSON()
+		return
+	}
+	c.return400(fmt.Sprintf("%v getManualData timeout", manualTxDataReq.PolyHash))
+	return
 }
