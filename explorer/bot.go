@@ -597,7 +597,7 @@ func (c *BotController) checkTxs() (err error) {
 			},
 			map[string]string{
 				"title":     "Open",
-				"actionURL": baseUrl + baseUrl + conf.GlobalConfig.BotConfig.TxUrl + entry.Hash,
+				"actionURL": baseUrl + conf.GlobalConfig.BotConfig.TxUrl + entry.Hash,
 			},
 		}
 
