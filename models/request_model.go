@@ -1249,7 +1249,3 @@ func MakeBottxsRsp(pageSize int, pageNo int, totalPage int, totalCount int, tran
 type ManualTxDataReq struct {
 	PolyHash string
 }
-
-type ManualTxDataRsp struct {
-	ManualTxData string
-}
