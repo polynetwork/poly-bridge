@@ -384,11 +384,11 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	//ss += "User: " + srcTransaction.User + "\n"
 	//ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
 
-	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %s %s (%d USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
+	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %d %s (%d USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
 		title,
 		token.Name,
 		txType,
-		decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String(), token.Name, amount.String(),
+		decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))), token.Name, amount,
 		srcTransaction.Hash,
 		srcTransaction.User,
 		time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),

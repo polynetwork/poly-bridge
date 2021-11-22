@@ -33,7 +33,7 @@ func PostDingCard(title, body string, btns interface{}, dingUrl string) error {
 	card["hideAvatar"] = 0
 	card["btns"] = btns
 	payload["actionCard"] = card
-	return PostJson(DingUrl, payload)
+	return PostJson(dingUrl, payload)
 }
 func PostDingmarkdown(title, body string) error {
 	payload := map[string]interface{}{}
