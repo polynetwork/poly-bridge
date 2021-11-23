@@ -162,18 +162,26 @@ func (c *BotController) FinishTx() {
 	token := c.Ctx.Input.Query("token")
 	status := c.Ctx.Input.Query("status")
 	var err error
-	if status != "skip" && status != "wait" {
-		err = fmt.Errorf("Invalid status")
-	} else if token == conf.GlobalConfig.BotConfig.ApiToken {
-		target := basedef.STATE_WAIT
-		if status == "skip" {
-			target = basedef.STATE_SKIP
+	resp := ""
+	if token == conf.GlobalConfig.BotConfig.ApiToken {
+		switch status {
+		case "skip":
+			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsSkipPrefix+tx, "markAsSkipByBot", 0)
+			if err == nil {
+				resp = fmt.Sprintf("Success mark %s as skip", tx)
+			}
+		case "wait":
+			_, err = cacheRedis.Redis.Del(cacheRedis.MarkTxAsSkipPrefix + tx)
+			if err == nil {
+				resp = fmt.Sprintf("Success mark %s as wait", tx)
+			}
+		default:
+			err = fmt.Errorf("Invalid status")
 		}
-		err = db.Table("wrapper_transactions").Where("hash in ?", []string{tx}).Update("status", target).Error
 	} else {
 		err = fmt.Errorf("Access denied")
 	}
-	resp := fmt.Sprintf("Success: %s as %s", tx, status)
+
 	if err != nil {
 		resp = fmt.Sprintf("Tx %s Error %s", tx, err.Error())
 	}
