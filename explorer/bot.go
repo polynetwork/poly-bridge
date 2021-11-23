@@ -307,9 +307,6 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 }
 
 func getSwapSrcTransactions(o3Hashs []string) (map[string]uint64, error) {
-	//firstHalf
-	//secondHalfSrcHash2DstChainId:=make(map[string]uint64,0)
-
 	o3SrcTransaction := make([]*models.SrcTransaction, 0)
 	err := db.Table("src_transactions").
 		Where("src_transactions.hash in ?", o3Hashs).Find(&o3SrcTransaction).Error
@@ -371,7 +368,7 @@ func (c *BotController) GetTxs() {
 }
 
 func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*models.TxHashChainIdPair, int, error) {
-	skips := append(skip, basedef.STATE_FINISHED, basedef.STATE_SKIP)
+	//skips := append(skip, basedef.STATE_FINISHED, basedef.STATE_SKIP)
 	tt := time.Now().Unix()
 	end := tt - conf.GlobalConfig.EventEffectConfig.HowOld
 	if from == 0 {
@@ -380,43 +377,37 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 	endBsc := tt - conf.GlobalConfig.EventEffectConfig.HowOld2
 
 	txs := make([]*models.TxHashChainIdPair, 0)
-	var count1, count2 int
-	db.Debug().Raw("(?) UNION (?)",
-		db.Table("src_transactions").
-			Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
-			Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
-			Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
-			Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
-			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-			Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
-			Order("src_transactions.time desc").Limit(pageSize).Offset(pageSize*pageNo),
-		db.Table("src_transactions").
-			Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
-			Where("src_transactions.chain_id = ?", basedef.O3_CROSSCHAIN_ID).
-			Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
-			Where("src_transactions.time < ?", end).
-			Where("(select count(1) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0").
-			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-			Order("src_transactions.time desc").Limit(pageSize).Offset(pageSize*pageNo),
-	).Find(&txs)
+	var count int64
 
-	db.Debug().Table("src_transactions").Select("COUNT(*)").
-		Where("wrapper_transactions.status NOT IN ?", skips). // Where("dst_transactions.hash is null").Where("src_transactions.standard = ?", 0).
+	var polyProxies []string
+	for k, _ := range conf.PolyProxy {
+		polyProxies = append(polyProxies, k)
+	}
+	query := db.Debug().Table("src_transactions").
+		Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
+		Where("UPPER(src_transactions.contract) in ?", polyProxies).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
-		Where("(wrapper_transactions.time < ?) OR (wrapper_transactions.time < ? AND ((wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?) OR (wrapper_transactions.src_chain_id = ? and wrapper_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
+		Where("(src_transactions.time < ?) OR (src_transactions.time < ? and ((src_transactions.chain_id = ? and src_transactions.dst_chain_id = ?) or (src_transactions.chain_id = ? and src_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
+		Where("((select count(*) from poly_transactions where src_transactions.hash = poly_transactions.src_hash) = 0 OR (select count(*) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
-		Joins("inner join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").Scan(&count1)
-	db.Debug().Table("src_transactions").Select("COUNT(*)").
-		Where("src_transactions.chain_id = ?", basedef.O3_CROSSCHAIN_ID).
-		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
-		Where("src_transactions.time < ?", end).
-		Where("(select count(1) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0").
-		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").Scan(&count2)
-	return txs, count1 + count2, nil
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
+
+	err := query.Limit(pageSize).Offset(pageSize * pageNo).Order("src_transactions.time desc").Find(&txs).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	err = query.Count(&count).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for i := 0; i < len(txs); i++ {
+		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsSkipPrefix + txs[i].SrcHash)
+		if exists {
+			txs = append(txs[:i], txs[i+1:]...)
+		}
+	}
+	return txs, int(count), nil
 }
 
 func (c *BotController) makeBottxsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*models.TxHashChainIdPair, fees map[string]models.CheckFeeResult) map[string]interface{} {
@@ -481,10 +472,6 @@ func getSrcPolyDstRelation(tx *models.TxHashChainIdPair) (*models.SrcPolyDstRela
 		Preload("FeeToken").
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelation).Error
-	//if err == nil && tx.SrcChainId == basedef.O3_CROSSCHAIN_ID {
-	//	srcPolyDstRelation.SrcHash = tx.SrcHash
-	//	srcPolyDstRelation.PolyHash = tx.PolyHash
-	//}
 	return srcPolyDstRelation, err
 }
 

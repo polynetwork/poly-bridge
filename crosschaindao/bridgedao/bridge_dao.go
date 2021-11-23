@@ -595,7 +595,7 @@ func (dao *BridgeDao) FilterMissingWrapperTransactions() ([]*models.SrcTransacti
 	res := dao.db.Debug().Where("time > ? and time < ?", startTime, endTime).
 		Where("chain_id not in ? and dst_chain_id not in ?", ignoreSrcChainIds, ignoreDstChainIds).
 		Where("(select count(1) from wrapper_transactions where src_transactions.hash=wrapper_transactions.hash) = 0").
-		Where("contract in ?", polyProxies).
+		Where("UPPER(contract) in ?", polyProxies).
 		Find(&srcTransactions)
 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
