@@ -388,7 +388,7 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 		Where("UPPER(src_transactions.contract) in ?", polyProxies).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("(src_transactions.time < ?) OR (src_transactions.time < ? and ((src_transactions.chain_id = ? and src_transactions.dst_chain_id = ?) or (src_transactions.chain_id = ? and src_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
-		Where("((select count(*) from poly_transactions where src_transactions.hash = poly_transactions.src_hash) = 0 OR (select count(*) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0").
+		Where("((select count(*) from poly_transactions where src_transactions.hash = poly_transactions.src_hash) = 0 OR (select count(*) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0)").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
 
