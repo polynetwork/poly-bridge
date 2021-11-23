@@ -570,7 +570,7 @@
     "BaseUrl" : "https://explorer.poly.network/testnet/",
     "DetailUrl": "api/v1/bot?page_size=100",
     "FinishUrl": "api/v1/botfinishtx?",
-    "MarkAsPaidUrl": "api/v1/botmarktxaspaid?",
+    "MarkAsPaidUrl": "api/v1/botmarkunmarktxaspaid?",
     "TxUrl": "tx/",
     "ApiToken": "njnfsd7fswf75fsfbw6f7w"
   },

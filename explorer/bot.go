@@ -181,26 +181,31 @@ func (c *BotController) FinishTx() {
 	c.ServeJSON()
 }
 
-func (c *BotController) MarkTxAsPaid() {
+func (c *BotController) MarkUnMarkTxAsPaid() {
 	tx := c.Ctx.Input.Query("tx")
 	token := c.Ctx.Input.Query("token")
+	logs.Debug("MarkTxAsPaid request: %s", tx)
 	var err error
+	resp := ""
 	if token == conf.GlobalConfig.BotConfig.ApiToken {
 		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsPaidPrefix + tx)
 		if exists {
-			err = fmt.Errorf("Tx: %s  have been marked as paid", tx)
+			_, err = cacheRedis.Redis.Del(cacheRedis.MarkTxAsPaidPrefix + tx)
+			if err == nil {
+				resp = fmt.Sprintf("Success unmark %s as paid", tx)
+			}
 		} else {
 			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsPaidPrefix+tx, "markAsPaidByBot", 0)
-			if err != nil {
-				logs.Error("Mark Tx: %s as paid err: %s:", tx, err)
+			if err == nil {
+				resp = fmt.Sprintf("Success mark %s as paid", tx)
 			}
 		}
 	} else {
 		err = fmt.Errorf("Access denied")
 	}
-	resp := fmt.Sprintf("Success: mark %s as paid", tx)
 	if err != nil {
 		resp = fmt.Sprintf("Tx %s Error %s", tx, err.Error())
+		logs.Error("MarkUnMarkTxAsPaid err: %s", err)
 	}
 	c.Data["json"] = models.MakeErrorRsp(resp)
 	c.ServeJSON()
@@ -567,19 +572,19 @@ func (c *BotController) checkTxs() (err error) {
 		apiToken := conf.GlobalConfig.BotConfig.ApiToken
 		btns := []map[string]string{
 			map[string]string{
-				"title":     "ListAll",
+				"title":     "List All",
 				"actionURL": baseUrl + conf.GlobalConfig.BotConfig.DetailUrl,
 			},
 			map[string]string{
-				"title":     "MarkAsSkipped",
+				"title":     "Mark As Skipped",
 				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
 			},
 			map[string]string{
-				"title":     "MarkAsWaiting",
+				"title":     "Mark As Waiting",
 				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=wait", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
 			},
 			map[string]string{
-				"title":     "MarkAsPaid",
+				"title":     "Mark/Unmark As Paid",
 				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s", baseUrl+conf.GlobalConfig.BotConfig.MarkAsPaidUrl, apiToken, entry.Hash),
 			},
 			map[string]string{
