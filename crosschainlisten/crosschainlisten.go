@@ -309,6 +309,10 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 						Div(decimal.NewFromInt(100000000))
 
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
+						//cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
+						if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, v.Hash); err != nil {
+							logs.Error("Save LargeTx[hash: %s] err: %s", v.Hash, err)
+						}
 						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.LargeTxAmount, amount); err != nil {
 							logs.Error("send LargeTxAmount alarm err:", err)
 						} else {
@@ -377,32 +381,40 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 			txType = "REMOVELIQUIDITY"
 		}
 	}
-	//ss += "Type: " + txType + "\n"
-	//ss += "Amount: " + decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).
-	//	Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String() + " " + token.Name + " (" + amount.String() + " USD)\n"
-	//ss += "Hash: " + srcTransaction.Hash + "\n"
-	//ss += "User: " + srcTransaction.User + "\n"
-	//ss += "Time: " + time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05") + "\n"
-
+	largeTx := cacheRedis.LargeTx{
+		Asset:     token.Name,
+		From:      srcChainName,
+		To:        dstChainName,
+		Type:      txType,
+		Amount:    decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String(),
+		USDAmount: amount.String(),
+		Hash:      srcTransaction.Hash,
+		User:      srcTransaction.User,
+		Time:      time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
+	}
 	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %s %s (%s USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
 		title,
-		token.Name,
-		txType,
-		decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String(), token.Name, amount.String(),
-		srcTransaction.Hash,
-		srcTransaction.User,
-		time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
+		largeTx.Asset,
+		largeTx.Type,
+		largeTx.Amount, largeTx.Asset, largeTx.USDAmount,
+		largeTx.Hash,
+		largeTx.User,
+		largeTx.Time,
 	)
 	logs.Info(body)
-	if err := cacheRedis.Redis.Push(cacheRedis.LargeTxList, body); err != nil {
-		logs.Error("Save LargeTx[hash: %s] err: %s", srcTransaction.Hash, err)
-	}
+	//cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
+	//if largeTxJson, err := json.Marshal(largeTx); err == nil {
+	//	value := string(largeTxJson)
+	//	if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, value); err != nil {
+	//		logs.Error("Save LargeTx[hash: %s] err: %s", srcTransaction.Hash, err)
+	//	}
+	//}
 
 	btns := []map[string]string{
 		{
-			"title":     "ListAll",
-			"actionURL": "https://explorer.poly.network/testnet/txlist",
+			"title":     "List All",
+			"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListLargeTxUrl, conf.GlobalConfig.BotConfig.ApiToken),
 		},
 	}
-	return common.PostDingCard(title, body, btns, conf.GlobalConfig.IPPortConfig.LargeTxAmountAlarmDingIP)
+	return common.PostDingCard(title, body, btns, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
 }

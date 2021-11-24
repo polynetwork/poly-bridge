@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/shopspring/decimal"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -217,7 +218,6 @@ func (c *BotController) MarkUnMarkTxAsPaid() {
 	logs.Info(resp)
 	c.Data["json"] = models.MakeErrorRsp(resp)
 	c.ServeJSON()
-
 }
 
 func (c *BotController) CheckFees() {
@@ -672,4 +672,139 @@ func (c *BotController) postDing(payload interface{}) error {
 	}
 	logs.Info("PostDing response Body:", string(respBody))
 	return nil
+}
+
+func (c *BotController) ListLargeTxPage() {
+	apiToken := c.Ctx.Input.Query("token")
+	var err error
+	largeTxs := make([]*cacheRedis.LargeTx, 0)
+	if apiToken == conf.GlobalConfig.BotConfig.ApiToken {
+		ltxs, err := cacheRedis.Redis.LRange(cacheRedis.LargeTxList, -100, -1)
+		if err == nil && len(ltxs) != 0 {
+			srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
+			if err = db.Debug().Table("src_transactions").
+				Select("src_transactions.hash as src_hash, src_transactions.chain_id as chain_id").
+				Where("src_transactions.hash in ?", ltxs).
+				Preload("SrcTransaction").
+				Preload("SrcTransaction.SrcTransfer").
+				Preload("SrcTransaction.SrcTransfer.Token").
+				Preload("SrcTransaction.SrcTransfer.Token.TokenBasic").
+				Preload("SrcTransaction.SrcSwap").
+				Preload("Token").
+				Preload("Token.TokenBasic").
+				Order("src_transactions.time desc").
+				Find(&srcPolyDstRelations).Error; err != nil {
+				logs.Error("query SrcPolyDstRelation err: %s", err)
+			} else {
+				for _, v := range srcPolyDstRelations {
+					srcChainName := strconv.FormatUint(v.ChainId, 10)
+					dstChainName := strconv.FormatUint(v.SrcTransaction.DstChainId, 10)
+					srcChain := new(models.Chain)
+					dstChain := new(models.Chain)
+					err = db.Where("chain_id = ?", v.ChainId).First(srcChain).Error
+					if err == nil {
+						srcChainName = srcChain.Name
+					}
+					err = db.Where("chain_id = ?", v.SrcTransaction.DstChainId).First(dstChain).Error
+					if err == nil {
+						dstChainName = dstChain.Name
+					}
+					if v.SrcTransaction.SrcSwap != nil && v.SrcTransaction.SrcSwap.DstChainId != 0 {
+						dstChainName = strconv.FormatUint(v.SrcTransaction.SrcSwap.DstChainId, 10)
+						err = db.Where("chain_id = ?", v.SrcTransaction.SrcSwap.DstChainId).First(dstChain).Error
+						if err == nil {
+							dstChainName = dstChain.Name
+						}
+					}
+
+					txType := "SWAP"
+					if v.SrcTransaction.SrcSwap != nil {
+						switch v.SrcTransaction.SrcSwap.Type {
+						case basedef.SWAP_SWAP:
+							txType = "SWAP"
+						case basedef.SWAP_ROLLBACK:
+							txType = "ROLLBACK"
+						case basedef.SWAP_ADDLIQUIDITY:
+							txType = "ADDLIQUIDITY"
+						case basedef.SWAP_REMOVELIQUIDITY:
+							txType = "REMOVELIQUIDITY"
+						}
+					}
+
+					var amount, usdAmount decimal.Decimal
+					if v.SrcTransaction.SrcTransfer != nil &&
+						v.SrcTransaction.SrcTransfer.Token != nil &&
+						v.SrcTransaction.SrcTransfer.Token.TokenBasic != nil {
+						amount = decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
+							Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.SrcTransaction.SrcTransfer.Token.Precision))))
+						usdAmount = decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
+							Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.SrcTransaction.SrcTransfer.Token.Precision)))).
+							Mul(decimal.NewFromInt(v.SrcTransaction.SrcTransfer.Token.TokenBasic.Price)).
+							Div(decimal.NewFromInt(100000000))
+					}
+
+					largeTx := &cacheRedis.LargeTx{
+						Asset:     v.SrcTransaction.SrcTransfer.Token.Name,
+						From:      srcChainName,
+						To:        dstChainName,
+						Type:      txType,
+						Amount:    amount.String(),
+						USDAmount: usdAmount.String(),
+						Hash:      v.SrcHash,
+						User:      v.SrcTransaction.User,
+						Time:      time.Unix(int64(v.SrcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
+					}
+					largeTxs = append(largeTxs, largeTx)
+				}
+			}
+		}
+
+		rows := make([]string, len(largeTxs))
+		for i, tx := range largeTxs {
+			rows[i] = fmt.Sprintf(
+				fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>", 9)),
+				tx.Asset,
+				tx.Type,
+				tx.From,
+				tx.To,
+				tx.Amount,
+				tx.USDAmount,
+				tx.Time,
+				tx.Hash,
+				tx.User,
+			)
+		}
+		rb := []byte(
+			fmt.Sprintf(
+				`<html><body><h1>Poly large transactions</h1>
+					<div>the last %d transactions </div>
+						<table style="width:100%%">
+						<tr>
+							<th>Asset</th>
+							<th>Type</th>
+							<th>From</th>
+							<th>To</th>
+							<th>Amount</th>
+							<th>USD</th>
+							<th>Time</th>
+							<th>Hash</th>
+							<th>User</th>
+						</tr>
+						%s
+						</table>
+				</body></html>`,
+				len(largeTxs), strings.Join(rows, "\n"),
+			),
+		)
+		if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
+			c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
+		}
+		c.Ctx.Output.Body(rb)
+		return
+	} else {
+		err = fmt.Errorf("access denied")
+		c.Data["json"] = err.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
 }

@@ -67,6 +67,7 @@ type SrcTransfer struct {
 	DstChainId uint64  `gorm:"type:bigint(20);not null"`
 	DstAsset   string  `gorm:"type:varchar(120);not null"`
 	DstUser    string  `gorm:"type:varchar(66);not null"`
+	Token      *Token  `gorm:"foreignKey:Hash,ChainId;references:Asset,ChainId"`
 }
 
 type SrcSwap struct {
