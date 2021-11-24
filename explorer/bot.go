@@ -168,6 +168,7 @@ func (c *BotController) FinishTx() {
 		case "skip":
 			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsSkipPrefix+tx, "markAsSkipByBot", time.Hour*24*7)
 			if err == nil {
+				logs.Info("key: %s", cacheRedis.MarkTxAsSkipPrefix+tx)
 				resp = fmt.Sprintf("Success mark %s as skip", tx)
 			}
 		case "wait":
@@ -415,10 +416,12 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 	}
 
 	for i := 0; i < len(txs); i++ {
+		key := cacheRedis.MarkTxAsSkipPrefix + txs[i].SrcHash
 		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsSkipPrefix + txs[i].SrcHash)
 		if exists {
 			txs = append(txs[:i], txs[i+1:]...)
 		}
+		logs.Info("check skip exist. key: %s, exist: %t", key, exists)
 	}
 	return txs, int(count), nil
 }
