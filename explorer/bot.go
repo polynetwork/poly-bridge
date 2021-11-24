@@ -166,7 +166,7 @@ func (c *BotController) FinishTx() {
 	if token == conf.GlobalConfig.BotConfig.ApiToken {
 		switch status {
 		case "skip":
-			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsSkipPrefix+tx, "markAsSkipByBot", 0)
+			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsSkipPrefix+tx, "markAsSkipByBot", time.Hour*24*7)
 			if err == nil {
 				resp = fmt.Sprintf("Success mark %s as skip", tx)
 			}
@@ -203,7 +203,7 @@ func (c *BotController) MarkUnMarkTxAsPaid() {
 				resp = fmt.Sprintf("Success unmark %s as paid", tx)
 			}
 		} else {
-			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsPaidPrefix+tx, "markAsPaidByBot", 0)
+			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsPaidPrefix+tx, "markAsPaidByBot", time.Hour*12)
 			if err == nil {
 				resp = fmt.Sprintf("Success mark %s as paid", tx)
 			}
