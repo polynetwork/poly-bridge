@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/shopspring/decimal"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -674,20 +675,78 @@ func (c *BotController) postDing(payload interface{}) error {
 }
 
 func (c *BotController) ListLargeTxPage() {
-	token := c.Ctx.Input.Query("token")
+	apiToken := c.Ctx.Input.Query("token")
 	var err error
 	largeTxs := make([]*cacheRedis.LargeTx, 0)
-	if token == conf.GlobalConfig.BotConfig.ApiToken {
-		ltxs, err := cacheRedis.Redis.LRange(cacheRedis.LargeTxList, 0, -1)
+	if apiToken == conf.GlobalConfig.BotConfig.ApiToken {
+		ltxs, err := cacheRedis.Redis.LRange(cacheRedis.LargeTxList, -100, -1)
 		if err == nil && len(ltxs) != 0 {
-			for _, ltx := range ltxs {
-				largeTx := new(cacheRedis.LargeTx)
-				err := json.Unmarshal([]byte(ltx), largeTx)
-				if err != nil {
-					logs.Error("Unmarshal err. str: %s", ltx)
-					continue
+			srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
+			if err = db.Debug().Table("src_transactions").
+				Select("src_transactions.hash as src_hash, src_transactions.chain_id as chain_id").
+				Where("src_transactions.hash in ?", ltxs).
+				Preload("SrcTransaction").
+				Preload("SrcTransaction.SrcTransfer").
+				Preload("SrcTransaction.SrcSwap").
+				Preload("Token").
+				Preload("Token.TokenBasic").
+				Order("src_transactions.time desc").
+				Find(&srcPolyDstRelations).Error; err != nil {
+				logs.Error("query SrcPolyDstRelation err: %s", err)
+			} else {
+				for _, v := range srcPolyDstRelations {
+					srcChainName := strconv.FormatUint(v.ChainId, 10)
+					dstChainName := strconv.FormatUint(v.SrcTransaction.DstChainId, 10)
+					srcChain := new(models.Chain)
+					dstChain := new(models.Chain)
+					err = db.Where("chain_id = ?", v.ChainId).First(srcChain).Error
+					if err == nil {
+						srcChainName = srcChain.Name
+					}
+					err = db.Where("chain_id = ?", v.SrcTransaction.DstChainId).First(dstChain).Error
+					if err == nil {
+						dstChainName = dstChain.Name
+					}
+					if v.SrcTransaction.SrcSwap != nil && v.SrcTransaction.SrcSwap.DstChainId != 0 {
+						dstChainName = strconv.FormatUint(v.SrcTransaction.SrcSwap.DstChainId, 10)
+						err = db.Where("chain_id = ?", v.SrcTransaction.SrcSwap.DstChainId).First(dstChain).Error
+						if err == nil {
+							dstChainName = dstChain.Name
+						}
+					}
+
+					txType := "SWAP"
+					if v.SrcTransaction.SrcSwap != nil {
+						switch v.SrcTransaction.SrcSwap.Type {
+						case basedef.SWAP_SWAP:
+							txType = "SWAP"
+						case basedef.SWAP_ROLLBACK:
+							txType = "ROLLBACK"
+						case basedef.SWAP_ADDLIQUIDITY:
+							txType = "ADDLIQUIDITY"
+						case basedef.SWAP_REMOVELIQUIDITY:
+							txType = "REMOVELIQUIDITY"
+						}
+					}
+
+					amount := decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
+						Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.Token.Precision)))).
+						Mul(decimal.NewFromInt(v.Token.TokenBasic.Price)).
+						Div(decimal.NewFromInt(100000000))
+
+					largeTx := &cacheRedis.LargeTx{
+						Asset:     v.Token.Name,
+						From:      srcChainName,
+						To:        dstChainName,
+						Type:      txType,
+						Amount:    decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.Token.Precision)))).String(),
+						USDAmount: amount.String(),
+						Hash:      v.SrcHash,
+						User:      v.SrcTransaction.User,
+						Time:      time.Unix(int64(v.SrcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
+					}
+					largeTxs = append(largeTxs, largeTx)
 				}
-				largeTxs = append(largeTxs, largeTx)
 			}
 		}
 
