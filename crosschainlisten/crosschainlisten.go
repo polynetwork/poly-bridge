@@ -421,5 +421,5 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 			"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListLargeTxUrl, conf.GlobalConfig.BotConfig.ApiToken),
 		},
 	}
-	return common.PostDingCard(title, body, btns, conf.GlobalConfig.IPPortConfig.LargeTxAmountAlarmDingIP)
+	return common.PostDingCard(title, body, btns, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
 }
