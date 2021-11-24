@@ -217,7 +217,6 @@ func (c *BotController) MarkUnMarkTxAsPaid() {
 	logs.Info(resp)
 	c.Data["json"] = models.MakeErrorRsp(resp)
 	c.ServeJSON()
-
 }
 
 func (c *BotController) CheckFees() {
@@ -672,4 +671,72 @@ func (c *BotController) postDing(payload interface{}) error {
 	}
 	logs.Info("PostDing response Body:", string(respBody))
 	return nil
+}
+
+func (c *BotController) ListLargeTxPage() {
+	token := c.Ctx.Input.Query("token")
+	var err error
+	largeTxs := make([]*cacheRedis.LargeTx, 0)
+	if token == conf.GlobalConfig.BotConfig.ApiToken {
+		ltxs, err := cacheRedis.Redis.LRange(cacheRedis.LargeTxList, 0, -1)
+		if err == nil && len(ltxs) != 0 {
+			for _, ltx := range ltxs {
+				largeTx := new(cacheRedis.LargeTx)
+				err := json.Unmarshal([]byte(ltx), largeTx)
+				if err != nil {
+					logs.Error("Unmarshal err. str: %s", ltx)
+					continue
+				}
+				largeTxs = append(largeTxs, largeTx)
+			}
+		}
+
+		rows := make([]string, len(largeTxs))
+		for i, tx := range largeTxs {
+			rows[i] = fmt.Sprintf(
+				fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>", 9)),
+				tx.Asset,
+				tx.Type,
+				tx.From,
+				tx.To,
+				tx.Amount,
+				tx.USDAmount,
+				tx.Time,
+				tx.Hash,
+				tx.User,
+			)
+		}
+		rb := []byte(
+			fmt.Sprintf(
+				`<html><body><h1>Poly large transactions</h1>
+					<div>total %d transactions </div>
+						<table style="width:100%%">
+						<tr>
+							<th>Asset</th>
+							<th>Type</th>
+							<th>From</th>
+							<th>To</th>
+							<th>Amount</th>
+							<th>USD</th>
+							<th>Time</th>
+							<th>Hash</th>
+							<th>User</th>
+						</tr>
+						%s
+						</table>
+				</body></html>`,
+				len(largeTxs), strings.Join(rows, "\n"),
+			),
+		)
+		if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
+			c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
+		}
+		c.Ctx.Output.Body(rb)
+		return
+	} else {
+		err = fmt.Errorf("access denied")
+		c.Data["json"] = err.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
 }

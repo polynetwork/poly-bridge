@@ -387,6 +387,8 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 
 	largeTx := cacheRedis.LargeTx{
 		Asset:     token.Name,
+		From:      srcChainName,
+		To:        dstChainName,
 		Type:      txType,
 		Amount:    decimal.NewFromBigInt(&srcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(token.Precision)))).String(),
 		USDAmount: amount.String(),
@@ -415,8 +417,8 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 
 	btns := []map[string]string{
 		{
-			"title":     "ListAll",
-			"actionURL": "https://explorer.poly.network/testnet/txlist",
+			"title":     "List All",
+			"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListLargeTxUrl, conf.GlobalConfig.BotConfig.ApiToken),
 		},
 	}
 	return common.PostDingCard(title, body, btns, conf.GlobalConfig.IPPortConfig.LargeTxAmountAlarmDingIP)

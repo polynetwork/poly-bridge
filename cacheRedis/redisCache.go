@@ -34,6 +34,8 @@ type RedisCache struct {
 type LargeTx struct {
 	Asset     string
 	Type      string
+	From      string
+	To        string
 	Amount    string
 	USDAmount string
 	Hash      string
