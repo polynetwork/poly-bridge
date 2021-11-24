@@ -420,6 +420,11 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 		logs.Info("tx: %+v", *tx)
 	}
 	for i := 0; i < len(txs); i++ {
+		logs.Info("before filter")
+		logs.Info("tx: %+v", *txs[i])
+	}
+
+	for i := 0; i < len(txs); i++ {
 		key := cacheRedis.MarkTxAsSkipPrefix + txs[i].SrcHash
 		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsSkipPrefix + txs[i].SrcHash)
 		if exists {
