@@ -407,7 +407,7 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		largeTx.Time,
 	)
 	logs.Info(body)
-	cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
+	//cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
 	if largeTxJson, err := json.Marshal(largeTx); err == nil {
 		value := string(largeTxJson)
 		if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, value); err != nil {
