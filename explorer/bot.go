@@ -185,6 +185,7 @@ func (c *BotController) FinishTx() {
 	if err != nil {
 		resp = fmt.Sprintf("Tx %s Error %s", tx, err.Error())
 	}
+	logs.Info(resp)
 	c.Data["json"] = models.MakeErrorRsp(resp)
 	c.ServeJSON()
 }
@@ -192,7 +193,6 @@ func (c *BotController) FinishTx() {
 func (c *BotController) MarkUnMarkTxAsPaid() {
 	tx := c.Ctx.Input.Query("tx")
 	token := c.Ctx.Input.Query("token")
-	logs.Debug("MarkTxAsPaid request: %s", tx)
 	var err error
 	resp := ""
 	if token == conf.GlobalConfig.BotConfig.ApiToken {
@@ -213,8 +213,8 @@ func (c *BotController) MarkUnMarkTxAsPaid() {
 	}
 	if err != nil {
 		resp = fmt.Sprintf("Tx %s Error %s", tx, err.Error())
-		logs.Error("MarkUnMarkTxAsPaid err: %s", err)
 	}
+	logs.Info(resp)
 	c.Data["json"] = models.MakeErrorRsp(resp)
 	c.ServeJSON()
 
