@@ -168,7 +168,6 @@ func (c *BotController) FinishTx() {
 		case "skip":
 			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsSkipPrefix+tx, "markAsSkipByBot", time.Hour*24*7)
 			if err == nil {
-				logs.Info("key: %s", cacheRedis.MarkTxAsSkipPrefix+tx)
 				resp = fmt.Sprintf("Success mark %s as skip", tx)
 			}
 		case "wait":
@@ -415,31 +414,17 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 		return nil, 0, err
 	}
 
-	for _, tx := range txs {
-		logs.Info("before filter")
-		logs.Info("tx: %+v", *tx)
-	}
-	for i := 0; i < len(txs); i++ {
-		logs.Info("before filter")
-		logs.Info("tx: %+v", *txs[i])
-	}
-
 	for i := 0; i < len(txs); {
-		key := cacheRedis.MarkTxAsSkipPrefix + txs[i].SrcHash
-		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsSkipPrefix + txs[i].SrcHash)
+		hash := txs[i].SrcHash
+		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsSkipPrefix + hash)
 		if exists {
 			count--
 			txs = append(txs[:i], txs[i+1:]...)
+			logs.Info("%s has been marked as a skip", hash)
 		} else {
 			i++
 		}
-		logs.Info("check skip exist. key: %s, exist: %t", key, exists)
 	}
-	for _, tx := range txs {
-		logs.Info("after filter")
-		logs.Info("tx: %+v", *tx)
-	}
-
 	return txs, int(count), nil
 }
 
