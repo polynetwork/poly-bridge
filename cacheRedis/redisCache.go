@@ -21,6 +21,7 @@ const (
 	_TokenBalance      = "TokenBalance"
 	TxCheckBot         = "TxCheckBot"
 	LargeTxAlarmPrefix = "LargeTxAlarm_"
+	LargeTxList        = "LargeTxList"
 	MarkTxAsPaidPrefix = "MarkTxAsPaid_"
 	MarkTxAsSkipPrefix = "MarkTxAsSkip_"
 )
@@ -204,4 +205,21 @@ func (r *RedisCache) UnLock(key string) (int64, error) {
 		return 0, err
 	}
 	return cnt, nil
+}
+
+func (r *RedisCache) Push(key string, value ...string) error {
+	if err := r.c.RPush(key, value).Err(); err != nil {
+		logs.Error("Redis Push[%s: %v] err: %s", key, value, err)
+		return err
+	}
+	return nil
+}
+
+func (r *RedisCache) Range(key string, start, stop int64) ([]string, error) {
+	if vals, err := r.c.LRange(key, start, stop).Result(); err != nil {
+		logs.Error("Redis LRange[key:%s, start:%d, stop:%d] err: %s", key, start, stop, err)
+		return nil, err
+	} else {
+		return vals, nil
+	}
 }

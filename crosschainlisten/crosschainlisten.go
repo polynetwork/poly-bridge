@@ -394,6 +394,9 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
 	)
 	logs.Info(body)
+	if err := cacheRedis.Redis.Push(cacheRedis.LargeTxList, body); err != nil {
+		logs.Error("Save LargeTx[hash: %s] err: %s", srcTransaction.Hash, err)
+	}
 
 	btns := []map[string]string{
 		{
@@ -403,37 +406,3 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	}
 	return common.PostDingCard(title, body, btns, conf.GlobalConfig.IPPortConfig.LargeTxAmountAlarmDingIP)
 }
-
-//func PostDingCard(title, body string, btns interface{}) error {
-//	payload := map[string]interface{}{}
-//	payload["msgtype"] = "actionCard"
-//	card := map[string]interface{}{}
-//	card["title"] = title
-//	card["text"] = body
-//	card["hideAvatar"] = 0
-//	card["btns"] = btns
-//	payload["actionCard"] = card
-//	return postDing(payload)
-//}
-//
-//func postDing(payload interface{}) error {
-//	data, err := json.Marshal(payload)
-//	if err != nil {
-//		return err
-//	}
-//	req, err := http.NewRequest("POST", conf.GlobalConfig.BotConfig.DingUrl, bytes.NewBuffer(data))
-//	req.Header.Set("Content-Type", "application/json")
-//
-//	client := &http.Client{}
-//	resp, err := client.Do(req)
-//	if err != nil {
-//		return err
-//	}
-//	defer resp.Body.Close()
-//	respBody, err := ioutil.ReadAll(resp.Body)
-//	if err != nil {
-//		return err
-//	}
-//	logs.Info("PostDing response Body:", string(respBody))
-//	return nil
-//}
