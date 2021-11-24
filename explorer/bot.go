@@ -731,21 +731,25 @@ func (c *BotController) ListLargeTxPage() {
 						}
 					}
 
-					logs.Info("SrcTransfer: %+v", *v.SrcTransaction.SrcTransfer)
-					logs.Info("Token: %+v", *v.SrcTransaction.SrcTransfer.Token)
-					logs.Info("TokenBasic: %+v", *v.SrcTransaction.SrcTransfer.Token.TokenBasic)
-					amount := decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
-						Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.Token.Precision)))).
-						Mul(decimal.NewFromInt(v.Token.TokenBasic.Price)).
-						Div(decimal.NewFromInt(100000000))
+					var amount, usdAmount decimal.Decimal
+					if v.SrcTransaction.SrcTransfer != nil &&
+						v.SrcTransaction.SrcTransfer.Token != nil &&
+						v.SrcTransaction.SrcTransfer.Token.TokenBasic != nil {
+						amount = decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
+							Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.SrcTransaction.SrcTransfer.Token.Precision))))
+						usdAmount = decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
+							Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.SrcTransaction.SrcTransfer.Token.Precision)))).
+							Mul(decimal.NewFromInt(v.SrcTransaction.SrcTransfer.Token.TokenBasic.Price)).
+							Div(decimal.NewFromInt(100000000))
+					}
 
 					largeTx := &cacheRedis.LargeTx{
-						Asset:     v.Token.Name,
+						Asset:     v.SrcTransaction.SrcTransfer.Token.Name,
 						From:      srcChainName,
 						To:        dstChainName,
 						Type:      txType,
-						Amount:    decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.Token.Precision)))).String(),
-						USDAmount: amount.String(),
+						Amount:    amount.String(),
+						USDAmount: usdAmount.String(),
 						Hash:      v.SrcHash,
 						User:      v.SrcTransaction.User,
 						Time:      time.Unix(int64(v.SrcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
