@@ -729,6 +729,9 @@ func (c *BotController) ListLargeTxPage() {
 						}
 					}
 
+					logs.Info("SrcTransfer: %+v", *v.SrcTransaction.SrcTransfer)
+					logs.Info("Token: %+v", *v.Token)
+					logs.Info("TokenBasic: %+v", *v.Token.TokenBasic)
 					amount := decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
 						Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.Token.Precision)))).
 						Mul(decimal.NewFromInt(v.Token.TokenBasic.Price)).
