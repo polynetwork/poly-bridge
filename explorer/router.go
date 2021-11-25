@@ -23,6 +23,8 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/botcheck/", &BotController{}, "get:CheckTxs"),
 		web.NSRouter("/botcheckfee/", &BotController{}, "post:CheckFees"),
 		web.NSRouter("/botfinishtx/", &BotController{}, "get:FinishTx"),
+		web.NSRouter("/botmarkunmarktxaspaid/", &BotController{}, "get:MarkUnMarkTxAsPaid"),
+		web.NSRouter("/botlistlargetx/", &BotController{}, "get:ListLargeTxPage"),
 	)
 	return ns
 }

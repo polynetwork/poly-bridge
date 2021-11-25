@@ -12,19 +12,19 @@ import (
 
 var DingUrl string
 
-func PostDingCardSimple(title string, body map[string]interface{}, btns []map[string]string) error {
+func PostDingCardSimple(title string, body map[string]interface{}, btns []map[string]string, dingUrl string) error {
 	content := fmt.Sprintf("## %s", title)
 	for k, v := range body {
 		content = fmt.Sprintf("%s\n- %s %v", content, k, v)
 	}
-	err := PostDingCard(title, content, btns)
+	err := PostDingCard(title, content, btns, dingUrl)
 	if err != nil {
 		logs.Error("Post dingtalk error %s", err)
 	}
 	return err
 }
 
-func PostDingCard(title, body string, btns interface{}) error {
+func PostDingCard(title, body string, btns interface{}, dingUrl string) error {
 	payload := map[string]interface{}{}
 	payload["msgtype"] = "actionCard"
 	card := map[string]interface{}{}
@@ -33,7 +33,7 @@ func PostDingCard(title, body string, btns interface{}) error {
 	card["hideAvatar"] = 0
 	card["btns"] = btns
 	payload["actionCard"] = card
-	return PostJson(DingUrl, payload)
+	return PostJson(dingUrl, payload)
 }
 func PostDingmarkdown(title, body string) error {
 	payload := map[string]interface{}{}
