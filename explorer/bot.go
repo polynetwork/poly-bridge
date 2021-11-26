@@ -397,13 +397,14 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 		polyProxies = append(polyProxies, k)
 	}
 	query := db.Debug().Table("src_transactions").
-		Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, poly_transactions.hash as poly_hash").
+		Select("src_transactions.hash as src_hash, src_transactions.chain_id as src_chain_id, src_transactions.dst_chain_id as dst_chain_id, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, wrapper_transactions.id as wrapper_id").
 		Where("UPPER(src_transactions.contract) in ?", polyProxies).
 		Where("src_transactions.time > ?", tt-24*60*60*int64(from)).
 		Where("(src_transactions.time < ?) OR (src_transactions.time < ? and ((src_transactions.chain_id = ? and src_transactions.dst_chain_id = ?) or (src_transactions.chain_id = ? and src_transactions.dst_chain_id = ?)))", end, endBsc, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID).
 		Where("((select count(*) from poly_transactions where src_transactions.hash = poly_transactions.src_hash) = 0 OR (select count(*) from dst_transactions where poly_transactions.hash=dst_transactions.poly_hash) = 0)").
 		Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
-		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
+		Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash").
+		Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash")
 
 	err := query.Limit(pageSize).Offset(pageSize * pageNo).Order("src_transactions.time desc").Find(&txs).Error
 	if err != nil {
@@ -416,6 +417,16 @@ func (c *BotController) getTxs(pageSize, pageNo, from int, skip []uint64) ([]*mo
 
 	for i := 0; i < len(txs); {
 		hash := txs[i].SrcHash
+		if (txs[i].SrcChainId == basedef.NEO_CROSSCHAIN_ID ||
+			txs[i].DstChainId == basedef.NEO_CROSSCHAIN_ID ||
+			txs[i].SrcChainId == basedef.NEO3_CROSSCHAIN_ID ||
+			txs[i].DstChainId == basedef.NEO3_CROSSCHAIN_ID) && txs[i].WrapperId == 0 {
+			count--
+			txs = append(txs[:i], txs[i+1:]...)
+			logs.Info("skip %s, because it is a NEO/NEO3 tx with no wrapper_transactions", hash)
+			continue
+		}
+
 		exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsSkipPrefix + hash)
 		if exists {
 			count--
@@ -710,6 +721,7 @@ func (c *BotController) ListLargeTxPage() {
 						dstChainName = dstChain.Name
 					}
 					if v.SrcTransaction.SrcSwap != nil && v.SrcTransaction.SrcSwap.DstChainId != 0 {
+						dstChain := new(models.Chain)
 						dstChainName = strconv.FormatUint(v.SrcTransaction.SrcSwap.DstChainId, 10)
 						err = db.Where("chain_id = ?", v.SrcTransaction.SrcSwap.DstChainId).First(dstChain).Error
 						if err == nil {
@@ -743,12 +755,14 @@ func (c *BotController) ListLargeTxPage() {
 							Div(decimal.NewFromInt(100000000))
 					}
 
+					intAmount := amount.IntPart() / 10000
+
 					largeTx := &cacheRedis.LargeTx{
 						Asset:     v.SrcTransaction.SrcTransfer.Token.Name,
 						From:      srcChainName,
 						To:        dstChainName,
 						Type:      txType,
-						Amount:    amount.String(),
+						Amount:    strconv.FormatInt(intAmount, 10) + "w",
 						USDAmount: usdAmount.String(),
 						Hash:      v.SrcHash,
 						User:      v.SrcTransaction.User,
