@@ -28,6 +28,7 @@ require (
 	github.com/urfave/cli v1.22.4
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.8
+	github.com/devfans/zion-sdk v0.0.2
 )
 
 replace (
