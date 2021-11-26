@@ -755,15 +755,15 @@ func (c *BotController) ListLargeTxPage() {
 							Div(decimal.NewFromInt(100000000))
 					}
 
-					intAmount := amount.IntPart() / 10000
+					intUsdAmount := usdAmount.IntPart() / 10000
 
 					largeTx := &cacheRedis.LargeTx{
 						Asset:     v.SrcTransaction.SrcTransfer.Token.Name,
 						From:      srcChainName,
 						To:        dstChainName,
 						Type:      txType,
-						Amount:    strconv.FormatInt(intAmount, 10) + "w",
-						USDAmount: usdAmount.String(),
+						Amount:    amount.String(),
+						USDAmount: strconv.FormatInt(intUsdAmount, 10) + "w",
 						Hash:      v.SrcHash,
 						User:      v.SrcTransaction.User,
 						Time:      time.Unix(int64(v.SrcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
