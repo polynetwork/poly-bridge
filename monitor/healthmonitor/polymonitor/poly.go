@@ -22,8 +22,8 @@ func NewPolyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *PolyHealthMo
 	sdks := make(map[string]*poly_go_sdk.PolySdk, 0)
 	for _, node := range monitorConfig.ChainNodes.Nodes {
 		sdk := poly_go_sdk.NewPolySdk()
-		sdk.NewRpcClient().SetAddress(node.Url)
-		sdks[node.Url] = sdk
+		sdk.NewRpcClient().SetAddress(node)
+		sdks[node] = sdk
 	}
 	polyMonitor.sdks = sdks
 	polyMonitor.nodeHeight = make(map[string]uint64, len(sdks))

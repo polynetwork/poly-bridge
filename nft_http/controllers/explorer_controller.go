@@ -47,7 +47,7 @@ func (c *ExplorerController) Transactions() {
 	for _, v := range relations {
 		tk := selectNFTAsset(v.SrcAsset)
 		var tokenBasicName string
-		if tk == nil{
+		if tk == nil {
 			tokenBasicName = v.SrcAsset
 		} else {
 			tokenBasicName = tk.TokenBasicName
@@ -74,7 +74,7 @@ func (c *ExplorerController) TransactionsOfAddress() {
 	offset := req.PageSize * req.PageNo
 	var transactionNum int64
 
-	if req.ChainId == basedef.POLY_CROSSCHAIN_ID {
+	if req.ChainId == basedef.ZION_CROSSCHAIN_ID {
 		db.Raw("select wp.*, tr.amount as token_id, tr.asset as src_asset "+
 			"from wrapper_transactions wp "+
 			"left join src_transfers as tr on wp.hash=tr.tx_hash "+

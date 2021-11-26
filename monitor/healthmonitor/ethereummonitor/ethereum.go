@@ -12,7 +12,7 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
-	"poly-bridge/go_abi/eccm_abi"
+	"poly-bridge/go_abi/main_chain_lock_proxy_abi"
 	"time"
 )
 
@@ -27,15 +27,15 @@ func NewEthereumHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Ethereum
 	ethMonitor.monitorConfig = monitorConfig
 	sdks := make(map[string]*chainsdk.EthereumSdk, 0)
 	for _, node := range monitorConfig.ChainNodes.Nodes {
-		sdk, err := chainsdk.NewEthereumSdk(node.Url)
+		sdk, err := chainsdk.NewEthereumSdk(node)
 		if err != nil || sdk == nil || sdk.GetClient() == nil {
-			if _, e := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+node.Url, fmt.Sprintf("initial sdk error:%s", err), time.Hour*24); e != nil {
-				logs.Error("set %s node[%s] status error: %s", monitorConfig.ChainName, node.Url, e)
+			if _, e := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+node, fmt.Sprintf("initial sdk error:%s", err), time.Hour*24); e != nil {
+				logs.Error("set %s node[%s] status error: %s", monitorConfig.ChainName, node, e)
 			}
-			logs.Error("%s node: %s, NewEthereumSdk error: %s", monitorConfig.ChainName, node.Url, err)
+			logs.Error("%s node: %s, NewEthereumSdk error: %s", monitorConfig.ChainName, node, err)
 			continue
 		}
-		sdks[node.Url] = sdk
+		sdks[node] = sdk
 	}
 	ethMonitor.sdks = sdks
 	ethMonitor.nodeHeight = make(map[string]uint64, len(sdks))
@@ -164,7 +164,7 @@ func (e *EthereumHealthMonitor) GetCurrentHeight(sdk *chainsdk.EthereumSdk, chai
 func (e *EthereumHealthMonitor) CheckAbiCall(sdk *chainsdk.EthereumSdk) error {
 	eccmContractAddress := common.HexToAddress(e.monitorConfig.CCMContract)
 	client := sdk.GetClient()
-	ethCrossChainManager, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
+	ethCrossChainManager, err := main_chain_lock_proxy_abi.NewIMainChainLockProxy(eccmContractAddress, client)
 	if err != nil {
 		err2 := fmt.Errorf("call NewEthCrossChainManager error: %s", err)
 		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err2))
@@ -177,7 +177,7 @@ func (e *EthereumHealthMonitor) CheckAbiCall(sdk *chainsdk.EthereumSdk) error {
 		Context: context.Background(),
 	}
 	// get lock events from given block
-	_, err = ethCrossChainManager.FilterCrossChainEvent(opt, nil)
+	_, err = ethCrossChainManager.FilterCrossChainEvent(opt)
 	if err != nil {
 		err2 := fmt.Errorf("call FilterCrossChainEvent get lock events err: %s", err)
 		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err2))

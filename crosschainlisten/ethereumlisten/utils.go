@@ -118,7 +118,7 @@ func wrapSpeedUpEvent2WrapTx(evt *nftwp.PolyNFTWrapperPolyWrapperSpeedUp) *model
 }
 
 func crossChainEvent2ProxyLockEvent(
-	evt *eccm_abi.EthCrossChainManagerCrossChainEvent,
+	evt *eccm_abi.EthCrossChainManagerImplemetationCrossChainEvent,
 	fee uint64,
 ) *models.ECCMLockEvent {
 
@@ -150,7 +150,7 @@ func convertLockProxyEvent(evt *nftlp.PolyNFTLockProxyLockEvent) *models.ProxyLo
 }
 
 func verifyAndExecuteEvent2ProxyUnlockEvent(
-	evt *eccm_abi.EthCrossChainManagerVerifyHeaderAndExecuteTxEvent,
+	evt *eccm_abi.EthCrossChainManagerImplemetationVerifyHeaderAndExecuteTxEvent,
 	fee uint64,
 ) *models.ECCMUnlockEvent {
 

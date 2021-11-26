@@ -21,7 +21,7 @@
 package basedef
 
 const (
-	POLY_CROSSCHAIN_ID       = uint64(0)
+	ZION_CROSSCHAIN_ID       = uint64(0)
 	ETHEREUM_CROSSCHAIN_ID   = uint64(2)
 	ONT_CROSSCHAIN_ID        = uint64(3)
 	NEO_CROSSCHAIN_ID        = uint64(4)

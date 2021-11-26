@@ -20,12 +20,7 @@ package ethereumlisten
 import (
 	"context"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -39,7 +34,6 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 const (
@@ -50,8 +44,20 @@ const (
 )
 
 type EthereumChainListen struct {
-	ethCfg *conf.ChainListenConfig
-	ethSdk *chainsdk.EthereumSdkPro
+	ethCfg                               *conf.ChainListenConfig
+	ethSdk                               *chainsdk.EthereumSdkPro
+	eventPolyWrapperLockId               common.Hash
+	eventNftPolyWrapperLockId            common.Hash
+	eventCrossChainEventId               common.Hash
+	eventVerifyHeaderAndExecuteTxEventId common.Hash
+	eventLockEventId                     common.Hash
+	eventUnlockEventId                   common.Hash
+	eventNftLockEventId                  common.Hash
+	eventNftUnlockEventId                common.Hash
+	eventAddLiquidityEventId             common.Hash
+	eventRemoveLiquidityEventId          common.Hash
+	eventSwapEventId                     common.Hash
+	eventSwapperLockEventId              common.Hash
 }
 
 func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
@@ -85,6 +91,10 @@ func (this *EthereumChainListen) GetDefer() uint64 {
 
 func (this *EthereumChainListen) GetBatchSize() uint64 {
 	return this.ethCfg.BatchSize
+}
+
+func (this *EthereumChainListen) GetBatchLength() (uint64, uint64) {
+	return this.ethCfg.MinBatchLength, this.ethCfg.MaxBatchLength
 }
 
 func (this *EthereumChainListen) getPLTUnlock(tx common.Hash) *models.ProxyUnlockEvent {
@@ -131,7 +141,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		item.SrcChainId = this.GetChainId()
 		item.Status = basedef.STATE_SOURCE_DONE
 	}
-	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, startHeight, endHeight)
+	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(startHeight, endHeight)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
@@ -372,73 +382,63 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 	return wrapperTransactions, nil
 }
 
-func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
-	eccmContractAddress := common.HexToAddress(contractAddr)
+func (this *EthereumChainListen) getECCMEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+	return this.getECCMEventByBlockNumberWithContractAddr(common.HexToAddress(this.ethCfg.CCMContract), startHeight, endHeight)
+}
+
+func (this *EthereumChainListen) getECCMEventByBlockNumberWithContractAddr(eccmContractAddress common.Address, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	client := this.ethSdk.GetClient()
 	if client == nil {
 		return nil, nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
-	}
-	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
 	opt := &bind.FilterOpts{
 		Start:   startHeight,
 		End:     &endHeight,
 		Context: context.Background(),
 	}
-	// get ethereum lock events from given block
+
 	eccmLockEvents := make([]*models.ECCMLockEvent, 0)
+	eccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
+	eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, client)
+	if err != nil {
+		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+	}
 	crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt, nil)
 	if err != nil {
-		this.ethSdk.SetClientHeightZero(client)
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
 	}
 	for crossChainEvents.Next() {
 		evt := crossChainEvents.Event
-
-		user := evt.Sender
-		if evt.Sender.String() == "0x0000000000000000000000000000000000000000" {
-			sender, err := this.getTxSenderByTxHash(evt.Raw.TxHash)
-			if err != nil {
-				logs.Error("getTxSenderByTxHash error： vv")
-			} else {
-				user = sender
-			}
-		}
-
 		Fee := this.GetConsumeGas(evt.Raw.TxHash)
 		eccmLockEvents = append(eccmLockEvents, &models.ECCMLockEvent{
 			Method:   _eth_crosschainlock,
 			Txid:     hex.EncodeToString(evt.TxId),
 			TxHash:   evt.Raw.TxHash.String()[2:],
-			User:     strings.ToLower(user.String()[2:]),
+			User:     strings.ToLower(evt.Sender.String()[2:]),
 			Tchain:   uint32(evt.ToChainId),
 			Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
 			Value:    evt.Rawdata,
 			Height:   evt.Raw.BlockNumber,
 			Fee:      Fee,
 		})
-	}
-	// ethereum unlock events from given block
-	eccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
-	executeTxEvent, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
-	}
+		executeTxEvent, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
+		}
 
-	for executeTxEvent.Next() {
-		evt := executeTxEvent.Event
-		Fee := this.GetConsumeGas(evt.Raw.TxHash)
-		eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
-			Method:   _eth_crosschainunlock,
-			TxHash:   evt.Raw.TxHash.String()[2:],
-			RTxHash:  basedef.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
-			Contract: hex.EncodeToString(evt.ToContract),
-			FChainId: uint32(evt.FromChainID),
-			Height:   evt.Raw.BlockNumber,
-			Fee:      Fee,
-		})
+		for executeTxEvent.Next() {
+			evt := executeTxEvent.Event
+			Fee := this.GetConsumeGas(evt.Raw.TxHash)
+			eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
+				Method:   _eth_crosschainunlock,
+				TxHash:   evt.Raw.TxHash.String()[2:],
+				RTxHash:  hex.EncodeToString(evt.CrossChainTxHash),
+				Contract: hex.EncodeToString(evt.ToContract),
+				FChainId: uint32(evt.FromChainID),
+				Height:   evt.Raw.BlockNumber,
+				Fee:      Fee,
+			})
+		}
 	}
 	return eccmLockEvents, eccmUnlockEvents, nil
 }
@@ -574,40 +574,41 @@ func (this *EthereumChainListen) GetExtendLatestHeight() (uint64, error) {
 }
 
 func (this *EthereumChainListen) getExtendLatestHeight(node int) (uint64, error) {
-	req, err := http.NewRequest("GET", this.ethCfg.ExtendNodes[node].Url, nil)
-	if err != nil {
-		return 0, err
-	}
-	req.Header.Set("Accepts", "application/json")
-	q := url.Values{}
-	q.Add("module", "proxy")
-	q.Add("action", "eth_blockNumber")
-	q.Add("apikey", this.ethCfg.ExtendNodes[node].Key)
-	req.URL.RawQuery = q.Encode()
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return 0, fmt.Errorf("response status code: %d", resp.StatusCode)
-	}
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	extendHeight := new(ExtendHeightRsp)
-	extendHeight.Status = 1
-	err = json.Unmarshal(respBody, extendHeight)
-	if err != nil {
-		return 0, err
-	}
-	if extendHeight.Status == 0 {
-		return 0, fmt.Errorf(extendHeight.Result)
-	}
-	height, err := hexutil.DecodeBig(extendHeight.Result)
-	if err != nil {
-		return 0, err
-	}
-	return height.Uint64(), nil
+	//req, err := http.NewRequest("GET", this.ethCfg.ExtendNodes[node].Url, nil)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//req.Header.Set("Accepts", "application/json")
+	//q := url.Values{}
+	//q.Add("module", "proxy")
+	//q.Add("action", "eth_blockNumber")
+	//q.Add("apikey", this.ethCfg.ExtendNodes[node].Key)
+	//req.URL.RawQuery = q.Encode()
+	//client := &http.Client{}
+	//resp, err := client.Do(req)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//defer resp.Body.Close()
+	//if resp.StatusCode != 200 {
+	//	return 0, fmt.Errorf("response status code: %d", resp.StatusCode)
+	//}
+	//respBody, _ := ioutil.ReadAll(resp.Body)
+	//extendHeight := new(ExtendHeightRsp)
+	//extendHeight.Status = 1
+	//err = json.Unmarshal(respBody, extendHeight)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//if extendHeight.Status == 0 {
+	//	return 0, fmt.Errorf(extendHeight.Result)
+	//}
+	//height, err := hexutil.DecodeBig(extendHeight.Result)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//return height.Uint64(), nil
+	return 0, nil
 }
 
 func (this *EthereumChainListen) getSwapEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.SwapLockEvent, error) {

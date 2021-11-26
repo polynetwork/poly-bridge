@@ -83,6 +83,9 @@ func (this *NeoChainListen) GetDefer() uint64 {
 func (this *NeoChainListen) GetBatchSize() uint64 {
 	return this.neoCfg.BatchSize
 }
+func (this *NeoChainListen) GetBatchLength() (uint64, uint64) {
+	return this.neoCfg.MinBatchLength, this.neoCfg.MaxBatchLength
+}
 
 func (this *NeoChainListen) isListeningContract(contract string, contracts []string) bool {
 	for _, item := range contracts {
@@ -91,6 +94,9 @@ func (this *NeoChainListen) isListeningContract(contract string, contracts []str
 		}
 	}
 	return false
+}
+func (this *NeoChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
 }
 
 func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
@@ -316,7 +322,7 @@ func (this *NeoChainListen) GetExtendLatestHeight() (uint64, error) {
 
 func (this *NeoChainListen) getExtendLatestHeight(node int) (uint64, error) {
 	requestJson := `{"jsonrpc": "2.0", "method": "getblockcount", "params": [], "id": 1}`
-	req, err := http.NewRequest("POST", this.neoCfg.ExtendNodes[node].Url, strings.NewReader(requestJson))
+	req, err := http.NewRequest("POST", this.neoCfg.ExtendNodes[node], strings.NewReader(requestJson))
 	if err != nil {
 		return 0, err
 	}

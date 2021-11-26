@@ -375,25 +375,25 @@ func (this *Stats) computeChainStatistics() (err error) {
 		}
 		for _, chainStatistic := range chainStatistics {
 			for _, in := range inChainStatistics {
-				if chainStatistic.ChainId == in.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
+				if chainStatistic.ChainId == in.ChainId && chainStatistic.ChainId != basedef.ZION_CROSSCHAIN_ID {
 					chainStatistic.In = addDecimalInt64(chainStatistic.In, in.In)
 					break
 				}
 			}
 			for _, out := range outChainStatistics {
-				if chainStatistic.ChainId == out.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
+				if chainStatistic.ChainId == out.ChainId && chainStatistic.ChainId != basedef.ZION_CROSSCHAIN_ID {
 					chainStatistic.Out = addDecimalInt64(chainStatistic.Out, out.Out)
 					break
 				}
 			}
-			if chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
+			if chainStatistic.ChainId != basedef.ZION_CROSSCHAIN_ID {
 				chainStatistic.LastInCheckId = nowInId
 				chainStatistic.LastOutCheckId = nowOutId
 			}
 		}
 		logs.Info("computeChainStatistics,poly_polyCheckId", polyCheckId)
 		for _, chainStatistic := range chainStatistics {
-			if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
+			if chainStatistic.ChainId == basedef.ZION_CROSSCHAIN_ID {
 				counter, err := this.dao.CalculatePolyChainStatistic(chainStatistic.LastInCheckId, polyCheckId)
 				if err == nil {
 					logs.Info("computeChainStatistics,polychainid:", chainStatistic.ChainId, "poly.In:", chainStatistic.In, "poly.Out:", chainStatistic.Out, "poly.LastInCheckId1", chainStatistic.LastInCheckId, "polycounter:", counter)
@@ -427,7 +427,7 @@ func (this *Stats) computeChainStatisticAssets() (err error) {
 	polyAddress := int64(0)
 	for _, chainStatistic := range chainStatistics {
 		for _, chain := range computeChainStatistics {
-			if chainStatistic.ChainId == chain.ChainId && chainStatistic.ChainId != basedef.POLY_CROSSCHAIN_ID {
+			if chainStatistic.ChainId == chain.ChainId && chainStatistic.ChainId != basedef.ZION_CROSSCHAIN_ID {
 				chainStatistic.Addresses = chain.Addresses
 				polyAddress += chain.Addresses
 				break
@@ -435,7 +435,7 @@ func (this *Stats) computeChainStatisticAssets() (err error) {
 		}
 	}
 	for _, chainStatistic := range chainStatistics {
-		if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
+		if chainStatistic.ChainId == basedef.ZION_CROSSCHAIN_ID {
 			chainStatistic.Addresses = polyAddress
 		}
 	}

@@ -21,7 +21,7 @@ func NewSwitcheoHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Switcheo
 	switcheoMonitor.monitorConfig = monitorConfig
 	sdks := make(map[string]*chainsdk.SwitcheoSDK, 0)
 	for _, node := range monitorConfig.ChainNodes.Nodes {
-		sdks[node.Url] = chainsdk.NewSwitcheoSDK(node.Url)
+		sdks[node] = chainsdk.NewSwitcheoSDK(node)
 	}
 	switcheoMonitor.sdks = sdks
 	switcheoMonitor.nodeHeight = make(map[string]uint64, len(sdks))

@@ -10,6 +10,7 @@ require (
 	github.com/btcsuite/goleveldb v1.0.0
 	github.com/cosmos/cosmos-sdk v0.39.2
 	github.com/devfans/cogroup v1.1.0
+	github.com/devfans/zion-sdk v0.0.12
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/gateio/gateapi-go/v6 v6.23.2
 	github.com/go-redis/redis v6.14.2+incompatible

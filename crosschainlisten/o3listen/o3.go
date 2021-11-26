@@ -20,12 +20,8 @@ package o3listen
 import (
 	"context"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/big"
-	"net/http"
-	"net/url"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -37,7 +33,6 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 const (
@@ -84,7 +79,13 @@ func (this *O3ChainListen) GetDefer() uint64 {
 func (this *O3ChainListen) GetBatchSize() uint64 {
 	return this.ethCfg.BatchSize
 }
+func (this *O3ChainListen) GetBatchLength() (uint64, uint64) {
+	return this.ethCfg.MinBatchLength, this.ethCfg.MaxBatchLength
+}
 
+func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
+}
 func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {
@@ -94,7 +95,7 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no ethereum block!")
 	}
 	tt := blockHeader.Time
-	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, height, height)
+	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(height, height)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
@@ -203,7 +204,11 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 	return nil, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
 }
 
-func (this *O3ChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+func (this *O3ChainListen) getECCMEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+	return this.getECCMEventByBlockNumberWithContractAddr(this.ethCfg.CCMContract, startHeight, endHeight)
+}
+
+func (this *O3ChainListen) getECCMEventByBlockNumberWithContractAddr(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
 	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
 	if err != nil {
@@ -437,38 +442,39 @@ func (this *O3ChainListen) GetExtendLatestHeight() (uint64, error) {
 }
 
 func (this *O3ChainListen) getExtendLatestHeight(node int) (uint64, error) {
-	req, err := http.NewRequest("GET", this.ethCfg.ExtendNodes[node].Url, nil)
-	if err != nil {
-		return 0, err
-	}
-	req.Header.Set("Accepts", "application/json")
-	q := url.Values{}
-	q.Add("module", "proxy")
-	q.Add("action", "eth_blockNumber")
-	q.Add("apikey", this.ethCfg.ExtendNodes[node].Key)
-	req.URL.RawQuery = q.Encode()
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return 0, fmt.Errorf("response status code: %d", resp.StatusCode)
-	}
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	extendHeight := new(ExtendHeightRsp)
-	extendHeight.Status = 1
-	err = json.Unmarshal(respBody, extendHeight)
-	if err != nil {
-		return 0, err
-	}
-	if extendHeight.Status == 0 {
-		return 0, fmt.Errorf(extendHeight.Result)
-	}
-	height, err := hexutil.DecodeBig(extendHeight.Result)
-	if err != nil {
-		return 0, err
-	}
-	return height.Uint64(), nil
+	//req, err := http.NewRequest("GET", this.ethCfg.ExtendNodes[node].Url, nil)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//req.Header.Set("Accepts", "application/json")
+	//q := url.Values{}
+	//q.Add("module", "proxy")
+	//q.Add("action", "eth_blockNumber")
+	//q.Add("apikey", this.ethCfg.ExtendNodes[node].Key)
+	//req.URL.RawQuery = q.Encode()
+	//client := &http.Client{}
+	//resp, err := client.Do(req)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//defer resp.Body.Close()
+	//if resp.StatusCode != 200 {
+	//	return 0, fmt.Errorf("response status code: %d", resp.StatusCode)
+	//}
+	//respBody, _ := ioutil.ReadAll(resp.Body)
+	//extendHeight := new(ExtendHeightRsp)
+	//extendHeight.Status = 1
+	//err = json.Unmarshal(respBody, extendHeight)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//if extendHeight.Status == 0 {
+	//	return 0, fmt.Errorf(extendHeight.Result)
+	//}
+	//height, err := hexutil.DecodeBig(extendHeight.Result)
+	//if err != nil {
+	//	return 0, err
+	//}
+	//return height.Uint64(), nil
+	return 0, nil
 }

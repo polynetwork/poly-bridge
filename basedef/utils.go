@@ -156,6 +156,15 @@ func Int64FromFigure(figure int) int64 {
 	return x
 }
 
+func StringInSlice(s string, ss []string) bool {
+	for _, v := range ss {
+		if strings.EqualFold(s, v) {
+			return true
+		}
+	}
+	return false
+}
+
 func Address2Hash(chainId uint64, value string) (string, error) {
 	if chainId == ETHEREUM_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
@@ -261,8 +270,12 @@ func ConfirmEnv(env string) {
 
 func GetChainName(id uint64) string {
 	switch id {
-	case POLY_CROSSCHAIN_ID:
-		return "Poly"
+	case ZION_CROSSCHAIN_ID:
+		return "ZION"
+	case ZIONMAIN_CROSSCHAIN_ID:
+		return "ZIONMAIN"
+	case SIDECHAIN_CROSSCHAIN_ID:
+		return "SIDECHAIN"
 	case ETHEREUM_CROSSCHAIN_ID:
 		return "Ethereum"
 	case ONT_CROSSCHAIN_ID:

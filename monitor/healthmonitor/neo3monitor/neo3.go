@@ -27,15 +27,15 @@ func NewNeo3HealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Neo3Monitor 
 	neo3Monitor.monitorConfig = monitorConfig
 	sdks := make(map[string]*chainsdk.Neo3Sdk, 0)
 	for _, node := range monitorConfig.ChainNodes.Nodes {
-		sdk := chainsdk.NewNeo3Sdk(node.Url)
+		sdk := chainsdk.NewNeo3Sdk(node)
 		if sdk.GetClient() == nil {
-			if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+node.Url, fmt.Sprintf("initial sdk error:sdk.client is nil"), time.Hour*24); err != nil {
-				logs.Error("set %s node[%s] status error: %s", monitorConfig.ChainName, node.Url, err)
+			if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+node, fmt.Sprintf("initial sdk error:sdk.client is nil"), time.Hour*24); err != nil {
+				logs.Error("set %s node[%s] status error: %s", monitorConfig.ChainName, node, err)
 			}
-			logs.Error("%s node: %s, initial sdk error: sdk.client is nil", monitorConfig.ChainName, node.Url)
+			logs.Error("%s node: %s, initial sdk error: sdk.client is nil", monitorConfig.ChainName, node)
 			continue
 		}
-		sdks[node.Url] = sdk
+		sdks[node] = sdk
 	}
 	neo3Monitor.sdks = sdks
 	neo3Monitor.nodeHeight = make(map[string]uint64, len(sdks))

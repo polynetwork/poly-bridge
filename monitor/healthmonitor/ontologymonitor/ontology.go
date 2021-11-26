@@ -23,8 +23,8 @@ func NewOntologyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Ontology
 	sdks := make(map[string]*ontology_go_sdk.OntologySdk, 0)
 	for _, node := range monitorConfig.ChainNodes.Nodes {
 		sdk := ontology_go_sdk.NewOntologySdk()
-		sdk.NewRpcClient().SetAddress(node.Url)
-		sdks[node.Url] = sdk
+		sdk.NewRpcClient().SetAddress(node)
+		sdks[node] = sdk
 	}
 	ontologyMonitor.sdks = sdks
 	ontologyMonitor.nodeHeight = make(map[string]uint64, len(sdks))

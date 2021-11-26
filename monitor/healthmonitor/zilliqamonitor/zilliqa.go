@@ -21,7 +21,7 @@ func NewZilliqaHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *ZilliqaMo
 	zilliqaMonitor.monitorConfig = monitorConfig
 	sdks := make(map[string]*chainsdk.ZilliqaSdk, 0)
 	for _, node := range monitorConfig.ChainNodes.Nodes {
-		sdks[node.Url] = chainsdk.NewZilliqaSdk(node.Url)
+		sdks[node] = chainsdk.NewZilliqaSdk(node)
 	}
 	zilliqaMonitor.sdks = sdks
 	zilliqaMonitor.nodeHeight = make(map[string]uint64, len(sdks))
