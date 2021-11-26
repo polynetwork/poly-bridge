@@ -1,5 +1,5 @@
 {
-  "Server": "polybridge",
+  "Server": "zionbridge",
   "Backup": false,
   "Env": "testnet",
   "LogFile": "logs/bridge.log",
@@ -7,19 +7,18 @@
   "DBConfig": {
     "Debug": true,
     "URL": "localhost:3306",
-    "Scheme": "poly",
+    "Scheme": "zion",
     "User": "root",
     "Password": "123456"
   },
   "HttpConfig": {
     "Address": "0.0.0.0",
-    "Port": 8084
+    "Port": 8085
   },
   "IPPortConfig": {
     "DingIP": "https://oapi.dingtalk.com/robot/send?access_token=63395d10b3104b3b3817db7d6d673b4cd7452b7a375e333dd07b85f17c6c9ca6",
     "USDTIP": "http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
-    "WBTCIP": "http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
-    "LargeTxAmountAlarmDingIP": "https://oapi.dingtalk.com/robot/send?access_token=9892e047c0f57dd76fa0817b1a9aedc17a3ba71098b27b2f487de1279ea9b134"
+    "WBTCIP": "http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad"
   },
   "RedisConfig": {
     "addr": "redis:6379",
@@ -31,7 +30,7 @@
     "read_timeout": 2,
     "write_timeout": 2,
     "idle_timeout": 10,
-    "expiration": 600
+    "expiration": 36000
   },
   "ChainListenConfig": [
     {
@@ -106,11 +105,7 @@
           "Url": "http://seed1.ngd.network:20332"
         }
       ],
-      "ExtendNodes": [],
-      "WrapperContract": [
-        "cd074cd290acc3d73c030784101afbcf40fd86a1",
-        "0f4fad9ae3830585a9264e6ec0b1eff3e89c6558",
-        "7997ac991b66ca3810602639a2f2c1bd985e8b5a"
+      "ExtendNodes": [
       ],
       "CCMContract": "e1695b1314a1331e3935481620417ed835669407",
       "ProxyContract": "edd2862dceb90b945210372d229f453f2b705f4f"
@@ -189,18 +184,16 @@
           "Url": "https://exchaintestrpc.okex.org/"
         }
       ],
-      "ExtendNodes": [],
-      "WrapperContract": [
-        "5598226aD2E8991deEFD03203739C87BdF6e6D03",
-        "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"
+      "ExtendNodes": [
       ],
-      "CCMContract": "296f7f9f0e65152965e9BE12b349c14c7cE8eE85",
-      "ProxyContract": "74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
+      "WrapperContract":["5598226aD2E8991deEFD03203739C87BdF6e6D03", "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"],
+      "CCMContract":"296f7f9f0e65152965e9BE12b349c14c7cE8eE85",
+      "ProxyContract":"74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
     },
     {
-      "ChainName": "NEO3",
-      "ChainId": 88,
-      "ListenSlot": 1,
+      "ChainName":"NEO3",
+      "ChainId":88,
+      "ListenSlot":1,
       "Defer": 1,
       "BatchSize": 5,
       "Nodes": [
@@ -214,15 +207,16 @@
           "Url": "http://seed3t4.neo.org:20332"
         }
       ],
-      "ExtendNodes": [],
-      "WrapperContract": [],
-      "CCMContract": "618d44dc3af16c6120dbf65402024f40a04f772a",
-      "ProxyContract": "4487494dac2f7eb68bdae009cacd6de88243e542"
+      "ExtendNodes": [
+      ],
+      "WrapperContract":["d63810ca692b43e0ed35bfa40e653d05b2cb3585"],
+      "CCMContract":"618d44dc3af16c6120dbf65402024f40a04f772a",
+      "ProxyContract":"4487494dac2f7eb68bdae009cacd6de88243e542"
     },
     {
-      "ChainName": "MATIC",
-      "ChainId": 202,
-      "ListenSlot": 5,
+      "ChainName":"MATIC",
+      "ChainId":202,
+      "ListenSlot":5,
       "Defer": 10,
       "BatchSize": 5,
       "Nodes": [
@@ -230,14 +224,12 @@
           "Url": "http://10.203.0.22:8545"
         }
       ],
-      "ExtendNodes": [],
-      "WrapperContract": [
-        "",
-        "D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"
+      "ExtendNodes": [
       ],
+      "WrapperContract":["", "D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"],
       "SwapContract": "1B0C55be400e2a7D924032B257Fbc75Bbfd256E7",
-      "CCMContract": "e6d97637EFb55d8c81154E29aC343Bc447F80c19",
-      "ProxyContract": "4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446"
+      "CCMContract":"e6d97637EFb55d8c81154E29aC343Bc447F80c19",
+      "ProxyContract":"4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446"
     },
     {
       "CCMContract": "0E916fc31F67A59318743ca0A3a33ff8B1279854",
@@ -245,7 +237,8 @@
       "ChainName": "curve",
       "Defer": 1,
       "BatchSize": 5,
-      "ExtendNodes": [],
+      "ExtendNodes": [
+      ],
       "ListenSlot": 1,
       "Nodes": [
         {
@@ -259,9 +252,9 @@
       ]
     },
     {
-      "ChainName": "PLT",
-      "ChainId": 107,
-      "ListenSlot": 1,
+      "ChainName":"PLT",
+      "ChainId":107,
+      "ListenSlot":1,
       "Defer": 1,
       "BatchSize": 5,
       "Nodes": [
@@ -269,22 +262,20 @@
           "Url": "http://106.75.246.130:22000"
         }
       ],
-      "ExtendNodes": [],
-      "WrapperContract": [
-        "3b855e095b32fcd2811663cba56bbfa6b1781821",
-        ""
+      "ExtendNodes": [
       ],
+      "WrapperContract":["3b855e095b32fcd2811663cba56bbfa6b1781821", ""],
       "NFTWrapperContract": "0806e6925e6960E06cD4781e22A636bA233B53De",
       "NFTProxyContract": "6e5fB68D6B705A567d75135169cF69574225eBe6",
       "NFTQueryContract": "34B5B0cC2b57d96d3930Ddc66084029170fE6BFD",
-      "CCMContract": "691835c5a5F7452ad2820235D48817E27239F0C2",
-      "ProxyContract": "0000000000000000000000000000000000000103"
+      "CCMContract":"691835c5a5F7452ad2820235D48817E27239F0C2",
+      "ProxyContract":"0000000000000000000000000000000000000103"
     },
     {
       "ChainName": "Arbitrum",
       "ChainId": 205,
       "ListenSlot": 1,
-      "Defer": 1,
+      "Defer": 5,
       "BatchSize": 5,
       "Nodes": [
         {
@@ -317,6 +308,42 @@
       ],
       "CCMContract": "F87527a74215777391fE4AfD082FeeED3E5A0ca5",
       "ProxyContract": "52B3048eeF2E53bAF430B0bA4752999F244d1709"
+    },
+    {
+      "ChainName": "ZILLIQA",
+      "ChainId": 111,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "https://dev-api.zilliqa.com/"
+        }
+      ],
+      "ExtendNodes": [],
+      "CCMContract": "720a3fb587b670de99d94925b6f99c9a63d462c1",
+      "OtherProxyContract": [
+        {"ItemName": "ZIL","ItemProxy": "a5a43eecd29534edf80792a9889f52c77455245d"}
+      ]
+    },
+    {
+      "ChainName": "Optimistic",
+      "ChainId": 210,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "Nodes": [
+        {
+          "Url": "https://kovan.optimism.io"
+        }
+      ],
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "",
+        "E324EF8cd52833DD117e8ca87b483E78b30C3696"
+      ],
+      "CCMContract": "C8042579D6b60E0e35161F228827E3Fa0F51d5B6",
+      "ProxyContract": "8a85143cA6ec1e181C3A5Ae4042ca999bFbF571B"
     },
     {
       "ChainName": "Fantom",
@@ -355,25 +382,6 @@
       ],
       "CCMContract": "f37D8C2d072b74d6532541B70319ef08f9F6a4a8",
       "ProxyContract": "80a53FD352597AbA3dD52c722119865a8ed82632"
-    },
-    {
-      "ChainName": "Optimistic",
-      "ChainId": 210,
-      "ListenSlot": 1,
-      "Defer": 1,
-      "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://kovan.optimism.io"
-        }
-      ],
-      "ExtendNodes": [],
-      "WrapperContract": [
-        "",
-        "E324EF8cd52833DD117e8ca87b483E78b30C3696"
-      ],
-      "CCMContract": "C8042579D6b60E0e35161F228827E3Fa0F51d5B6",
-      "ProxyContract": "8a85143cA6ec1e181C3A5Ae4042ca999bFbF571B"
     }
   ],
   "StatsConfig": {
@@ -384,19 +392,19 @@
     "TokenAmountCheckInterval": 300,
     "TokenBasicStatsInterval": 600,
     "TokenStatisticInterval": 600,
-    "LockTokenStatisticInterval": 300
+    "LockTokenStatisticInterval": 600
   },
   "EventEffectConfig": {
-    "HowOld": 3600,
-    "HowOld2": 3600,
+    "HowOld": 300,
+    "HowOld2": 300,
     "ChainListening": 300,
     "EffectSlot": 1,
     "TimeStatisticSlot": 3600
   },
-  "CoinPriceUpdateSlot": 5,
-  "CoinPriceListenConfig": [
+  "CoinPriceUpdateSlot":5,
+  "CoinPriceListenConfig":[
     {
-      "MarketName": "coinmarketcap",
+      "MarketName":"coinmarketcap",
       "Nodes": [
         {
           "Url": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/",
@@ -405,7 +413,7 @@
       ]
     },
     {
-      "MarketName": "binance",
+      "MarketName":"binance",
       "Nodes": [
         {
           "Url": "https://api1.binance.com/"
@@ -413,7 +421,7 @@
       ]
     },
     {
-      "MarketName": "coincheck",
+      "MarketName":"coincheck",
       "Nodes": [
         {
           "Url": "https://coincheck.com/"
@@ -421,7 +429,7 @@
       ]
     }
   ],
-  "FeeUpdateSlot": 5,
+  "FeeUpdateSlot":5,
   "FeeListenConfig": [
     {
       "ChainId": 2,
@@ -496,7 +504,17 @@
     {
       "ChainId": 88,
       "ChainName": "NEO3",
-      "Nodes": [],
+      "Nodes": [
+        {
+          "Url": "http://seed1t4.neo.org:20332"
+        },
+        {
+          "Url": "http://seed2t4.neo.org:20332"
+        },
+        {
+          "Url": "http://seed3t4.neo.org:20332"
+        }
+      ],
       "GasLimit": 5000000,
       "ProxyFee": 120,
       "MinFee": 20
@@ -522,7 +540,7 @@
         }
       ],
       "GasLimit": 120000,
-      "ProxyFee": 140,
+      "ProxyFee": 120,
       "MinFee": 20
     },
     {
@@ -538,18 +556,6 @@
       "MinFee": 20
     },
     {
-      "ChainId": 208,
-      "ChainName": "Fantom",
-      "Nodes": [
-        {
-          "Url": "https://rpc.testnet.fantom.network"
-        }
-      ],
-      "GasLimit": 120000,
-      "ProxyFee": 140,
-      "MinFee": 20
-    },
-    {
       "ChainId": 210,
       "ChainName": "Optimistic",
       "Nodes": [
@@ -558,22 +564,47 @@
         }
       ],
       "GasLimit": 120000,
-      "ProxyFee": 140,
+      "ProxyFee": 120,
+      "MinFee": 20
+    },
+    {
+      "ChainId": 208,
+      "ChainName": "Fantom",
+      "Nodes": [
+        {
+          "Url": "https://rpc.testnet.fantom.network"
+        }
+      ],
+      "GasLimit": 120000,
+      "ProxyFee": 120,
+      "MinFee": 20
+    },
+    {
+      "ChainId": 209,
+      "ChainName": "Avax",
+      "Nodes": [
+        {
+          "Url": "https://api.avax-test.network/ext/bc/C/rpc"
+        }
+      ],
+      "GasLimit": 120000,
+      "ProxyFee": 120,
       "MinFee": 20
     }
   ],
-  "LargeTxAmount" : 10,
+  "LargeTxAmount" : 1,
   "BotConfig": {
-    "DingUrl": "https://oapi.dingtalk.com/robot/send?access_token=85415855e5cc0be656143c501d7f2009941aa7b07cba0bf60c0423b184d3ac44",
-    "LargeTxDingUrl": "https://oapi.dingtalk.com/robot/send?access_token=9892e047c0f57dd76fa0817b1a9aedc17a3ba71098b27b2f487de1279ea9b134",
+    "DingUrl": "",
+    "LargeTxDingUrl": "",
     "Interval": 20,
-    "CheckFrom": 3,
     "BaseUrl" : "https://explorer.poly.network/testnet/",
     "DetailUrl": "api/v1/bot?page_size=100",
     "FinishUrl": "api/v1/botfinishtx?",
     "MarkAsPaidUrl": "api/v1/botmarkunmarktxaspaid?",
     "TxUrl": "tx/",
     "ListLargeTxUrl": "api/v1/botlistlargetx?",
-    "ApiToken": "njnfsd7fswf75fsfbw6f7w"
-  }
+    "ApiToken": "",
+    "CheckFrom": 5
+  },
+  "RelayUrl" : "http://10.203.0.28:6501"
 }
