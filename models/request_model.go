@@ -60,7 +60,10 @@ type TokenBasicRsp struct {
 type TxHashChainIdPair struct {
 	SrcHash    string
 	PolyHash   string
+	DstHash    string
 	SrcChainId uint64
+	DstChainId uint64
+	WrapperId  uint64
 }
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
