@@ -60,7 +60,10 @@ type TokenBasicRsp struct {
 type TxHashChainIdPair struct {
 	SrcHash    string
 	PolyHash   string
+	DstHash    string
 	SrcChainId uint64
+	DstChainId uint64
+	WrapperId  uint64
 }
 
 func MakeTokenBasicRsp(tokenBasic *TokenBasic) *TokenBasicRsp {
@@ -1205,6 +1208,15 @@ func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
 		v.DstChainName = basedef.GetChainName(v.DstChainId)
 		v.Status = basedef.GetStateName(int(c.Status))
 		tsp := time.Unix(int64(c.Time), 0)
+		v.Time = tsp.Format(time.RFC3339)
+		v.Duration = time.Now().Sub(tsp).String()
+	} else if s := tx.SrcTransaction; s != nil {
+		v.SrcChainId = s.ChainId
+		v.DstChainId = s.DstChainId
+		v.SrcChainName = basedef.GetChainName(v.SrcChainId)
+		v.DstChainName = basedef.GetChainName(v.DstChainId)
+		//v.Status = basedef.GetStateName(int(c.Status))
+		tsp := time.Unix(int64(s.Time), 0)
 		v.Time = tsp.Format(time.RFC3339)
 		v.Duration = time.Now().Sub(tsp).String()
 	}

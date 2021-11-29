@@ -200,12 +200,17 @@ type EventEffectConfig struct {
 }
 
 type BotConfig struct {
-	DingUrl   string
-	CheckFrom int64
-	DetailUrl string
-	FinishUrl string
-	ApiToken  string
-	Interval  int64
+	DingUrl        string
+	LargeTxDingUrl string
+	CheckFrom      int64
+	Interval       int64
+	BaseUrl        string
+	DetailUrl      string
+	FinishUrl      string
+	MarkAsPaidUrl  string
+	TxUrl          string
+	ListLargeTxUrl string
+	ApiToken       string
 }
 
 type HttpConfig struct {
@@ -214,10 +219,9 @@ type HttpConfig struct {
 }
 
 type IPPortConfig struct {
-	WBTCIP                   string
-	USDTIP                   string
-	DingIP                   string
-	LargeTxAmountAlarmDingIP string
+	WBTCIP string
+	USDTIP string
+	DingIP string
 }
 
 type Config struct {

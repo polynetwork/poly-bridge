@@ -21,11 +21,26 @@ const (
 	_TokenBalance      = "TokenBalance"
 	TxCheckBot         = "TxCheckBot"
 	LargeTxAlarmPrefix = "LargeTxAlarm_"
+	LargeTxList        = "LargeTxList"
+	MarkTxAsPaidPrefix = "MarkTxAsPaid_"
+	MarkTxAsSkipPrefix = "MarkTxAsSkip_"
 )
 
 type RedisCache struct {
 	c      *goredis.Client
 	config *conf.RedisConfig
+}
+
+type LargeTx struct {
+	Asset     string
+	Type      string
+	From      string
+	To        string
+	Amount    string
+	USDAmount string
+	Hash      string
+	User      string
+	Time      string
 }
 
 var Redis *RedisCache
@@ -153,6 +168,15 @@ func (r *RedisCache) Set(key string, value string, expiration time.Duration) (bo
 	return true, nil
 }
 
+func (r *RedisCache) Unlink(key string) (int64, error) {
+	cnt, err := r.c.Unlink(key).Result()
+	if err != nil {
+		logs.Error("Unlink key: %s err: %s", key, err)
+		return 0, err
+	}
+	return cnt, nil
+}
+
 func (r *RedisCache) Del(key string) (int64, error) {
 	cnt, err := r.c.Del(key).Result()
 	if err != nil {
@@ -202,4 +226,21 @@ func (r *RedisCache) UnLock(key string) (int64, error) {
 		return 0, err
 	}
 	return cnt, nil
+}
+
+func (r *RedisCache) RPush(key string, value ...string) error {
+	if err := r.c.RPush(key, value).Err(); err != nil {
+		logs.Error("Redis Push[%s: %v] err: %s", key, value, err)
+		return err
+	}
+	return nil
+}
+
+func (r *RedisCache) LRange(key string, start, stop int64) ([]string, error) {
+	if vals, err := r.c.LRange(key, start, stop).Result(); err != nil {
+		logs.Error("Redis LRange[key:%s, start:%d, stop:%d] err: %s", key, start, stop, err)
+		return nil, err
+	} else {
+		return vals, nil
+	}
 }
