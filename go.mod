@@ -9,9 +9,10 @@ require (
 	github.com/btcsuite/goleveldb v1.0.0
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/devfans/cogroup v1.1.0
+	github.com/devfans/zion-sdk v0.0.2
 	github.com/ethereum/go-ethereum v1.9.25
 	github.com/go-redis/redis v6.14.2+incompatible
-	github.com/hashicorp/golang-lru v0.5.4
+	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
 	github.com/joeqian10/neo3-gogogo v0.3.8
@@ -28,10 +29,10 @@ require (
 	github.com/urfave/cli v1.22.4
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.8
-	github.com/devfans/zion-sdk v0.0.2
 )
 
 replace (
 	github.com/cosmos/cosmos-sdk => github.com/Switcheo/cosmos-sdk v0.39.2-0.20200814061308-474a0dbbe4ba
+	github.com/ethereum/go-ethereum => github.com/ethereum/go-ethereum v1.9.25
 	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20210126025041-8d21ec4f0324
 )
