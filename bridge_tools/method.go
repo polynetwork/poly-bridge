@@ -63,6 +63,8 @@ func executeMethod(method string, ctx *cli.Context) {
 		migrateLockTokenStatisticTable(config)
 	case "updateZilliqaPolyOldData":
 		updateZilliqaPolyOldData(config)
+	case "zion_create_tables":
+		zionCreateTables(config)
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}
@@ -332,4 +334,40 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 			break
 		}
 	}
+}
+
+func zionCreateTables(config *conf.Config) {
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		logs.Error("Open mysql err", err)
+	}
+	err = db.Debug().AutoMigrate(
+		&models.DstTransaction{},
+		&models.SrcTransaction{},
+		&models.WrapperTransaction{},
+		&models.TokenBasic{},
+		&models.PriceMarket{},
+		&models.Chain{},
+		&models.ChainFee{},
+		&models.DstSwap{},
+		&models.DstTransfer{},
+		&models.LockTokenStatistic{},
+		&models.NFTProfile{},
+		&models.PolyTransaction{},
+		&models.SrcSwap{},
+		&models.SrcTransfer{},
+		&models.TimeStatistic{},
+		&models.Token{},
+		&models.TokenMap{},
+		&models.TokenStatistic{},
+		&models.ChainStatistic{},
+		&models.AssetStatistic{},
+	)
+	checkError(err, "Creating tables")
 }

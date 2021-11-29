@@ -342,7 +342,7 @@ func (s *EthereumSdk) GetECCDOwnership(eccdAddr common.Address) (common.Address,
 
 func (s *EthereumSdk) TransferECCMOwnership(key *ecdsa.PrivateKey, eccm, ccmp common.Address) (common.Hash, error) {
 
-	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccm, s.backend())
+	eccmContract, err := eccm_abi.NewEthCrossChainDataTransactor(eccm, s.backend())
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -361,7 +361,7 @@ func (s *EthereumSdk) TransferECCMOwnership(key *ecdsa.PrivateKey, eccm, ccmp co
 }
 
 func (s *EthereumSdk) GetECCMOwnership(eccmAddr common.Address) (common.Address, error) {
-	eccm, err := eccm_abi.NewEthCrossChainManager(eccmAddr, s.backend())
+	eccm, err := eccm_abi.NewEthCrossChainDataCaller(eccmAddr, s.backend())
 	if err != nil {
 		return EmptyAddress, err
 	}
@@ -432,26 +432,26 @@ func (s *EthereumSdk) NFTProxyOwnership(proxyAddr common.Address) (common.Addres
 	return proxy.Owner(nil)
 }
 
-func (s *EthereumSdk) InitGenesisBlock(key *ecdsa.PrivateKey, eccmAddr common.Address, rawHdr, publickeys []byte) (common.Hash, error) {
-	eccm, err := eccm_abi.NewEthCrossChainManager(eccmAddr, s.backend())
-	if err != nil {
-		return EmptyHash, err
-	}
-
-	auth, err := s.makeAuth(key, DefaultGasLimit)
-	if err != nil {
-		return EmptyHash, err
-	}
-	tx, err := eccm.InitGenesisBlock(auth, rawHdr, publickeys)
-	if err != nil {
-		return EmptyHash, err
-	}
-
-	if err := s.waitTxConfirm(tx.Hash()); err != nil {
-		return EmptyHash, err
-	}
-	return tx.Hash(), nil
-}
+//func (s *EthereumSdk) InitGenesisBlock(key *ecdsa.PrivateKey, eccmAddr common.Address, rawHdr, publickeys []byte) (common.Hash, error) {
+//	eccm, err := eccm_abi.NewEthCrossChainManager(eccmAddr, s.backend())
+//	if err != nil {
+//		return EmptyHash, err
+//	}
+//
+//	auth, err := s.makeAuth(key, DefaultGasLimit)
+//	if err != nil {
+//		return EmptyHash, err
+//	}
+//	tx, err := eccm.InitGenesisBlock(auth, rawHdr, publickeys)
+//	if err != nil {
+//		return EmptyHash, err
+//	}
+//
+//	if err := s.waitTxConfirm(tx.Hash()); err != nil {
+//		return EmptyHash, err
+//	}
+//	return tx.Hash(), nil
+//}
 
 func (s *EthereumSdk) DeployWrapContract(key *ecdsa.PrivateKey, chainId uint64) (common.Address, error) {
 	auth, err := s.makeAuth(key, DefaultDeployGasLimit)
