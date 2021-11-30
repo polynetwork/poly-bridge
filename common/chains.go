@@ -10,29 +10,34 @@ import (
 )
 
 var (
-	ethereumSdk *chainsdk.EthereumSdkPro
-	pltSdk      *chainsdk.EthereumSdkPro
-	bscSdk      *chainsdk.EthereumSdkPro
-	hecoSdk     *chainsdk.EthereumSdkPro
-	okSdk       *chainsdk.EthereumSdkPro
-	neoSdk      *chainsdk.NeoSdkPro
-	ontologySdk *chainsdk.OntologySdkPro
-	maticSdk    *chainsdk.EthereumSdkPro
-	swthSdk     *chainsdk.SwitcheoSdkPro
-	arbitrumSdk *chainsdk.EthereumSdkPro
-	zilliqaSdk  *chainsdk.ZilliqaSdkPro
-	xdaiSdk     *chainsdk.EthereumSdkPro
-	fantomSdk   *chainsdk.EthereumSdkPro
-	avaxSdk     *chainsdk.EthereumSdkPro
+	ethereumSdk   *chainsdk.EthereumSdkPro
+	pltSdk        *chainsdk.EthereumSdkPro
+	bscSdk        *chainsdk.EthereumSdkPro
+	hecoSdk       *chainsdk.EthereumSdkPro
+	okSdk         *chainsdk.EthereumSdkPro
+	neoSdk        *chainsdk.NeoSdkPro
+	ontologySdk   *chainsdk.OntologySdkPro
+	maticSdk      *chainsdk.EthereumSdkPro
+	swthSdk       *chainsdk.SwitcheoSdkPro
+	arbitrumSdk   *chainsdk.EthereumSdkPro
+	zilliqaSdk    *chainsdk.ZilliqaSdkPro
+	xdaiSdk       *chainsdk.EthereumSdkPro
+	fantomSdk     *chainsdk.EthereumSdkPro
+	avaxSdk       *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
-	config      *conf.Config
+	config        *conf.Config
 )
 
-func SetupChainsSDK(cfg *conf.Config) {
+var getfee0num uint64
+var getfeename string
+
+func SetupChainsSDK(cfg *conf.Config, a uint64, b string) {
 	if cfg == nil {
 		panic("Missing config")
 	}
 	config = cfg
+	getfee0num = a
+	getfeename = b
 	newChainSdks(cfg)
 }
 
@@ -165,6 +170,10 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
 			panic("chain is invalid")
+		}
+		if hash == "0000000000000000000000000000000000000000" {
+			getfee0num++
+			logs.Error(getfeename+"getfeename is:", getfee0num)
 		}
 		return ethereumSdk.Erc20Balance(hash, ethereumConfig.ProxyContract)
 	}
@@ -367,6 +376,10 @@ type ProxyBalance struct {
 func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error) {
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
+		if hash == "0000000000000000000000000000000000000000" {
+			getfee0num++
+			logs.Error(getfeename+"getfeename is:", getfee0num)
+		}
 		return ethereumSdk.Erc20Balance(hash, proxy)
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.Erc20Balance(hash, proxy)

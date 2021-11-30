@@ -40,7 +40,7 @@ import (
 )
 
 func main() {
-        go func() {
+	go func() {
 		http2.ListenAndServe("0.0.0.0:3344", nil)
 	}()
 	if err := setupApp().Run(os.Args); err != nil {
@@ -74,7 +74,7 @@ func run(ctx *cli.Context) {
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
 	basedef.ConfirmEnv(config.Env)
-	common.SetupChainsSDK(config)
+	common.SetupChainsSDK(config, uint64(0), "httpgetfee0num")
 
 	web.InsertFilter("*", web.BeforeRouter, cors.Allow(
 		&cors.Options{
