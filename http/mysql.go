@@ -26,6 +26,7 @@ import (
 )
 
 var db *gorm.DB
+var getfeeethnum uint64=0
 
 func Init() {
 	config := conf.GlobalConfig.DBConfig
