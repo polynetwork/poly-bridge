@@ -26,6 +26,7 @@ import (
 )
 
 var db *gorm.DB
+var getfeeethnum uint64=0
 var relayUrl string
 
 func Init() {

@@ -309,7 +309,7 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 						Div(decimal.NewFromInt(100000000))
 
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
-						cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
+						//cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
 						if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, v.Hash); err != nil {
 							logs.Error("Save LargeTx[hash: %s] err: %s", v.Hash, err)
 						}

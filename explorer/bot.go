@@ -791,7 +791,7 @@ func (c *BotController) ListLargeTxPage() {
 		rb := []byte(
 			fmt.Sprintf(
 				`<html><body><h1>Poly large transactions</h1>
-					<div>total %d transactions </div>
+					<div>the last %d transactions </div>
 						<table style="width:100%%">
 						<tr>
 							<th>Asset</th>
