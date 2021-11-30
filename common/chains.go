@@ -31,6 +31,9 @@ var (
 var getfee0num uint64
 var getfeename string
 
+var bscgetfee0num uint64
+var bscgetfeename string
+
 func SetupChainsSDK(cfg *conf.Config, a uint64, b string) {
 	if cfg == nil {
 		panic("Missing config")
@@ -38,6 +41,8 @@ func SetupChainsSDK(cfg *conf.Config, a uint64, b string) {
 	config = cfg
 	getfee0num = a
 	getfeename = b
+	bscgetfee0num = a
+	bscgetfeename = b
 	newChainSdks(cfg)
 }
 
@@ -188,6 +193,10 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 		if bscConfig == nil {
 			panic("chain is invalid")
+		}
+		if hash == "0000000000000000000000000000000000000000" {
+			bscgetfee0num++
+			logs.Error(getfeename+"bscgetfeename is:", bscgetfee0num)
 		}
 		return bscSdk.Erc20Balance(hash, bscConfig.ProxyContract)
 	}
@@ -384,6 +393,10 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.Erc20Balance(hash, proxy)
 	case basedef.BSC_CROSSCHAIN_ID:
+		if hash == "0000000000000000000000000000000000000000" {
+			bscgetfee0num++
+			logs.Error(getfeename+"bscgetfeename is:", bscgetfee0num)
+		}
 		return bscSdk.Erc20Balance(hash, proxy)
 	case basedef.HECO_CROSSCHAIN_ID:
 		return hecoSdk.Erc20Balance(hash, proxy)
