@@ -41,7 +41,7 @@ func TestPolyListen(t *testing.T) {
 	if dao == nil {
 		panic("server is not valid")
 	}
-	polyListenConfig := config.GetChainListenConfig(basedef.POLY_CROSSCHAIN_ID)
+	polyListenConfig := config.GetChainListenConfig(basedef.ZION_CROSSCHAIN_ID)
 	if polyListenConfig == nil {
 		panic("config is not valid")
 	}

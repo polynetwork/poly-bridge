@@ -973,7 +973,7 @@ func handleCmdAddGas(ctx *cli.Context) error {
 func handleCmdEnv(ctx *cli.Context) error {
 	currentInfo := fmt.Sprintf("current env: side chain name %s, side chain id %d\r\n", cc.SideChainName, cc.SideChainID)
 
-	polyInfo := fmt.Sprintf("poly side chain id - %d\r\n", basedef.POLY_CROSSCHAIN_ID)
+	polyInfo := fmt.Sprintf("poly side chain id - %d\r\n", basedef.ZION_CROSSCHAIN_ID)
 	ethInfo := fmt.Sprintf("eth side chain id - %d\r\n", basedef.ETHEREUM_CROSSCHAIN_ID)
 	ontInfo := fmt.Sprintf("ont side chain id - %d\r\n", basedef.ONT_CROSSCHAIN_ID)
 	neoInfo := fmt.Sprintf("neo side chain id - %d\r\n", basedef.NEO_CROSSCHAIN_ID)

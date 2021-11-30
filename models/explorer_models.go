@@ -73,7 +73,7 @@ func MakeExplorerInfoResp(chains []*Chain, statistics []*ChainStatistic, tokenBa
 		}
 		chainInfoResps = append(chainInfoResps, chainInfoResp)
 	}
-	crossTxNumber := getChainStatistic(basedef.POLY_CROSSCHAIN_ID, statistics).In
+	crossTxNumber := getChainStatistic(basedef.ZION_CROSSCHAIN_ID, statistics).In
 	crossChainTokenResp := make([]*CrossChainTokenResp, 0)
 	for _, tokenBasic := range tokenBasics {
 		crossChainTokenResp = append(crossChainTokenResp, MakeTokenBasicResp(tokenBasic))
