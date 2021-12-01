@@ -86,7 +86,7 @@ type ChainHandle interface {
 
 func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 	switch chainListenConfig.ChainId {
-	case basedef.POLY_CROSSCHAIN_ID:
+	case basedef.ZION_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
 		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID:
@@ -133,7 +133,7 @@ func (ccl *CrossChainListen) SetHeight(height uint64) {
 }
 
 func (ccl *CrossChainListen) Start() {
-	if ccl.config.Backup && ccl.handle.GetChainId() == basedef.POLY_CROSSCHAIN_ID {
+	if ccl.config.Backup && ccl.handle.GetChainId() == basedef.ZION_CROSSCHAIN_ID {
 		return
 	}
 	logs.Info("start cross chain listen: %s", ccl.handle.GetChainName())

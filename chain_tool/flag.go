@@ -337,11 +337,11 @@ var (
 		},
 	}
 
-	CmdSyncPolyGenesis2SideChain = cli.Command{
-		Name:   "syncPolyGenesis",
-		Usage:  "sync poly genesis header to side chain.",
-		Action: handleCmdSyncPolyGenesis2SideChain,
-	}
+	//CmdSyncPolyGenesis2SideChain = cli.Command{
+	//	Name:   "syncPolyGenesis",
+	//	Usage:  "sync poly genesis header to side chain.",
+	//	Action: handleCmdSyncPolyGenesis2SideChain,
+	//}
 
 	CmdNFTWrapSetFeeCollector = cli.Command{
 		Name:   "setFeeCollector",

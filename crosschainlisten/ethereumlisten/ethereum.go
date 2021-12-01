@@ -378,7 +378,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 	if client == nil {
 		return nil, nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
 	}
-	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
+	eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, client)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}

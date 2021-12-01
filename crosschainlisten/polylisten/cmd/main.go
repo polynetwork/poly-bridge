@@ -120,7 +120,7 @@ func startServer(ctx *cli.Context) {
 	if db == nil {
 		panic("server is invalid")
 	}
-	chainListenConfig := config.GetChainListenConfig(basedef.POLY_CROSSCHAIN_ID)
+	chainListenConfig := config.GetChainListenConfig(basedef.ZION_CROSSCHAIN_ID)
 	if chainListenConfig == nil {
 		panic("chain is invalid")
 	}

@@ -63,6 +63,10 @@ func executeMethod(method string, ctx *cli.Context) {
 		migrateLockTokenStatisticTable(config)
 	case "updateZilliqaPolyOldData":
 		updateZilliqaPolyOldData(config)
+	case "zion_create_tables":
+		zionCreateTables(config)
+	//case "zion_migrate_basic_tables":
+	//	zionMigrateBasicTables(config)
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}
@@ -333,3 +337,67 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 		}
 	}
 }
+
+func zionCreateTables(config *conf.Config) {
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		logs.Error("Open mysql err", err)
+	}
+	err = db.Debug().AutoMigrate(
+		&models.DstTransaction{},
+		&models.SrcTransaction{},
+		&models.WrapperTransaction{},
+		&models.TokenBasic{},
+		&models.PriceMarket{},
+		&models.Chain{},
+		&models.ChainFee{},
+		&models.DstSwap{},
+		&models.DstTransfer{},
+		&models.LockTokenStatistic{},
+		&models.NFTProfile{},
+		&models.PolyTransaction{},
+		&models.SrcSwap{},
+		&models.SrcTransfer{},
+		&models.TimeStatistic{},
+		&models.Token{},
+		&models.TokenMap{},
+		&models.TokenStatistic{},
+		&models.ChainStatistic{},
+		&models.AssetStatistic{},
+	)
+	checkError(err, "Creating tables")
+}
+
+/*
+func zionMigrateBasicTables(config *conf.Config) {
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		logs.Error("Open mysql err", err)
+	}
+	bri, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		"poly"+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		logs.Error("Open mysql err", err)
+	}
+
+	migrateTable(bri, db, "token_basics", &[]*models.TokenBasic{})
+	migrateTable(bri, db, "price_markets", &[]*models.PriceMarket{})
+	//migrateTable(bri, db, "chains", &[]*models.Chain{})
+	//migrateTable(bri, db, "chain_fees", &[]*models.ChainFee{})
+	//migrateTable(bri, db, "nft_profiles", &[]*models.NFTProfile{})
+	migrateTable(bri, db, "tokens", &[]*models.Token{})
+	migrateTable(bri, db, "token_maps", &[]*models.TokenMap{})
+}
+*/

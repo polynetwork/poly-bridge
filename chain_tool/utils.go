@@ -18,13 +18,11 @@
 package main
 
 import (
-	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 	"math/big"
 	"poly-bridge/chainsdk"
 
-	"github.com/ethereum/go-ethereum/common"
 	polysdk "github.com/polynetwork/poly-go-sdk"
 	"github.com/polynetwork/poly/native/service/header_sync/bsc"
 	"github.com/polynetwork/poly/native/service/header_sync/heco"
@@ -172,36 +170,36 @@ func SyncHecoGenesisHeader2Poly(
 	return nil
 }
 
-func SyncPolyGenesisHeader2Eth(
-	polySDK *chainsdk.PolySDK,
-	sideChainECCMOwnerKey *ecdsa.PrivateKey,
-	sideChainSdk *chainsdk.EthereumSdk,
-	sideChainECCM common.Address,
-) error {
-
-	// `epoch` related with the poly validators changing,
-	// we can set it as 0 if poly validators never changed on develop environment.
-	var RCEpoch uint32 = 0
-	gB, err := polySDK.GetBlockByHeight(RCEpoch)
-	if err != nil {
-		return err
-	}
-
-	bookeepers, err := chainsdk.GetBookeeper(gB)
-	if err != nil {
-		return err
-	}
-	bookeepersEnc := chainsdk.AssembleNoCompressBookeeper(bookeepers)
-	headerEnc := gB.Header.ToArray()
-
-	if _, err := sideChainSdk.InitGenesisBlock(
-		sideChainECCMOwnerKey,
-		sideChainECCM,
-		headerEnc,
-		bookeepersEnc,
-	); err != nil {
-		return err
-	}
-
-	return nil
-}
+//func SyncPolyGenesisHeader2Eth(
+//	polySDK *chainsdk.PolySDK,
+//	sideChainECCMOwnerKey *ecdsa.PrivateKey,
+//	sideChainSdk *chainsdk.EthereumSdk,
+//	sideChainECCM common.Address,
+//) error {
+//
+//	// `epoch` related with the poly validators changing,
+//	// we can set it as 0 if poly validators never changed on develop environment.
+//	var RCEpoch uint32 = 0
+//	gB, err := polySDK.GetBlockByHeight(RCEpoch)
+//	if err != nil {
+//		return err
+//	}
+//
+//	bookeepers, err := chainsdk.GetBookeeper(gB)
+//	if err != nil {
+//		return err
+//	}
+//	bookeepersEnc := chainsdk.AssembleNoCompressBookeeper(bookeepers)
+//	headerEnc := gB.Header.ToArray()
+//
+//	if _, err := sideChainSdk.InitGenesisBlock(
+//		sideChainECCMOwnerKey,
+//		sideChainECCM,
+//		headerEnc,
+//		bookeepersEnc,
+//	); err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}

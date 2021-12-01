@@ -106,7 +106,7 @@ func setupApp() *cli.App {
 		CmdRegisterSideChain,
 		CmdApproveSideChain,
 		CmdSyncSideChainGenesis2Poly,
-		CmdSyncPolyGenesis2SideChain,
+		//CmdSyncPolyGenesis2SideChain,
 		CmdNFTWrapSetFeeCollector,
 		CmdNFTWrapSetLockProxy,
 		CmdNFTMint,
@@ -577,26 +577,26 @@ func handleCmdSyncSideChainGenesis2Poly(ctx *cli.Context) error {
 	return nil
 }
 
-func handleCmdSyncPolyGenesis2SideChain(ctx *cli.Context) error {
-	log.Info("start to sync poly chain genesis header to side chain...")
-
-	polySdk, err := chainsdk.NewPolySdkAndSetChainID(cfg.Poly.RPC)
-	if err != nil {
-		return err
-	}
-	eccm := common.HexToAddress(cc.ECCM)
-
-	if err := SyncPolyGenesisHeader2Eth(
-		polySdk,
-		adm,
-		sdk,
-		eccm,
-	); err != nil {
-		return fmt.Errorf("sync poly chain genesis header to side chain %d failed, err: %v", cc.SideChainID, err)
-	}
-	log.Info("sync poly chain genesis header to side chain %d success!", cc.SideChainID)
-	return nil
-}
+//func handleCmdSyncPolyGenesis2SideChain(ctx *cli.Context) error {
+//	log.Info("start to sync poly chain genesis header to side chain...")
+//
+//	polySdk, err := chainsdk.NewPolySdkAndSetChainID(cfg.Poly.RPC)
+//	if err != nil {
+//		return err
+//	}
+//	eccm := common.HexToAddress(cc.ECCM)
+//
+//	if err := SyncPolyGenesisHeader2Eth(
+//		polySdk,
+//		adm,
+//		sdk,
+//		eccm,
+//	); err != nil {
+//		return fmt.Errorf("sync poly chain genesis header to side chain %d failed, err: %v", cc.SideChainID, err)
+//	}
+//	log.Info("sync poly chain genesis header to side chain %d success!", cc.SideChainID)
+//	return nil
+//}
 
 func handleCmdNFTWrapSetFeeCollector(ctx *cli.Context) error {
 	log.Info("start to set fee collector for wrap contract...")
@@ -973,7 +973,7 @@ func handleCmdAddGas(ctx *cli.Context) error {
 func handleCmdEnv(ctx *cli.Context) error {
 	currentInfo := fmt.Sprintf("current env: side chain name %s, side chain id %d\r\n", cc.SideChainName, cc.SideChainID)
 
-	polyInfo := fmt.Sprintf("poly side chain id - %d\r\n", basedef.POLY_CROSSCHAIN_ID)
+	polyInfo := fmt.Sprintf("poly side chain id - %d\r\n", basedef.ZION_CROSSCHAIN_ID)
 	ethInfo := fmt.Sprintf("eth side chain id - %d\r\n", basedef.ETHEREUM_CROSSCHAIN_ID)
 	ontInfo := fmt.Sprintf("ont side chain id - %d\r\n", basedef.ONT_CROSSCHAIN_ID)
 	neoInfo := fmt.Sprintf("neo side chain id - %d\r\n", basedef.NEO_CROSSCHAIN_ID)
