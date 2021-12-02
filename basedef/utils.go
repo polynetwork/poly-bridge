@@ -196,7 +196,7 @@ func ConfirmEnv(env string) {
 
 func GetChainName(id uint64) string {
 	switch id {
-	case POLY_CROSSCHAIN_ID:
+	case ZION_CROSSCHAIN_ID:
 		return "Poly"
 	case ETHEREUM_CROSSCHAIN_ID:
 		return "Ethereum"

@@ -298,7 +298,7 @@ func (this *EthereumChainListenBatch) getWrapperEventByBlockNumber1(contractAddr
 
 func (this *EthereumChainListenBatch) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
-	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
+	eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}

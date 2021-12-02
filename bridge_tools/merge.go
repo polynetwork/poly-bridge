@@ -554,7 +554,7 @@ func migrateExplorerChainStatisticTables(exp, db *gorm.DB) {
 		chainStatistic.LastOutCheckId = srcTransaction.Id
 	}
 	for _, chainStatistic := range chainStatistics {
-		if chainStatistic.ChainId == basedef.POLY_CROSSCHAIN_ID {
+		if chainStatistic.ChainId == basedef.ZION_CROSSCHAIN_ID {
 			chainStatistic.LastInCheckId = polyTransaction.Id
 			chainStatistic.LastOutCheckId = polyTransaction.Id
 			break
