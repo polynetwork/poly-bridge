@@ -338,8 +338,8 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		TokenAmount:              tokenAmount.String(),
 		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
 		SwapTokenHash:            swapTokenHash,
-		Balance:                  balanceWithoutPrecision.String(),
-		BalanceWithPrecision:     balance.String(),
+		Balance:                  balance.String(),
+		BalanceWithPrecision:     balanceWithoutPrecision.String(),
 	}
 	{
 		aaa, _ := usdtAmount.Float64()
@@ -360,14 +360,14 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		getFeeRsp.TokenAmountWithPrecision = tokenAmountWithPrecision.String()
 	}
 	{
-		aaa, _ := balanceWithoutPrecision.Float64()
-		balanceWithoutPrecision := decimal.NewFromFloat(aaa)
-		getFeeRsp.Balance = balanceWithoutPrecision.String()
-	}
-	{
 		aaa, _ := balance.Float64()
 		balance := decimal.NewFromFloat(aaa)
-		getFeeRsp.BalanceWithPrecision = balance.String()
+		getFeeRsp.Balance = balance.String()
+	}
+	{
+		aaa, _ := balanceWithoutPrecision.Float64()
+		balanceWithoutPrecision := decimal.NewFromFloat(aaa)
+		getFeeRsp.BalanceWithPrecision = balanceWithoutPrecision.String()
 	}
 	return getFeeRsp
 }

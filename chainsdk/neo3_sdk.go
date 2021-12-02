@@ -19,6 +19,7 @@ package chainsdk
 
 import (
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/joeqian10/neo3-gogogo/helper"
 	"github.com/joeqian10/neo3-gogogo/nep17"
 	"github.com/joeqian10/neo3-gogogo/rpc"
@@ -107,4 +108,17 @@ func (sdk *Neo3Sdk) Nep17Balance(hash string, addr string) (*big.Int, error) {
 		return new(big.Int).SetUint64(0), err
 	}
 	return nep17.BalanceOf(addrHash)
+}
+
+func (sdk *Neo3Sdk) Nep17TotalSupply(hash string) (*big.Int, error) {
+	scriptHash, err := helper.UInt160FromString(hash)
+	if err != nil {
+		return new(big.Int).SetUint64(0), err
+	}
+	logs.Info("hash: %s", hash)
+	nep17 := nep17.NewNep17Helper(scriptHash, sdk.client)
+	if err != nil {
+		return new(big.Int).SetUint64(0), err
+	}
+	return nep17.TotalSupply()
 }
