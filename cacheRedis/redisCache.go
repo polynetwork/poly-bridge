@@ -216,7 +216,6 @@ func (r *RedisCache) GetManualTx(polyhash string) (string, error) {
 func (r *RedisCache) SetManualTx(polyhash string, manualTx string) (err error) {
 	key := _GetManualTxData + polyhash
 	value := manualTx
-	logs.Error("qqqqqqqqqqqsetredis", polyhash)
 	if _, err = r.c.Set(key, value, time.Second*1).Result(); err != nil {
 		err = errors.New(err.Error() + "cache SetManualTx")
 	}
