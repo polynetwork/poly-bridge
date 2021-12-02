@@ -18,7 +18,6 @@
 package http
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -485,21 +484,22 @@ func (c *TransactionController) GetManualTxData() {
 		c.return400(fmt.Sprintf("%v is not polyhash", manualTxDataReq.PolyHash))
 		return
 	}
-	res = db.Model(&models.DstTransaction{}).Select("hash").Where("src_hash = ?", manualTxDataReq.PolyHash).First(&x)
+	res = db.Model(&models.DstTransaction{}).Select("hash").Where("poly_hash = ?", manualTxDataReq.PolyHash).First(&x)
 	if res.RowsAffected != 0 {
 		c.return400(fmt.Sprintf("%v was submitted to dst chain", manualTxDataReq.PolyHash))
 		return
 	}
-
-	manualData,err:=cacheRedis.Redis.GetManualTx(manualTxDataReq.PolyHash)
-	if err==nil{
-		if manualData==""{
+	manualTxDataResp := new(models.ManualTxDataResp)
+	manualData, err := cacheRedis.Redis.GetManualTx(manualTxDataReq.PolyHash)
+	if err == nil {
+		if manualData == "" {
 			c.return400(fmt.Sprintf("%v getManualData loading", manualTxDataReq.PolyHash))
 			return
 		}
-		result,_:=hex.DecodeString(manualData)
-		c.Ctx.Output.Header("Content-Type", "application/json; charset=utf-8")
-		c.Ctx.Output.Body(result)
+		json.Unmarshal([]byte(manualData), manualTxDataResp)
+		c.Data["json"] = manualTxDataResp
+		c.ServeJSON()
+		return
 	}
 	url := relayUrl + "/api/v1/composetx?hash=" + manualTxDataReq.PolyHash
 	for i := 0; i < 2; i++ {
@@ -511,10 +511,12 @@ func (c *TransactionController) GetManualTxData() {
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
-		manualData=hex.EncodeToString(body)
-		cacheRedis.Redis.SetManualTx(manualTxDataReq.PolyHash,manualData)
-		c.Ctx.Output.Header("Content-Type", "application/json; charset=utf-8")
-		c.Ctx.Output.Body(body)
+		json.Unmarshal(body, manualTxDataResp)
+		manualData = string(body)
+		cacheRedis.Redis.SetManualTx(manualTxDataReq.PolyHash, manualData)
+
+		c.Data["json"] = manualTxDataResp
+		c.ServeJSON()
 		return
 	}
 	c.return400(fmt.Sprintf("%v getManualData timeout", manualTxDataReq.PolyHash))

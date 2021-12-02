@@ -1252,3 +1252,8 @@ func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
 type ManualTxDataReq struct {
 	PolyHash string
 }
+
+type ManualTxDataResp struct {
+	Data   string `json:"data"`
+	DstCCM string `json:"dst_ccm"`
+}
