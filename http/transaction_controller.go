@@ -18,11 +18,13 @@
 package http
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/models"
 	"time"
 
@@ -488,7 +490,18 @@ func (c *TransactionController) GetManualTxData() {
 		c.return400(fmt.Sprintf("%v was submitted to dst chain", manualTxDataReq.PolyHash))
 		return
 	}
-	url := relayUrl + "/api/v1/getManualData?polyhash=" + manualTxDataReq.PolyHash
+
+	manualData,err:=cacheRedis.Redis.GetManualTx(manualTxDataReq.PolyHash)
+	if err==nil{
+		if manualData==""{
+			c.return400(fmt.Sprintf("%v getManualData loading", manualTxDataReq.PolyHash))
+			return
+		}
+		result,_:=hex.DecodeString(manualData)
+		c.Ctx.Output.Header("Content-Type", "application/json; charset=utf-8")
+		c.Ctx.Output.Body(result)
+	}
+	url := relayUrl + "/api/v1/composetx?hash=" + manualTxDataReq.PolyHash
 	for i := 0; i < 2; i++ {
 		resp, err := http.Get(url)
 		if err != nil {
@@ -498,6 +511,8 @@ func (c *TransactionController) GetManualTxData() {
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
+		manualData=hex.EncodeToString(body)
+		cacheRedis.Redis.SetManualTx(manualTxDataReq.PolyHash,manualData)
 		c.Ctx.Output.Header("Content-Type", "application/json; charset=utf-8")
 		c.Ctx.Output.Body(body)
 		return

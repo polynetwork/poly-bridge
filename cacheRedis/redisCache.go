@@ -21,6 +21,7 @@ const (
 	_TokenBalance      = "TokenBalance"
 	TxCheckBot         = "TxCheckBot"
 	LargeTxAlarmPrefix = "LargeTxAlarm_"
+	_GetManualTxData    = "GetManualTxData_"
 )
 
 type RedisCache struct {
@@ -202,4 +203,21 @@ func (r *RedisCache) UnLock(key string) (int64, error) {
 		return 0, err
 	}
 	return cnt, nil
+}
+func (r *RedisCache) GetManualTx(polyhash string) (string, error) {
+	key := _GetManualTxData+polyhash
+	resp, err := r.c.Get(key).Result()
+	if err != nil {
+		err = errors.New(err.Error() + "cache GetManualTx")
+		return "",err
+	}
+	return resp, nil
+}
+func (r *RedisCache) SetManualTx(polyhash string,manualTx string) (err error) {
+	key := _GetManualTxData+polyhash
+	value := manualTx
+	if _, err = r.c.Set(key, value, time.Second*1).Result(); err != nil {
+		err = errors.New(err.Error() + "cache SetManualTx")
+	}
+	return
 }
