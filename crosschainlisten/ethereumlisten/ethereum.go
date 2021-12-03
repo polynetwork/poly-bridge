@@ -421,7 +421,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 		eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
 			Method:   _eth_crosschainunlock,
 			TxHash:   evt.Raw.TxHash.String()[2:],
-			RTxHash:  basedef.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
+			RTxHash:  hex.EncodeToString(evt.CrossChainTxHash),
 			Contract: hex.EncodeToString(evt.ToContract),
 			FChainId: uint32(evt.FromChainID),
 			Height:   evt.Raw.BlockNumber,
