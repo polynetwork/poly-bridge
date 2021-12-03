@@ -18,7 +18,7 @@ const (
 	_CrossTxCounter        = "CrossTxCounter"
 	_TransferStatisticResp = "TransferStatisticRes"
 	//getfee TokenBalance time.Hour*72
-	_TokenBalance      = "TokenBalance"
+	_ShortTokenBalance = "ShortTokenBalance"
 	_LongTokenBalance  = "LongTokenBalance"
 	TxCheckBot         = "TxCheckBot"
 	LargeTxAlarmPrefix = "LargeTxAlarm_"
@@ -125,7 +125,7 @@ func (r *RedisCache) GetAllTransferResp() (*models.AllTransferStatisticResp, err
 	return resp, nil
 }
 func (r *RedisCache) SetTokenBalance(dstChainId uint64, dstTokenHash string, tokenBalance *big.Int) (err error) {
-	key := formatTokenBalanceKey(_TokenBalance, dstChainId, dstTokenHash)
+	key := formatTokenBalanceKey(_ShortTokenBalance, dstChainId, dstTokenHash)
 	value := tokenBalance.String()
 	if _, err = r.c.Set(key, value, time.Second*2).Result(); err != nil {
 		err = errors.New(err.Error() + "add SetTokenBalance")
@@ -133,7 +133,7 @@ func (r *RedisCache) SetTokenBalance(dstChainId uint64, dstTokenHash string, tok
 	return
 }
 func (r *RedisCache) GetTokenBalance(dstChainId uint64, dstTokenHash string) (*big.Int, error) {
-	key := formatTokenBalanceKey(_TokenBalance, dstChainId, dstTokenHash)
+	key := formatTokenBalanceKey(_ShortTokenBalance, dstChainId, dstTokenHash)
 	resp, err := r.c.Get(key).Result()
 	if err != nil {
 		err = errors.New(err.Error() + "cache GetTokenBalance")
