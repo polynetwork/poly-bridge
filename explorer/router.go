@@ -5,8 +5,8 @@ import (
 )
 
 func GetRouter() web.LinkNamespace {
-	bot := &BotController{}
-	go bot.RunChecks()
+	//bot := &BotController{}
+	//go bot.RunChecks()
 
 	ns := web.NSNamespace("/explorer",
 		web.NSRouter("/getcrosstx", &ExplorerController{}, "get:GetCrossTx"),
