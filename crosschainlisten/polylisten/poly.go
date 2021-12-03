@@ -115,9 +115,9 @@ func (this *PolyChainListen) getECCMEventByBlockNumber(height uint64, tt uint64)
 			SrcHash: func() string {
 				switch param.FromChainID {
 				case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
-					return basedef.HexStringReverse(hex.EncodeToString(param.MakeTxParam.CrossChainID))
+					return basedef.HexStringReverse(hex.EncodeToString(param.MakeTxParam.TxHash))
 				default:
-					return hex.EncodeToString(param.MakeTxParam.CrossChainID)
+					return hex.EncodeToString(param.MakeTxParam.TxHash)
 				}
 			}(),
 			Time: tt,
