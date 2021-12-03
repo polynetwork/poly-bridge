@@ -96,27 +96,30 @@ func (c *FeeController) GetFee() {
 		}
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
-			if tokenMap.DstTokenHash=="0000000000000000000000000000000000000000"{
+			if tokenMap.DstTokenHash == "0000000000000000000000000000000000000000" {
 				getfeeethnum++
-				logs.Error("getfeeethnum is:",getfeeethnum)
+				logs.Error("getfeeethnum is:", getfeeethnum)
 			}
-			tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+				tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 				if err != nil {
-					logs.Error("qweasdredis GetTokenBalance err", err)
+					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+					if err != nil {
+						c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+							getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+						c.ServeJSON()
+						return
+					}
 				}
-			} else {
 				setErr := cacheRedis.Redis.SetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
 				if setErr != nil {
 					logs.Error("qweasdredis SetTokenBalance err", setErr)
 				}
-			}
-			if err != nil {
-				c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-					getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
-				c.ServeJSON()
-				return
+				setErr1 := cacheRedis.Redis.SetLongTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				if setErr1 != nil {
+					logs.Error("qweasdredis SetLongTokenBalance err", setErr1)
+				}
 			}
 		}
 		balance, result := new(big.Float).SetString(tokenBalance.String())
