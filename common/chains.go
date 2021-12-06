@@ -235,6 +235,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		if neo3Config == nil {
 			panic("chain is invalid")
 		}
+		logs.Info("get neo3 balance. hash=%s, ProxyContract=%s", hash, neo3Config.ProxyContract)
 		return neo3Sdk.Nep17Balance(hash, neo3Config.ProxyContract)
 	}
 	if chainId == basedef.ONT_CROSSCHAIN_ID {

@@ -105,8 +105,10 @@ func (sdk *Neo3Sdk) Nep17Balance(hash string, addr string) (*big.Int, error) {
 	nep17 := nep17.NewNep17Helper(scriptHash, sdk.client)
 	addrHash, err := helper.UInt160FromString(addr)
 	if err != nil {
+		logs.Info("Nep17Balance err: %s", err)
 		return new(big.Int).SetUint64(0), err
 	}
+	logs.Info("Nep17Balance addrHash: %+v", addrHash)
 	return nep17.BalanceOf(addrHash)
 }
 

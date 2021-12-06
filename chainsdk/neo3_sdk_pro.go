@@ -172,6 +172,7 @@ func (pro *Neo3SdkPro) Nep17Info(hash string) (string, string, int64, error) {
 func (pro *Neo3SdkPro) Nep17Balance(hash string, addr string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
+		logs.Info("Nep17Balance: info is nil")
 		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 	}
 	for info != nil {
