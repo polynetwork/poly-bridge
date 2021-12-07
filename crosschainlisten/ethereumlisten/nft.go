@@ -46,26 +46,36 @@ func isContract(addr string) bool {
 
 func (e *EthereumChainListen) isNFTECCMLockEvent(event *models.ECCMLockEvent) bool {
 	addr1 := common.HexToAddress(event.Contract)
-	addr2 := common.HexToAddress(e.ethCfg.NFTProxyContract)
-	return bytes.Equal(addr1.Bytes(), addr2.Bytes())
+	for _, contract := range e.ethCfg.NFTProxyContract {
+		addr2 := common.HexToAddress(contract)
+		if bytes.Equal(addr1.Bytes(), addr2.Bytes()) {
+			return true
+		}
+	}
+	return false
 }
 
 func (e *EthereumChainListen) isNFTECCMUnlockEvent(event *models.ECCMUnlockEvent) bool {
 	addr1 := common.HexToAddress(event.Contract)
-	addr2 := common.HexToAddress(e.ethCfg.NFTProxyContract)
-	return bytes.Equal(addr1.Bytes(), addr2.Bytes())
+	for _, contract := range e.ethCfg.NFTProxyContract {
+		addr2 := common.HexToAddress(contract)
+		if bytes.Equal(addr1.Bytes(), addr2.Bytes()) {
+			return true
+		}
+	}
+	return false
 }
 
-func (e *EthereumChainListen) NFTWrapperAddress() common.Address {
-	return common.HexToAddress(e.ethCfg.NFTWrapperContract)
+func (e *EthereumChainListen) NFTWrapperAddress(nftWrapperContract string) common.Address {
+	return common.HexToAddress(nftWrapperContract)
 }
 
 func (e *EthereumChainListen) ECCMAddress() common.Address {
 	return common.HexToAddress(e.ethCfg.CCMContract)
 }
 
-func (e *EthereumChainListen) NFTProxyAddress() common.Address {
-	return common.HexToAddress(e.ethCfg.NFTProxyContract)
+func (e *EthereumChainListen) NFTProxyAddress(nftProxyContract string) common.Address {
+	return common.HexToAddress(nftProxyContract)
 }
 
 //func (e *EthereumChainListen) HandleNFTNewBlock(
@@ -177,45 +187,46 @@ func (e *EthereumChainListen) NFTProxyAddress() common.Address {
 //}
 
 func (e *EthereumChainListen) getNFTWrapperEventByBlockNumber(
-	wrapAddrStr string,
+	wrapAddrStrs []string,
 	startHeight, endHeight uint64) (
 	[]*models.WrapperTransaction,
 	error,
 ) {
-	if !isContract(wrapAddrStr) {
-		return nil, nil
-	}
-
-	wrapAddr := common.HexToAddress(wrapAddrStr)
-	wrapperContract, err := nftwp.NewPolyNFTWrapper(wrapAddr, e.ethSdk.GetClient())
-	if err != nil {
-		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
-	}
-	opt := &bind.FilterOpts{
-		Start:   startHeight,
-		End:     &endHeight,
-		Context: context.Background(),
-	}
-
-	// get ethereum lock events from given block
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	lockEvents, err := wrapperContract.FilterPolyWrapperLock(opt, nil, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
-	}
-	for lockEvents.Next() {
-		evt := lockEvents.Event
-		wtx := wrapLockEvent2WrapTx(evt)
-		wrapperTransactions = append(wrapperTransactions, wtx)
-	}
-	speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
-	}
-	for speedupEvents.Next() {
-		evt := speedupEvents.Event
-		wtx := wrapSpeedUpEvent2WrapTx(evt)
-		wrapperTransactions = append(wrapperTransactions, wtx)
+	for _, wrapAddrStr := range wrapAddrStrs {
+		if !isContract(wrapAddrStr) {
+			return nil, nil
+		}
+		wrapAddr := common.HexToAddress(wrapAddrStr)
+		wrapperContract, err := nftwp.NewPolyNFTWrapper(wrapAddr, e.ethSdk.GetClient())
+		if err != nil {
+			return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+		}
+		opt := &bind.FilterOpts{
+			Start:   startHeight,
+			End:     &endHeight,
+			Context: context.Background(),
+		}
+
+		// get ethereum lock events from given block
+		lockEvents, err := wrapperContract.FilterPolyWrapperLock(opt, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+		}
+		for lockEvents.Next() {
+			evt := lockEvents.Event
+			wtx := wrapLockEvent2WrapTx(evt)
+			wrapperTransactions = append(wrapperTransactions, wtx)
+		}
+		speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+		}
+		for speedupEvents.Next() {
+			evt := speedupEvents.Event
+			wtx := wrapSpeedUpEvent2WrapTx(evt)
+			wrapperTransactions = append(wrapperTransactions, wtx)
+		}
 	}
 	return wrapperTransactions, nil
 }
@@ -266,46 +277,47 @@ func (e *EthereumChainListen) getNFTECCMEventByBlockNumber(
 }
 
 func (e *EthereumChainListen) getNFTProxyEventByBlockNumber(
-	proxyAddrStr string,
+	proxyAddrStrs []string,
 	startHeight, endHeight uint64) (
 	[]*models.ProxyLockEvent,
 	[]*models.ProxyUnlockEvent,
 	error,
 ) {
-	if !isContract(proxyAddrStr) {
-		return nil, nil, nil
-	}
-
-	proxyAddr := common.HexToAddress(proxyAddrStr)
-	proxyContract, err := nftlp.NewPolyNFTLockProxy(proxyAddr, e.ethSdk.GetClient())
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
-	}
-	opt := &bind.FilterOpts{
-		Start:   startHeight,
-		End:     &endHeight,
-		Context: context.Background(),
-	}
-	// get ethereum lock events from given block
 	proxyLockEvents := make([]*models.ProxyLockEvent, 0)
-	lockEvents, err := proxyContract.FilterLockEvent(opt)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
-	}
-	for lockEvents.Next() {
-		proxyLockEvent := convertLockProxyEvent(lockEvents.Event)
-		proxyLockEvents = append(proxyLockEvents, proxyLockEvent)
-	}
-
-	// ethereum unlock events from given block
 	proxyUnlockEvents := make([]*models.ProxyUnlockEvent, 0)
-	unlockEvents, err := proxyContract.FilterUnlockEvent(opt)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
-	}
-	for unlockEvents.Next() {
-		proxyUnlockEvent := convertUnlockProxyEvent(unlockEvents.Event)
-		proxyUnlockEvents = append(proxyUnlockEvents, proxyUnlockEvent)
+	for _, proxyAddrStr := range proxyAddrStrs {
+		if !isContract(proxyAddrStr) {
+			continue
+		}
+		proxyAddr := common.HexToAddress(proxyAddrStr)
+		proxyContract, err := nftlp.NewPolyNFTLockProxy(proxyAddr, e.ethSdk.GetClient())
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+		}
+		opt := &bind.FilterOpts{
+			Start:   startHeight,
+			End:     &endHeight,
+			Context: context.Background(),
+		}
+		// get ethereum lock events from given block
+		lockEvents, err := proxyContract.FilterLockEvent(opt)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+		}
+		for lockEvents.Next() {
+			proxyLockEvent := convertLockProxyEvent(lockEvents.Event)
+			proxyLockEvents = append(proxyLockEvents, proxyLockEvent)
+		}
+
+		// ethereum unlock events from given block
+		unlockEvents, err := proxyContract.FilterUnlockEvent(opt)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
+		}
+		for unlockEvents.Next() {
+			proxyUnlockEvent := convertUnlockProxyEvent(unlockEvents.Event)
+			proxyUnlockEvents = append(proxyUnlockEvents, proxyUnlockEvent)
+		}
 	}
 	return proxyLockEvents, proxyUnlockEvents, nil
 }
