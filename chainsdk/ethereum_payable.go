@@ -147,7 +147,7 @@ func (s *EthereumSdk) GetERC20Balance(asset, owner common.Address) (*big.Int, er
 	return contract.BalanceOf(nil, owner)
 }
 
-func (s*EthereumSdk) GetERC20TotalSupply(asset common.Address) (*big.Int, error) {
+func (s *EthereumSdk) GetERC20TotalSupply(asset common.Address) (*big.Int, error) {
 	contract, err := erc20.NewERC20Mintable(asset, s.backend())
 	if err != nil {
 		return nil, err
@@ -417,8 +417,8 @@ func (s *EthereumSdk) GetNFTsById(queryAddr, asset common.Address, tokenIdList [
 
 func (s *EthereumSdk) GetUnCrossChainNFTsByIndex(
 	queryAddr,
-	asset,
-	lockProxy common.Address,
+	asset common.Address,
+	lockProxies []common.Address,
 	start, length int,
 ) (map[string]string, error) {
 
@@ -428,14 +428,18 @@ func (s *EthereumSdk) GetUnCrossChainNFTsByIndex(
 	}
 
 	st, ln := big.NewInt(int64(start)), big.NewInt(int64(length))
-	ok, enc, err := inquirer.GetFilterTokensByIndex(nil, asset, lockProxy, st, ln)
-	if err != nil {
-		return nil, err
+	var encs []byte
+	for _, lockProxy := range lockProxies {
+		ok, enc, err := inquirer.GetFilterTokensByIndex(nil, asset, lockProxy, st, ln)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return nil, nil
+		}
+		encs = append(encs, enc...)
 	}
-	if !ok {
-		return nil, nil
-	}
-	res := filterTokenInfo(enc)
+	res := filterTokenInfo(encs)
 	return res, nil
 }
 

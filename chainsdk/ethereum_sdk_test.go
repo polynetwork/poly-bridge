@@ -81,7 +81,7 @@ func TestNewEthereumSdk_GetTokens(t *testing.T) {
 	assert.NoError(t, err)
 	t.Logf("total supply %d", totalSupply.Uint64())
 
-	lockProxy := common.HexToAddress("0x9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03")
+	lockProxy := []common.Address{common.HexToAddress("0x9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03")}
 	data, err := ctx.SDK.GetUnCrossChainNFTsByIndex(ctx.QueryAddress, ctx.Asset, lockProxy, start, length)
 	assert.NoError(t, err)
 	for tokenId, url := range data {

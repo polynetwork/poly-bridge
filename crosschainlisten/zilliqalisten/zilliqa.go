@@ -156,8 +156,12 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 						srcTransfer.DstChainId = toChainId
 					}
 				}
-				if strings.EqualFold(this.zliCfg.NFTProxyContract, event.Address[2:]) {
-					srcTransfer.Standard = models.TokenTypeErc721
+
+				for _, contract := range this.zliCfg.NFTProxyContract {
+					if strings.EqualFold(contract, event.Address[2:]) {
+						srcTransfer.Standard = models.TokenTypeErc721
+						break
+					}
 				}
 			}
 		}
@@ -225,8 +229,11 @@ func (this *ZilliqaChainListen) getzilliqaDstTransactionByBlockNumber(height uin
 						dstTransfer.Amount = models.NewBigInt(amount.BigInt())
 					}
 				}
-				if strings.EqualFold(this.zliCfg.NFTProxyContract, event.Address[2:]) {
-					dstTransfer.Standard = models.TokenTypeErc721
+				for _, contract := range this.zliCfg.NFTProxyContract {
+					if strings.EqualFold(contract, event.Address[2:]) {
+						dstTransfer.Standard = models.TokenTypeErc721
+						break
+					}
 				}
 			}
 		}

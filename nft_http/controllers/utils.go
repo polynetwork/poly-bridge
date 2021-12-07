@@ -169,7 +169,8 @@ func (s *TransactionCounter) Number() int64 {
 
 func selectNodeAndWrapper(chainId uint64) (
 	pro *chainsdk.EthereumSdkPro,
-	inquirer, lockProxy common.Address,
+	inquirer common.Address,
+	lockProxies []common.Address,
 	err error,
 ) {
 
@@ -195,7 +196,9 @@ func selectNodeAndWrapper(chainId uint64) (
 		inquirerAddrs[chainId] = inquirer
 	}
 
-	lockProxy = common.HexToAddress(cfg.NFTProxyContract)
+	for _, contract := range cfg.NFTProxyContract {
+		lockProxies = append(lockProxies, common.HexToAddress(contract))
+	}
 	return
 }
 
