@@ -101,7 +101,7 @@ func (c *InfoController) Home() {
 }
 
 func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
-	sdk, inquirer, lockProxy, err := selectNodeAndWrapper(asset.ChainId)
+	sdk, inquirer, lockProxies, err := selectNodeAndWrapper(asset.ChainId)
 	if err != nil {
 		return false, err
 	}
@@ -117,7 +117,7 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 
 	list := make([]*Item, 0)
 	for start := 0; start < maxNum; start += pageSize {
-		tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(inquirer, assetAddr, lockProxy, start, pageSize)
+		tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(inquirer, assetAddr, lockProxies, start, pageSize)
 		if len(tokenUrls) == 0 {
 			break
 		}

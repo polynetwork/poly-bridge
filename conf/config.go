@@ -94,8 +94,8 @@ type ChainListenConfig struct {
 	CCMContract        string
 	ProxyContract      string
 	OtherProxyContract []*OtherItemProxy
-	NFTWrapperContract string
-	NFTProxyContract   string
+	NFTWrapperContract []string
+	NFTProxyContract   []string
 	NFTQueryContract   string
 	SwapContract       string
 }
@@ -305,8 +305,12 @@ func initPolyProxy() {
 		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
 		PolyProxy[strings.ToUpper(v.SwapContract)] = true
 		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.SwapContract))] = true
-		PolyProxy[strings.ToUpper(v.NFTProxyContract)] = true
-		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.NFTProxyContract))] = true
+		for _, contract := range v.NFTProxyContract {
+			PolyProxy[strings.ToUpper(contract)] = true
+		}
+		for _, contract := range v.NFTProxyContract {
+			PolyProxy[strings.ToUpper(basedef.HexStringReverse(contract))] = true
+		}
 	}
 	if len(PolyProxy) == 0 {
 		panic("init PolyProxy err,polyProxy is nil")
