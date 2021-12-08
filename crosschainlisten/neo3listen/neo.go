@@ -173,10 +173,10 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						dstUser := hex.EncodeToString(basedef.HexReverse(decodeDstUserBytes))
 
 						amount := big.NewInt(0)
-						if states[4].Type == "Integer" {
-							amount, _ = new(big.Int).SetString(states[4].Value.(string), 10)
+						if states[5].Type == "Integer" {
+							amount, _ = new(big.Int).SetString(states[5].Value.(string), 10)
 						} else {
-							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(states[4].Value.(string)), 16)
+							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(states[5].Value.(string)), 16)
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 							Hash:         tx.Hash[2:],
