@@ -15,7 +15,7 @@ type PolyBridgeInfoResp struct {
 type ContractEntrance struct {
 	ChainId         uint64
 	ChainName       string
-	WrapperContract string
+	WrapperContract []string
 }
 
 type ErrorRsp struct {

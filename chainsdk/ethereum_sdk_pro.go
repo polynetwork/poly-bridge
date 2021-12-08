@@ -496,7 +496,8 @@ func (pro *EthereumSdkPro) GetAndCheckTokenUrl(
 }
 
 func (pro *EthereumSdkPro) GetUnCrossChainNFTsByIndex(
-	inquirer, asset, lockProxy common.Address,
+	inquirer, asset common.Address,
+	lockProxies []common.Address,
 	start, length int,
 ) (mp map[string]string, err error) {
 
@@ -505,7 +506,7 @@ func (pro *EthereumSdkPro) GetUnCrossChainNFTsByIndex(
 		return nil, fmt.Errorf("all node is not working")
 	}
 	for info != nil {
-		if mp, err = info.sdk.GetUnCrossChainNFTsByIndex(inquirer, asset, lockProxy, start, length); err != nil {
+		if mp, err = info.sdk.GetUnCrossChainNFTsByIndex(inquirer, asset, lockProxies, start, length); err != nil {
 			info = pro.reset(info)
 		} else {
 			return
