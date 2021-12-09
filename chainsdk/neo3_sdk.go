@@ -108,7 +108,7 @@ func (sdk *Neo3Sdk) Nep17Balance(hash string, addr string) (*big.Int, error) {
 		logs.Info("Nep17Balance err: %s", err)
 		return new(big.Int).SetUint64(0), err
 	}
-	logs.Info("Nep17Balance addrHash: %+v", addrHash)
+	logs.Info("Nep17Balance， scriptHash=%+v, addrHash: %+v", *scriptHash, addrHash)
 	return nep17.BalanceOf(addrHash)
 }
 
