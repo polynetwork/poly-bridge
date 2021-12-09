@@ -20,6 +20,7 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -63,6 +64,7 @@ type UpdateConfig struct {
 }
 
 func NewUpdateConfig(filePath string) *UpdateConfig {
+	logs.Info("file patch: %s", filePath)
 	fileContent, err := basedef.ReadFile(filePath)
 	if err != nil {
 		fmt.Errorf("NewServiceConfig: failed, err: %s", err)

@@ -35,14 +35,14 @@ import (
 	"github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/beego/v2/server/web/filter/cors"
 	"github.com/urfave/cli"
-	http2 "net/http"
+	//http2 "net/http"
 	_ "net/http/pprof"
 )
 
 func main() {
-	go func() {
-		http2.ListenAndServe("0.0.0.0:3344", nil)
-	}()
+	//go func() {
+	//	http2.ListenAndServe("0.0.0.0:3344", nil)
+	//}()
 	if err := setupApp().Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
