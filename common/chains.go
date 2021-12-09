@@ -25,6 +25,7 @@ var (
 	fantomSdk     *chainsdk.EthereumSdkPro
 	avaxSdk       *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
+	metisSdk      *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -168,6 +169,14 @@ func newChainSdks(config *conf.Config) {
 		urls := optimisticConfig.GetNodesUrl()
 		optimisticSdk = chainsdk.NewEthereumSdkPro(urls, optimisticConfig.ListenSlot, optimisticConfig.ChainId)
 	}
+	{
+		metisConfig := config.GetChainListenConfig(basedef.METIS_CROSSCHAIN_ID)
+		if metisConfig == nil {
+			panic("metis chain is invalid")
+		}
+		urls := metisConfig.GetNodesUrl()
+		metisSdk = chainsdk.NewEthereumSdkPro(urls, metisConfig.ListenSlot, metisConfig.ChainId)
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -277,6 +286,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return optimisticSdk.Erc20Balance(hash, optimisticConfig.ProxyContract)
 	}
+	if chainId == basedef.METIS_CROSSCHAIN_ID {
+		metisConfig := config.GetChainListenConfig(basedef.METIS_CROSSCHAIN_ID)
+		if metisConfig == nil {
+			panic("metis chain is invalid")
+		}
+		return metisSdk.Erc20Balance(hash, metisConfig.ProxyContract)
+	}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
 		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
 		if conf == nil {
@@ -373,6 +389,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return optimisticSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.METIS_CROSSCHAIN_ID {
+		metisConfig := config.GetChainListenConfig(basedef.METIS_CROSSCHAIN_ID)
+		if metisConfig == nil {
+			panic("metis chain GetTotalSupply invalid")
+		}
+		return metisSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -418,6 +441,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return avaxSdk.Erc20Balance(hash, proxy)
 	case basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		return optimisticSdk.Erc20Balance(hash, proxy)
+	case basedef.METIS_CROSSCHAIN_ID:
+		return metisSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
