@@ -16,7 +16,7 @@ var (
 	hecoSdk       *chainsdk.EthereumSdkPro
 	okSdk         *chainsdk.EthereumSdkPro
 	neoSdk        *chainsdk.NeoSdkPro
-	neo3Sdk        *chainsdk.Neo3SdkPro
+	neo3Sdk       *chainsdk.Neo3SdkPro
 	ontologySdk   *chainsdk.OntologySdkPro
 	maticSdk      *chainsdk.EthereumSdkPro
 	swthSdk       *chainsdk.SwitcheoSdkPro
@@ -227,6 +227,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		logs.Info("get neo3 balance. hash=%s, ProxyContract=%s", hash, neo3Config.ProxyContract)
+		hash = basedef.HexStringReverse(hash)
 		return neo3Sdk.Nep17Balance(hash, neo3Config.ProxyContract)
 	}
 	if chainId == basedef.ONT_CROSSCHAIN_ID {
