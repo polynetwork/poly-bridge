@@ -25,6 +25,8 @@ var (
 	fantomSdk     *chainsdk.EthereumSdkPro
 	avaxSdk       *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
+	zionmainSdk   *chainsdk.EthereumSdkPro
+	sidechainSdk  *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -44,6 +46,22 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := ethereumConfig.GetNodesUrl()
 		ethereumSdk = chainsdk.NewEthereumSdkPro(urls, ethereumConfig.ListenSlot, ethereumConfig.ChainId)
+	}
+	{
+		zionmainConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
+		if zionmainConfig == nil {
+			panic("zionmain chain is invalid")
+		}
+		urls := zionmainConfig.GetNodesUrl()
+		zionmainSdk = chainsdk.NewEthereumSdkPro(urls, zionmainConfig.ListenSlot, zionmainConfig.ChainId)
+	}
+	{
+		sidechainConfig := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
+		if sidechainConfig == nil {
+			panic("sidechain chain is invalid")
+		}
+		urls := sidechainConfig.GetNodesUrl()
+		sidechainSdk = chainsdk.NewEthereumSdkPro(urls, sidechainConfig.ListenSlot, sidechainConfig.ChainId)
 	}
 	{
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
@@ -168,6 +186,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return ethereumSdk.Erc20Balance(hash, ethereumConfig.ProxyContract)
 	}
+	if chainId == basedef.ZIONMAIN_CROSSCHAIN_ID {
+		zionmainConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
+		if zionmainConfig == nil {
+			panic("chain is invalid")
+		}
+		return zionmainSdk.Erc20Balance(hash, zionmainConfig.ProxyContract)
+	}
+	if chainId == basedef.SIDECHAIN_CROSSCHAIN_ID {
+		sidechainConfig := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
+		if sidechainConfig == nil {
+			panic("chain is invalid")
+		}
+		return sidechainSdk.Erc20Balance(hash, sidechainConfig.ProxyContract)
+	}
 	if chainId == basedef.MATIC_CROSSCHAIN_ID {
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
 		if maticConfig == nil {
@@ -271,6 +303,20 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return ethereumSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.ZIONMAIN_CROSSCHAIN_ID {
+		zionmainConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
+		if zionmainConfig == nil {
+			panic("zionmain chain is invalid")
+		}
+		return zionmainSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.SIDECHAIN_CROSSCHAIN_ID {
+		sidechainConfig := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
+		if sidechainConfig == nil {
+			panic("sidechain chain is invalid")
+		}
+		return sidechainSdk.Erc20TotalSupply(hash)
+	}
 	if chainId == basedef.BSC_CROSSCHAIN_ID {
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 		if bscConfig == nil {
@@ -361,6 +407,10 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		return ethereumSdk.Erc20Balance(hash, proxy)
+	case basedef.ZIONMAIN_CROSSCHAIN_ID:
+		return zionmainSdk.Erc20Balance(hash, proxy)
+	case basedef.SIDECHAIN_CROSSCHAIN_ID:
+		return sidechainSdk.Erc20Balance(hash, proxy)
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.Erc20Balance(hash, proxy)
 	case basedef.BSC_CROSSCHAIN_ID:

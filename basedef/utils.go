@@ -97,6 +97,12 @@ func Hash2Address(chainId uint64, value string) string {
 			return addr
 		}
 		return value
+	} else if chainId == ZIONMAIN_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
+	} else if chainId == SIDECHAIN_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -174,6 +180,12 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == ZILLIQA_CROSSCHAIN_ID {
 		addr, err := bech32.FromBech32Addr(value)
 		return addr, err
+	} else if chainId == ZIONMAIN_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == SIDECHAIN_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
@@ -197,7 +209,11 @@ func ConfirmEnv(env string) {
 func GetChainName(id uint64) string {
 	switch id {
 	case ZION_CROSSCHAIN_ID:
-		return "Poly"
+		return "ZION"
+	case ZIONMAIN_CROSSCHAIN_ID:
+		return "ZIONMAIN"
+	case SIDECHAIN_CROSSCHAIN_ID:
+		return "SIDECHAIN"
 	case ETHEREUM_CROSSCHAIN_ID:
 		return "Ethereum"
 	case ONT_CROSSCHAIN_ID:
