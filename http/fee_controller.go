@@ -96,7 +96,7 @@ func (c *FeeController) GetFee() {
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
-			logs.Info("#####get balance. dst_chain id=%d, dst_hash=%s, balance=%s, err=%s", tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance.String(), err)
+			logs.Info("#####get balance. dst_chain id=%d, dst_hash=%s, balance=%s", tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance.String())
 
 			//tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 			//if err != nil {
