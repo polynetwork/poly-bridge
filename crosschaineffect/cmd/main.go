@@ -105,7 +105,7 @@ func startServer(ctx *cli.Context) {
 		conf, _ := json.Marshal(config)
 		logs.Info("%s\n", string(conf))
 	}
-	common.SetupChainsSDK(config, uint64(0), "cmdgetfee0num")
+	common.SetupChainsSDK(config)
 	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.RedisConfig)
 }
 
