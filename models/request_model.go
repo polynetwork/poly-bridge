@@ -1200,7 +1200,12 @@ type BotTx struct {
 }
 
 func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
-	v := BotTx{Hash: tx.SrcHash, PolyHash: tx.PolyHash}
+	// in case src transaction is missing
+	hash := tx.SrcHash
+	if hash == "" {
+		hash = tx.PolyHash
+	}
+	v := BotTx{Hash: hash, PolyHash: tx.PolyHash}
 	if c := tx.WrapperTransaction; c != nil {
 		v.SrcChainId = c.SrcChainId
 		v.DstChainId = c.DstChainId

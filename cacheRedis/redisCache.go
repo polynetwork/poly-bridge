@@ -26,6 +26,7 @@ const (
 	MarkTxAsPaidPrefix = "MarkTxAsPaid_"
 	MarkTxAsSkipPrefix = "MarkTxAsSkip_"
 	_GetManualTxData   = "GetManualTxData_"
+	StuckTxAlarmHasSendPrefix = "StuckTxAlarmHasSendPrefix_"
 )
 
 type RedisCache struct {

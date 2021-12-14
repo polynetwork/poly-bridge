@@ -565,11 +565,10 @@ func (c *BotController) checkTxs() (err error) {
 		return err
 	}
 	for _, tx := range txs {
-		_, ok := ALARMS[tx.SrcHash]
-		if ok {
-			continue
+		if existed, err := cacheRedis.Redis.Exists(cacheRedis.StuckTxAlarmHasSendPrefix + strings.ToLower(tx.SrcHash)); err == nil && existed {
+			logs.Info("stuck TX alarm has been sent: %s", tx.SrcHash)
+			return
 		}
-		ALARMS[tx.SrcHash] = struct{}{}
 
 		srcPolyDstRelation, err := getSrcPolyDstRelation(tx)
 		if err != nil {
@@ -619,25 +618,14 @@ func (c *BotController) checkTxs() (err error) {
 
 		err = c.PostDingCard(title, body, btns)
 		if err != nil {
-			logs.Error("Post dingtalk error %s", err)
+			logs.Error("send tx stuck ding alarm error. hash: %s, err:", tx.SrcHash, err)
+		} else {
+			if _, err := cacheRedis.Redis.Set(cacheRedis.StuckTxAlarmHasSendPrefix+strings.ToLower(tx.PolyHash), "done", time.Hour*24*time.Duration(conf.GlobalConfig.BotConfig.CheckFrom)); err != nil {
+				logs.Error("mark tx stuck alarm hash been sent error. hash: %s err: %s", entry.Hash, err)
+			}
 		}
 	}
 
-	/*
-		title := fmt.Sprintf("### Total %d, page %d/%d page size %d", count, pageNo, pages, len(txs))
-		list := make([]string, len(txs))
-		for i, tx := range txs {
-			pass := "Lack"
-			fee, ok := fees[tx.SrcHash]
-			if ok && fee.Pass {
-				pass = "Pass"
-			}
-			tsp := time.Unix(int64(tx.WrapperTransaction.Time), 0).Format(time.RFC3339)
-			list[i] = fmt.Sprintf("- %s %s fee_paid(%s) %v fee_min %v", tsp, tx.SrcHash, pass, fee.Paid, fee.Min)
-		}
-		body := strings.Join(list, "\n")
-		return c.PostDing(title, body)
-	*/
 	return nil
 }
 
