@@ -505,66 +505,91 @@ func (s *TransactionRsp) instance(
 			s.FeeAmount = feeAmount.String()
 		}
 	}
+
+	srcTransactionState := &TransactionStateRsp{
+		Hash:    "",
+		ChainId: transaction.WrapperTransaction.SrcChainId,
+		Blocks:  0,
+		Time:    0,
+	}
+	polyTransactionState := &TransactionStateRsp{
+		Hash:    "",
+		ChainId: 0,
+		Blocks:  0,
+		Time:    0,
+	}
+	dstTransactionState := &TransactionStateRsp{
+		Hash:    "",
+		ChainId: transaction.WrapperTransaction.DstChainId,
+		Blocks:  0,
+		Time:    0,
+	}
+
+	s.TransactionState = append(s.TransactionState, srcTransactionState)
+	s.TransactionState = append(s.TransactionState, polyTransactionState)
+	s.TransactionState = append(s.TransactionState, dstTransactionState)
+
 	if transaction.SrcTransaction != nil {
-		s.TransactionState = append(s.TransactionState, &TransactionStateRsp{
-			Hash:    transaction.SrcTransaction.Hash,
-			ChainId: transaction.SrcTransaction.ChainId,
-			Blocks:  transaction.SrcTransaction.Height,
-			Time:    transaction.SrcTransaction.Time,
-		})
-	} else {
-		s.TransactionState = append(s.TransactionState, &TransactionStateRsp{
-			Hash:    "",
-			ChainId: transaction.WrapperTransaction.SrcChainId,
-			Blocks:  0,
-			Time:    0,
-		})
+		height := transaction.SrcTransaction.Height
+		srcTransactionState.Hash = transaction.SrcTransaction.Hash
+		srcTransactionState.ChainId = transaction.SrcTransaction.ChainId
+		srcTransactionState.Time = transaction.SrcTransaction.Time
+
+		srcChain, ok := chainsMap[srcTransactionState.ChainId]
+		if ok {
+			srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
+			srcTransactionState.Blocks = srcChain.Height - height
+			if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
+				srcTransactionState.Blocks = srcTransactionState.NeedBlocks
+			}
+		}
 	}
 	if transaction.PolyTransaction != nil {
-		s.TransactionState = append(s.TransactionState, &TransactionStateRsp{
-			Hash:    transaction.PolyTransaction.Hash,
-			ChainId: transaction.PolyTransaction.ChainId,
-			Blocks:  transaction.PolyTransaction.Height,
-			Time:    transaction.PolyTransaction.Time,
-		})
-	} else {
-		s.TransactionState = append(s.TransactionState, &TransactionStateRsp{
-			Hash:    "",
-			ChainId: 0,
-			Blocks:  0,
-			Time:    0,
-		})
-	}
-	if transaction.DstTransaction != nil {
-		s.TransactionState = append(s.TransactionState, &TransactionStateRsp{
-			Hash:    transaction.DstTransaction.Hash,
-			ChainId: transaction.DstTransaction.ChainId,
-			Blocks:  transaction.DstTransaction.Height,
-			Time:    transaction.DstTransaction.Time,
-		})
-	} else {
-		s.TransactionState = append(s.TransactionState, &TransactionStateRsp{
-			Hash:    "",
-			ChainId: transaction.WrapperTransaction.DstChainId,
-			Blocks:  0,
-			Time:    0,
-		})
-	}
-	for _, state := range s.TransactionState {
-		chain, ok := chainsMap[state.ChainId]
+		polyTransactionState.Hash = transaction.PolyTransaction.Hash
+		polyTransactionState.ChainId = transaction.PolyTransaction.ChainId
+		polyTransactionState.Time = transaction.PolyTransaction.Time
+
+		polyChain, ok := chainsMap[polyTransactionState.ChainId]
 		if ok {
-			if state.ChainId == transaction.WrapperTransaction.DstChainId {
-				state.NeedBlocks = 1
-			} else {
-				state.NeedBlocks = chain.BackwardBlockNumber
+			polyTransactionState.NeedBlocks = polyChain.BackwardBlockNumber
+			polyTransactionState.Blocks = polyChain.Height - transaction.PolyTransaction.Height
+			if polyTransactionState.Blocks > polyTransactionState.NeedBlocks {
+				polyTransactionState.Blocks = polyTransactionState.NeedBlocks
 			}
-			if state.Blocks <= 1 {
-				continue
-			}
-			state.Blocks = chain.Height - state.Blocks
-			if state.Blocks > state.NeedBlocks {
-				state.Blocks = state.NeedBlocks
-			}
+		}
+
+		srcChain, ok := chainsMap[srcTransactionState.ChainId]
+		if ok {
+			srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
+			srcTransactionState.Blocks = srcTransactionState.NeedBlocks
+		}
+	}
+
+	if transaction.DstTransaction != nil {
+		dstTransactionState.Hash = transaction.DstTransaction.Hash
+		dstTransactionState.ChainId = transaction.DstTransaction.ChainId
+		dstTransactionState.Time = transaction.DstTransaction.Time
+		dstTransactionState.NeedBlocks = 1
+
+		dstTransactionState.Blocks = transaction.DstTransaction.Height
+		dstChain, ok := chainsMap[dstTransactionState.ChainId]
+		if ok {
+			dstTransactionState.Blocks = dstChain.Height - transaction.DstTransaction.Height
+		}
+		if dstTransactionState.Blocks > dstTransactionState.NeedBlocks {
+			dstTransactionState.Blocks = dstTransactionState.NeedBlocks
+		}
+
+		polyChain, ok := chainsMap[polyTransactionState.ChainId]
+		if ok {
+			polyTransactionState.NeedBlocks = polyChain.BackwardBlockNumber
+			polyTransactionState.Blocks = polyTransactionState.NeedBlocks
+		}
+
+		srcChain, ok := chainsMap[srcTransactionState.ChainId]
+		if ok {
+			srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
+			srcTransactionState.Blocks = srcTransactionState.NeedBlocks
 		}
 	}
 	return s
