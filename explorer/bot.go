@@ -567,7 +567,7 @@ func (c *BotController) checkTxs() (err error) {
 	for _, tx := range txs {
 		if existed, err := cacheRedis.Redis.Exists(cacheRedis.StuckTxAlarmHasSendPrefix + strings.ToLower(tx.SrcHash)); err == nil && existed {
 			logs.Info("stuck TX alarm has been sent: %s", tx.SrcHash)
-			return err
+			continue
 		}
 
 		srcPolyDstRelation, err := getSrcPolyDstRelation(tx)
