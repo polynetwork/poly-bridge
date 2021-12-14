@@ -74,7 +74,7 @@ func run(ctx *cli.Context) {
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
 	basedef.ConfirmEnv(config.Env)
-	common.SetupChainsSDK(config, uint64(0), "httpgetfee0num")
+	common.SetupChainsSDK(config)
 
 	web.InsertFilter("*", web.BeforeRouter, cors.Allow(
 		&cors.Options{
