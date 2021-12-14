@@ -25,6 +25,7 @@ const (
 	LargeTxList        = "LargeTxList"
 	MarkTxAsPaidPrefix = "MarkTxAsPaid_"
 	MarkTxAsSkipPrefix = "MarkTxAsSkip_"
+	StuckTxAlarmHasSendPrefix = "StuckTxAlarmHasSendPrefix_"
 )
 
 type RedisCache struct {
