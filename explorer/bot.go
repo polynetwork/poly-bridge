@@ -565,18 +565,17 @@ func (c *BotController) checkTxs() (err error) {
 		return err
 	}
 	for _, tx := range txs {
-		if existed, err := cacheRedis.Redis.Exists(cacheRedis.StuckTxAlarmHasSendPrefix + strings.ToLower(tx.SrcHash)); err == nil && existed {
-			logs.Info("stuck TX alarm has been sent: %s", tx.SrcHash)
-			continue
-		}
-
 		srcPolyDstRelation, err := getSrcPolyDstRelation(tx)
 		if err != nil {
 			logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, err)
 			continue
 		}
-
 		entry := models.ParseBotTx(srcPolyDstRelation, fees)
+		if existed, err := cacheRedis.Redis.Exists(cacheRedis.StuckTxAlarmHasSendPrefix + strings.ToLower(entry.Hash)); err == nil && existed {
+			logs.Info("stuck TX alarm has been sent: %s", tx.SrcHash)
+			continue
+		}
+
 		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
 		body := fmt.Sprintf(
 			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v\n- Poly %v\n",
@@ -620,7 +619,7 @@ func (c *BotController) checkTxs() (err error) {
 		if err != nil {
 			logs.Error("send tx stuck ding alarm error. hash: %s, err:", tx.SrcHash, err)
 		} else {
-			if _, err := cacheRedis.Redis.Set(cacheRedis.StuckTxAlarmHasSendPrefix+strings.ToLower(tx.PolyHash), "done", time.Hour*24*time.Duration(conf.GlobalConfig.BotConfig.CheckFrom)); err != nil {
+			if _, err := cacheRedis.Redis.Set(cacheRedis.StuckTxAlarmHasSendPrefix+strings.ToLower(entry.Hash), "done", time.Hour*24*time.Duration(conf.GlobalConfig.BotConfig.CheckFrom)); err != nil {
 				logs.Error("mark tx stuck alarm hash been sent error. hash: %s err: %s", entry.Hash, err)
 			}
 		}
