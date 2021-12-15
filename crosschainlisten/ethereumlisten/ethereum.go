@@ -205,6 +205,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				srcTransfer.DstChainId = uint64(lock.ToChainId)
 				srcTransfer.DstAsset = toAssetHash
 				srcTransfer.DstUser = lock.ToAddress
+				logs.Info("qqqsrcTransferDstUser is:",srcTransfer.DstUser)
 				srcTransaction.SrcTransfer = srcTransfer
 				if this.isNFTECCMLockEvent(lockEvent) {
 					srcTransaction.Standard = models.TokenTypeErc721
