@@ -219,6 +219,9 @@ func (fl *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 				continue
 			}
 
+			logs.Info("op minFee=%s, op maxFee=%s, op proxyFee=%s", minFee.String(), maxFee.String(), proxyFee.String())
+			logs.Info("eth minFee=%s, eth maxFee=%s, eth proxyFee=%s", ethMinFee.String(), ethMaxFee.String(), ethProxyFee.String())
+
 			minFee = new(big.Int).Add(minFee, ethMinFee)
 			maxFee = new(big.Int).Add(maxFee, ethMaxFee)
 			proxyFee = new(big.Int).Add(proxyFee, ethProxyFee)
