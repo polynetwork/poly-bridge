@@ -107,6 +107,8 @@ func (c *FeeController) GetFee() {
 		ethTokenFee = new(big.Float).Quo(ethTokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 		ethTokenFeeWithPrecision := new(big.Float).Mul(ethTokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 
+		logs.Info("opTokenFee=%s, ethTokenFee=%s", tokenFee.String(), ethTokenFee.String())
+
 		tokenFee = new(big.Float).Add(tokenFee, ethTokenFee)
 		tokenFeeWithPrecision = new(big.Float).Add(tokenFeeWithPrecision, ethTokenFeeWithPrecision)
 	}
