@@ -70,6 +70,47 @@ func (c *FeeController) GetFee() {
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 
+	if basedef.OPTIMISTIC_CROSSCHAIN_ID == getFeeReq.DstChainId {
+		ethChainFee := new(models.ChainFee)
+		res = db.Where("chain_id = ?", basedef.ETHEREUM_CROSSCHAIN_ID).Preload("TokenBasic").First(ethChainFee)
+		if res.RowsAffected == 0 {
+			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", basedef.ETHEREUM_CROSSCHAIN_ID))
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
+
+		var ethFeeListenConfig *conf.FeeListenConfig
+		for _, fl := range conf.GlobalConfig.FeeListenConfig {
+			if fl.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+				ethFeeListenConfig = fl
+				break
+			}
+			continue
+		}
+
+		if ethFeeListenConfig == nil {
+			c.Data["json"] = models.MakeErrorRsp("get Ethereum fee listen config failed")
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
+
+		ethProxyFee := new(big.Float).SetInt(&ethChainFee.ProxyFee.Int)
+		ethGasPrice := new(big.Float).Quo(ethProxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+		ethGasPrice = new(big.Float).Quo(ethGasPrice, new(big.Float).SetInt64(ethFeeListenConfig.GasLimit))
+		ethProxyFee = new(big.Float).Mul(ethGasPrice, new(big.Float).SetInt64(22000*1.5))
+
+		ethUsdtFee := new(big.Float).Mul(ethProxyFee, new(big.Float).SetInt64(ethChainFee.TokenBasic.Price))
+		ethUsdtFee = new(big.Float).Quo(ethUsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		ethTokenFee := new(big.Float).Mul(ethUsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		ethTokenFee = new(big.Float).Quo(ethTokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
+		ethTokenFeeWithPrecision := new(big.Float).Mul(ethTokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
+
+		tokenFee = new(big.Float).Add(tokenFee, ethTokenFee)
+		tokenFeeWithPrecision = new(big.Float).Add(tokenFeeWithPrecision, ethTokenFeeWithPrecision)
+	}
+
 	{
 		chainFeeJson, _ := json.Marshal(chainFee)
 		logs.Error("chain fee: %s", string(chainFeeJson))

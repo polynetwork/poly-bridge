@@ -210,23 +210,6 @@ func (fl *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 			logs.Error("get fee of chain: %d err: %v", chainId, err)
 			continue
 		}
-
-		if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
-			ethQuery := fl.fees[basedef.ETHEREUM_CROSSCHAIN_ID]
-			ethMinFee, ethMaxFee, ethProxyFee, err := ethQuery.GetFee()
-			if err != nil {
-				logs.Error("get fee of chain: %d err: %v", chainId, err)
-				continue
-			}
-
-			logs.Info("op minFee=%s, op maxFee=%s, op proxyFee=%s", minFee.String(), maxFee.String(), proxyFee.String())
-			logs.Info("eth minFee=%s, eth maxFee=%s, eth proxyFee=%s", ethMinFee.String(), ethMaxFee.String(), ethProxyFee.String())
-
-			minFee = new(big.Int).Add(minFee, ethMinFee)
-			maxFee = new(big.Int).Add(maxFee, ethMaxFee)
-			proxyFee = new(big.Int).Add(proxyFee, ethProxyFee)
-		}
-
 		for _, feeListenCfg := range listenFeeCfgs {
 			if feeListenCfg.ChainId == chainId {
 				metrics.Record(minFee, "minfee_chain.%v", chainId)
