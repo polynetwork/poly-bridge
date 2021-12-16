@@ -96,10 +96,10 @@ func assembleDstTransaction(
 func wrapLockEvent2WrapTx(evt *nftwp.PolyNFTWrapperPolyWrapperLock) *models.WrapperTransaction {
 	return &models.WrapperTransaction{
 		Hash:         evt.Raw.TxHash.String()[2:],
-		User:         strings.ToLower(evt.Sender.String()[2:]),
+		User:         models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
 		DstChainId:   evt.ToChainId,
-		DstUser:      strings.ToLower(evt.ToAddress.String()[2:]),
-		FeeTokenHash: strings.ToLower(evt.FeeToken.String()[2:]),
+		DstUser:      models.FormatString(strings.ToLower(evt.ToAddress.String()[2:])),
+		FeeTokenHash: models.FormatString(strings.ToLower(evt.FeeToken.String()[2:])),
 		FeeAmount:    models.NewBigInt(evt.Fee),
 		ServerId:     evt.Id.Uint64(),
 		BlockHeight:  evt.Raw.BlockNumber,
@@ -110,8 +110,8 @@ func wrapLockEvent2WrapTx(evt *nftwp.PolyNFTWrapperPolyWrapperLock) *models.Wrap
 func wrapSpeedUpEvent2WrapTx(evt *nftwp.PolyNFTWrapperPolyWrapperSpeedUp) *models.WrapperTransaction {
 	return &models.WrapperTransaction{
 		Hash:         evt.TxHash.String(),
-		User:         evt.Sender.String(),
-		FeeTokenHash: evt.FeeToken.String(),
+		User:         models.FormatString(evt.Sender.String()),
+		FeeTokenHash: models.FormatString(evt.FeeToken.String()),
 		FeeAmount:    models.NewBigInt(evt.Efee),
 		Standard:     models.TokenTypeErc721,
 	}

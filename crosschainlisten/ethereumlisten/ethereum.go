@@ -177,7 +177,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Height = lockEvent.Height
 			srcTransaction.User = models.FormatString(lockEvent.User)
 			srcTransaction.DstChainId = uint64(lockEvent.Tchain)
-			srcTransaction.Contract = lockEvent.Contract
+			srcTransaction.Contract = models.FormatString(lockEvent.Contract)
 			srcTransaction.Key = lockEvent.Txid
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			var lock *models.ProxyLockEvent
@@ -342,10 +342,10 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 		evt := lockEvents.Event
 		wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 			Hash:         evt.Raw.TxHash.String()[2:],
-			User:         strings.ToLower(evt.Sender.String()[2:]),
+			User:         models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
 			DstChainId:   evt.ToChainId,
-			DstUser:      hex.EncodeToString(evt.ToAddress),
-			FeeTokenHash: strings.ToLower(evt.FromAsset.String()[2:]),
+			DstUser:      models.FormatString(hex.EncodeToString(evt.ToAddress)),
+			FeeTokenHash: models.FormatString(strings.ToLower(evt.FromAsset.String()[2:])),
 			FeeAmount:    models.NewBigInt(evt.Fee),
 			ServerId:     evt.Id.Uint64(),
 			BlockHeight:  evt.Raw.BlockNumber,
@@ -359,8 +359,8 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 		evt := speedupEvents.Event
 		wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 			Hash:         evt.TxHash.String(),
-			User:         evt.Sender.String(),
-			FeeTokenHash: evt.FromAsset.String(),
+			User:         models.FormatString(evt.Sender.String()),
+			FeeTokenHash: models.FormatString(evt.FromAsset.String()),
 			FeeAmount:    models.NewBigInt(evt.Efee),
 		})
 	}
