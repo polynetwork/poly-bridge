@@ -99,10 +99,13 @@ func (c *FeeController) GetFee() {
 		ethProxyFee := new(big.Float).SetInt(&ethChainFee.ProxyFee.Int)
 		ethGasPrice := new(big.Float).Quo(ethProxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 		ethGasPrice = new(big.Float).Quo(ethGasPrice, new(big.Float).SetInt64(ethFeeListenConfig.GasLimit))
+		ethProxyFee = new(big.Float).Mul(ethGasPrice, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 		ethProxyFee = new(big.Float).Mul(ethGasPrice, new(big.Float).SetInt64(22000*1.5))
-
-		ethUsdtFee := new(big.Float).Mul(ethProxyFee, new(big.Float).SetInt64(ethChainFee.TokenBasic.Price))
+		ethUsdtFee := new(big.Float).Mul(ethProxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+		ethUsdtFee = new(big.Float).Mul(ethProxyFee, new(big.Float).SetInt64(ethChainFee.TokenBasic.Price))
 		ethUsdtFee = new(big.Float).Quo(ethUsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		logs.Info("ethUsdtFee=%s", tokenFee.String(), ethUsdtFee.String())
+
 		ethTokenFee := new(big.Float).Mul(ethUsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		ethTokenFee = new(big.Float).Quo(ethTokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 		ethTokenFeeWithPrecision := new(big.Float).Mul(ethTokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
