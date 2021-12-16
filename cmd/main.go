@@ -18,7 +18,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -80,10 +79,10 @@ func startServer(ctx *cli.Context) {
 	}
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
-	{
-		conf, _ := json.Marshal(config)
-		logs.Info("%s\n", string(conf))
-	}
+	//{
+	//	conf, _ := json.Marshal(config)
+	//	logs.Info("%s\n", string(conf))
+	//}
 	//initialize redis
 	cacheRedis.Init()
 

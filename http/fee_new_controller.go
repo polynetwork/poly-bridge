@@ -140,7 +140,11 @@ func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction
 			Where("chain_id=? and `hash` =?", chainId, txId).
 			First(transaction)
 		if res.Error != nil {
-			return nil, res.Error
+			res := db.Model(&models.SrcTransaction{}).
+				Where("chain_id=? and `hash` =?", chainId, basedef.HexStringReverse(txId)).First(transaction)
+			if res.Error != nil {
+				return nil, res.Error
+			}
 		}
 	}
 	if chainId != basedef.O3_CROSSCHAIN_ID {

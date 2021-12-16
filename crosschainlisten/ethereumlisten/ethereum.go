@@ -175,7 +175,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Fee = models.NewBigIntFromInt(int64(lockEvent.Fee))
 			srcTransaction.Time = blockTimer[lockEvent.Height]
 			srcTransaction.Height = lockEvent.Height
-			srcTransaction.User = lockEvent.User
+			srcTransaction.User = models.FormatString(lockEvent.User)
 			srcTransaction.DstChainId = uint64(lockEvent.Tchain)
 			srcTransaction.Contract = lockEvent.Contract
 			srcTransaction.Key = lockEvent.Txid
@@ -198,13 +198,13 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				srcTransfer.Time = blockTimer[lock.BlockNumber]
 				srcTransfer.ChainId = this.GetChainId()
 				srcTransfer.TxHash = lockEvent.TxHash
-				srcTransfer.From = lockEvent.User
-				srcTransfer.To = lockEvent.Contract
-				srcTransfer.Asset = lock.FromAssetHash
+				srcTransfer.From = models.FormatString(lockEvent.User)
+				srcTransfer.To = models.FormatString(lockEvent.Contract)
+				srcTransfer.Asset = models.FormatString(lock.FromAssetHash)
 				srcTransfer.Amount = models.NewBigInt(lock.Amount)
 				srcTransfer.DstChainId = uint64(lock.ToChainId)
-				srcTransfer.DstAsset = toAssetHash
-				srcTransfer.DstUser = lock.ToAddress
+				srcTransfer.DstAsset = models.FormatString(toAssetHash)
+				srcTransfer.DstUser = models.FormatString(lock.ToAddress)
 				srcTransaction.SrcTransfer = srcTransfer
 				if this.isNFTECCMLockEvent(lockEvent) {
 					srcTransaction.Standard = models.TokenTypeErc721
@@ -218,26 +218,26 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcSwapTransfer.Time = blockTimer[v.BlockNumber]
 					srcSwapTransfer.ChainId = this.GetChainId()
 					srcSwapTransfer.TxHash = lockEvent.TxHash
-					srcSwapTransfer.From = lockEvent.User
-					srcSwapTransfer.To = lockEvent.Contract
-					srcSwapTransfer.Asset = v.FromAssetHash
+					srcSwapTransfer.From = models.FormatString(lockEvent.User)
+					srcSwapTransfer.To = models.FormatString(lockEvent.Contract)
+					srcSwapTransfer.Asset = models.FormatString(v.FromAssetHash)
 					srcSwapTransfer.Amount = models.NewBigInt(v.Amount)
 					srcSwapTransfer.DstChainId = v.ToChainId
-					srcSwapTransfer.DstUser = v.ToAddress
+					srcSwapTransfer.DstUser = models.FormatString(v.ToAddress)
 					srcSwapTransfer.PoolId = v.ToPoolId
 					srcSwapTransfer.Type = v.Type
 					srcTransaction.SrcSwap = srcSwapTransfer
 
 					wrapperTransaction := &models.WrapperTransaction{}
 					wrapperTransaction.Hash = lockEvent.TxHash
-					wrapperTransaction.User = lockEvent.User
+					wrapperTransaction.User = models.FormatString(lockEvent.User)
 					wrapperTransaction.SrcChainId = this.GetChainId()
 					wrapperTransaction.BlockHeight = v.BlockNumber
 					wrapperTransaction.Time = blockTimer[v.BlockNumber]
 					wrapperTransaction.DstChainId = v.ToChainId
-					wrapperTransaction.DstUser = v.ToAddress
+					wrapperTransaction.DstUser = models.FormatString(v.ToAddress)
 					wrapperTransaction.ServerId = v.ServerId.Uint64()
-					wrapperTransaction.FeeTokenHash = v.FeeAssetHash
+					wrapperTransaction.FeeTokenHash = models.FormatString(v.FeeAssetHash)
 					wrapperTransaction.FeeAmount = models.NewBigInt(v.Fee)
 					wrapperTransaction.Status = basedef.STATE_SOURCE_DONE
 					wrapperTransactions = append(wrapperTransactions, wrapperTransaction)
@@ -262,7 +262,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.Time = blockTimer[unLockEvent.Height]
 			dstTransaction.Height = unLockEvent.Height
 			dstTransaction.SrcChainId = uint64(unLockEvent.FChainId)
-			dstTransaction.Contract = unLockEvent.Contract
+			dstTransaction.Contract = models.FormatString(unLockEvent.Contract)
 			dstTransaction.PolyHash = unLockEvent.RTxHash
 			var unlock *models.ProxyUnlockEvent
 			if dstTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID && !this.isNFTECCMUnlockEvent(unLockEvent) {
@@ -280,9 +280,9 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				dstTransfer.TxHash = unLockEvent.TxHash
 				dstTransfer.Time = blockTimer[unlock.BlockNumber]
 				dstTransfer.ChainId = this.GetChainId()
-				dstTransfer.From = unLockEvent.Contract
-				dstTransfer.To = unlock.ToAddress
-				dstTransfer.Asset = unlock.ToAssetHash
+				dstTransfer.From = models.FormatString(unLockEvent.Contract)
+				dstTransfer.To = models.FormatString(unlock.ToAddress)
+				dstTransfer.Asset = models.FormatString(unlock.ToAssetHash)
 				dstTransfer.Amount = models.NewBigInt(unlock.Amount)
 				dstTransaction.DstTransfer = dstTransfer
 				if this.isNFTECCMUnlockEvent(unLockEvent) {

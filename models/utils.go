@@ -255,3 +255,9 @@ func GetL1BlockNumberOfArbitrumTx(hash string) (uint64, error) {
 	l1BlockNumber := receipt.L1BlockNumber.ToInt().Uint64()
 	return l1BlockNumber, nil
 }
+func FormatString(data string) string {
+	if len(data)>64{
+		return  data[:64]
+	}
+	return data
+}
