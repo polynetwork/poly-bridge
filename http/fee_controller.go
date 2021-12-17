@@ -89,7 +89,7 @@ func (c *FeeController) GetFee() {
 			c.ServeJSON()
 			return
 		}
-		logs.Info("l1UsdtFee=%s", l1UsdtFee)
+		logs.Info("l1UsdtFee=%s", l1UsdtFee.String())
 
 		l1TokenFee := new(big.Float).Mul(l1UsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		l1TokenFee = new(big.Float).Quo(l1TokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
