@@ -42,6 +42,6 @@ func GetL1Fee(ethChainFee *models.ChainFee, chainId uint64) (l1MinFee, l1ProxyFe
 
 	l1MinFee = new(big.Float).Mul(new(big.Float).SetInt(&ethChainFee.MinFee.Int), feeFactor)
 	l1ProxyFee = new(big.Float).Mul(new(big.Float).SetInt(&ethChainFee.ProxyFee.Int), feeFactor)
-
+	logs.Info("chain:%d l1MinFee=%s, l1ProxyFee=%s", chainId, l1MinFee.String(), l1ProxyFee.String())
 	return
 }

@@ -89,51 +89,10 @@ func (c *FeeController) GetFee() {
 			c.ServeJSON()
 			return
 		}
-		logs.Info("l1UsdtFee=%s", l1UsdtFee.String())
 
 		l1TokenFee := new(big.Float).Mul(l1UsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		l1TokenFee = new(big.Float).Quo(l1TokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 		l1TokenFeeWithPrecision := new(big.Float).Mul(l1TokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
-
-		var opFeeListenConfig, ethFeeListenConfig *conf.FeeListenConfig
-		for _, fl := range conf.GlobalConfig.FeeListenConfig {
-			if fl.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
-				opFeeListenConfig = fl
-				break
-			}
-			continue
-		}
-		for _, fl := range conf.GlobalConfig.FeeListenConfig {
-			if fl.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-				ethFeeListenConfig = fl
-				break
-			}
-			continue
-		}
-
-		if opFeeListenConfig == nil || ethFeeListenConfig == nil {
-			c.Data["json"] = models.MakeErrorRsp("get optimistic/ethereum fee listen config failed")
-			c.Ctx.ResponseWriter.WriteHeader(400)
-			c.ServeJSON()
-			return
-		}
-
-		ethProxyFee := new(big.Float).SetInt(&ethChainFee.ProxyFee.Int)
-		ethProxyFee = new(big.Float).Quo(ethProxyFee, new(big.Float).SetInt64(ethFeeListenConfig.GasLimit))
-		ethProxyFee = new(big.Float).Mul(ethProxyFee, new(big.Float).SetInt64(opFeeListenConfig.EthL1GasLimit))
-		ethProxyFee = new(big.Float).Quo(ethProxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
-		ethProxyFee = new(big.Float).Quo(ethProxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(ethChainFee.TokenBasic.Precision))))
-		logs.Info("ethProxyFee=%s", ethProxyFee.String())
-
-		ethUsdtFee := new(big.Float).Mul(ethProxyFee, new(big.Float).SetInt64(ethChainFee.TokenBasic.Price))
-		ethUsdtFee = new(big.Float).Quo(ethUsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
-		logs.Info("ethUsdtFee=%s", ethUsdtFee.String())
-
-		ethTokenFee := new(big.Float).Mul(ethUsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
-		ethTokenFee = new(big.Float).Quo(ethTokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
-		//ethTokenFeeWithPrecision := new(big.Float).Mul(ethTokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
-		logs.Info("opTokenFee=%s, ethTokenFee=%s", tokenFee.String(), ethTokenFee.String())
-
 		tokenFee = new(big.Float).Add(tokenFee, l1TokenFee)
 		tokenFeeWithPrecision = new(big.Float).Add(tokenFeeWithPrecision, l1TokenFeeWithPrecision)
 	}
