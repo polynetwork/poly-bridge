@@ -557,7 +557,8 @@
           "Url": "https://kovan.optimism.io"
         }
       ],
-      "GasLimit": 120000,
+      "GasLimit": 300000,
+      "EthL1GasLimit": 33000,
       "ProxyFee": 140,
       "MinFee": 20
     }
