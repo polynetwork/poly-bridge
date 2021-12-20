@@ -33,31 +33,20 @@
     "idle_timeout": 10,
     "expiration": 600
   },
-  "ChainListenConfig": [
+  "ChainNodes": [
     {
       "ChainName": "Poly",
       "ChainId": 0,
-      "ListenSlot": 1,
-      "Defer": 1,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://124.156.226.204:20336"
         }
       ],
-      "ExtendNodes": [],
-      "WrapperContract": [
-        ""
-      ],
-      "CCMContract": "0300000000000000000000000000000000000000",
-      "ProxyContract": ""
+      "ExtendNodes": []
     },
     {
       "ChainName": "Ethereum",
       "ChainId": 2,
-      "ListenSlot": 5,
-      "Defer": 1,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://10.203.16.12:8575"
@@ -77,7 +66,166 @@
           "Url": "https://api-ropsten.etherscan.io/api",
           "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
         }
+      ]
+    },
+    {
+      "ChainName": "NEO",
+      "ChainId": 5,
+      "Nodes": [
+        {
+          "Url": "http://seed8.ngd.network:20332"
+        },
+        {
+          "Url": "http://seed9.ngd.network:20332"
+        },
+        {
+          "Url": "http://seed1.ngd.network:20332"
+        }
+      ]
+    },
+    {
+      "ChainName": "BSC",
+      "ChainId": 79,
+      "Nodes": [
+        {
+          "Url": "https://data-seed-prebsc-1-s1.binance.org:8545/"
+        }
+      ]
+    },
+    {
+      "ChainName": "HECO",
+      "ChainId": 7,
+      "Nodes": [
+        {
+          "Url": "https://http-testnet.hecochain.com"
+        }
+      ]
+    },
+    {
+      "ChainName": "Ontology",
+      "ChainId": 3,
+      "Nodes": [
+        {
+          "Url": "http://polaris2.ont.io:20336"
+        }
+      ]
+    },
+    {
+      "ChainName": "Ok",
+      "ChainId": 200,
+      "Nodes": [
+        {
+          "Url": "https://exchaintestrpc.okex.org/"
+        }
+      ]
+    },
+    {
+      "ChainName": "NEO3",
+      "ChainId": 88,
+      "Nodes": [
+        {
+          "Url": "http://seed1t4.neo.org:20332"
+        },
+        {
+          "Url": "http://seed2t4.neo.org:20332"
+        },
+        {
+          "Url": "http://seed3t4.neo.org:20332"
+        }
+      ]
+    },
+    {
+      "ChainName": "MATIC",
+      "ChainId": 202,
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.22:8545"
+        }
+      ]
+    },
+    {
+      "ChainName": "curve",
+      "ChainId": 82,
+      "Nodes": [
+        {
+          "Url": "http://40.115.136.96:8546"
+        }
+      ]
+    },
+    {
+      "ChainName": "PLT",
+      "ChainId": 107,
+      "Nodes": [
+        {
+          "Url": "http://106.75.246.130:22000"
+        }
+      ]
+    },
+    {
+      "ChainName": "Arbitrum",
+      "ChainId": 205,
+      "Nodes": [
+        {
+          "Url": "https://rinkeby.arbitrum.io/rpc"
+        }
+      ]
+    },
+    {
+      "ChainName": "XDai",
+      "ChainId": 206,
+      "Nodes": [
+        {
+          "Url": "https://sokol.poa.network"
+        }
+      ]
+    },
+    {
+      "ChainName": "Fantom",
+      "ChainId": 208,
+      "Nodes": [
+        {
+          "Url": "https://rpc.testnet.fantom.network"
+        }
+      ]
+    },
+    {
+      "ChainName": "Avax",
+      "ChainId": 209,
+      "Nodes": [
+        {
+          "Url": "https://api.avax-test.network/ext/bc/C/rpc"
+        }
+      ]
+    },
+    {
+      "ChainName": "Optimistic",
+      "ChainId": 210,
+      "Nodes": [
+        {
+          "Url": "https://kovan.optimism.io"
+        }
+      ]
+    }
+  ],
+  "ChainListenConfig": [
+    {
+      "ChainName": "Poly",
+      "ChainId": 0,
+      "ListenSlot": 1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        ""
       ],
+      "CCMContract": "0300000000000000000000000000000000000000",
+      "ProxyContract": ""
+    },
+    {
+      "ChainName": "Ethereum",
+      "ChainId": 2,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
       "WrapperContract": [
         "e498fb7D00468a67A79dE5D4Ca264d3350165280",
         "Dc37471Af6a8aB7f45F444c5a3Ef4758281bE32C"
@@ -95,18 +243,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://seed8.ngd.network:20332"
-        },
-        {
-          "Url": "http://seed9.ngd.network:20332"
-        },
-        {
-          "Url": "http://seed1.ngd.network:20332"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "cd074cd290acc3d73c030784101afbcf40fd86a1",
         "0f4fad9ae3830585a9264e6ec0b1eff3e89c6558",
@@ -121,12 +257,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://data-seed-prebsc-1-s1.binance.org:8545/"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5",
         "9f9F15CC407F7b26f55D71D43f993580a9107007"
@@ -144,12 +274,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://http-testnet.hecochain.com"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "3c92F1E31aACA43Eb4fF8aE498C7E85618680F45",
         "CC8407Ee04AaC2AdC0E6A55E7E97176C701146cd"
@@ -166,12 +290,6 @@
       "ChainId": 3,
       "ListenSlot": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://polaris2.ont.io:20336"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "a5c101afa9e04e9dd2c912983795005a49e02efa"
       ],
@@ -184,12 +302,6 @@
       "ListenSlot": 2,
       "Defer": 2,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://exchaintestrpc.okex.org/"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "5598226aD2E8991deEFD03203739C87BdF6e6D03",
         "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"
@@ -203,18 +315,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://seed1t4.neo.org:20332"
-        },
-        {
-          "Url": "http://seed2t4.neo.org:20332"
-        },
-        {
-          "Url": "http://seed3t4.neo.org:20332"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [],
       "CCMContract": "618d44dc3af16c6120dbf65402024f40a04f772a",
       "ProxyContract": "4487494dac2f7eb68bdae009cacd6de88243e542"
@@ -225,12 +325,6 @@
       "ListenSlot": 5,
       "Defer": 10,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://10.203.0.22:8545"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "",
         "D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D"
@@ -245,13 +339,7 @@
       "ChainName": "curve",
       "Defer": 1,
       "BatchSize": 5,
-      "ExtendNodes": [],
       "ListenSlot": 1,
-      "Nodes": [
-        {
-          "Url": "http://40.115.136.96:8546"
-        }
-      ],
       "ProxyContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
       "SwapContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
       "WrapperContract": [
@@ -264,12 +352,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://106.75.246.130:22000"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "3b855e095b32fcd2811663cba56bbfa6b1781821",
         ""
@@ -286,12 +368,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://rinkeby.arbitrum.io/rpc"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "",
         "27eb74B4Db37517F1dC6dE67364e19782624402F"
@@ -305,12 +381,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://sokol.poa.network"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "",
         "a7eDA65F94A2a334a0de42d479585b65D27b2249"
@@ -324,12 +394,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://rpc.testnet.fantom.network"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "",
         "FAddf0cfb08F92779560db57BE6b2C7303aaD266"
@@ -343,12 +407,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://api.avax-test.network/ext/bc/C/rpc"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "",
         "ac0a6759696569B3729177ba6844D41FF6D57844"
@@ -362,12 +420,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://kovan.optimism.io"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "",
         "E324EF8cd52833DD117e8ca87b483E78b30C3696"
@@ -426,141 +478,92 @@
     {
       "ChainId": 2,
       "ChainName": "Ethereum",
-      "Nodes": [
-        {
-          "Url": "https://ropsten.infura.io/v3/1ba5f3635395470e9a3f19ba7a852144"
-        },
-        {
-          "Url": "http://18.140.187.37:10331"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 3,
       "ChainName": "Ontology",
-      "Nodes": [],
       "GasLimit": 200000000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 5,
       "ChainName": "NEO",
-      "Nodes": [],
       "GasLimit": 5000000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 79,
       "ChainName": "BSC",
-      "Nodes": [
-        {
-          "Url": "https://data-seed-prebsc-2-s2.binance.org:8545"
-        },
-        {
-          "Url": "https://data-seed-prebsc-2-s3.binance.org:8545"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 7,
       "ChainName": "HECO",
-      "Nodes": [
-        {
-          "Url": "https://http-testnet.hecochain.com"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 200,
       "ChainName": "OK",
-      "Nodes": [
-        {
-          "Url": "https://exchaintestrpc.okex.org"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 88,
       "ChainName": "NEO3",
-      "Nodes": [],
       "GasLimit": 5000000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 202,
       "ChainName": "MATIC",
-      "Nodes": [
-        {
-          "Url": "http://10.203.0.22:8545"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 205,
       "ChainName": "Arbitrum",
-      "Nodes": [
-        {
-          "Url": "https://rinkeby.arbitrum.io/rpc"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 140,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 206,
       "ChainName": "XDai",
-      "Nodes": [
-        {
-          "Url": "https://sokol.poa.network"
-        }
-      ],
       "GasLimit":120000,
       "ProxyFee":120,
-      "MinFee": 20
+      "MinFee": 80
     },
     {
       "ChainId": 208,
       "ChainName": "Fantom",
-      "Nodes": [
-        {
-          "Url": "https://rpc.testnet.fantom.network"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 140,
-      "MinFee": 20
+      "MinFee": 80
+    },
+    {
+      "ChainId": 209,
+      "GasLimit":120000,
+      "ProxyFee":120,
+      "MinFee": 80
     },
     {
       "ChainId": 210,
-      "ChainName": "Optimistic",
-      "Nodes": [
-        {
-          "Url": "https://kovan.optimism.io"
-        }
-      ],
       "GasLimit": 300000,
       "EthL1GasLimit": 33000,
       "ProxyFee": 140,
-      "MinFee": 20
+      "MinFee": 80
     }
   ],
   "LargeTxAmount" : 10,
