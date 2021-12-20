@@ -23,6 +23,7 @@ import (
 	"math/big"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
+	"poly-bridge/utils/fee"
 	"strings"
 
 	"poly-bridge/basedef"
@@ -69,6 +70,32 @@ func (c *FeeController) GetFee() {
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
+
+	// get optimistic L1 fee on ethereum
+	if basedef.OPTIMISTIC_CROSSCHAIN_ID == getFeeReq.DstChainId {
+		ethChainFee := new(models.ChainFee)
+		res = db.Where("chain_id = ?", basedef.ETHEREUM_CROSSCHAIN_ID).Preload("TokenBasic").First(ethChainFee)
+		if res.RowsAffected == 0 {
+			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", basedef.ETHEREUM_CROSSCHAIN_ID))
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
+
+		_, l1UsdtFee, err := fee.GetL1Fee(ethChainFee, getFeeReq.DstChainId)
+		if err != nil {
+			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("get ethereum L1 fee failed. err=%v", err))
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
+
+		l1TokenFee := new(big.Float).Mul(l1UsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		l1TokenFee = new(big.Float).Quo(l1TokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
+		l1TokenFeeWithPrecision := new(big.Float).Mul(l1TokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
+		tokenFee = new(big.Float).Add(tokenFee, l1TokenFee)
+		tokenFeeWithPrecision = new(big.Float).Add(tokenFeeWithPrecision, l1TokenFeeWithPrecision)
+	}
 
 	{
 		chainFeeJson, _ := json.Marshal(chainFee)
