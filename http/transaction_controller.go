@@ -189,10 +189,6 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Limit(transactionsOfAddressReq.PageSize).Offset(transactionsOfAddressReq.PageSize * transactionsOfAddressReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
-	if srcPolyDstRelations != nil && len(srcPolyDstRelations) > 0 {
-		jsonsrcPoly, _ := json.Marshal(srcPolyDstRelations)
-		logs.Info("debugqqqqq srcPolyDstRelations:", string(jsonsrcPoly))
-	}
 	var transactionNum int64
 	db.Model(&models.SrcTransfer{}).Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).Count(&transactionNum)
 	chains := make([]*models.Chain, 0)
