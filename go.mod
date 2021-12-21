@@ -5,12 +5,11 @@ go 1.14
 require (
 	github.com/Zilliqa/gozilliqa-sdk v1.2.1-0.20210927032600-4c733f2cb879
 	github.com/beego/beego/v2 v2.0.1
-	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/btcsuite/goleveldb v1.0.0
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/devfans/cogroup v1.1.0
 	github.com/devfans/zion-sdk v0.0.2
-	github.com/ethereum/go-ethereum v1.9.25
+	github.com/ethereum/go-ethereum v1.10.7
 	github.com/go-redis/redis v6.14.2+incompatible
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
