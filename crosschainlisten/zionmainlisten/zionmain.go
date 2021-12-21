@@ -52,7 +52,7 @@ func (this *ZionMainListen) GetBatchSize() uint64 {
 	return this.zionmainCfg.BatchSize
 }
 
-func (this *ZionMainListen) getCCMandLockEventByBlockNumber(startHeight,endHeight uint64,blockTT map[uint64]uint64) ([]*models.SrcTransaction, error) {
+func (this *ZionMainListen) getCCMandLockEventByBlockNumber(startHeight, endHeight uint64, blockTT map[uint64]uint64) ([]*models.SrcTransaction, error) {
 	eccmContractAddress := common.HexToAddress(this.zionmainCfg.CCMContract)
 	lockContractAddress := common.HexToAddress(this.zionmainCfg.ProxyContract)
 	client := this.zionmainSdk.GetClient()
@@ -61,11 +61,11 @@ func (this *ZionMainListen) getCCMandLockEventByBlockNumber(startHeight,endHeigh
 	}
 	eccmContract, err := main_chain_lock_proxy_abi.NewIMainChainLockProxy(eccmContractAddress, client)
 	if err != nil {
-		return nil, fmt.Errorf("ZionMain NewIMainChainLockProxy eccmContract error: %s",err.Error())
+		return nil, fmt.Errorf("ZionMain NewIMainChainLockProxy eccmContract error: %s", err.Error())
 	}
 	lockContract, err := main_chain_lock_proxy_abi.NewIMainChainLockProxy(lockContractAddress, client)
 	if err != nil {
-		return nil, fmt.Errorf("ZionMain NewIMainChainLockProxy lockContract error: %s",err.Error())
+		return nil, fmt.Errorf("ZionMain NewIMainChainLockProxy lockContract error: %s", err.Error())
 	}
 	opt := &bind.FilterOpts{
 		Start:   startHeight,
@@ -76,11 +76,11 @@ func (this *ZionMainListen) getCCMandLockEventByBlockNumber(startHeight,endHeigh
 	srcTransfers := make([]*models.SrcTransfer, 0)
 	crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt)
 	if err != nil {
-		return nil,fmt.Errorf("ZionMainListen FilterCrossChainEvent err: %s", err.Error())
+		return nil, fmt.Errorf("ZionMainListen FilterCrossChainEvent err: %s", err.Error())
 	}
 	lockEvents, err := lockContract.FilterLockEvent(opt)
 	if err != nil {
-		return nil,fmt.Errorf("ZionMainListen FilterLockEvent err: %s", err.Error())
+		return nil, fmt.Errorf("ZionMainListen FilterLockEvent err: %s", err.Error())
 	}
 	for crossChainEvents.Next() {
 		evt := crossChainEvents.Event
@@ -99,36 +99,36 @@ func (this *ZionMainListen) getCCMandLockEventByBlockNumber(startHeight,endHeigh
 			Param:      hex.EncodeToString(evt.Rawdata),
 		})
 	}
-	for lockEvents.Next(){
+	for lockEvents.Next() {
 		evt := lockEvents.Event
 		srcTransfers = append(srcTransfers, &models.SrcTransfer{
 			TxHash:     evt.Raw.TxHash.String()[2:],
 			ChainId:    this.zionmainCfg.ChainId,
 			Standard:   models.TokenTypeErc20,
 			Asset:      strings.ToLower(evt.FromAssetHash.String()[2:]),
-			From:		strings.ToLower(evt.FromAddress.String()[2:]),
-			To: 		strings.ToLower(evt.Raw.Address.String()[2:]),
-			Amount:  	models.NewBigInt(evt.Amount),
+			Amount:     models.NewBigInt(evt.Amount),
 			DstChainId: evt.ToChainId,
-			DstAsset: strings.ToLower(hex.EncodeToString(evt.ToAssetHash)),
-			DstUser: strings.ToLower(hex.EncodeToString(evt.ToAddress)),
+			DstAsset:   strings.ToLower(hex.EncodeToString(evt.ToAssetHash)),
+			DstUser:    strings.ToLower(hex.EncodeToString(evt.ToAddress)),
 		})
 	}
-	for _,srcTransaction:=range srcTransactions{
-		for _,srcTransfer :=range srcTransfers{
-			if srcTransaction.Hash==srcTransfer.TxHash{
-				tt:=blockTT[srcTransaction.Height]
-				srcTransfer.Time=tt
-				srcTransaction.Time=tt
-				srcTransaction.SrcTransfer=srcTransfer
+	for _, srcTransaction := range srcTransactions {
+		tt := blockTT[srcTransaction.Height]
+		srcTransaction.Time = tt
+		for _, srcTransfer := range srcTransfers {
+			if srcTransaction.Hash == srcTransfer.TxHash {
+				srcTransfer.Time = tt
+				srcTransfer.From = srcTransaction.User
+				srcTransfer.To = srcTransaction.Contract
+				srcTransaction.SrcTransfer = srcTransfer
 				break
 			}
 		}
 	}
-	return srcTransactions,nil
+	return srcTransactions, nil
 }
 
-func (this *ZionMainListen) getCCMandUnLockEventByBlockNumber(startHeight,endHeight uint64,blockTT map[uint64]uint64) ([]*models.DstTransaction, error) {
+func (this *ZionMainListen) getCCMandUnLockEventByBlockNumber(startHeight, endHeight uint64, blockTT map[uint64]uint64) ([]*models.DstTransaction, error) {
 	eccmContractAddress := common.HexToAddress(this.zionmainCfg.CCMContract)
 	lockContractAddress := common.HexToAddress(this.zionmainCfg.ProxyContract)
 	client := this.zionmainSdk.GetClient()
@@ -146,11 +146,11 @@ func (this *ZionMainListen) getCCMandUnLockEventByBlockNumber(startHeight,endHei
 	dstTransfers := make([]*models.DstTransfer, 0)
 	crossChainEvents, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
 	if err != nil {
-		return nil,fmt.Errorf("ZionMainListen FilterVerifyHeaderAndExecuteTxEvent err: %s", err.Error())
+		return nil, fmt.Errorf("ZionMainListen FilterVerifyHeaderAndExecuteTxEvent err: %s", err.Error())
 	}
 	unLockEvents, err := lockContract.FilterUnlockEvent(opt)
 	if err != nil {
-		return nil,fmt.Errorf("ZionMainListen FilterUnlockEvent err: %s", err.Error())
+		return nil, fmt.Errorf("ZionMainListen FilterUnlockEvent err: %s", err.Error())
 	}
 	for crossChainEvents.Next() {
 		evt := crossChainEvents.Event
@@ -164,36 +164,36 @@ func (this *ZionMainListen) getCCMandUnLockEventByBlockNumber(startHeight,endHei
 			Height:     evt.Raw.BlockNumber,
 			SrcChainId: evt.FromChainID,
 			Contract:   strings.ToLower(hex.EncodeToString(evt.ToContract)),
-			PolyHash: 	strings.ToLower(hex.EncodeToString(evt.CrossChainTxHash)),
+			PolyHash:   strings.ToLower(hex.EncodeToString(evt.CrossChainTxHash)),
 		})
 	}
-	for unLockEvents.Next(){
+	for unLockEvents.Next() {
 		evt := unLockEvents.Event
 		dstTransfers = append(dstTransfers, &models.DstTransfer{
-			TxHash:     evt.Raw.TxHash.String()[2:],
-			ChainId:    this.zionmainCfg.ChainId,
-			Standard:   models.TokenTypeErc20,
-			Asset:      strings.ToLower(evt.ToAssetHash.String()[2:]),
-			From:		strings.ToLower(evt.Raw.Address.String()[2:]),
-			To: 		strings.ToLower(evt.ToAddress.String()[2:]),
-			Amount:  	models.NewBigInt(evt.Amount),
+			TxHash:   evt.Raw.TxHash.String()[2:],
+			ChainId:  this.zionmainCfg.ChainId,
+			Standard: models.TokenTypeErc20,
+			Asset:    strings.ToLower(evt.ToAssetHash.String()[2:]),
+			To:       strings.ToLower(evt.ToAddress.String()[2:]),
+			Amount:   models.NewBigInt(evt.Amount),
 		})
 	}
-	for _,dstTransaction:=range dstTransactions{
-		for _,dstTransfer :=range dstTransfers{
-			if dstTransaction.Hash==dstTransfer.TxHash{
-				tt:=blockTT[dstTransaction.Height]
-				dstTransfer.Time=tt
-				dstTransaction.Time=tt
-				dstTransaction.DstTransfer=dstTransfer
+	for _, dstTransaction := range dstTransactions {
+		tt := blockTT[dstTransaction.Height]
+		dstTransaction.Time = tt
+		for _, dstTransfer := range dstTransfers {
+			if dstTransaction.Hash == dstTransfer.TxHash {
+				dstTransfer.Time = tt
+				dstTransfer.From = dstTransaction.Contract
+				dstTransaction.DstTransfer = dstTransfer
 				break
 			}
 		}
 	}
-	return dstTransactions,nil
+	return dstTransactions, nil
 }
 
-func (this *ZionMainListen) getWrapperEventByBlockNumber(startHeight,endHeight uint64,blockTT map[uint64]uint64) ([]*models.WrapperTransaction, error) {
+func (this *ZionMainListen) getWrapperEventByBlockNumber(startHeight, endHeight uint64, blockTT map[uint64]uint64) ([]*models.WrapperTransaction, error) {
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	for index, contract := range this.zionmainCfg.WrapperContract {
 		if contract == "" {
@@ -205,13 +205,13 @@ func (this *ZionMainListen) getWrapperEventByBlockNumber(startHeight,endHeight u
 		}
 		wrapperTransactions = append(wrapperTransactions, aaa...)
 	}
-	for _,wrapperTransaction :=range wrapperTransactions{
-		wrapperTransaction.Time=blockTT[wrapperTransaction.BlockHeight]
+	for _, wrapperTransaction := range wrapperTransactions {
+		wrapperTransaction.Time = blockTT[wrapperTransaction.BlockHeight]
 	}
 	return wrapperTransactions, nil
 }
 
-func (this *ZionMainListen) getWrapperEventByBlockNumber1(contract string,startHeight,endHeight uint64,index int) ([]*models.WrapperTransaction, error) {
+func (this *ZionMainListen) getWrapperEventByBlockNumber1(contract string, startHeight, endHeight uint64, index int) ([]*models.WrapperTransaction, error) {
 	if len(contract) == 0 {
 		return nil, nil
 	}
@@ -269,9 +269,6 @@ func (this *ZionMainListen) getWrapperEventByBlockNumber1(contract string,startH
 	return wrapperTransactions, nil
 }
 
-
-
-
 func (this *ZionMainListen) GetConsumeGas(hash common.Hash) uint64 {
 	tx, err := this.zionmainSdk.GetTransactionByHash(hash)
 	if err != nil {
@@ -302,15 +299,15 @@ func (this *ZionMainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 		}
 		blockTT[h] = blockHeader.Time
 	}
-	srcTransactions, err := this.getCCMandLockEventByBlockNumber(startHeight,endHeight,blockTT)
+	srcTransactions, err := this.getCCMandLockEventByBlockNumber(startHeight, endHeight, blockTT)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
-	dstTransactions,err:=this.getCCMandUnLockEventByBlockNumber(startHeight,endHeight,blockTT)
+	dstTransactions, err := this.getCCMandUnLockEventByBlockNumber(startHeight, endHeight, blockTT)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
-	wrapperTransactions,err:= this.getWrapperEventByBlockNumber(startHeight,endHeight,blockTT)
+	wrapperTransactions, err := this.getWrapperEventByBlockNumber(startHeight, endHeight, blockTT)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
