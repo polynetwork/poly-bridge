@@ -41,5 +41,10 @@ const (
 	FANTOM_CROSSCHAIN_ID     = uint64(22)
 	OPTIMISTIC_CROSSCHAIN_ID = uint64(23)
 
+	//only on testnet
+	KOVAN_CROSSCHAIN_ID     = uint64(999999)
+	RINKEBY_CROSSCHAIN_ID   = uint64(999999)
+	GOERLI_CROSSCHAIN_ID    = uint64(999999)
+
 	ENV = "mainnet"
 )

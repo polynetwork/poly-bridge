@@ -30,6 +30,9 @@ const (
 	OK_CROSSCHAIN_ID        = uint64(1012)
 	PLT_CROSSCHAIN_ID       = uint64(208)
 	MATIC_CROSSCHAIN_ID     = uint64(20016)
+	KOVAN_CROSSCHAIN_ID     = uint64(302)
+	RINKEBY_CROSSCHAIN_ID   = uint64(402)
+	GOERLI_CROSSCHAIN_ID    = uint64(502)
 	// not support on zion
 	BTC_CROSSCHAIN_ID        = uint64(10000001)
 	ONT_CROSSCHAIN_ID        = uint64(10000002)

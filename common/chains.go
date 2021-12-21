@@ -27,6 +27,9 @@ var (
 	optimisticSdk *chainsdk.EthereumSdkPro
 	zionmainSdk   *chainsdk.EthereumSdkPro
 	sidechainSdk  *chainsdk.EthereumSdkPro
+	kovanSdk      *chainsdk.EthereumSdkPro
+	rinkebySdk    *chainsdk.EthereumSdkPro
+	goerliSdk     *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -39,69 +42,92 @@ func SetupChainsSDK(cfg *conf.Config) {
 }
 
 func newChainSdks(config *conf.Config) {
-	{
-		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
-		if ethereumConfig == nil {
-			panic("chain is invalid")
-		}
-		urls := ethereumConfig.GetNodesUrl()
-		ethereumSdk = chainsdk.NewEthereumSdkPro(urls, ethereumConfig.ListenSlot, ethereumConfig.ChainId)
-	}
-	{
-		zionmainConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
-		if zionmainConfig == nil {
-			panic("zionmain chain is invalid")
-		}
-		urls := zionmainConfig.GetNodesUrl()
-		zionmainSdk = chainsdk.NewEthereumSdkPro(urls, zionmainConfig.ListenSlot, zionmainConfig.ChainId)
-	}
-	{
-		sidechainConfig := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
-		if sidechainConfig == nil {
-			panic("sidechain chain is invalid")
-		}
-		urls := sidechainConfig.GetNodesUrl()
-		sidechainSdk = chainsdk.NewEthereumSdkPro(urls, sidechainConfig.ListenSlot, sidechainConfig.ChainId)
-	}
-	{
-		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
-		if maticConfig == nil {
-			panic("chain is invalid")
-		}
-		urls := maticConfig.GetNodesUrl()
-		maticSdk = chainsdk.NewEthereumSdkPro(urls, maticConfig.ListenSlot, maticConfig.ChainId)
-	}
-	{
-		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
-		if bscConfig == nil {
-			panic("chain is invalid")
-		}
-		urls := bscConfig.GetNodesUrl()
-		bscSdk = chainsdk.NewEthereumSdkPro(urls, bscConfig.ListenSlot, bscConfig.ChainId)
-	}
-	{
-		hecoConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
-		if hecoConfig == nil {
-			panic("chain is invalid")
-		}
-		urls := hecoConfig.GetNodesUrl()
-		hecoSdk = chainsdk.NewEthereumSdkPro(urls, hecoConfig.ListenSlot, hecoConfig.ChainId)
-	}
-	{
-		okConfig := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
-		if okConfig == nil {
-			panic("chain is invalid")
-		}
-		urls := okConfig.GetNodesUrl()
-		okSdk = chainsdk.NewEthereumSdkPro(urls, okConfig.ListenSlot, okConfig.ChainId)
-	}
-	{
-		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
-		if conf != nil {
+	for _, cfg := range config.ChainListenConfig {
+		switch cfg.ChainId {
+		case basedef.ETHEREUM_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing ETHEREUM chain sdk config")
+			}
+			urls := conf.GetNodesUrl()
+			ethereumSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		case basedef.ZIONMAIN_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing ZIONMAIN chain sdk config")
+			}
+			urls := conf.GetNodesUrl()
+			zionmainSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		case basedef.SIDECHAIN_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing SIDECHAIN chain sdk config")
+			}
+			urls := conf.GetNodesUrl()
+			sidechainSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		case basedef.MATIC_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing MATIC chain sdk config")
+			}
+			urls := conf.GetNodesUrl()
+			maticSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		case basedef.BSC_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing MATIC chain sdk config")
+			}
+			urls := conf.GetNodesUrl()
+			bscSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		case basedef.HECO_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing HECO chain sdk config")
+			}
+			urls := conf.GetNodesUrl()
+			hecoSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		case basedef.OK_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing OK chain sdk config")
+			}
+			urls := conf.GetNodesUrl()
+			okSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+		case basedef.PLT_CROSSCHAIN_ID:
+			conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
+			if conf == nil {
+				logs.Error("Missing PLT chain sdk config")
+			}
 			urls := conf.GetNodesUrl()
 			pltSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
-		} else {
-			logs.Error("Missing plt chain sdk config")
+		case basedef.KOVAN_CROSSCHAIN_ID:
+			if basedef.ENV == basedef.TESTNET {
+				conf := config.GetChainListenConfig(basedef.KOVAN_CROSSCHAIN_ID)
+				if conf == nil {
+					logs.Error("Missing KOVAN chain sdk config")
+				}
+				urls := conf.GetNodesUrl()
+				kovanSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+			}
+		case basedef.RINKEBY_CROSSCHAIN_ID:
+			if basedef.ENV == basedef.TESTNET {
+				conf := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
+				if conf == nil {
+					logs.Error("Missing RINKEBY chain sdk config")
+				}
+				urls := conf.GetNodesUrl()
+				rinkebySdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+			}
+		case basedef.GOERLI_CROSSCHAIN_ID:
+			if basedef.ENV == basedef.TESTNET {
+				conf := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
+				if conf == nil {
+					logs.Error("Missing GOERLI chain sdk config")
+				}
+				urls := conf.GetNodesUrl()
+				goerliSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+			}
+
 		}
 	}
 	//{
@@ -179,55 +205,72 @@ func newChainSdks(config *conf.Config) {
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
-	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+	switch chainId {
+	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
 			panic("chain is invalid")
 		}
 		return ethereumSdk.Erc20Balance(hash, ethereumConfig.ProxyContract)
-	}
-	if chainId == basedef.ZIONMAIN_CROSSCHAIN_ID {
+	case basedef.ZIONMAIN_CROSSCHAIN_ID:
 		zionmainConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
 		if zionmainConfig == nil {
 			panic("chain is invalid")
 		}
 		return zionmainSdk.Erc20Balance(hash, zionmainConfig.ProxyContract)
-	}
-	if chainId == basedef.SIDECHAIN_CROSSCHAIN_ID {
+	case basedef.SIDECHAIN_CROSSCHAIN_ID:
 		sidechainConfig := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
 		if sidechainConfig == nil {
 			panic("chain is invalid")
 		}
 		return sidechainSdk.Erc20Balance(hash, sidechainConfig.ProxyContract)
-	}
-	if chainId == basedef.MATIC_CROSSCHAIN_ID {
+	case basedef.MATIC_CROSSCHAIN_ID:
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
 		if maticConfig == nil {
 			panic("chain is invalid")
 		}
 		return maticSdk.Erc20Balance(hash, maticConfig.ProxyContract)
-	}
-	if chainId == basedef.BSC_CROSSCHAIN_ID {
+	case basedef.BSC_CROSSCHAIN_ID:
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 		if bscConfig == nil {
 			panic("chain is invalid")
 		}
 		return bscSdk.Erc20Balance(hash, bscConfig.ProxyContract)
-	}
-	if chainId == basedef.HECO_CROSSCHAIN_ID {
+	case basedef.HECO_CROSSCHAIN_ID:
 		hecoConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
 		if hecoConfig == nil {
 			panic("chain is invalid")
 		}
 		return hecoSdk.Erc20Balance(hash, hecoConfig.ProxyContract)
-	}
-	if chainId == basedef.OK_CROSSCHAIN_ID {
+	case basedef.OK_CROSSCHAIN_ID:
 		okConfig := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
 		if okConfig == nil {
 			panic("chain is invalid")
 		}
 		return okSdk.Erc20Balance(hash, okConfig.ProxyContract)
+	case basedef.KOVAN_CROSSCHAIN_ID:
+		config := config.GetChainListenConfig(basedef.KOVAN_CROSSCHAIN_ID)
+		if config == nil {
+			panic("Missing kovan chain sdk config")
+		}
+		return kovanSdk.Erc20Balance(hash, config.ProxyContract)
+	case basedef.RINKEBY_CROSSCHAIN_ID:
+		config := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
+		if config == nil {
+			panic("Missing rinkeby chain sdk config")
+		}
+		return rinkebySdk.Erc20Balance(hash, config.ProxyContract)
+
+	case basedef.GOERLI_CROSSCHAIN_ID:
+		config := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
+		if config == nil {
+			panic("Missing goerli chain sdk config")
+		}
+		return goerliSdk.Erc20Balance(hash, config.ProxyContract)
+	default:
+		return new(big.Int).SetUint64(0), nil
 	}
+
 	//if chainId == basedef.NEO_CROSSCHAIN_ID {
 	//	neoConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
 	//	if neoConfig == nil {
@@ -285,65 +328,81 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 	//	return optimisticSdk.Erc20Balance(hash, optimisticConfig.ProxyContract)
 	//}
 	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
-		conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
-		if conf == nil {
-			panic("chain is invalid")
-		}
-		return pltSdk.Erc20Balance(hash,conf.ProxyContract)
-	}
+	  	conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
+	  	if conf == nil {
+	  		panic("chain is invalid")
+	  	}
+	  	return pltSdk.Erc20Balance(hash,conf.ProxyContract)
+	  }
 	*/
-	return new(big.Int).SetUint64(0), nil
+
 }
 
 func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
-	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+	switch chainId {
+	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
 			panic("chain is invalid")
 		}
 		return ethereumSdk.Erc20TotalSupply(hash)
-	}
-	if chainId == basedef.ZIONMAIN_CROSSCHAIN_ID {
+	case basedef.ZIONMAIN_CROSSCHAIN_ID:
 		zionmainConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
 		if zionmainConfig == nil {
-			panic("zionmain chain is invalid")
+			panic("chain is invalid")
 		}
 		return zionmainSdk.Erc20TotalSupply(hash)
-	}
-	if chainId == basedef.SIDECHAIN_CROSSCHAIN_ID {
+	case basedef.SIDECHAIN_CROSSCHAIN_ID:
 		sidechainConfig := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
 		if sidechainConfig == nil {
-			panic("sidechain chain is invalid")
+			panic("chain is invalid")
 		}
 		return sidechainSdk.Erc20TotalSupply(hash)
-	}
-	if chainId == basedef.BSC_CROSSCHAIN_ID {
-		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
-		if bscConfig == nil {
-			panic("chain is invalid")
-		}
-		return bscSdk.Erc20TotalSupply(hash)
-	}
-	if chainId == basedef.HECO_CROSSCHAIN_ID {
-		hecoConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
-		if hecoConfig == nil {
-			panic("chain is invalid")
-		}
-		return hecoSdk.Erc20TotalSupply(hash)
-	}
-	if chainId == basedef.OK_CROSSCHAIN_ID {
-		okConfig := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
-		if okConfig == nil {
-			panic("chain is invalid")
-		}
-		return okSdk.Erc20TotalSupply(hash)
-	}
-	if chainId == basedef.MATIC_CROSSCHAIN_ID {
+	case basedef.MATIC_CROSSCHAIN_ID:
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
 		if maticConfig == nil {
 			panic("chain is invalid")
 		}
 		return maticSdk.Erc20TotalSupply(hash)
+	case basedef.BSC_CROSSCHAIN_ID:
+		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
+		if bscConfig == nil {
+			panic("chain is invalid")
+		}
+		return bscSdk.Erc20TotalSupply(hash)
+	case basedef.HECO_CROSSCHAIN_ID:
+		hecoConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
+		if hecoConfig == nil {
+			panic("chain is invalid")
+		}
+		return hecoSdk.Erc20TotalSupply(hash)
+	case basedef.OK_CROSSCHAIN_ID:
+		okConfig := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
+		if okConfig == nil {
+			panic("chain is invalid")
+		}
+		return okSdk.Erc20TotalSupply(hash)
+	case basedef.KOVAN_CROSSCHAIN_ID:
+		config := config.GetChainListenConfig(basedef.KOVAN_CROSSCHAIN_ID)
+		if config == nil {
+			panic("Missing kovan chain sdk config")
+		}
+		return kovanSdk.Erc20TotalSupply(hash)
+	case basedef.RINKEBY_CROSSCHAIN_ID:
+		config := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
+		if config == nil {
+			panic("Missing rinkeby chain sdk config")
+		}
+		return rinkebySdk.Erc20TotalSupply(hash)
+
+	case basedef.GOERLI_CROSSCHAIN_ID:
+		config := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
+		if config == nil {
+			panic("Missing goerli chain sdk config")
+		}
+		return goerliSdk.Erc20TotalSupply(hash)
+	default:
+		return new(big.Int).SetUint64(0), nil
 	}
 	//if chainId == basedef.NEO_CROSSCHAIN_ID {
 	//	neoConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
@@ -394,7 +453,7 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 	//	}
 	//	return optimisticSdk.Erc20TotalSupply(hash)
 	//}
-	return new(big.Int).SetUint64(0), nil
+
 }
 
 type ProxyBalance struct {
@@ -435,6 +494,12 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return avaxSdk.Erc20Balance(hash, proxy)
 	case basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		return optimisticSdk.Erc20Balance(hash, proxy)
+	case basedef.KOVAN_CROSSCHAIN_ID:
+		return kovanSdk.Erc20Balance(hash, proxy)
+	case basedef.RINKEBY_CROSSCHAIN_ID:
+		return rinkebySdk.Erc20Balance(hash, proxy)
+	case basedef.GOERLI_CROSSCHAIN_ID:
+		return goerliSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
