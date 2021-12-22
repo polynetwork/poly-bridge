@@ -21,30 +21,20 @@
     "idle_timeout": 10,
     "expiration": 600
   },
-  "ChainListenConfig":[
+  "ChainNodes":[
     {
       "ChainName":"Poly",
       "ChainId":0,
-      "ListenSlot":1,
-      "Defer": 1,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://13.92.155.62:20336"
         }
       ],
-      "ExtendNodes": [
-      ],
-      "WrapperContract":[""],
-      "CCMContract":"0300000000000000000000000000000000000000",
-      "ProxyContract":""
+      "ExtendNodes": []
     },
     {
       "ChainName":"Ethereum",
       "ChainId":2,
-      "ListenSlot":5,
-      "Defer": 1,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://onto-eth.ont.io:10331"
@@ -58,56 +48,31 @@
           "Url": "https://api.etherscan.io/api",
           "Key": "W4SW61XNZAVGYFRUYNIBV1C8TBIXJDQCS9"
         }
-      ],
-      "WrapperContract":["2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac", "d380450e9e373bDC389951C54616edb2EE653524"],
-      "CCMContract":"e020877e67CfAAFFC33a6E7eB9e85741bbb3eA79",
-      "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
-      "SwapContract": "af83ce8d461e8834de03a3803c968615013c6b3d",
-      "NFTWrapperContract":["e5204d62361A353C665668C858Ea213070CA159c", "D728e9844af285fA116806c273aa413686aE65e8"],
-      "NFTProxyContract":["2cdfc90250EF967036838DA601099656e74bCfc5", "D33e44F6E4fE37C4dF23c7171657721B9A725417"],
-      "NFTQueryContract": "B2265A122814dA516318F727183a5D8FeCA8BaCE"
+      ]
     },
     {
       "ChainName":"MATIC",
       "ChainId":17,
-      "ListenSlot":5,
-      "Defer": 129,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://10.203.0.29:8545"
         }
       ],
-      "ExtendNodes": [
-      ],
-      "WrapperContract":["4493fb5dc195900938CC23096C7EEdEfc434e283", "B88f13682F3C602aCD84B4b2eEB96A9DD75Afd89"],
-      "SwapContract": "aC57280B3A657A2e8D1180493C519a476D208F61",
-      "CCMContract":"39Cd00c5d0fa3e880B86B6a76224a18128DE89E5",
-      "ProxyContract":"28ff66a1b95d7cacf8eded2e658f768f44841212"
+      "ExtendNodes": []
     },
     {
       "ChainName":"NEO",
       "ChainId":4,
-      "ListenSlot":1,
-      "Defer": 1,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://wallet.ngd.network:10332"
         }
       ],
-      "ExtendNodes": [
-      ],
-      "WrapperContract":["125c83403763670c215f9c7c815ef759b258a41b", "1b20e48cd86d6af552f70847e081c2e9169a57d3"],
-      "CCMContract":"82a3401fb9a60db42c6fa2ea2b6d62e872d6257f",
-      "ProxyContract":"e7fb2e1d937e71dbbb512e6375746181127282e7"
+      "ExtendNodes": []
     },
     {
       "ChainName":"NEO3",
       "ChainId":14,
-      "ListenSlot":1,
-      "Defer": 1,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url": "http://seed1.neo.org:10332"
@@ -122,18 +87,11 @@
           "Url": "http://seed4.neo.org:10332"
         }
       ],
-      "ExtendNodes": [
-      ],
-      "WrapperContract":["1b20e48cd86d6af552f70847e081c2e9169a57d3"],
-      "CCMContract":"5ba6c543c5a86a85e9ab3f028a4ad849b924fab9",
-      "ProxyContract":"385501cb0288b2953db767b0dc971478539456cb"
+      "ExtendNodes": []
     },
     {
       "ChainName":"BSC",
       "ChainId":6,
-      "ListenSlot":1,
-      "Defer": 1,
-      "BatchSize": 5,
       "Nodes": [
         {
           "Url":"http://50.18.242.42:8545"
@@ -157,8 +115,181 @@
           "Url":"https://bsc-dataseed2.ninicoin.io/"
         }
       ],
-      "ExtendNodes": [
+      "ExtendNodes": []
+    },
+    {
+      "ChainName":"Switcheo",
+      "ChainId":5,
+      "Nodes": [
+        {
+          "Url":"http://54.255.5.46:26657"
+        },
+        {
+          "Url": "http://175.41.151.35:26657"
+        }
       ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName":"HECO",
+      "ChainId":7,
+      "Nodes": [
+        {
+          "Url": "https://http-mainnet.hecochain.com"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName":"Ontology",
+      "ChainId":3,
+      "Nodes": [
+        {
+          "Url": "http://dappnode4.ont.io:20336"
+        },
+        {
+          "Url": "http://dappnode2.ont.io:20336"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName":"Ok",
+      "ChainId":12,
+      "Nodes": [
+        {
+          "Url": "http://35.73.164.192:26659"
+        },
+        {
+          "Url": "http://10.203.0.47:8545"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "curve",
+      "ChainId": 10,
+      "ListenSlot": 1,
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.42:8545"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName":"PLT",
+      "ChainId":8,
+      "Nodes": [
+        {
+          "Url": "http://13.231.222.1:22000"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Arbitrum",
+      "ChainId": 19,
+      "Nodes": [
+        {
+          "Url": "https://arb1.arbitrum.io/rpc"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Avax",
+      "ChainId": 21,
+      "Nodes": [
+        {
+          "Url": "http://10.203.16.4:9650/ext/bc/C/rpc"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Fantom",
+      "ChainId": 22,
+      "Nodes": [
+        {
+          "Url": "10.203.16.9:18545"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Optimistic",
+      "ChainId": 23,
+      "Nodes": [
+        {
+          "Url": "http://10.203.16.8:9991"
+        }
+      ],
+      "ExtendNodes": []
+    }
+  ],
+  "ChainListenConfig":[
+    {
+      "ChainName":"Poly",
+      "ChainId":0,
+      "ListenSlot":1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract":[""],
+      "CCMContract":"0300000000000000000000000000000000000000",
+      "ProxyContract":""
+    },
+    {
+      "ChainName":"Ethereum",
+      "ChainId":2,
+      "ListenSlot":5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract":["2aA63cd0b28FB4C31fA8e4E95Ec11815Be07b9Ac", "d380450e9e373bDC389951C54616edb2EE653524"],
+      "CCMContract":"e020877e67CfAAFFC33a6E7eB9e85741bbb3eA79",
+      "ProxyContract":"250e76987d838a75310c34bf422ea9f1AC4Cc906",
+      "SwapContract": "af83ce8d461e8834de03a3803c968615013c6b3d",
+      "NFTWrapperContract":["e5204d62361A353C665668C858Ea213070CA159c", "D728e9844af285fA116806c273aa413686aE65e8"],
+      "NFTProxyContract":["2cdfc90250EF967036838DA601099656e74bCfc5", "D33e44F6E4fE37C4dF23c7171657721B9A725417"],
+      "NFTQueryContract": "B2265A122814dA516318F727183a5D8FeCA8BaCE"
+    },
+    {
+      "ChainName":"MATIC",
+      "ChainId":17,
+      "ListenSlot":5,
+      "Defer": 129,
+      "BatchSize": 5,
+      "WrapperContract":["4493fb5dc195900938CC23096C7EEdEfc434e283", "B88f13682F3C602aCD84B4b2eEB96A9DD75Afd89"],
+      "SwapContract": "aC57280B3A657A2e8D1180493C519a476D208F61",
+      "CCMContract":"39Cd00c5d0fa3e880B86B6a76224a18128DE89E5",
+      "ProxyContract":"28ff66a1b95d7cacf8eded2e658f768f44841212"
+    },
+    {
+      "ChainName":"NEO",
+      "ChainId":4,
+      "ListenSlot":1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract":["125c83403763670c215f9c7c815ef759b258a41b", "1b20e48cd86d6af552f70847e081c2e9169a57d3"],
+      "CCMContract":"82a3401fb9a60db42c6fa2ea2b6d62e872d6257f",
+      "ProxyContract":"e7fb2e1d937e71dbbb512e6375746181127282e7"
+    },
+    {
+      "ChainName":"NEO3",
+      "ChainId":14,
+      "ListenSlot":1,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract":["1b20e48cd86d6af552f70847e081c2e9169a57d3"],
+      "CCMContract":"5ba6c543c5a86a85e9ab3f028a4ad849b924fab9",
+      "ProxyContract":"385501cb0288b2953db767b0dc971478539456cb"
+    },
+    {
+      "ChainName":"BSC",
+      "ChainId":6,
+      "ListenSlot":1,
+      "Defer": 1,
+      "BatchSize": 5,
       "WrapperContract":["E3D0FB6E3cB5DA61EB18b06D035052441009d1E6","4b0CFdb5e1Ca898a225F9E14AfF9e4eF178a10d2"],
       "CCMContract":"00EeE7b864062c40F8096f948a2B0Db3c28aa6fE",
       "ProxyContract":"2f7ac9436ba4B548f9582af91CA1Ef02cd2F1f03",
@@ -172,17 +303,7 @@
       "ChainId":5,
       "ListenSlot":1,
       "Defer": 1,
-      "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url":"http://54.255.5.46:26657"
-        },
-        {
-          "Url": "http://175.41.151.35:26657"
-        }
-      ],
-      "ExtendNodes": [
-      ]
+      "BatchSize": 5
     },
     {
       "ChainName":"HECO",
@@ -190,13 +311,6 @@
       "ListenSlot":1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://http-mainnet.hecochain.com"
-        }
-      ],
-      "ExtendNodes": [
-      ],
       "WrapperContract":["4fE451186c0D69205ACc1fA00FD75fc6d71e47eE", "1B0C55be400e2a7D924032B257Fbc75Bbfd256E7"],
       "CCMContract":"59A2C3062D9F1097D5CD239FA1BAbE6cb64fB96C",
       "ProxyContract":"020c15e7d08A8Ec7D35bCf3AC3CCbF0BBf2704e6",
@@ -211,16 +325,6 @@
       "ListenSlot":1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://dappnode4.ont.io:20336"
-        },
-        {
-          "Url": "http://dappnode2.ont.io:20336"
-        }
-      ],
-      "ExtendNodes": [
-      ],
       "WrapperContract":["c93837e82178d406af8c84e1841c6960af251cb5"],
       "CCMContract":"0900000000000000000000000000000000000000",
       "ProxyContract":"86b4ab5d99037113867247a1e68f70e348c07597"
@@ -231,16 +335,6 @@
       "ListenSlot":2,
       "Defer": 2,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://35.73.164.192:26659"
-        },
-        {
-          "Url": "http://10.203.0.47:8545"
-        }
-      ],
-      "ExtendNodes": [
-      ],
       "WrapperContract":["11e2A718d46EBe97645b87F2363AFE1BF28c2672", "bd4a08577476A521C41a21EF3f00b045b74175d5"],
       "CCMContract":"3758fD8D5c29AD2620De837Da7531Bb4d1f64EDc",
       "ProxyContract":"9a3658864Aa2Ccc63FA61eAAD5e4f65fA490cA7D"
@@ -251,14 +345,7 @@
       "ChainName": "curve",
       "Defer": 2,
       "BatchSize": 5,
-      "ExtendNodes": [
-      ],
       "ListenSlot": 1,
-      "Nodes": [
-        {
-          "Url": "http://10.203.0.42:8545"
-        }
-      ],
       "ProxyContract": "34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430",
       "SwapContract": "34d4a23A1FC0C694f0D74DDAf9D8d564cfE2D430",
       "WrapperContract": [
@@ -271,13 +358,6 @@
       "ListenSlot":1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://13.231.222.1:22000"
-        }
-      ],
-      "ExtendNodes": [
-      ],
       "WrapperContract":["0A9C412633465fdeE4861CeE02987386100bEAe6", ""],
       "CCMContract":"1b02EEE12A7bF02922113a70d3D343De4b43f776",
       "ProxyContract":"0000000000000000000000000000000000000103",
@@ -291,12 +371,6 @@
       "ListenSlot": 1,
       "Defer": 5,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "https://arb1.arbitrum.io/rpc"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "Cf018d59B4728d073bd961ABe6A8024A8F0A3cdB",
         "0f8C16BA16E58525Eb2aDc231ff360cfa00bB527"
@@ -311,12 +385,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://10.203.16.4:9650/ext/bc/C/rpc"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "287Bd66753f0cA8e9C2171D782DF39e4C28cfd65",
         "f06587dE89e289Ce480CDf21109A14547eb33A0d"
@@ -330,12 +398,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "10.203.16.9:18545"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "287Bd66753f0cA8e9C2171D782DF39e4C28cfd65",
         "f06587dE89e289Ce480CDf21109A14547eb33A0d"
@@ -349,12 +411,6 @@
       "ListenSlot": 1,
       "Defer": 1,
       "BatchSize": 5,
-      "Nodes": [
-        {
-          "Url": "http://10.203.16.8:9991"
-        }
-      ],
-      "ExtendNodes": [],
       "WrapperContract": [
         "287Bd66753f0cA8e9C2171D782DF39e4C28cfd65",
         "f06587dE89e289Ce480CDf21109A14547eb33A0d"
@@ -421,13 +477,6 @@
     {
       "ChainId":2,
       "ChainName":"Ethereum",
-      "Nodes": [
-        {
-          "Url": "https://mainnet.infura.io/v3/67c37a240ed64ed68d076f900f05761b"
-        },{
-          "Url": "http://onto-eth.ont.io:10331"
-        }
-      ],
       "GasLimit":220000,
       "ProxyFee":140,
       "MinFee": 40
@@ -435,8 +484,6 @@
     {
       "ChainId":4,
       "ChainName":"NEO",
-      "Nodes": [
-      ],
       "GasLimit":300000,
       "ProxyFee":140,
       "MinFee": 40
@@ -444,8 +491,6 @@
     {
       "ChainId":14,
       "ChainName":"NEO3",
-      "Nodes": [
-      ],
       "GasLimit":5000000,
       "ProxyFee":120,
       "MinFee": 20
@@ -453,11 +498,6 @@
     {
       "ChainId":6,
       "ChainName":"BSC",
-      "Nodes": [
-        {
-          "Url": "https://bsc-dataseed.binance.org/"
-        }
-      ],
       "GasLimit":220000,
       "ProxyFee":140,
       "MinFee": 40
@@ -465,11 +505,6 @@
     {
       "ChainId":7,
       "ChainName":"HECO",
-      "Nodes": [
-        {
-          "Url": "https://http-mainnet.hecochain.com"
-        }
-      ],
       "GasLimit":220000,
       "ProxyFee":140,
       "MinFee": 40
@@ -477,8 +512,6 @@
     {
       "ChainId":3,
       "ChainName":"Ontology",
-      "Nodes": [
-      ],
       "GasLimit":200000000,
       "ProxyFee":120,
       "MinFee": 20
@@ -486,11 +519,6 @@
     {
       "ChainId":12,
       "ChainName":"OK",
-      "Nodes": [
-        {
-          "Url": "https://exchainrpc.okex.org"
-        }
-      ],
       "GasLimit":220000,
       "ProxyFee":120,
       "MinFee": 20
@@ -498,11 +526,6 @@
     {
       "ChainId":17,
       "ChainName":"MATIC",
-      "Nodes": [
-        {
-          "Url": "http://10.203.0.29:8545"
-        }
-      ],
       "GasLimit":300000,
       "ProxyFee":120,
       "MinFee": 20
@@ -510,11 +533,6 @@
     {
       "ChainId":5,
       "ChainName":"Switcheo",
-      "Nodes": [
-        {
-          "Url": "http://40.115.182.238:26657"
-        }
-      ],
       "GasLimit":0,
       "ProxyFee":120,
       "MinFee": 20
@@ -522,11 +540,6 @@
     {
       "ChainId": 19,
       "ChainName": "Arbitrum",
-      "Nodes": [
-        {
-          "Url": "https://arb1.arbitrum.io/rpc"
-        }
-      ],
       "GasLimit": 3500000,
       "ProxyFee": 140,
       "MinFee": 40
@@ -534,11 +547,6 @@
     {
       "ChainId": 21,
       "ChainName": "Avax",
-      "Nodes": [
-        {
-          "Url": "http://10.203.16.4:9650/ext/bc/C/rpc"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 140,
       "MinFee": 20
@@ -546,11 +554,6 @@
     {
       "ChainId": 22,
       "ChainName": "Fantom",
-      "Nodes": [
-        {
-          "Url": "http://10.203.16.9:18545"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 140,
       "MinFee": 20
@@ -558,11 +561,6 @@
     {
       "ChainId": 23,
       "ChainName": "Optimistic",
-      "Nodes": [
-        {
-          "Url": "http://10.203.16.8:9991"
-        }
-      ],
       "GasLimit": 120000,
       "ProxyFee": 120,
       "MinFee": 20
