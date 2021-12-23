@@ -189,8 +189,18 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Limit(transactionsOfAddressReq.PageSize).Offset(transactionsOfAddressReq.PageSize * transactionsOfAddressReq.PageNo).
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
+	for _, relation := range srcPolyDstRelations {
+		if relation.ChainId != 0 && len(relation.FeeTokenHash) != 0 {
+			feeToken := make([]*models.Token, 0)
+			err := db.Table("tokens").Where("tokens.chain_id = ? AND tokens.hash = ?", relation.ChainId, relation.FeeTokenHash).Find(&feeToken).Error
+			if err == nil {
+				relation.FeeToken = feeToken[0]
+			}
+		}
+	}
+
 	if transactionsOfAddressReq.Addresses[0] == "93aea6537acd6c10ed76ea8eb367c2ae4cfa2282" {
-		logs.Info("12345######srcPolyDstRelation=%+v", *srcPolyDstRelations[5])
+		logs.Info("12345######srcPolyDstRelation=%+v", *srcPolyDstRelations[6])
 	}
 
 	var transactionNum int64
