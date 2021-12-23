@@ -60,10 +60,6 @@ func (e *EthereumChainListen) NFTWrapperAddress() common.Address {
 	return common.HexToAddress(e.ethCfg.NFTWrapperContract)
 }
 
-func (e *EthereumChainListen) ECCMAddress() common.Address {
-	return common.HexToAddress(e.ethCfg.CCMContract)
-}
-
 func (e *EthereumChainListen) NFTProxyAddress() common.Address {
 	return common.HexToAddress(e.ethCfg.NFTProxyContract)
 }

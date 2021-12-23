@@ -52,6 +52,10 @@ const (
 	SWAP_ROLLBACK
 )
 
+const (
+	NATIVE_TOKEN = "0000000000000000000000000000000000000000"
+)
+
 func GetStateName(state int) string {
 	switch state {
 	case STATE_FINISHED:

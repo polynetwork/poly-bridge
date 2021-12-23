@@ -192,7 +192,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							SrcChainId:   this.GetChainId(),
 						})
 					}
-				} else if notify.Contract[2:] == this.neoCfg.CCMContract {
+				} else if basedef.StringInSlice(notify.Contract[2:], this.neoCfg.CCMContract) {
 					if notify.State.Type != "Array" {
 						continue
 					}

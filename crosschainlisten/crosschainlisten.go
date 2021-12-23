@@ -24,8 +24,6 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/crosschainlisten/zilliqalisten"
-	"poly-bridge/crosschainlisten/zionmainlisten"
-	"poly-bridge/crosschainlisten/zionsidelisten"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -90,10 +88,6 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 	switch chainListenConfig.ChainId {
 	case basedef.ZION_CROSSCHAIN_ID:
 		return polylisten.NewPolyChainListen(chainListenConfig)
-	case basedef.ZIONMAIN_CROSSCHAIN_ID:
-		return zionmainlisten.NewZionMainChainListen(chainListenConfig)
-	case basedef.SIDECHAIN_CROSSCHAIN_ID:
-		return zionsidelisten.NewZionSideChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
 	case basedef.ONT_CROSSCHAIN_ID:

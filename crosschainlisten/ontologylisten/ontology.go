@@ -137,7 +137,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						SrcChainId:   this.GetChainId(),
 					})
 				}
-			} else if notify.ContractAddress == this.ontCfg.CCMContract {
+			} else if basedef.StringInSlice(notify.ContractAddress, this.ontCfg.CCMContract) {
 				states := notify.States.([]interface{})
 				contractMethod, _ := states[0].(string)
 				switch contractMethod {

@@ -171,7 +171,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 							SrcChainId:   this.GetChainId(),
 						})
 					}
-				} else if notify.Contract[2:] == this.neoCfg.CCMContract {
+				} else if basedef.StringInSlice(notify.Contract[2:], this.neoCfg.CCMContract) {
 					if len(notify.State.Value) <= 0 {
 						continue
 					}

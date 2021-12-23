@@ -9,6 +9,7 @@ import (
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"strings"
 	"time"
 )
 
@@ -24,12 +25,17 @@ func assembleLockToken(chainid uint64, hash string, chainCfg []*conf.ChainListen
 	x := make([]chainhashproxy, 0)
 	for _, chain := range chainCfg {
 		if chain.ChainId == chainid {
-			a := chainhashproxy{
-				chainid,
-				hash,
-				chain.ProxyContract,
+			for _, proxy := range chain.ProxyContract {
+				if len(strings.TrimSpace(proxy)) == 0 {
+					continue
+				}
+				a := chainhashproxy{
+					chainid,
+					hash,
+					proxy,
+				}
+				x = append(x, a)
 			}
-			x = append(x, a)
 			for _, other := range chain.OtherProxyContract {
 				a := chainhashproxy{
 					chainid,
@@ -47,9 +53,17 @@ func initItemProxyMap(chainCfg []*conf.ChainListenConfig) {
 	mapItemProxy := make(map[string]string)
 	for _, chain := range chainCfg {
 		for _, other := range chain.OtherProxyContract {
+			if len(strings.TrimSpace(other.ItemProxy)) == 0 {
+				continue
+			}
 			mapItemProxy[other.ItemProxy] = other.ItemName
 		}
-		mapItemProxy[chain.ProxyContract] = "poly"
+		for _, proxy := range chain.ProxyContract {
+			if len(strings.TrimSpace(proxy)) == 0 {
+				continue
+			}
+			mapItemProxy[proxy] = "poly"
+		}
 	}
 	itemProxy2ItemName = mapItemProxy
 }

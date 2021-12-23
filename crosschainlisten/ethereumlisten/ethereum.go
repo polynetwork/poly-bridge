@@ -25,12 +25,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/go_abi/eccm_abi"
 	"poly-bridge/go_abi/lock_proxy_abi"
+	"poly-bridge/go_abi/main_chain_lock_proxy_abi"
+	"poly-bridge/go_abi/main_chain_wrapper_abi"
+	"poly-bridge/go_abi/side_chain_lockproxy_abi"
+	"poly-bridge/go_abi/side_chain_wrapper_abi"
 	"poly-bridge/go_abi/swapper_abi"
 	"poly-bridge/go_abi/wrapper_abi"
 	"poly-bridge/models"
@@ -135,22 +138,17 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 		item.SrcChainId = this.GetChainId()
 		item.Status = basedef.STATE_SOURCE_DONE
 	}
-	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, startHeight, endHeight)
+
+	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(startHeight, endHeight)
+	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err := this.getProxyEventByBlockNumber(startHeight, endHeight)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
-
-	proxyLockEvents, proxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
-	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, startHeight, endHeight)
-	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
-	}
-
 	nftProxyLockEvents, nftProxyUnlockEvents, err := this.getNFTProxyEventByBlockNumber(this.ethCfg.NFTProxyContract, startHeight, endHeight)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
-
+	proxyLockEvents, proxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
 	proxyLockEvents = append(proxyLockEvents, erc20ProxyLockEvents...)
 	proxyUnlockEvents = append(proxyUnlockEvents, erc20ProxyUnlockEvents...)
 	proxyLockEvents = append(proxyLockEvents, nftProxyLockEvents...)
@@ -301,11 +299,11 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddrs []string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {
 	txs := make([]*models.WrapperTransaction, 0)
-	for i, contract := range contractAddrs {
-		if contract == "" {
+	for index, contract := range contractAddrs {
+		if len(strings.TrimSpace(contract)) == 0 {
 			continue
 		}
-		aaa, err := this.getWrapperEventByBlockNumber1(contract, startHeight, endHeight, i)
+		aaa, err := this.getWrapperEventByBlockNumber1(contract, startHeight, endHeight, index)
 		if err != nil {
 			return nil, err
 		}
@@ -323,166 +321,372 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 	if client == nil {
 		return nil, fmt.Errorf("getWrapperEventByBlockNumber1 GetClient error: nil")
 	}
-	wrapperContract, err := wrapper_abi.NewPolyWrapper(wrapperAddress, client)
-	if err != nil {
-		return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
-	}
 	opt := &bind.FilterOpts{
 		Start:   startHeight,
 		End:     &endHeight,
 		Context: context.Background(),
 	}
-	// get ethereum lock events from given block
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	lockEvents, err := wrapperContract.FilterPolyWrapperLock(opt, nil, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+	if index == 0 {
+		// native lockProxy
+		switch this.GetChainId() {
+		case basedef.ZIONMAIN_CROSSCHAIN_ID:
+			wrapperContract, err := main_chain_wrapper_abi.NewMainChainWrapperTest(wrapperAddress, client)
+			if err != nil {
+				return nil, fmt.Errorf("NewMainChainWrapperTest, error: %s", err.Error())
+			}
+			lockEvents, err := wrapperContract.FilterWrapperLock(opt, nil)
+			if err != nil {
+				return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+			}
+			for lockEvents.Next() {
+				evt := lockEvents.Event
+				wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+					Hash:         evt.Raw.TxHash.String()[2:],
+					User:         strings.ToLower(evt.Sender.String()[2:]),
+					DstChainId:   evt.ToChainId,
+					DstUser:      strings.ToLower(evt.ToAddress.String()[2:]),
+					FeeTokenHash: basedef.NATIVE_TOKEN,
+					FeeAmount:    models.NewBigInt(evt.Fee),
+					BlockHeight:  evt.Raw.BlockNumber,
+				})
+			}
+		case basedef.SIDECHAIN_CROSSCHAIN_ID:
+			wrapperContract, err := side_chain_wrapper_abi.NewSideChainWrapperTest(wrapperAddress, client)
+			if err != nil {
+				return nil, fmt.Errorf("NewMainChainWrapperTest, error: %s", err.Error())
+			}
+			lockEvents, err := wrapperContract.FilterWrapperBurn(opt, nil)
+			if err != nil {
+				return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+			}
+			for lockEvents.Next() {
+				evt := lockEvents.Event
+				wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+					Hash:         evt.Raw.TxHash.String()[2:],
+					User:         strings.ToLower(evt.Sender.String()[2:]),
+					DstChainId:   basedef.ZIONMAIN_CROSSCHAIN_ID,
+					DstUser:      strings.ToLower(evt.Sender.String()[2:]),
+					FeeTokenHash: basedef.NATIVE_TOKEN,
+					FeeAmount:    models.NewBigInt(evt.Fee),
+					BlockHeight:  evt.Raw.BlockNumber,
+				})
+			}
+		}
+	} else {
+		wrapperContract, err := wrapper_abi.NewPolyWrapper(wrapperAddress, client)
+		if err != nil {
+			return nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+		}
+		lockEvents, err := wrapperContract.FilterPolyWrapperLock(opt, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+		}
+		for lockEvents.Next() {
+			evt := lockEvents.Event
+			wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+				Hash:         evt.Raw.TxHash.String()[2:],
+				User:         strings.ToLower(evt.Sender.String()[2:]),
+				DstChainId:   evt.ToChainId,
+				DstUser:      hex.EncodeToString(evt.ToAddress),
+				FeeTokenHash: strings.ToLower(evt.FromAsset.String()[2:]),
+				FeeAmount:    models.NewBigInt(evt.Fee),
+				ServerId:     evt.Id.Uint64(),
+				BlockHeight:  evt.Raw.BlockNumber,
+			})
+		}
+		speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+		}
+		for speedupEvents.Next() {
+			evt := speedupEvents.Event
+			wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+				Hash:         evt.TxHash.String(),
+				User:         evt.Sender.String(),
+				FeeTokenHash: evt.FromAsset.String(),
+				FeeAmount:    models.NewBigInt(evt.Efee),
+			})
+		}
 	}
-	for lockEvents.Next() {
-		evt := lockEvents.Event
-		wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
-			Hash:         evt.Raw.TxHash.String()[2:],
-			User:         strings.ToLower(evt.Sender.String()[2:]),
-			DstChainId:   evt.ToChainId,
-			DstUser:      hex.EncodeToString(evt.ToAddress),
-			FeeTokenHash: strings.ToLower(evt.FromAsset.String()[2:]),
-			FeeAmount:    models.NewBigInt(evt.Fee),
-			ServerId:     evt.Id.Uint64(),
-			BlockHeight:  evt.Raw.BlockNumber,
-		})
-	}
-	speedupEvents, err := wrapperContract.FilterPolyWrapperSpeedUp(opt, nil, nil, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
-	}
-	for speedupEvents.Next() {
-		evt := speedupEvents.Event
-		wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
-			Hash:         evt.TxHash.String(),
-			User:         evt.Sender.String(),
-			FeeTokenHash: evt.FromAsset.String(),
-			FeeAmount:    models.NewBigInt(evt.Efee),
-		})
-	}
-	if index == 1 {
+
+	if index != 1 {
 		for _, tx := range wrapperTransactions {
-			tx.FeeTokenHash = "0000000000000000000000000000000000000000"
+			tx.FeeTokenHash = basedef.NATIVE_TOKEN
 		}
 	}
 	return wrapperTransactions, nil
 }
 
-func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+func (this *EthereumChainListen) getECCMEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+	eccmLockEvents, eccmUnLockEvents := make([]*models.ECCMLockEvent, 0), make([]*models.ECCMUnlockEvent, 0)
+	for index, ccmContract := range this.ethCfg.CCMContract {
+		if len(strings.TrimSpace(ccmContract)) == 0 {
+			continue
+		}
+		eccmLockEvents1, eccmUnLockEvents1, err := this.getECCMEventByBlockNumber1(index, ccmContract, startHeight, endHeight)
+		if err != nil {
+			return nil, nil, err
+		}
+		eccmLockEvents = append(eccmLockEvents, eccmLockEvents1...)
+		eccmUnLockEvents = append(eccmUnLockEvents, eccmUnLockEvents1...)
+	}
+	return eccmLockEvents, eccmUnLockEvents, nil
+}
+
+func (this *EthereumChainListen) getECCMEventByBlockNumber1(index int, contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
 	client := this.ethSdk.GetClient()
 	if client == nil {
 		return nil, nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
 	}
-	eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, client)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
-	}
 	opt := &bind.FilterOpts{
 		Start:   startHeight,
 		End:     &endHeight,
 		Context: context.Background(),
 	}
-	// get ethereum lock events from given block
-	eccmLockEvents := make([]*models.ECCMLockEvent, 0)
-	crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt, nil)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
-	}
-	for crossChainEvents.Next() {
-		evt := crossChainEvents.Event
-		Fee := this.GetConsumeGas(evt.Raw.TxHash)
-		eccmLockEvents = append(eccmLockEvents, &models.ECCMLockEvent{
-			Method:   _eth_crosschainlock,
-			Txid:     hex.EncodeToString(evt.TxId),
-			TxHash:   evt.Raw.TxHash.String()[2:],
-			User:     strings.ToLower(evt.Sender.String()[2:]),
-			Tchain:   uint32(evt.ToChainId),
-			Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
-			Value:    evt.Rawdata,
-			Height:   evt.Raw.BlockNumber,
-			Fee:      Fee,
-		})
-	}
-	// ethereum unlock events from given block
-	eccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
-	executeTxEvent, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
-	}
 
-	for executeTxEvent.Next() {
-		evt := executeTxEvent.Event
-		Fee := this.GetConsumeGas(evt.Raw.TxHash)
-		eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
-			Method:   _eth_crosschainunlock,
-			TxHash:   evt.Raw.TxHash.String()[2:],
-			RTxHash:  hex.EncodeToString(evt.CrossChainTxHash),
-			Contract: hex.EncodeToString(evt.ToContract),
-			FChainId: uint32(evt.FromChainID),
-			Height:   evt.Raw.BlockNumber,
-			Fee:      Fee,
-		})
+	eccmLockEvents := make([]*models.ECCMLockEvent, 0)
+	eccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
+	if index == 0 {
+		// native ccm
+		switch this.GetChainId() {
+		case basedef.ZIONMAIN_CROSSCHAIN_ID:
+			eccmContract, err := main_chain_lock_proxy_abi.NewIMainChainLockProxy(eccmContractAddress, client)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionMain NewIMainChainLockProxy eccmContract error: %s", err.Error())
+			}
+			crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionMainListen FilterCrossChainEvent err: %s", err.Error())
+			}
+			for crossChainEvents.Next() {
+				evt := crossChainEvents.Event
+				Fee := this.GetConsumeGas(evt.Raw.TxHash)
+				eccmLockEvents = append(eccmLockEvents, &models.ECCMLockEvent{
+					Method:   _eth_crosschainlock,
+					Txid:     hex.EncodeToString(evt.TxId),
+					TxHash:   evt.Raw.TxHash.String()[2:],
+					User:     strings.ToLower(evt.Sender.String()[2:]),
+					Tchain:   uint32(evt.ToChainId),
+					Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
+					Value:    evt.Rawdata,
+					Height:   evt.Raw.BlockNumber,
+					Fee:      Fee,
+				})
+			}
+			executeTxEvents, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionMainListen FilterVerifyHeaderAndExecuteTxEvent err: %s", err.Error())
+			}
+			for executeTxEvents.Next() {
+				evt := executeTxEvents.Event
+				Fee := this.GetConsumeGas(evt.Raw.TxHash)
+				eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
+					Method:   _eth_crosschainunlock,
+					TxHash:   evt.Raw.TxHash.String()[2:],
+					RTxHash:  hex.EncodeToString(evt.CrossChainTxHash),
+					Contract: hex.EncodeToString(evt.ToContract),
+					FChainId: uint32(evt.FromChainID),
+					Height:   evt.Raw.BlockNumber,
+					Fee:      Fee,
+				})
+			}
+
+		}
+	} else {
+		eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, client)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+		}
+		crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt, nil)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+		}
+		for crossChainEvents.Next() {
+			evt := crossChainEvents.Event
+			Fee := this.GetConsumeGas(evt.Raw.TxHash)
+			eccmLockEvents = append(eccmLockEvents, &models.ECCMLockEvent{
+				Method:   _eth_crosschainlock,
+				Txid:     hex.EncodeToString(evt.TxId),
+				TxHash:   evt.Raw.TxHash.String()[2:],
+				User:     strings.ToLower(evt.Sender.String()[2:]),
+				Tchain:   uint32(evt.ToChainId),
+				Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
+				Value:    evt.Rawdata,
+				Height:   evt.Raw.BlockNumber,
+				Fee:      Fee,
+			})
+		}
+		executeTxEvent, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
+		}
+
+		for executeTxEvent.Next() {
+			evt := executeTxEvent.Event
+			Fee := this.GetConsumeGas(evt.Raw.TxHash)
+			eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
+				Method:   _eth_crosschainunlock,
+				TxHash:   evt.Raw.TxHash.String()[2:],
+				RTxHash:  hex.EncodeToString(evt.CrossChainTxHash),
+				Contract: hex.EncodeToString(evt.ToContract),
+				FChainId: uint32(evt.FromChainID),
+				Height:   evt.Raw.BlockNumber,
+				Fee:      Fee,
+			})
+		}
 	}
 	return eccmLockEvents, eccmUnlockEvents, nil
 }
 
-func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
+func (this *EthereumChainListen) getProxyEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
+	erc20ProxyLockEvents, erc20ProxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
+	for index, lockContract := range this.ethCfg.ProxyContract {
+		if len(strings.TrimSpace(lockContract)) == 0 {
+			continue
+		}
+		erc20ProxyLockEvents1, erc20ProxyUnlockEvents1, err := this.getProxyEventByBlockNumber1(index, lockContract, startHeight, endHeight)
+		if err != nil {
+			return nil, nil, err
+		}
+		erc20ProxyLockEvents = append(erc20ProxyLockEvents, erc20ProxyLockEvents1...)
+		erc20ProxyUnlockEvents = append(erc20ProxyUnlockEvents, erc20ProxyUnlockEvents1...)
+	}
+	return erc20ProxyLockEvents, erc20ProxyUnlockEvents, nil
+}
+
+func (this *EthereumChainListen) getProxyEventByBlockNumber1(index int, contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
 	proxyAddress := common.HexToAddress(contractAddr)
 	client := this.ethSdk.GetClient()
 	if client == nil {
 		return nil, nil, fmt.Errorf("getProxyEventByBlockNumber GetClient error: nil")
 	}
-	proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, client)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
-	}
 	opt := &bind.FilterOpts{
 		Start:   startHeight,
 		End:     &endHeight,
 		Context: context.Background(),
 	}
-	// get ethereum lock events from given block
 	proxyLockEvents := make([]*models.ProxyLockEvent, 0)
-	lockEvents, err := proxyContract.FilterLockEvent(opt)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
-	}
-	for lockEvents.Next() {
-		evt := lockEvents.Event
-		proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
-			BlockNumber:   evt.Raw.BlockNumber,
-			Method:        _eth_lock,
-			TxHash:        evt.Raw.TxHash.String()[2:],
-			FromAddress:   evt.FromAddress.String()[2:],
-			FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
-			ToChainId:     uint32(evt.ToChainId),
-			ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
-			ToAddress:     hex.EncodeToString(evt.ToAddress),
-			Amount:        evt.Amount,
-		})
-	}
-
-	// ethereum unlock events from given block
 	proxyUnlockEvents := make([]*models.ProxyUnlockEvent, 0)
-	unlockEvents, err := proxyContract.FilterUnlockEvent(opt)
-	if err != nil {
-		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
-	}
-	for unlockEvents.Next() {
-		evt := unlockEvents.Event
-		proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
-			BlockNumber: evt.Raw.BlockNumber,
-			Method:      _eth_unlock,
-			TxHash:      evt.Raw.TxHash.String()[2:],
-			ToAssetHash: strings.ToLower(evt.ToAssetHash.String()[2:]),
-			ToAddress:   strings.ToLower(evt.ToAddress.String()[2:]),
-			Amount:      evt.Amount,
-		})
+	if index == 0 {
+		// native lockProxy
+		switch this.GetChainId() {
+		case basedef.ZIONMAIN_CROSSCHAIN_ID:
+			proxyContract, err := main_chain_lock_proxy_abi.NewIMainChainLockProxy(proxyAddress, client)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionMain NewIMainChainLockProxy eccmContract error: %s", err.Error())
+			}
+			lockEvents, err := proxyContract.FilterLockEvent(opt)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionMainListen FilterLockEvent err: %s", err.Error())
+			}
+			for lockEvents.Next() {
+				evt := lockEvents.Event
+				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
+					BlockNumber:   evt.Raw.BlockNumber,
+					Method:        _eth_lock,
+					TxHash:        evt.Raw.TxHash.String()[2:],
+					FromAddress:   evt.FromAddress.String()[2:],
+					FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
+					ToChainId:     uint32(evt.ToChainId),
+					ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
+					ToAddress:     hex.EncodeToString(evt.ToAddress),
+					Amount:        evt.Amount,
+				})
+			}
+			unlockEvents, err := proxyContract.FilterUnlockEvent(opt)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionMainListen FilterUnlockEvent err: %s", err.Error())
+			}
+			for unlockEvents.Next() {
+				evt := unlockEvents.Event
+				proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
+					BlockNumber: evt.Raw.BlockNumber,
+					Method:      _eth_unlock,
+					TxHash:      evt.Raw.TxHash.String()[2:],
+					ToAssetHash: strings.ToLower(evt.ToAssetHash.String()[2:]),
+					ToAddress:   strings.ToLower(evt.ToAddress.String()[2:]),
+					Amount:      evt.Amount,
+				})
+			}
+		case basedef.SIDECHAIN_CROSSCHAIN_ID:
+			proxyContract, err := side_chain_lockproxy_abi.NewISideChainLockProxy(proxyAddress, client)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionSide NewISideChainLockProxy, error: %s", err.Error())
+			}
+			lockEvents, err := proxyContract.FilterBurnEvent(opt)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionSideListen FilterBurnEvent err: %s", err.Error())
+			}
+			for lockEvents.Next() {
+				evt := lockEvents.Event
+				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
+					BlockNumber:   evt.Raw.BlockNumber,
+					Method:        _eth_lock,
+					TxHash:        evt.Raw.TxHash.String()[2:],
+					FromAddress:   evt.FromAddress.String()[2:],
+					FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
+					ToChainId:     uint32(evt.ToChainId),
+					ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
+					ToAddress:     hex.EncodeToString(evt.ToAddress),
+					Amount:        evt.Amount,
+				})
+			}
+			unlockEvents, err := proxyContract.FilterMintEvent(opt)
+			if err != nil {
+				return nil, nil, fmt.Errorf("ZionSideListen FilterMintEvent err: %s", err.Error())
+			}
+			for unlockEvents.Next() {
+				evt := unlockEvents.Event
+				proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
+					BlockNumber: evt.Raw.BlockNumber,
+					Method:      _eth_unlock,
+					TxHash:      evt.Raw.TxHash.String()[2:],
+					ToAssetHash: strings.ToLower(evt.ToAssetHash.String()[2:]),
+					ToAddress:   strings.ToLower(evt.ToAddress.String()[2:]),
+					Amount:      evt.Amount,
+				})
+			}
+		}
+	} else {
+		proxyContract, err := lock_proxy_abi.NewLockProxy(proxyAddress, client)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
+		}
+		lockEvents, err := proxyContract.FilterLockEvent(opt)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
+		}
+		for lockEvents.Next() {
+			evt := lockEvents.Event
+			proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
+				BlockNumber:   evt.Raw.BlockNumber,
+				Method:        _eth_lock,
+				TxHash:        evt.Raw.TxHash.String()[2:],
+				FromAddress:   evt.FromAddress.String()[2:],
+				FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
+				ToChainId:     uint32(evt.ToChainId),
+				ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
+				ToAddress:     hex.EncodeToString(evt.ToAddress),
+				Amount:        evt.Amount,
+			})
+		}
+		unlockEvents, err := proxyContract.FilterUnlockEvent(opt)
+		if err != nil {
+			return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter unlock events :%s", err.Error())
+		}
+		for unlockEvents.Next() {
+			evt := unlockEvents.Event
+			proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
+				BlockNumber: evt.Raw.BlockNumber,
+				Method:      _eth_unlock,
+				TxHash:      evt.Raw.TxHash.String()[2:],
+				ToAssetHash: strings.ToLower(evt.ToAssetHash.String()[2:]),
+				ToAddress:   strings.ToLower(evt.ToAddress.String()[2:]),
+				Amount:      evt.Amount,
+			})
+		}
 	}
 	return proxyLockEvents, proxyUnlockEvents, nil
 }

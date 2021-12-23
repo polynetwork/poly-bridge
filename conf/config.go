@@ -91,8 +91,8 @@ type ChainListenConfig struct {
 	Nodes              []*Restful
 	ExtendNodes        []*Restful
 	WrapperContract    []string
-	CCMContract        string
-	ProxyContract      string
+	CCMContract        []string
+	ProxyContract      []string
 	OtherProxyContract []*OtherItemProxy
 	NFTWrapperContract string
 	NFTProxyContract   string
@@ -301,8 +301,10 @@ func initPolyProxy() {
 		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
 			continue
 		}
-		PolyProxy[strings.ToUpper(v.ProxyContract)] = true
-		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.ProxyContract))] = true
+		for _, proxy := range v.ProxyContract {
+			PolyProxy[strings.ToUpper(proxy)] = true
+			PolyProxy[strings.ToUpper(basedef.HexStringReverse(proxy))] = true
+		}
 		PolyProxy[strings.ToUpper(v.SwapContract)] = true
 		PolyProxy[strings.ToUpper(basedef.HexStringReverse(v.SwapContract))] = true
 		PolyProxy[strings.ToUpper(v.NFTProxyContract)] = true

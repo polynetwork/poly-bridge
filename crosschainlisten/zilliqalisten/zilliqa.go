@@ -107,7 +107,7 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 				// 2. event name should be CrossChainEvent
 				// zilliqa address bech32.ToBech32Address(event.Address)
 				addr := event.Address[2:]
-				if strings.EqualFold(this.zliCfg.CCMContract, addr) {
+				if basedef.StringInSlice(addr, this.zliCfg.CCMContract) {
 					logs.Info("ZilliqaChainListen found src event on cross chain: %+v\n", event)
 					srcTransaction.Hash = transaction.ID
 					srcTransaction.ChainId = this.GetChainId()
@@ -187,7 +187,7 @@ func (this *ZilliqaChainListen) getzilliqaDstTransactionByBlockNumber(height uin
 		for _, event := range events {
 			if event.EventName == ziliqa_verify_header_and_execute_tx_event {
 				addr := event.Address[2:]
-				if strings.EqualFold(this.zliCfg.CCMContract, addr) {
+				if basedef.StringInSlice(addr, this.zliCfg.CCMContract) {
 					logs.Info("ZilliqaChainListen found dst event on cross chain: %+v\n", event)
 					dstTransaction.Hash = transaction.ID
 					dstTransaction.ChainId = this.GetChainId()

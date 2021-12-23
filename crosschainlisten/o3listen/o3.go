@@ -95,7 +95,7 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no ethereum block!")
 	}
 	tt := blockHeader.Time
-	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, height, height)
+	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(height, height)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
@@ -204,7 +204,23 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 	return nil, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
 }
 
-func (this *O3ChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+func (this *O3ChainListen) getECCMEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+	eccmLockEvents, eccmUnLockEvents := make([]*models.ECCMLockEvent, 0), make([]*models.ECCMUnlockEvent, 0)
+	for _, ccmContract := range this.ethCfg.CCMContract {
+		if len(ccmContract) == 0 || ccmContract == "" {
+			continue
+		}
+		eccmLockEvents1, eccmUnLockEvents1, err := this.getECCMEventByBlockNumber1(ccmContract, startHeight, endHeight)
+		if err != nil {
+			return nil, nil, err
+		}
+		eccmLockEvents = append(eccmLockEvents, eccmLockEvents1...)
+		eccmUnLockEvents = append(eccmUnLockEvents, eccmUnLockEvents1...)
+	}
+	return eccmLockEvents, eccmUnLockEvents, nil
+}
+
+func (this *O3ChainListen) getECCMEventByBlockNumber1(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
 	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
 	if err != nil {

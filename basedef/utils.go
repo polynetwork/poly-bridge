@@ -55,7 +55,7 @@ func ReadFile(fileName string) ([]byte, error) {
 
 func Hash2Address(chainId uint64, value string) string {
 	switch chainId {
-	case  NEO_CROSSCHAIN_ID:
+	case NEO_CROSSCHAIN_ID:
 		addrHex, _ := hex.DecodeString(value)
 		addr, _ := helper.UInt160FromBytes(addrHex)
 		return helper.ScriptHashToAddress(addr)
@@ -115,6 +115,15 @@ func Int64FromFigure(figure int) int64 {
 		x *= 10
 	}
 	return x
+}
+
+func StringInSlice(s string, ss []string) bool {
+	for _, v := range ss {
+		if strings.EqualFold(s, v) {
+			return true
+		}
+	}
+	return false
 }
 
 func Address2Hash(chainId uint64, value string) (string, error) {

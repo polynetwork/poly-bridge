@@ -5,6 +5,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
+	"strings"
 
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -205,138 +206,227 @@ func newChainSdks(config *conf.Config) {
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
+	maxBalance := big.NewInt(0)
+	maxFun := func(balance *big.Int) {
+		if balance.Cmp(maxBalance) > 0 {
+			maxBalance = balance
+		}
+	}
+	errMap := make(map[error]bool, 0)
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
-		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
-		if ethereumConfig == nil {
+		config := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
+		if config == nil {
 			panic("chain is invalid")
 		}
-		return ethereumSdk.Erc20Balance(hash, ethereumConfig.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := ethereumSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.ZIONMAIN_CROSSCHAIN_ID:
-		zionmainConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
-		if zionmainConfig == nil {
+		config := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
+		if config == nil {
 			panic("chain is invalid")
 		}
-		return zionmainSdk.Erc20Balance(hash, zionmainConfig.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := zionmainSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.SIDECHAIN_CROSSCHAIN_ID:
-		sidechainConfig := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
-		if sidechainConfig == nil {
+		config := config.GetChainListenConfig(basedef.SIDECHAIN_CROSSCHAIN_ID)
+		if config == nil {
 			panic("chain is invalid")
 		}
-		return sidechainSdk.Erc20Balance(hash, sidechainConfig.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := sidechainSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.MATIC_CROSSCHAIN_ID:
-		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
-		if maticConfig == nil {
+		config := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
+		if config == nil {
 			panic("chain is invalid")
 		}
-		return maticSdk.Erc20Balance(hash, maticConfig.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := maticSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.BSC_CROSSCHAIN_ID:
-		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
-		if bscConfig == nil {
+		config := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
+		if config == nil {
 			panic("chain is invalid")
 		}
-		return bscSdk.Erc20Balance(hash, bscConfig.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := bscSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.HECO_CROSSCHAIN_ID:
-		hecoConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
-		if hecoConfig == nil {
+		config := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
+		if config == nil {
 			panic("chain is invalid")
 		}
-		return hecoSdk.Erc20Balance(hash, hecoConfig.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := hecoSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.OK_CROSSCHAIN_ID:
-		okConfig := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
-		if okConfig == nil {
+		config := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
+		if config == nil {
 			panic("chain is invalid")
 		}
-		return okSdk.Erc20Balance(hash, okConfig.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := okSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.KOVAN_CROSSCHAIN_ID:
 		config := config.GetChainListenConfig(basedef.KOVAN_CROSSCHAIN_ID)
 		if config == nil {
 			panic("Missing kovan chain sdk config")
 		}
-		return kovanSdk.Erc20Balance(hash, config.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := kovanSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.RINKEBY_CROSSCHAIN_ID:
 		config := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
 		if config == nil {
 			panic("Missing rinkeby chain sdk config")
 		}
-		return rinkebySdk.Erc20Balance(hash, config.ProxyContract)
-
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := rinkebySdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	case basedef.GOERLI_CROSSCHAIN_ID:
 		config := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
 		if config == nil {
 			panic("Missing goerli chain sdk config")
 		}
-		return goerliSdk.Erc20Balance(hash, config.ProxyContract)
+		for _, v := range config.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := goerliSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
 
-	//if chainId == basedef.NEO_CROSSCHAIN_ID {
-	//	neoConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
-	//	if neoConfig == nil {
-	//		panic("chain is invalid")
-	//	}
-	//	return neoSdk.Nep5Balance(hash, neoConfig.ProxyContract)
-	//}
-	//if chainId == basedef.ONT_CROSSCHAIN_ID {
-	//	ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
-	//	if ontConfig == nil {
-	//		panic("chain is invalid")
-	//	}
-	//	return ontologySdk.Oep4Balance(hash, ontConfig.ProxyContract)
-	//}
-	//if chainId == basedef.ARBITRUM_CROSSCHAIN_ID {
-	//	arbitrumConfig := config.GetChainListenConfig(basedef.ARBITRUM_CROSSCHAIN_ID)
-	//	if arbitrumConfig == nil {
-	//		panic("chain is invalid")
-	//	}
-	//	return arbitrumSdk.Erc20Balance(hash, arbitrumConfig.ProxyContract)
-	//}
-	//if chainId == basedef.XDAI_CROSSCHAIN_ID {
-	//	xdaiConfig := config.GetChainListenConfig(basedef.XDAI_CROSSCHAIN_ID)
-	//	if xdaiConfig == nil {
-	//		panic("chain is invalid")
-	//	}
-	//	return xdaiSdk.Erc20Balance(hash, xdaiConfig.ProxyContract)
-	//}
-	//if chainId == basedef.ZILLIQA_CROSSCHAIN_ID {
-	//	zilliqaCfg := config.GetChainListenConfig(basedef.ZILLIQA_CROSSCHAIN_ID)
-	//	if zilliqaCfg == nil {
-	//		panic("zilliqa GetChainListenConfig chain is invalid")
-	//	}
-	//	return zilliqaSdk.Erc20Balance(hash, zilliqaCfg.ProxyContract)
-	//}
-	//if chainId == basedef.FANTOM_CROSSCHAIN_ID {
-	//	fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
-	//	if fantomConfig == nil {
-	//		panic("chain is invalid")
-	//	}
-	//	return fantomSdk.Erc20Balance(hash, fantomConfig.ProxyContract)
-	//}
-	//if chainId == basedef.AVAX_CROSSCHAIN_ID {
-	//	avaxConfig := config.GetChainListenConfig(basedef.AVAX_CROSSCHAIN_ID)
-	//	if avaxConfig == nil {
-	//		panic("chain is invalid")
-	//	}
-	//	return avaxSdk.Erc20Balance(hash, avaxConfig.ProxyContract)
-	//}
-	//if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
-	//	optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
-	//	if optimisticConfig == nil {
-	//		panic("chain is invalid")
-	//	}
-	//	return optimisticSdk.Erc20Balance(hash, optimisticConfig.ProxyContract)
-	//}
-	/*if chainId == basedef.PLT_CROSSCHAIN_ID {
-	  	conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
-	  	if conf == nil {
-	  		panic("chain is invalid")
-	  	}
-	  	return pltSdk.Erc20Balance(hash,conf.ProxyContract)
-	  }
-	*/
+	if maxBalance.Cmp(big.NewInt(0)) > 0 {
+		return maxBalance, nil
+	}
+	var err error
+	for k, _ := range errMap {
+		if k == nil {
+			return new(big.Int).SetUint64(0), nil
+		} else {
+			err = k
+		}
+	}
+	return new(big.Int).SetUint64(0), err
 
 }
+
+//if chainId == basedef.NEO_CROSSCHAIN_ID {
+//	neoConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
+//	if neoConfig == nil {
+//		panic("chain is invalid")
+//	}
+//	return neoSdk.Nep5Balance(hash, neoConfig.ProxyContract)
+//}
+//if chainId == basedef.ONT_CROSSCHAIN_ID {
+//	ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
+//	if ontConfig == nil {
+//		panic("chain is invalid")
+//	}
+//	return ontologySdk.Oep4Balance(hash, ontConfig.ProxyContract)
+//}
+//if chainId == basedef.ARBITRUM_CROSSCHAIN_ID {
+//	arbitrumConfig := config.GetChainListenConfig(basedef.ARBITRUM_CROSSCHAIN_ID)
+//	if arbitrumConfig == nil {
+//		panic("chain is invalid")
+//	}
+//	return arbitrumSdk.Erc20Balance(hash, arbitrumConfig.ProxyContract)
+//}
+//if chainId == basedef.XDAI_CROSSCHAIN_ID {
+//	xdaiConfig := config.GetChainListenConfig(basedef.XDAI_CROSSCHAIN_ID)
+//	if xdaiConfig == nil {
+//		panic("chain is invalid")
+//	}
+//	return xdaiSdk.Erc20Balance(hash, xdaiConfig.ProxyContract)
+//}
+//if chainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+//	zilliqaCfg := config.GetChainListenConfig(basedef.ZILLIQA_CROSSCHAIN_ID)
+//	if zilliqaCfg == nil {
+//		panic("zilliqa GetChainListenConfig chain is invalid")
+//	}
+//	return zilliqaSdk.Erc20Balance(hash, zilliqaCfg.ProxyContract)
+//}
+//if chainId == basedef.FANTOM_CROSSCHAIN_ID {
+//	fantomConfig := config.GetChainListenConfig(basedef.FANTOM_CROSSCHAIN_ID)
+//	if fantomConfig == nil {
+//		panic("chain is invalid")
+//	}
+//	return fantomSdk.Erc20Balance(hash, fantomConfig.ProxyContract)
+//}
+//if chainId == basedef.AVAX_CROSSCHAIN_ID {
+//	avaxConfig := config.GetChainListenConfig(basedef.AVAX_CROSSCHAIN_ID)
+//	if avaxConfig == nil {
+//		panic("chain is invalid")
+//	}
+//	return avaxSdk.Erc20Balance(hash, avaxConfig.ProxyContract)
+//}
+//if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
+//	optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
+//	if optimisticConfig == nil {
+//		panic("chain is invalid")
+//	}
+//	return optimisticSdk.Erc20Balance(hash, optimisticConfig.ProxyContract)
+//}
+/*if chainId == basedef.PLT_CROSSCHAIN_ID {
+  	conf := config.GetChainListenConfig(basedef.PLT_CROSSCHAIN_ID)
+  	if conf == nil {
+  		panic("chain is invalid")
+  	}
+  	return pltSdk.Erc20Balance(hash,conf.ProxyContract)
+  }
+*/
 
 func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 	switch chainId {
