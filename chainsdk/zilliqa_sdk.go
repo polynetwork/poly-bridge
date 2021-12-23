@@ -6,10 +6,10 @@ import (
 	"github.com/Zilliqa/gozilliqa-sdk/core"
 	"github.com/Zilliqa/gozilliqa-sdk/provider"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/shopspring/decimal"
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"poly-bridge/utils/decimal"
 	"strconv"
 	"strings"
 )

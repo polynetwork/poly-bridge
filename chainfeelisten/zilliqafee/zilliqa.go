@@ -1,11 +1,11 @@
 package zilliqafee
 
 import (
-	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
+	"poly-bridge/utils/decimal"
 )
 
 type ZilliqaFee struct {

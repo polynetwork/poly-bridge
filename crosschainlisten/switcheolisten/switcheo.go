@@ -3,7 +3,7 @@ package switcheolisten
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/shopspring/decimal"
+	"poly-bridge/utils/decimal"
 	"strconv"
 	"strings"
 
