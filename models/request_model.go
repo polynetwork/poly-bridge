@@ -350,7 +350,7 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		precision := decimal.NewFromInt(basedef.PRICE_PRECISION)
 		aaa := new(big.Float).Mul(tokenAmount, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		bbb, _ := aaa.Int64()
-		ccc := decimal.NewFromInt(bbb + 1)
+		ccc := decimal.NewFromInt(bbb)
 		tokenAmount := ccc.Div(precision)
 		getFeeRsp.TokenAmount = tokenAmount.String()
 	}
@@ -1200,7 +1200,12 @@ type BotTx struct {
 }
 
 func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
-	v := BotTx{Hash: tx.SrcHash, PolyHash: tx.PolyHash}
+	// in case src transaction is missing
+	hash := tx.SrcHash
+	if hash == "" {
+		hash = tx.PolyHash
+	}
+	v := BotTx{Hash: hash, PolyHash: tx.PolyHash}
 	if c := tx.WrapperTransaction; c != nil {
 		v.SrcChainId = c.SrcChainId
 		v.DstChainId = c.DstChainId

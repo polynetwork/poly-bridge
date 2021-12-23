@@ -9,6 +9,7 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/utils/fee"
 	"strings"
 )
 
@@ -96,8 +97,26 @@ func (c *FeeController) NewCheckFee() {
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
+			// get optimistic L1 fee on ethereum
+			if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
+				ethChainFee, ok := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
+				if !ok {
+					v.Status = NOT_PAID
+					logs.Info("check fee poly_hash %s NOT_PAID,chainFee hasn't ethereum fee", k)
+					continue
+				}
+
+				L1MinFee, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
+				if err != nil {
+					v.Status = NOT_PAID
+					logs.Info("check fee poly_hash %s NOT_PAID, get L1 fee failed. err=%v", k, err)
+					continue
+				}
+				feeMin = new(big.Float).Add(feeMin, L1MinFee)
+			}
+
 			FluctuatingFeeMin := feeMin
-			excludeChainIds := map[uint64]interface{}{basedef.BSC_CROSSCHAIN_ID: nil, basedef.ARBITRUM_CROSSCHAIN_ID: nil, basedef.ETHEREUM_CROSSCHAIN_ID: nil}
+			excludeChainIds := map[uint64]interface{}{basedef.BSC_CROSSCHAIN_ID: nil, basedef.ARBITRUM_CROSSCHAIN_ID: nil, basedef.ETHEREUM_CROSSCHAIN_ID: nil, basedef.OPTIMISTIC_CROSSCHAIN_ID: nil}
 			polyTx := new(models.PolyTransaction)
 			res := db.Model(&models.PolyTransaction{}).
 				Where("hash =?", v.PolyHash).First(polyTx)
@@ -140,7 +159,11 @@ func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction
 			Where("chain_id=? and `hash` =?", chainId, txId).
 			First(transaction)
 		if res.Error != nil {
-			return nil, res.Error
+			res := db.Model(&models.SrcTransaction{}).
+				Where("chain_id=? and `hash` =?", chainId, basedef.HexStringReverse(txId)).First(transaction)
+			if res.Error != nil {
+				return nil, res.Error
+			}
 		}
 	}
 	if chainId != basedef.O3_CROSSCHAIN_ID {

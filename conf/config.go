@@ -82,6 +82,13 @@ type OtherItemProxy struct {
 	ItemProxy string
 }
 
+type ChainNodes struct {
+	ChainName   string
+	ChainId     uint64
+	Nodes       []*Restful
+	ExtendNodes []*Restful
+}
+
 type ChainListenConfig struct {
 	ChainName          string
 	ChainId            uint64
@@ -154,12 +161,13 @@ func (cfg *CoinPriceListenConfig) GetNodesKey() []string {
 }
 
 type FeeListenConfig struct {
-	ChainId   uint64
-	ChainName string
-	Nodes     []*Restful
-	ProxyFee  int64
-	MinFee    int64
-	GasLimit  int64
+	ChainId       uint64
+	ChainName     string
+	Nodes         []*Restful
+	ProxyFee      int64
+	MinFee        int64
+	GasLimit      int64
+	EthL1GasLimit int64
 }
 
 func (cfg *FeeListenConfig) GetNodesUrl() []string {
@@ -233,6 +241,7 @@ type Config struct {
 	LogFile               string
 	HttpConfig            *HttpConfig
 	MetricConfig          *HttpConfig
+	ChainNodes            []*ChainNodes
 	ChainListenConfig     []*ChainListenConfig
 	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig
@@ -285,6 +294,24 @@ func NewConfig(filePath string) *Config {
 		logs.Error("NewServiceConfig: failed, err: %s", err)
 		return nil
 	}
+
+	chainNodeMap := make(map[uint64]*ChainNodes, 0)
+	for _, node := range config.ChainNodes {
+		chainNodeMap[node.ChainId] = node
+	}
+
+	for _, listenConfig := range config.ChainListenConfig {
+		if chainNode, ok := chainNodeMap[listenConfig.ChainId]; ok {
+			listenConfig.Nodes = chainNode.Nodes
+			listenConfig.ExtendNodes = chainNode.ExtendNodes
+		}
+	}
+	for _, listenConfig := range config.FeeListenConfig {
+		if chainNode, ok := chainNodeMap[listenConfig.ChainId]; ok {
+			listenConfig.Nodes = chainNode.Nodes
+		}
+	}
+
 	GlobalConfig = config
 	initPolyProxy()
 	return config

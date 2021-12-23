@@ -16,6 +16,7 @@ var (
 	hecoSdk       *chainsdk.EthereumSdkPro
 	okSdk         *chainsdk.EthereumSdkPro
 	neoSdk        *chainsdk.NeoSdkPro
+	neo3Sdk        *chainsdk.Neo3SdkPro
 	ontologySdk   *chainsdk.OntologySdkPro
 	maticSdk      *chainsdk.EthereumSdkPro
 	swthSdk       *chainsdk.SwitcheoSdkPro
@@ -29,21 +30,11 @@ var (
 	config        *conf.Config
 )
 
-var getfee0num uint64
-var getfeename string
-
-var bscgetfee0num uint64
-var bscgetfeename string
-
-func SetupChainsSDK(cfg *conf.Config, a uint64, b string) {
+func SetupChainsSDK(cfg *conf.Config) {
 	if cfg == nil {
 		panic("Missing config")
 	}
 	config = cfg
-	getfee0num = a
-	getfeename = b
-	bscgetfee0num = a
-	bscgetfeename = b
 	newChainSdks(cfg)
 }
 
@@ -95,6 +86,14 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := neoConfig.GetNodesUrl()
 		neoSdk = chainsdk.NewNeoSdkPro(urls, neoConfig.ListenSlot, neoConfig.ChainId)
+	}
+	{
+		neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+		if neo3Config == nil {
+			panic("chain is invalid")
+		}
+		urls := neo3Config.GetNodesUrl()
+		neo3Sdk = chainsdk.NewNeo3SdkPro(urls, neo3Config.ListenSlot, neo3Config.ChainId)
 	}
 	{
 		ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
@@ -185,10 +184,6 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		if ethereumConfig == nil {
 			panic("chain is invalid")
 		}
-		if hash == "0000000000000000000000000000000000000000" {
-			getfee0num++
-			logs.Error(getfeename+"getfeename is:", getfee0num)
-		}
 		return ethereumSdk.Erc20Balance(hash, ethereumConfig.ProxyContract)
 	}
 	if chainId == basedef.MATIC_CROSSCHAIN_ID {
@@ -202,10 +197,6 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 		if bscConfig == nil {
 			panic("chain is invalid")
-		}
-		if hash == "0000000000000000000000000000000000000000" {
-			bscgetfee0num++
-			logs.Error(getfeename+"bscgetfeename is:", bscgetfee0num)
 		}
 		return bscSdk.Erc20Balance(hash, bscConfig.ProxyContract)
 	}
@@ -229,6 +220,13 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			panic("chain is invalid")
 		}
 		return neoSdk.Nep5Balance(hash, neoConfig.ProxyContract)
+	}
+	if chainId == basedef.NEO3_CROSSCHAIN_ID {
+		neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+		if neo3Config == nil {
+			panic("chain is invalid")
+		}
+		return neo3Sdk.Nep17Balance(hash, neo3Config.ProxyContract)
 	}
 	if chainId == basedef.ONT_CROSSCHAIN_ID {
 		ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
@@ -340,6 +338,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return neoSdk.Nep5TotalSupply(hash)
 	}
+	if chainId == basedef.NEO3_CROSSCHAIN_ID {
+		neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+		if neo3Config == nil {
+			panic("chain is invalid")
+		}
+		return neo3Sdk.Nep17TotalSupply(hash)
+	}
 	if chainId == basedef.ONT_CROSSCHAIN_ID {
 		ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
 		if ontConfig == nil {
@@ -408,18 +413,10 @@ type ProxyBalance struct {
 func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error) {
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
-		if hash == "0000000000000000000000000000000000000000" {
-			getfee0num++
-			logs.Error(getfeename+"getfeename is:", getfee0num)
-		}
 		return ethereumSdk.Erc20Balance(hash, proxy)
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.Erc20Balance(hash, proxy)
 	case basedef.BSC_CROSSCHAIN_ID:
-		if hash == "0000000000000000000000000000000000000000" {
-			bscgetfee0num++
-			logs.Error(getfeename+"bscgetfeename is:", bscgetfee0num)
-		}
 		return bscSdk.Erc20Balance(hash, proxy)
 	case basedef.HECO_CROSSCHAIN_ID:
 		return hecoSdk.Erc20Balance(hash, proxy)
@@ -427,6 +424,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return okSdk.Erc20Balance(hash, proxy)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neoSdk.Nep5Balance(hash, proxy)
+	case basedef.NEO3_CROSSCHAIN_ID:
+		return neo3Sdk.Nep17Balance(hash, proxy)
 	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologySdk.Oep4Balance(hash, proxy)
 	case basedef.ARBITRUM_CROSSCHAIN_ID:

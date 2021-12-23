@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/joeqian10/neo-gogogo v0.0.0-20201214075916-44b70d175579
-	github.com/joeqian10/neo3-gogogo v0.3.8
+	github.com/joeqian10/neo3-gogogo v1.1.2
 	github.com/ontio/ontology v1.14.0-beta.0.20210818114002-fedaf66010a7
 	github.com/ontio/ontology-crypto v1.2.1
 	github.com/ontio/ontology-go-sdk v1.12.4

@@ -30,6 +30,7 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/utils/fee"
 	"poly-bridge/utils/net"
 	"runtime/debug"
 	"strconv"
@@ -301,18 +302,30 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 		}
 
 		x := new(big.Int).Mul(&tx.FeeAmount.Int, big.NewInt(tx.FeeToken.TokenBasic.Price))
-		feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(tx.FeeToken.Precision))))
-		feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		payFee := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(tx.FeeToken.Precision))))
+		payFee = new(big.Float).Quo(payFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
-		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
-		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
-		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+		minFee := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		minFee = new(big.Float).Quo(minFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+		minFee = new(big.Float).Quo(minFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+
+		// get optimistic L1 fee on ethereum
+		if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
+			ethChainFee, ok := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
+			if ok {
+				l1MinFee, _, err := fee.GetL1Fee(ethChainFee, chainId)
+				if err == nil {
+					minFee = new(big.Float).Add(minFee, l1MinFee)
+				}
+			}
+		}
+
 		res := models.CheckFeeResult{}
-		if feePay.Cmp(feeMin) >= 0 {
+		if payFee.Cmp(minFee) >= 0 {
 			res.Pass = true
 		}
-		res.Paid, _ = feePay.Float64()
-		res.Min, _ = feeMin.Float64()
+		res.Paid, _ = payFee.Float64()
+		res.Min, _ = minFee.Float64()
 		fees[tx.Hash] = res
 	}
 
@@ -565,19 +578,17 @@ func (c *BotController) checkTxs() (err error) {
 		return err
 	}
 	for _, tx := range txs {
-		_, ok := ALARMS[tx.SrcHash]
-		if ok {
-			continue
-		}
-		ALARMS[tx.SrcHash] = struct{}{}
-
 		srcPolyDstRelation, err := getSrcPolyDstRelation(tx)
 		if err != nil {
 			logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, err)
 			continue
 		}
-
 		entry := models.ParseBotTx(srcPolyDstRelation, fees)
+		if existed, err := cacheRedis.Redis.Exists(cacheRedis.StuckTxAlarmHasSendPrefix + strings.ToLower(entry.Hash)); err == nil && existed {
+			logs.Info("stuck TX alarm has been sent: %s", tx.SrcHash)
+			continue
+		}
+
 		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
 		body := fmt.Sprintf(
 			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v\n- Poly %v\n",
@@ -619,25 +630,14 @@ func (c *BotController) checkTxs() (err error) {
 
 		err = c.PostDingCard(title, body, btns)
 		if err != nil {
-			logs.Error("Post dingtalk error %s", err)
+			logs.Error("send tx stuck ding alarm error. hash: %s, err:", tx.SrcHash, err)
+		} else {
+			if _, err := cacheRedis.Redis.Set(cacheRedis.StuckTxAlarmHasSendPrefix+strings.ToLower(entry.Hash), "done", time.Hour*24*time.Duration(conf.GlobalConfig.BotConfig.CheckFrom)); err != nil {
+				logs.Error("mark tx stuck alarm hash been sent error. hash: %s err: %s", entry.Hash, err)
+			}
 		}
 	}
 
-	/*
-		title := fmt.Sprintf("### Total %d, page %d/%d page size %d", count, pageNo, pages, len(txs))
-		list := make([]string, len(txs))
-		for i, tx := range txs {
-			pass := "Lack"
-			fee, ok := fees[tx.SrcHash]
-			if ok && fee.Pass {
-				pass = "Pass"
-			}
-			tsp := time.Unix(int64(tx.WrapperTransaction.Time), 0).Format(time.RFC3339)
-			list[i] = fmt.Sprintf("- %s %s fee_paid(%s) %v fee_min %v", tsp, tx.SrcHash, pass, fee.Paid, fee.Min)
-		}
-		body := strings.Join(list, "\n")
-		return c.PostDing(title, body)
-	*/
 	return nil
 }
 

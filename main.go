@@ -67,14 +67,14 @@ func run(ctx *cli.Context) {
 	configFile := ctx.GlobalString("config")
 	config := conf.NewConfig(configFile)
 	if config == nil || config.HttpConfig == nil {
-		fmt.Println(config)
-		fmt.Println(config.HttpConfig)
+		//fmt.Println(config)
+		//fmt.Println(config.HttpConfig)
 		panic("Invalid server config")
 	}
 	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
 
 	basedef.ConfirmEnv(config.Env)
-	common.SetupChainsSDK(config, uint64(0), "httpgetfee0num")
+	common.SetupChainsSDK(config)
 
 	web.InsertFilter("*", web.BeforeRouter, cors.Allow(
 		&cors.Options{
