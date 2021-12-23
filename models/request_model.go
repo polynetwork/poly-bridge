@@ -560,12 +560,15 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
 		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.Precision)))
-		logs.Error("zhegejiaoyi_precision:", precision)
+		logs.Error("zhegejiaoyi_precision:", precision) //10^18
 		if transaction.SrcTransaction.SrcTransfer != nil {
 			bbb := decimal.NewFromBigInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int, 0)
-			logs.Error("zhegejiaoyi_bbb:", bbb)
+			logs.Error("zhegejiaoyi_bbb:", bbb) // 1
 			transferAmount := bbb.Div(precision)
-			logs.Error("zhegejiaoyi_transferAmount:", transferAmount)
+			x := transferAmount.Cmp(decimal.New(0, 1))
+			logs.Error("zhegejiaoyi_x", x)
+			logs.Error("zhegejiaoyi_transferAmount.String()==\"0\"", transferAmount.String() == "0")
+			logs.Error("zhegejiaoyi_transferAmount:", transferAmount.String()) // 0
 			transactionRsp.TransferAmount = transferAmount.String()
 			logs.Error("zhegejiaoyi_transactionRsp.TransferAmount:", transactionRsp.TransferAmount)
 		}
