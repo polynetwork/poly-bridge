@@ -538,7 +538,9 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 	dstUser := ""
 	if transaction.SrcTransaction.SrcTransfer != nil {
 		aaa := new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int)
+		logs.Error("zhegejiaoyi_aaa:", aaa)
 		transferAmount = aaa.String()
+		logs.Error("zhegejiaoyi_transferAmount:", transferAmount)
 		dstUser = transaction.SrcTransaction.SrcTransfer.DstUser
 	}
 	transactionRsp := &TransactionRsp{
@@ -554,13 +556,18 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		DstUser:        dstUser,
 		State:          transaction.WrapperTransaction.Status,
 	}
+	logs.Error("zhegejiaoyi_transactionRsp.TransferAmount:", transactionRsp.TransferAmount)
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
 		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.Precision)))
+		logs.Error("zhegejiaoyi_precision:", precision)
 		if transaction.SrcTransaction.SrcTransfer != nil {
 			bbb := decimal.NewFromBigInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int, 0)
+			logs.Error("zhegejiaoyi_bbb:", bbb)
 			transferAmount := bbb.Div(precision)
+			logs.Error("zhegejiaoyi_transferAmount:", transferAmount)
 			transactionRsp.TransferAmount = transferAmount.String()
+			logs.Error("zhegejiaoyi_transactionRsp.TransferAmount:", transactionRsp.TransferAmount)
 		}
 	}
 	if transaction.FeeToken != nil {
