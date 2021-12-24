@@ -366,7 +366,11 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 	}
 	if index != 0 {
 		for _, tx := range wrapperTransactions {
-			tx.FeeTokenHash = "0000000000000000000000000000000000000000"
+			if this.GetChainId() == basedef.METIS_CROSSCHAIN_ID {
+				tx.FeeTokenHash = "deaddeaddeaddeaddeaddeaddeaddeaddead0000"
+			} else {
+				tx.FeeTokenHash = "0000000000000000000000000000000000000000"
+			}
 		}
 	}
 	return wrapperTransactions, nil
