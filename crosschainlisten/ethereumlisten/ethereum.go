@@ -141,7 +141,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 
 	proxyLockEvents, proxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
-	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err := this.getProxyEventByBlockNumber(this.ethCfg.ProxyContract, startHeight, endHeight)
+	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err := this.getProxyEventByBlockNumber(startHeight, endHeight)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
@@ -364,7 +364,7 @@ func (this *EthereumChainListen) getWrapperEventByBlockNumber1(contractAddr stri
 			FeeAmount:    models.NewBigInt(evt.Efee),
 		})
 	}
-	if index == 1 {
+	if index != 0 {
 		for _, tx := range wrapperTransactions {
 			tx.FeeTokenHash = "0000000000000000000000000000000000000000"
 		}
@@ -431,7 +431,23 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 	return eccmLockEvents, eccmUnlockEvents, nil
 }
 
-func (this *EthereumChainListen) getProxyEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
+func (this *EthereumChainListen) getProxyEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
+	erc20ProxyLockEvents, erc20ProxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
+	for _, lockContract := range this.ethCfg.ProxyContract {
+		if len(strings.TrimSpace(lockContract)) == 0 {
+			continue
+		}
+		erc20ProxyLockEvents1, erc20ProxyUnlockEvents1, err := this.getProxyEventByBlockNumber1(lockContract, startHeight, endHeight)
+		if err != nil {
+			return nil, nil, err
+		}
+		erc20ProxyLockEvents = append(erc20ProxyLockEvents, erc20ProxyLockEvents1...)
+		erc20ProxyUnlockEvents = append(erc20ProxyUnlockEvents, erc20ProxyUnlockEvents1...)
+	}
+	return erc20ProxyLockEvents, erc20ProxyUnlockEvents, nil
+}
+
+func (this *EthereumChainListen) getProxyEventByBlockNumber1(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
 	proxyAddress := common.HexToAddress(contractAddr)
 	client := this.ethSdk.GetClient()
 	if client == nil {

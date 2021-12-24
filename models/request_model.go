@@ -19,9 +19,9 @@ package models
 
 import (
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/utils/decimal"
 	"time"
 )
 
