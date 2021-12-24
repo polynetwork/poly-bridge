@@ -19,11 +19,11 @@ package crosschainlisten
 
 import (
 	"fmt"
-	"github.com/shopspring/decimal"
 	"math"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/crosschainlisten/zilliqalisten"
+	"poly-bridge/utils/decimal"
 	"runtime/debug"
 	"strconv"
 	"strings"

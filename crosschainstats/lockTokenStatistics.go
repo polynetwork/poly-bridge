@@ -3,12 +3,13 @@ package crosschainstats
 import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/utils/decimal"
+	"strings"
 	"time"
 )
 
@@ -24,12 +25,17 @@ func assembleLockToken(chainid uint64, hash string, chainCfg []*conf.ChainListen
 	x := make([]chainhashproxy, 0)
 	for _, chain := range chainCfg {
 		if chain.ChainId == chainid {
-			a := chainhashproxy{
-				chainid,
-				hash,
-				chain.ProxyContract,
+			for _, proxy := range chain.ProxyContract {
+				if len(strings.TrimSpace(proxy)) == 0 {
+					continue
+				}
+				a := chainhashproxy{
+					chainid,
+					hash,
+					proxy,
+				}
+				x = append(x, a)
 			}
-			x = append(x, a)
 			for _, other := range chain.OtherProxyContract {
 				a := chainhashproxy{
 					chainid,
@@ -49,7 +55,12 @@ func initItemProxyMap(chainCfg []*conf.ChainListenConfig) {
 		for _, other := range chain.OtherProxyContract {
 			mapItemProxy[other.ItemProxy] = other.ItemName
 		}
-		mapItemProxy[chain.ProxyContract] = "poly"
+		for _, proxy := range chain.ProxyContract {
+			if len(strings.TrimSpace(proxy)) == 0 {
+				continue
+			}
+			mapItemProxy[proxy] = "poly"
+		}
 	}
 	itemProxy2ItemName = mapItemProxy
 }
