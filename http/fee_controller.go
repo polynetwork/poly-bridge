@@ -124,10 +124,13 @@ func (c *FeeController) GetFee() {
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+			logs.Error("qwert_tokenBalance1:", tokenBalance)
 			if err != nil {
 				tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+				logs.Error("qwert_tokenBalance2:", tokenBalance)
 				if err != nil {
 					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+					logs.Error("qwert_tokenBalance3:", tokenBalance)
 					if err != nil {
 						c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 							getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
@@ -146,6 +149,7 @@ func (c *FeeController) GetFee() {
 			}
 		}
 		balance, result := new(big.Float).SetString(tokenBalance.String())
+		logs.Error("qwert_tokenBalance4:", balance)
 		if !result {
 			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
@@ -153,6 +157,8 @@ func (c *FeeController) GetFee() {
 			return
 		}
 		tokenBalanceWithoutPrecision := new(big.Float).Quo(balance, new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
+		logs.Error("qwert_tokenBalance5:", tokenBalanceWithoutPrecision)
+		logs.Error("qwert_tokenBalance6:", tokenBalanceWithoutPrecision.String())
 		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 			getFeeReq.SwapTokenHash, balance, tokenBalanceWithoutPrecision)
 		c.ServeJSON()
