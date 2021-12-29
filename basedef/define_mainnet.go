@@ -40,6 +40,7 @@ const (
 	AVAX_CROSSCHAIN_ID       = uint64(21)
 	FANTOM_CROSSCHAIN_ID     = uint64(22)
 	OPTIMISTIC_CROSSCHAIN_ID = uint64(23)
+	METIS_CROSSCHAIN_ID      = uint64(24)
 
 	ENV = "mainnet"
 )
