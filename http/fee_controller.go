@@ -123,15 +123,19 @@ func (c *FeeController) GetFee() {
 		}
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
-			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
 				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.SrcTokenHash == "deaddeaddeaddeaddeaddeaddeaddeaddead0000" && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
-					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, "712EA8f50032Ce78eC74c2389B4544a14F9ADDce")
+					lockproxy := "712EA8f50032Ce78eC74c2389B4544a14F9ADDce"
+					if basedef.ENV == basedef.TESTNET {
+						lockproxy = "e6E89cde11B89D940D25c35eaec7aCB489D29820"
+					}
+					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
 				} else {
 					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 				}
 				if err != nil {
-					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 					if err != nil {
 						c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 							getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
@@ -139,11 +143,11 @@ func (c *FeeController) GetFee() {
 						return
 					}
 				}
-				setErr := cacheRedis.Redis.SetTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				setErr := cacheRedis.Redis.SetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
 				if setErr != nil {
 					logs.Error("qweasdredis SetTokenBalance err", setErr)
 				}
-				setErr1 := cacheRedis.Redis.SetLongTokenBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				setErr1 := cacheRedis.Redis.SetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
 				if setErr1 != nil {
 					logs.Error("qweasdredis SetLongTokenBalance err", setErr1)
 				}
