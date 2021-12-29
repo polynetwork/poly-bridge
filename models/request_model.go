@@ -18,10 +18,11 @@
 package models
 
 import (
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/shopspring/decimal"
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/utils/decimal"
 	"time"
 )
 
@@ -334,17 +335,12 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		SrcChainId:               srcChainId,
 		Hash:                     hash,
 		DstChainId:               dstChainId,
-		UsdtAmount:               usdtAmount.String(),
+		UsdtAmount:               fmt.Sprintf("%v", usdtAmount),
 		TokenAmount:              tokenAmount.String(),
-		TokenAmountWithPrecision: tokenAmountWithPrecision.String(),
+		TokenAmountWithPrecision: fmt.Sprintf("%v", tokenAmountWithPrecision),
 		SwapTokenHash:            swapTokenHash,
-		Balance:                  balanceWithoutPrecision.String(),
-		BalanceWithPrecision:     balance.String(),
-	}
-	{
-		aaa, _ := usdtAmount.Float64()
-		usdtAmount := decimal.NewFromFloat(aaa)
-		getFeeRsp.UsdtAmount = usdtAmount.String()
+		Balance:                  fmt.Sprintf("%v", balanceWithoutPrecision),
+		BalanceWithPrecision:     fmt.Sprintf("%v", balance),
 	}
 	{
 		precision := decimal.NewFromInt(basedef.PRICE_PRECISION)
@@ -353,21 +349,6 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		ccc := decimal.NewFromInt(bbb)
 		tokenAmount := ccc.Div(precision)
 		getFeeRsp.TokenAmount = tokenAmount.String()
-	}
-	{
-		aaa, _ := tokenAmountWithPrecision.Float64()
-		tokenAmountWithPrecision := decimal.NewFromFloat(aaa)
-		getFeeRsp.TokenAmountWithPrecision = tokenAmountWithPrecision.String()
-	}
-	{
-		aaa, _ := balanceWithoutPrecision.Float64()
-		balanceWithoutPrecision := decimal.NewFromFloat(aaa)
-		getFeeRsp.Balance = balanceWithoutPrecision.String()
-	}
-	{
-		aaa, _ := balance.Float64()
-		balance := decimal.NewFromFloat(aaa)
-		getFeeRsp.BalanceWithPrecision = balance.String()
 	}
 	return getFeeRsp
 }

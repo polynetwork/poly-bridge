@@ -32,7 +32,7 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/shopspring/decimal"
+	"poly-bridge/utils/decimal"
 )
 
 type Stats struct {
