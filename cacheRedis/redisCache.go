@@ -126,16 +126,16 @@ func (r *RedisCache) GetAllTransferResp() (*models.AllTransferStatisticResp, err
 	}
 	return resp, nil
 }
-func (r *RedisCache) SetTokenBalance(dstChainId uint64, dstTokenHash string, tokenBalance *big.Int) (err error) {
-	key := formatTokenBalanceKey(_ShortTokenBalance, dstChainId, dstTokenHash)
+func (r *RedisCache) SetTokenBalance(srcChainId, dstChainId uint64, dstTokenHash string, tokenBalance *big.Int) (err error) {
+	key := formatTokenBalanceKey(_ShortTokenBalance, srcChainId, dstChainId, dstTokenHash)
 	value := tokenBalance.String()
 	if _, err = r.c.Set(key, value, time.Second*2).Result(); err != nil {
 		err = errors.New(err.Error() + "add SetTokenBalance")
 	}
 	return
 }
-func (r *RedisCache) GetTokenBalance(dstChainId uint64, dstTokenHash string) (*big.Int, error) {
-	key := formatTokenBalanceKey(_ShortTokenBalance, dstChainId, dstTokenHash)
+func (r *RedisCache) GetTokenBalance(srcChainId, dstChainId uint64, dstTokenHash string) (*big.Int, error) {
+	key := formatTokenBalanceKey(_ShortTokenBalance, srcChainId, dstChainId, dstTokenHash)
 	resp, err := r.c.Get(key).Result()
 	if err != nil {
 		err = errors.New(err.Error() + "cache GetTokenBalance")
@@ -147,16 +147,16 @@ func (r *RedisCache) GetTokenBalance(dstChainId uint64, dstTokenHash string) (*b
 	}
 	return balance, nil
 }
-func (r *RedisCache) SetLongTokenBalance(dstChainId uint64, dstTokenHash string, tokenBalance *big.Int) (err error) {
-	key := formatTokenBalanceKey(_LongTokenBalance, dstChainId, dstTokenHash)
+func (r *RedisCache) SetLongTokenBalance(srcChainId, dstChainId uint64, dstTokenHash string, tokenBalance *big.Int) (err error) {
+	key := formatTokenBalanceKey(_LongTokenBalance, srcChainId, dstChainId, dstTokenHash)
 	value := tokenBalance.String()
 	if _, err = r.c.Set(key, value, time.Hour*72).Result(); err != nil {
 		err = errors.New(err.Error() + "add SetLongTokenBalance")
 	}
 	return
 }
-func (r *RedisCache) GetLongTokenBalance(dstChainId uint64, dstTokenHash string) (*big.Int, error) {
-	key := formatTokenBalanceKey(_LongTokenBalance, dstChainId, dstTokenHash)
+func (r *RedisCache) GetLongTokenBalance(srcChainId, dstChainId uint64, dstTokenHash string) (*big.Int, error) {
+	key := formatTokenBalanceKey(_LongTokenBalance, srcChainId, dstChainId, dstTokenHash)
 	resp, err := r.c.Get(key).Result()
 	if err != nil {
 		err = errors.New(err.Error() + "cache GetLongTokenBalance")
@@ -168,8 +168,8 @@ func (r *RedisCache) GetLongTokenBalance(dstChainId uint64, dstTokenHash string)
 	}
 	return balance, nil
 }
-func formatTokenBalanceKey(_key string, dstChainId uint64, dstTokenHash string) string {
-	key := fmt.Sprintf("%s_%d_%s", _key, dstChainId, dstTokenHash)
+func formatTokenBalanceKey(_key string, srcChainId, dstChainId uint64, dstTokenHash string) string {
+	key := fmt.Sprintf("%s_%d_%d_%s", _key, srcChainId, dstChainId, dstTokenHash)
 	return key
 }
 
