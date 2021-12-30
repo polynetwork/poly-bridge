@@ -93,7 +93,6 @@ func startServer(ctx *cli.Context) {
 	if config.Backup {
 		crosschainlisten.StartCrossChainListen(config)
 		crosschainlisten.StartCrossChainListenPatch(config)
-		logs.Info("will StartHealthMonitor")
 		chainhealthmonitor.StartHealthMonitor(config)
 		return
 	}

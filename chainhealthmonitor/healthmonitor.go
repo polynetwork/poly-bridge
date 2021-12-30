@@ -36,7 +36,6 @@ func StartHealthMonitor(config *conf.Config) {
 	//	TODO RelayerAddrs
 	//}
 
-	logs.Info("len(healthMonitorConfigMap)=%d", len(healthMonitorConfigMap))
 	for _, monitorConfig := range healthMonitorConfigMap {
 		healthMonitorHandle := NewHealthMonitorHandle(monitorConfig)
 		if healthMonitorHandle == nil {
