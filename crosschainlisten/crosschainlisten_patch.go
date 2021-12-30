@@ -19,7 +19,10 @@ func StartCrossChainListenPatch(config *conf.Config) {
 	for _, cfg := range config.ChainListenConfig {
 		handlerMap[cfg.ChainId] = NewChainHandle(cfg)
 	}
+	go startPatchWrapperMissingTx(dao)
+}
 
+func startPatchWrapperMissingTx(dao *bridgedao.BridgeDao) {
 	ticker := time.NewTicker(time.Minute * 10)
 	for {
 		select {
