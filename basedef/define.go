@@ -52,6 +52,27 @@ const (
 	SWAP_ROLLBACK
 )
 
+type LargeTx struct {
+	Asset     string
+	Type      string
+	From      string
+	To        string
+	Amount    string
+	USDAmount string
+	Hash      string
+	User      string
+	Time      string
+}
+
+type NodeStatus struct {
+	ChainId   uint64
+	ChainName string
+	Url       string
+	Height    uint64
+	Status    string
+	Time      string
+}
+
 func GetStateName(state int) string {
 	switch state {
 	case STATE_FINISHED:

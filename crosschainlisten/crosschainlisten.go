@@ -382,7 +382,7 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 			txType = "REMOVELIQUIDITY"
 		}
 	}
-	largeTx := cacheRedis.LargeTx{
+	largeTx := basedef.LargeTx{
 		Asset:     token.Name,
 		From:      srcChainName,
 		To:        dstChainName,

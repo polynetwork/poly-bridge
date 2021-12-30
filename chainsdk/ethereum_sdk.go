@@ -54,6 +54,10 @@ func (ec *EthereumSdk) GetClient() *ethclient.Client {
 	return ec.rawClient
 }
 
+func (ec *EthereumSdk) GetUrl() string {
+	return ec.url
+}
+
 func (ec *EthereumSdk) GetCurrentBlockHeight() (uint64, error) {
 	var result hexutil.Big
 	err := ec.rpcClient.CallContext(context.Background(), &result, "eth_blockNumber")

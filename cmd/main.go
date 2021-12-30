@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/signal"
 	"poly-bridge/cacheRedis"
+	"poly-bridge/chainhealthmonitor"
 	"runtime"
 	"syscall"
 
@@ -92,6 +93,7 @@ func startServer(ctx *cli.Context) {
 	if config.Backup {
 		crosschainlisten.StartCrossChainListen(config)
 		crosschainlisten.StartCrossChainListenPatch(config)
+		chainhealthmonitor.StartHealthMonitor(config)
 		return
 	}
 	crosschainlisten.StartCrossChainListen(config)

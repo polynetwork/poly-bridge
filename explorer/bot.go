@@ -41,13 +41,10 @@ import (
 	"github.com/beego/beego/v2/server/web"
 )
 
-// Deduplicate alarms
-var ALARMS = map[string]struct{}{}
 var LOCAL_IPV4 string
 
 type BotController struct {
 	web.Controller
-	Conf *conf.Config
 }
 
 func init() {
@@ -688,7 +685,7 @@ func (c *BotController) postDing(payload interface{}) error {
 func (c *BotController) ListLargeTxPage() {
 	apiToken := c.Ctx.Input.Query("token")
 	var err error
-	largeTxs := make([]*cacheRedis.LargeTx, 0)
+	largeTxs := make([]*basedef.LargeTx, 0)
 	if apiToken == conf.GlobalConfig.BotConfig.ApiToken {
 		ltxs, err := cacheRedis.Redis.LRange(cacheRedis.LargeTxList, -100, -1)
 		if err == nil && len(ltxs) != 0 {
@@ -757,7 +754,7 @@ func (c *BotController) ListLargeTxPage() {
 
 					intUsdAmount := usdAmount.IntPart() / 10000
 
-					largeTx := &cacheRedis.LargeTx{
+					largeTx := &basedef.LargeTx{
 						Asset:     v.SrcTransaction.SrcTransfer.Token.Name,
 						From:      srcChainName,
 						To:        dstChainName,
@@ -817,6 +814,66 @@ func (c *BotController) ListLargeTxPage() {
 		return
 	} else {
 		err = fmt.Errorf("access denied")
+		c.Data["json"] = err.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+}
+
+func (c *BotController) ListNodeStatusPage() {
+	apiToken := c.Ctx.Input.Query("token")
+	if apiToken == conf.GlobalConfig.BotConfig.ApiToken {
+		nodeStatusesMap := make(map[string][]basedef.NodeStatus, 0)
+		for _, cfg := range conf.GlobalConfig.ChainNodes {
+			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + cfg.ChainName); err == nil {
+				dataByte := []byte(dataStr)
+				var nodeStatuses []basedef.NodeStatus
+				if err := json.Unmarshal(dataByte, &nodeStatuses); err != nil {
+					logs.Error("chain %s node status data Unmarshal error: ", cfg.ChainName, err)
+				}
+				nodeStatusesMap[cfg.ChainName] = nodeStatuses
+			}
+		}
+
+		tables := make([]string, 0)
+		for chainName, nodeStatuses := range nodeStatusesMap {
+			rows := make([]string, len(nodeStatuses))
+			for i, status := range nodeStatuses {
+				rows[i] = fmt.Sprintf(
+					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>", 4)),
+					status.Url,
+					status.Height,
+					status.Status,
+					status.Time,
+				)
+			}
+			table := fmt.Sprintf(
+				`<h2> %s </h2>
+					<table style="width:100%%">
+						<tr>
+							<th>Url</th>
+							<th>Height</th>
+							<th>Status</th>
+							<th>Time</th>
+						</tr>
+						%s
+					</table>`,
+				chainName, strings.Join(rows, "\n"))
+			tables = append(tables, table)
+		}
+
+		htmlBytes := []byte(fmt.Sprintf(`<html><body>
+				<h1><center>Chain node status</center></h1>
+				%s
+				</body></html>`,
+			strings.Join(tables, "\n")))
+		if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
+			c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
+		}
+		c.Ctx.Output.Body(htmlBytes)
+		return
+	} else {
+		err := fmt.Errorf("access denied")
 		c.Data["json"] = err.Error()
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()

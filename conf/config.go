@@ -107,6 +107,14 @@ type ChainListenConfig struct {
 	SwapContract       string
 }
 
+type HealthMonitorConfig struct {
+	ChainId      uint64
+	ChainName    string
+	ChainNodes   *ChainNodes
+	CCMContract  string
+	RelayerAddrs []string
+}
+
 func (cfg *ChainListenConfig) GetNodesUrl() []string {
 	urls := make([]string, 0)
 	for _, node := range cfg.Nodes {
