@@ -24,7 +24,7 @@ func StartCrossChainListenPatch(config *conf.Config) {
 	for {
 		select {
 		case <-ticker.C:
-			patchWrapperMissingTx(dao)
+			go patchWrapperMissingTx(dao)
 		}
 	}
 }
