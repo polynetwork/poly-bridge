@@ -40,6 +40,14 @@ func NewNeo3Sdk(url string) *Neo3Sdk {
 	}
 }
 
+func (sdk *Neo3Sdk) GetClient() *rpc.RpcClient {
+	return sdk.client
+}
+
+func (sdk *Neo3Sdk) GetUrl() string {
+	return sdk.url
+}
+
 func (sdk *Neo3Sdk) GetBlockCount() (uint64, error) {
 	res := sdk.client.GetBlockCount()
 	if res.ErrorResponse.Error.Message != "" {

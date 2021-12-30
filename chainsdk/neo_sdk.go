@@ -38,6 +38,14 @@ func NewNeoSdk(url string) *NeoSdk {
 	}
 }
 
+func (sdk *NeoSdk) GetClient() *rpc.RpcClient {
+	return sdk.client
+}
+
+func (sdk *NeoSdk) GetUrl() string {
+	return sdk.url
+}
+
 func (sdk *NeoSdk) GetBlockCount() (uint64, error) {
 	res := sdk.client.GetBlockCount()
 	if res.ErrorResponse.Error.Message != "" {
@@ -120,4 +128,3 @@ func (sdk *NeoSdk) Nep5TotalSupply(hash string) (uint64, error) {
 	}
 	return nep5.TotalSupply()
 }
-

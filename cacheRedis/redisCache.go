@@ -18,31 +18,22 @@ const (
 	_CrossTxCounter        = "CrossTxCounter"
 	_TransferStatisticResp = "TransferStatisticRes"
 	//getfee TokenBalance time.Hour*72
-	_ShortTokenBalance        = "ShortTokenBalance"
-	_LongTokenBalance         = "LongTokenBalance"
-	TxCheckBot                = "TxCheckBot"
-	LargeTxAlarmPrefix        = "LargeTxAlarm_"
-	LargeTxList               = "LargeTxList"
-	MarkTxAsPaidPrefix        = "MarkTxAsPaid_"
-	MarkTxAsSkipPrefix        = "MarkTxAsSkip_"
-	StuckTxAlarmHasSendPrefix = "StuckTxAlarmHasSendPrefix_"
+	_ShortTokenBalance          = "ShortTokenBalance"
+	_LongTokenBalance           = "LongTokenBalance"
+	TxCheckBot                  = "TxCheckBot"
+	LargeTxAlarmPrefix          = "LargeTxAlarm_"
+	LargeTxList                 = "LargeTxList"
+	MarkTxAsPaidPrefix          = "MarkTxAsPaid_"
+	MarkTxAsSkipPrefix          = "MarkTxAsSkip_"
+	StuckTxAlarmHasSendPrefix   = "StuckTxAlarmHasSendPrefix_"
+	NodeStatusPrefix            = "NodeStatusPrefix_"
+	NodeStatusAlarmPrefix       = "NodeStatusAlarmPrefix_"
+	IgnoreNodeStatusAlarmPrefix = "IgnoreNodeStatusAlarmPrefix"
 )
 
 type RedisCache struct {
 	c      *goredis.Client
 	config *conf.RedisConfig
-}
-
-type LargeTx struct {
-	Asset     string
-	Type      string
-	From      string
-	To        string
-	Amount    string
-	USDAmount string
-	Hash      string
-	User      string
-	Time      string
 }
 
 var Redis *RedisCache
@@ -181,7 +172,7 @@ func (r *RedisCache) Get(key string) (string, error) {
 	return res, nil
 }
 
-func (r *RedisCache) Set(key string, value string, expiration time.Duration) (bool, error) {
+func (r *RedisCache) Set(key string, value interface{}, expiration time.Duration) (bool, error) {
 	err := r.c.Set(key, value, expiration).Err()
 	if err != nil {
 		logs.Error("Set key %s err: %s", key, err)
@@ -228,7 +219,7 @@ func (r *RedisCache) Expire(key string, expiration time.Duration) (bool, error) 
 	return result, nil
 }
 
-func (r *RedisCache) Lock(key string, value string, expiration time.Duration) (bool, error) {
+func (r *RedisCache) Lock(key string, value interface{}, expiration time.Duration) (bool, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	isSet, err := r.c.SetNX(key, value, expiration).Result()
@@ -250,7 +241,7 @@ func (r *RedisCache) UnLock(key string) (int64, error) {
 	return cnt, nil
 }
 
-func (r *RedisCache) RPush(key string, value ...string) error {
+func (r *RedisCache) RPush(key string, value ...interface{}) error {
 	if err := r.c.RPush(key, value).Err(); err != nil {
 		logs.Error("Redis Push[%s: %v] err: %s", key, value, err)
 		return err

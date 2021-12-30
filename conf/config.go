@@ -107,6 +107,14 @@ type ChainListenConfig struct {
 	SwapContract       string
 }
 
+type HealthMonitorConfig struct {
+	ChainId      uint64
+	ChainName    string
+	ChainNodes   *ChainNodes
+	CCMContract  string
+	RelayerAddrs []string
+}
+
 func (cfg *ChainListenConfig) GetNodesUrl() []string {
 	urls := make([]string, 0)
 	for _, node := range cfg.Nodes {
@@ -208,17 +216,22 @@ type EventEffectConfig struct {
 }
 
 type BotConfig struct {
-	DingUrl        string
-	LargeTxDingUrl string
-	CheckFrom      int64
-	Interval       int64
-	BaseUrl        string
-	DetailUrl      string
-	FinishUrl      string
-	MarkAsPaidUrl  string
-	TxUrl          string
-	ListLargeTxUrl string
-	ApiToken       string
+	DingUrl                      string
+	LargeTxDingUrl               string
+	NodeStatusDingUrl            string
+	CheckFrom                    int64
+	Interval                     int64
+	BaseUrl                      string
+	DetailUrl                    string
+	FinishUrl                    string
+	MarkAsPaidUrl                string
+	TxUrl                        string
+	ListLargeTxUrl               string
+	ListNodeStatusUrl            string
+	IgnoreNodeStatusAlarmUrl     string
+	ApiToken                     string
+	ChainNodeStatusCheckInterval uint64
+	ChainNodeStatusAlarmInterval uint64
 }
 
 type HttpConfig struct {
