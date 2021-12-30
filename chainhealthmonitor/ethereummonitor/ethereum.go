@@ -31,9 +31,9 @@ func NewEthereumHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Ethereum
 		sdk, err := chainsdk.NewEthereumSdk(node.Url)
 		if err != nil || sdk == nil || sdk.GetClient() == nil {
 			if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+node.Url, fmt.Sprintf("initial sdk error:%s", err), time.Hour*24); err != nil {
-				logs.Error("set eth node[%s] status error: %s", node.Url, err)
+				logs.Error("set %s node[%s] status error: %s", monitorConfig.ChainName, node.Url, err)
 			}
-			logs.Error("eth node: %s, NewEthereumSdk error: %s", node.Url, err)
+			logs.Error("%s node: %s, NewEthereumSdk error: %s", monitorConfig.ChainName, node.Url, err)
 			continue
 		}
 		sdks[node.Url] = sdk
@@ -82,6 +82,7 @@ func (e *EthereumHealthMonitor) NodeMonitor() error {
 func (e *EthereumHealthMonitor) GetCurrentHeight(sdk *chainsdk.EthereumSdk, chainName string) (uint64, error) {
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint64 {
+		logs.Info("%s height=%d", chainName, height)
 		err := fmt.Errorf("get current block height err: %s, ", err)
 		logs.Error(fmt.Sprintf("%s node: %s, %s ", chainName, sdk.GetUrl(), err))
 		return 0, err
