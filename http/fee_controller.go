@@ -125,7 +125,7 @@ func (c *FeeController) GetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.SrcTokenHash == "deaddeaddeaddeaddeaddeaddeaddeaddead0000" && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
+				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
 					lockproxy := "712EA8f50032Ce78eC74c2389B4544a14F9ADDce"
 					if basedef.ENV == basedef.TESTNET {
 						lockproxy = "e6E89cde11B89D940D25c35eaec7aCB489D29820"
