@@ -65,7 +65,7 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 	}()
 
 	logs.Info("start %s NodeMonitor", h.handle.GetChainName())
-	nodeMonitorTicker := time.NewTicker(time.Second * time.Duration(config.ChainNodeStatusCheckInterval))
+	nodeMonitorTicker := time.NewTicker(time.Second * time.Duration(config.BotConfig.ChainNodeStatusCheckInterval))
 	for {
 		select {
 		case <-nodeMonitorTicker.C:
@@ -107,7 +107,7 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 								logs.Error("clear %s node: %s alarm err: %s", h.handle.GetChainName(), nodeStatus.Url, err)
 							}
 						} else {
-							if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Second*time.Duration(config.ChainNodeStatusAlarmInterval)); err != nil {
+							if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Second*time.Duration(config.BotConfig.ChainNodeStatusAlarmInterval)); err != nil {
 								logs.Error("mark %s node: %s alarm has been sent error: %s", h.handle.GetChainName(), nodeStatus.Url, err)
 							}
 						}
@@ -133,6 +133,14 @@ func needSendNodeStatusAlarm(nodeStatus *basedef.NodeStatus) (send, recover bool
 			}
 		}
 	}
+
+	if send {
+		ignore, _ := cacheRedis.Redis.Exists(cacheRedis.IgnoreNodeStatusAlarmPrefix + nodeStatus.Url)
+		if ignore {
+			send = false
+			logs.Info("ignore %s node: %s alarm", nodeStatus.ChainName, nodeStatus.Url)
+		}
+	}
 	return
 }
 
@@ -143,7 +151,7 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 		title = fmt.Sprintf("%s Node Recover", nodeStatus.ChainName)
 		status = "OK"
 	} else {
-		title = fmt.Sprintf("%s Node ALarm", nodeStatus.ChainName)
+		title = fmt.Sprintf("%s Node Alarm", nodeStatus.ChainName)
 		for _, info := range nodeStatus.Status {
 			status = fmt.Sprintf("%s\n%s", status, info)
 		}
@@ -155,12 +163,29 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 		status,
 		time.Unix(nodeStatus.Time, 0).Format("2006-01-02 15:04:05"),
 	)
-	buttons := []map[string]string{
-		{
-			"title":     "List All",
-			"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
-		},
+
+	buttons := make([]map[string]string, 0)
+	if !isRecover {
+		buttons = append(buttons, []map[string]string{
+			{
+				"title":     "Ignore For 1 Day",
+				"actionURL": fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 1),
+			},
+			{
+				"title":     "Ignore For 10 Day",
+				"actionURL": fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 10),
+			},
+			{
+				"title":     "Cancel Ignore",
+				"actionURL": fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 0),
+			},
+		}...)
 	}
+	buttons = append(buttons, map[string]string{
+		"title":     "List All",
+		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+	})
+
 	logs.Info(body)
 	return polycommon.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
 }

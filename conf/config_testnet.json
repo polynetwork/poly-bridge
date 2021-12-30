@@ -569,12 +569,15 @@
     }
   ],
   "LargeTxAmount" : 10,
+
   "BotConfig": {
     "DingUrl": "https://oapi.dingtalk.com/robot/send?access_token=85415855e5cc0be656143c501d7f2009941aa7b07cba0bf60c0423b184d3ac44",
     "LargeTxDingUrl": "https://oapi.dingtalk.com/robot/send?access_token=9892e047c0f57dd76fa0817b1a9aedc17a3ba71098b27b2f487de1279ea9b134",
     "NodeStatusDingUrl": "https://oapi.dingtalk.com/robot/send?access_token=",
     "Interval": 20,
     "CheckFrom": 3,
+    "ChainNodeStatusCheckInterval": 60,
+    "ChainNodeStatusAlarmInterval": 600,
     "BaseUrl" : "https://explorer.poly.network/testnet/",
     "DetailUrl": "api/v1/bot?page_size=100",
     "FinishUrl": "api/v1/botfinishtx?",
@@ -582,6 +585,7 @@
     "TxUrl": "tx/",
     "ListLargeTxUrl": "api/v1/botlistlargetx?",
     "ListNodeStatusUrl": "api/v1/botlistnodestatus?",
+    "IgnoreNodeStatusAlarmUrl": "api/v1/botignorenodestatusalarm?",
     "ApiToken": "njnfsd7fswf75fsfbw6f7w"
   },
   "NftConfig":{

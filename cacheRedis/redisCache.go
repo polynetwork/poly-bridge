@@ -18,17 +18,18 @@ const (
 	_CrossTxCounter        = "CrossTxCounter"
 	_TransferStatisticResp = "TransferStatisticRes"
 	//getfee TokenBalance time.Hour*72
-	_ShortTokenBalance = "ShortTokenBalance"
-	_LongTokenBalance  = "LongTokenBalance"
-	TxCheckBot         = "TxCheckBot"
-	LargeTxAlarmPrefix = "LargeTxAlarm_"
-	LargeTxList        = "LargeTxList"
-	MarkTxAsPaidPrefix = "MarkTxAsPaid_"
-	MarkTxAsSkipPrefix = "MarkTxAsSkip_"
+	_ShortTokenBalance        = "ShortTokenBalance"
+	_LongTokenBalance         = "LongTokenBalance"
+	TxCheckBot                = "TxCheckBot"
+	LargeTxAlarmPrefix        = "LargeTxAlarm_"
+	LargeTxList               = "LargeTxList"
+	MarkTxAsPaidPrefix        = "MarkTxAsPaid_"
+	MarkTxAsSkipPrefix        = "MarkTxAsSkip_"
 	_GetManualTxData   = "GetManualTxData_"
-	StuckTxAlarmHasSendPrefix = "StuckTxAlarmHasSendPrefix_"
+	StuckTxAlarmHasSendPrefix   = "StuckTxAlarmHasSendPrefix_"
 	NodeStatusPrefix          = "NodeStatusPrefix_"
 	NodeStatusAlarmPrefix     = "NodeStatusAlarmPrefix_"
+	IgnoreNodeStatusAlarmPrefix = "IgnoreNodeStatusAlarmPrefix"
 )
 
 type RedisCache struct {

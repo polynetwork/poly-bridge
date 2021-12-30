@@ -886,3 +886,37 @@ func (c *BotController) ListNodeStatusPage() {
 		c.ServeJSON()
 	}
 }
+
+func (c *BotController) IgnoreNodeStatusAlarm() {
+	node := c.Ctx.Input.Query("node")
+	day := c.Ctx.Input.Query("day")
+	token := c.Ctx.Input.Query("token")
+	var err error
+	resp := ""
+	if token == conf.GlobalConfig.BotConfig.ApiToken {
+		dayNum, err := strconv.Atoi(day)
+		if err == nil && dayNum >= 0 {
+			if dayNum == 0 {
+				_, err = cacheRedis.Redis.Del(cacheRedis.IgnoreNodeStatusAlarmPrefix + node)
+				if err == nil {
+					resp = fmt.Sprintf("success cancle ignore alarm")
+				}
+			} else {
+				_, err := cacheRedis.Redis.Set(cacheRedis.IgnoreNodeStatusAlarmPrefix+node, "ignore", time.Hour*time.Duration(24*dayNum))
+				if err == nil {
+					resp = fmt.Sprintf("success ignore alarm for %d days", dayNum)
+				}
+			}
+		} else {
+			err = fmt.Errorf("invalid parameter day：%s, err: %s", day, err)
+		}
+	} else {
+		err = fmt.Errorf("Access denied")
+	}
+	if err != nil {
+		resp = fmt.Sprintf("Error %s", err.Error())
+	}
+	logs.Info(resp)
+	c.Data["json"] = models.MakeErrorRsp(resp)
+	c.ServeJSON()
+}
