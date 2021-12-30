@@ -844,7 +844,7 @@ func (c *BotController) ListNodeStatusPage() {
 				rows[i] = fmt.Sprintf(
 					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>", 4)),
 					status.Url,
-					status.Height,
+					strconv.FormatUint(status.Height, 10),
 					status.Status,
 					status.Time,
 				)
