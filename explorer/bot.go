@@ -741,9 +741,11 @@ func (c *BotController) ListLargeTxPage() {
 					}
 
 					var amount, usdAmount decimal.Decimal
+					var assetName string
 					if v.SrcTransaction.SrcTransfer != nil &&
 						v.SrcTransaction.SrcTransfer.Token != nil &&
 						v.SrcTransaction.SrcTransfer.Token.TokenBasic != nil {
+						assetName = v.SrcTransaction.SrcTransfer.Token.Name
 						amount = decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
 							Div(decimal.NewFromInt(basedef.Int64FromFigure(int(v.SrcTransaction.SrcTransfer.Token.Precision))))
 						usdAmount = decimal.NewFromBigInt(&v.SrcTransaction.SrcTransfer.Amount.Int, 0).
@@ -755,7 +757,7 @@ func (c *BotController) ListLargeTxPage() {
 					intUsdAmount := usdAmount.IntPart() / 10000
 
 					largeTx := &basedef.LargeTx{
-						Asset:     v.SrcTransaction.SrcTransfer.Token.Name,
+						Asset:     assetName,
 						From:      srcChainName,
 						To:        dstChainName,
 						Type:      txType,
