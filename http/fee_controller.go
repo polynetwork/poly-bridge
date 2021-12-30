@@ -125,10 +125,16 @@ func (c *FeeController) GetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
+				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.SrcTokenHash == "deaddeaddeaddeaddeaddeaddeaddeaddead0000" && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
 					lockproxy := "960Ff3132b72E3F0b1B9F588e7122d78BB5C4946"
 					if basedef.ENV == basedef.TESTNET {
 						lockproxy = "e6E89cde11B89D940D25c35eaec7aCB489D29820"
+					}
+					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
+				} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && tokenMap.DstTokenHash == "deaddeaddeaddeaddeaddeaddeaddeaddead0000" && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
+					lockproxy := "bE46E4c47958A79E7F789ea94C5D8071a0DeE31e"
+					if basedef.ENV == basedef.TESTNET {
+						lockproxy = "B4004B93f1ce1E63131413cA201D35D1F3f40e5D"
 					}
 					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
 				} else {
