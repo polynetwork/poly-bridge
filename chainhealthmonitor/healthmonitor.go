@@ -24,6 +24,7 @@ import (
 var healthMonitorConfigMap = make(map[uint64]*conf.HealthMonitorConfig, 0)
 
 func StartHealthMonitor(config *conf.Config) {
+	logs.Info("StartHealthMonitor")
 	for _, cfg := range config.ChainNodes {
 		monitorConfig := &conf.HealthMonitorConfig{ChainId: cfg.ChainId, ChainName: cfg.ChainName, ChainNodes: cfg}
 		healthMonitorConfigMap[cfg.ChainId] = monitorConfig
@@ -35,6 +36,7 @@ func StartHealthMonitor(config *conf.Config) {
 	//	TODO RelayerAddrs
 	//}
 
+	logs.Info("len(healthMonitorConfigMap)=%d", len(healthMonitorConfigMap))
 	for _, monitorConfig := range healthMonitorConfigMap {
 		healthMonitorHandle := NewHealthMonitorHandle(monitorConfig)
 		if healthMonitorHandle == nil {
