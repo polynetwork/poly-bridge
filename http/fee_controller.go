@@ -136,13 +136,13 @@ func (c *FeeController) GetFee() {
 					if basedef.ENV == basedef.TESTNET {
 						lockproxy = "B4004B93f1ce1E63131413cA201D35D1F3f40e5D"
 					}
-					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
+					tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
 				} else if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
 					lockproxy := "fB571d4dd7039f96D34bB41E695AdC92dF4A332f"
 					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
 				} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
 					lockproxy := "eFB5a01Ed9f3E94B646233FB68537C5Cb45e301D"
-					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
+					tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
 				} else {
 					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 				}
