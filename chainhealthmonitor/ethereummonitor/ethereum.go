@@ -79,63 +79,6 @@ func (e *EthereumHealthMonitor) NodeMonitor() error {
 	return err
 }
 
-//func EthNodeMonitor(config *conf.Config) {
-//	logs.Info("EthNodeMonitor")
-//	var ccmContractAddr string
-//	for _, listenConfig := range config.ChainListenConfig {
-//		if listenConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-//			ccmContractAddr = listenConfig.CCMContract
-//			break
-//		}
-//	}
-//
-//	for _, chainNodeConfig := range config.ChainNodes {
-//		if chainNodeConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-//			for url, node := range chainNodeConfig.Nodes {
-//				sdk, err := chainsdk.NewEthereumSdk(node.Url)
-//				if err != nil || sdk == nil || sdk.GetClient() == nil {
-//					logs.Info("node: %s,NewEthereumSdk error: %s", node.Url, err)
-//					continue
-//				}
-//				height, err := sdk.GetCurrentBlockHeight()
-//				if err != nil || height == 0 || height == math.MaxUint64 {
-//					logs.Error("node: %s, get current block height err: %s, ", url, err)
-//					continue
-//				}
-//				height -= 1
-//				//height = 13881338
-//
-//				logs.Info("node: %s, height: %d", node.Url, height)
-//
-//				eccmContractAddress := common.HexToAddress(ccmContractAddr)
-//				client := sdk.GetClient()
-//				eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
-//				if err != nil {
-//					logs.Error("node: %s, NewEthCrossChainManager error: %s", url, err)
-//					continue
-//				}
-//				opt := &bind.FilterOpts{
-//					Start:   height,
-//					End:     &height,
-//					Context: context.Background(),
-//				}
-//				// get ethereum lock events from given block
-//				_, err = eccmContract.FilterCrossChainEvent(opt, nil)
-//				if err != nil {
-//					logs.Error("node: %s, FilterCrossChainEvent error: %s", url, err)
-//					continue
-//				}
-//				// ethereum unlock events from given block
-//				_, err = eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
-//				if err != nil {
-//					logs.Error("node: %s, FilterVerifyHeaderAndExecuteTxEvent error: %s", url, err)
-//					continue
-//				}
-//			}
-//		}
-//	}
-//}
-
 func (e *EthereumHealthMonitor) GetCurrentHeight(sdk *chainsdk.EthereumSdk) (uint64, error) {
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint64 {

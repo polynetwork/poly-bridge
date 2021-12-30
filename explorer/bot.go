@@ -33,6 +33,7 @@ import (
 	"poly-bridge/utils/fee"
 	"poly-bridge/utils/net"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -826,19 +827,24 @@ func (c *BotController) ListNodeStatusPage() {
 	apiToken := c.Ctx.Input.Query("token")
 	if apiToken == conf.GlobalConfig.BotConfig.ApiToken {
 		nodeStatusesMap := make(map[string][]basedef.NodeStatus, 0)
+		chainNames := make([]string, 0)
 		for _, cfg := range conf.GlobalConfig.ChainNodes {
 			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + cfg.ChainName); err == nil {
 				dataByte := []byte(dataStr)
 				var nodeStatuses []basedef.NodeStatus
 				if err := json.Unmarshal(dataByte, &nodeStatuses); err != nil {
 					logs.Error("chain %s node status data Unmarshal error: ", cfg.ChainName, err)
+					continue
 				}
+				chainNames = append(chainNames, cfg.ChainName)
 				nodeStatusesMap[cfg.ChainName] = nodeStatuses
 			}
 		}
 
+		sort.Strings(chainNames)
 		tables := make([]string, 0)
-		for chainName, nodeStatuses := range nodeStatusesMap {
+		for _, chainName := range chainNames {
+			nodeStatuses := nodeStatusesMap[chainName]
 			rows := make([]string, len(nodeStatuses))
 			for i, status := range nodeStatuses {
 				rows[i] = fmt.Sprintf(
