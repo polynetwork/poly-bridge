@@ -79,18 +79,29 @@ func (h *HealthMonitor) NodeMonitor() {
 			if nodeStatuses, err := h.handle.NodeMonitor(); err == nil {
 				logs.Info("%s nodeStatuses:%+v", h.handle.GetChainName(), nodeStatuses)
 				for _, nodeStatus := range nodeStatuses {
-					if nodeStatus.Status != basedef.NodeStatusOk {
-						if existed, err := cacheRedis.Redis.Exists(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url); err == nil && existed {
-							logs.Info("%s node: %s alarm has been sent", h.handle.GetChainName(), nodeStatus.Url, err)
-							continue
+					sendAlarm := false
+					exist, err := cacheRedis.Redis.Exists(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url)
+					if err == nil {
+						if exist {
+							if nodeStatus.Status == basedef.NodeStatusOk {
+								sendAlarm = true
+							}
+						} else {
+							if nodeStatus.Status != basedef.NodeStatusOk {
+								sendAlarm = true
+							}
 						}
-						if err := sendNodeStatusDingAlarm(nodeStatus); err != nil {
-							logs.Error("sendNodeStatusDingAlarm err:", err)
-						}
-						if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Minute*30); err != nil {
-							logs.Error("mark %s node: %s alarm has been sent error: %s", h.handle.GetChainName(), nodeStatus.Url, err)
-						}
+					}
 
+					if sendAlarm {
+						if err := sendNodeStatusDingAlarm(nodeStatus, exist); err != nil {
+							logs.Error("%s node: %s sendNodeStatusDingAlarm err:", h.handle.GetChainName(), nodeStatus.Url, err)
+						}
+						if exist {
+							if _, err := cacheRedis.Redis.Del(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url); err != nil {
+								logs.Error("clear %s node: %s alarm err: %s", h.handle.GetChainName(), nodeStatus.Url, err)
+							}
+						}
 					}
 				}
 			}
@@ -98,8 +109,14 @@ func (h *HealthMonitor) NodeMonitor() {
 	}
 }
 
-func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus) error {
-	title := fmt.Sprintf("%s Node ALarm:", nodeStatus.ChainName)
+func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) error {
+	title := ""
+	if isRecover {
+		title = fmt.Sprintf("%s Node Recover:", nodeStatus.ChainName)
+	} else {
+		title = fmt.Sprintf("%s Node ALarm:", nodeStatus.ChainName)
+	}
+
 	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n",
 		title,
 		nodeStatus.Url,
