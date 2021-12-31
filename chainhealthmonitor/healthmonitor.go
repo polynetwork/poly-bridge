@@ -96,6 +96,7 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus) error {
 		nodeStatus.Height,
 		nodeStatus.Status,
 	)
+	logs.Info(body)
 	return polycommon.PostDingCard(title, body, nil, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
 }
 
