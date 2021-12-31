@@ -76,6 +76,7 @@ func (h *HealthMonitor) NodeMonitor() {
 		select {
 		case <-nodeMonitorTicker.C:
 			if nodeStatuses, err := h.handle.NodeMonitor(); err == nil {
+				logs.Info("%s nodeStatuses:%+v", h.handle.GetChainName(), nodeStatuses)
 				for _, nodeStatus := range nodeStatuses {
 					if nodeStatus.Status != basedef.NodeStatusOk {
 						if err := sendNodeStatusDingAlarm(nodeStatus); err != nil {
