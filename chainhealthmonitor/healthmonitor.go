@@ -97,8 +97,9 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus) error {
 		nodeStatus.Height,
 		nodeStatus.Status,
 	)
+	buttons := make([]map[string]string, 0)
 	logs.Info(body)
-	return polycommon.PostDingCard(title, body, nil, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
+	return polycommon.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
 }
 
 func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) HealthMonitorHandle {
