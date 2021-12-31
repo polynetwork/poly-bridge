@@ -227,6 +227,7 @@ type BotConfig struct {
 	MarkAsPaidUrl     string
 	TxUrl             string
 	ListLargeTxUrl    string
+	ListNodeStatusUrl string
 	ApiToken          string
 }
 

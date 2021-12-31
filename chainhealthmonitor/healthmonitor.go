@@ -106,7 +106,12 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus) error {
 		nodeStatus.Height,
 		nodeStatus.Status,
 	)
-	buttons := make([]map[string]string, 0)
+	buttons := []map[string]string{
+		{
+			"title":     "List All",
+			"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+		},
+	}
 	logs.Info(body)
 	return polycommon.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
 }
