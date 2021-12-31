@@ -20,7 +20,6 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/go_abi/eccm_abi"
 	"runtime/debug"
-	"strconv"
 	"time"
 )
 
@@ -98,17 +97,9 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus) error {
 		nodeStatus.Height,
 		nodeStatus.Status,
 	)
-	//buttons := make([]map[string]string, 0)
+	buttons := make([]map[string]string, 0)
 	logs.Info(body)
-
-	ss := title + "\n"
-	ss += "Node: " + nodeStatus.Url
-	ss += "Height: " + strconv.FormatUint(nodeStatus.Height, 10)
-	ss += "Status: " + nodeStatus.Status
-
-	return polycommon.PostDingtext(ss, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
-
-	//return polycommon.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
+	return polycommon.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
 }
 
 func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) HealthMonitorHandle {
