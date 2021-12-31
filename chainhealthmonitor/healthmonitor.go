@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"math"
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/chainhealthmonitor/ethereummonitor"
 	"poly-bridge/chainhealthmonitor/neo3monitor"
 	"poly-bridge/chainhealthmonitor/neomonitor"
@@ -79,9 +80,17 @@ func (h *HealthMonitor) NodeMonitor() {
 				logs.Info("%s nodeStatuses:%+v", h.handle.GetChainName(), nodeStatuses)
 				for _, nodeStatus := range nodeStatuses {
 					if nodeStatus.Status != basedef.NodeStatusOk {
+						if existed, err := cacheRedis.Redis.Exists(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url); err == nil && existed {
+							logs.Info("%s node: %s alarm has been sent", h.handle.GetChainName(), nodeStatus.Url, err)
+							continue
+						}
 						if err := sendNodeStatusDingAlarm(nodeStatus); err != nil {
 							logs.Error("sendNodeStatusDingAlarm err:", err)
 						}
+						if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Minute*30); err != nil {
+							logs.Error("mark %s node: %s alarm has been sent error: %s", h.handle.GetChainName(), nodeStatus.Url, err)
+						}
+
 					}
 				}
 			}

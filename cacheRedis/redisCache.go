@@ -28,6 +28,7 @@ const (
 	_GetManualTxData   = "GetManualTxData_"
 	StuckTxAlarmHasSendPrefix = "StuckTxAlarmHasSendPrefix_"
 	NodeStatusPrefix          = "NodeStatusPrefix_"
+	NodeStatusAlarmPrefix     = "NodeStatusAlarmPrefix_"
 )
 
 type RedisCache struct {
