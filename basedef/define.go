@@ -52,6 +52,10 @@ const (
 	SWAP_ROLLBACK
 )
 
+const (
+	NodeStatusOk = "OK"
+)
+
 type LargeTx struct {
 	Asset     string
 	Type      string

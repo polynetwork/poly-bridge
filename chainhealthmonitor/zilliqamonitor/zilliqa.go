@@ -34,7 +34,7 @@ func (z *ZilliqaMonitor) GetChainName() string {
 	return z.monitorConfig.ChainName
 }
 
-func (z *ZilliqaMonitor) NodeMonitor() error {
+func (z *ZilliqaMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range z.sdks {
 		status := basedef.NodeStatus{
@@ -52,7 +52,7 @@ func (z *ZilliqaMonitor) NodeMonitor() error {
 		if err != nil {
 			z.nodeStatus[url] = err.Error()
 		} else {
-			z.nodeStatus[url] = "OK"
+			z.nodeStatus[url] = basedef.NodeStatusOk
 		}
 		status.Status = z.nodeStatus[url]
 		nodeStatuses = append(nodeStatuses, status)
@@ -62,7 +62,7 @@ func (z *ZilliqaMonitor) NodeMonitor() error {
 	if err != nil {
 		logs.Error("set neo3 node status error: %s", err)
 	}
-	return err
+	return nodeStatuses, err
 }
 
 func (z *ZilliqaMonitor) GetCurrentHeight(sdk *chainsdk.ZilliqaSdk) (uint64, error) {

@@ -2,6 +2,7 @@ package chainhealthmonitor
 
 import (
 	"context"
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,6 +16,7 @@ import (
 	"poly-bridge/chainhealthmonitor/switcheomonitor"
 	"poly-bridge/chainhealthmonitor/zilliqamonitor"
 	"poly-bridge/chainsdk"
+	polycommon "poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/go_abi/eccm_abi"
 	"runtime/debug"
@@ -49,7 +51,7 @@ func StartHealthMonitor(config *conf.Config) {
 }
 
 type HealthMonitorHandle interface {
-	NodeMonitor() error
+	NodeMonitor() ([]basedef.NodeStatus, error)
 	GetChainName() string
 }
 
@@ -73,9 +75,28 @@ func (h *HealthMonitor) NodeMonitor() {
 	for {
 		select {
 		case <-nodeMonitorTicker.C:
-			h.handle.NodeMonitor()
+			if nodeStatuses, err := h.handle.NodeMonitor(); err == nil {
+				for _, nodeStatus := range nodeStatuses {
+					if nodeStatus.Status != basedef.NodeStatusOk {
+						if err := sendNodeStatusDingAlarm(nodeStatus); err != nil {
+							logs.Error("sendNodeStatusDingAlarm err:", err)
+						}
+					}
+				}
+			}
 		}
 	}
+}
+
+func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus) error {
+	title := fmt.Sprintf("%s Node ALarm:", nodeStatus.ChainName)
+	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n",
+		title,
+		nodeStatus.Url,
+		nodeStatus.Height,
+		nodeStatus.Status,
+	)
+	return polycommon.PostDingCard(title, body, nil, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
 }
 
 func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) HealthMonitorHandle {
@@ -106,14 +127,14 @@ func EthNodeMonitor(config *conf.Config) {
 	logs.Info("EthNodeMonitor")
 	var ccmContractAddr string
 	for _, listenConfig := range config.ChainListenConfig {
-		if listenConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		if listenConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
 			ccmContractAddr = listenConfig.CCMContract
 			break
 		}
 	}
 
 	for _, chainNodeConfig := range config.ChainNodes {
-		if chainNodeConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+		if chainNodeConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
 			for _, node := range chainNodeConfig.Nodes {
 				sdk, err := chainsdk.NewEthereumSdk(node.Url)
 				if err != nil || sdk == nil || sdk.GetClient() == nil {

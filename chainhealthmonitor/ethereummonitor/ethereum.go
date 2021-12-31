@@ -48,7 +48,7 @@ func (e *EthereumHealthMonitor) GetChainName() string {
 	return e.monitorConfig.ChainName
 }
 
-func (e *EthereumHealthMonitor) NodeMonitor() error {
+func (e *EthereumHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range e.sdks {
 		status := basedef.NodeStatus{
@@ -66,7 +66,7 @@ func (e *EthereumHealthMonitor) NodeMonitor() error {
 		if err != nil {
 			e.nodeStatus[url] = err.Error()
 		} else {
-			e.nodeStatus[url] = "OK"
+			e.nodeStatus[url] = basedef.NodeStatusOk
 		}
 		status.Status = e.nodeStatus[url]
 		nodeStatuses = append(nodeStatuses, status)
@@ -76,7 +76,7 @@ func (e *EthereumHealthMonitor) NodeMonitor() error {
 	if err != nil {
 		logs.Error("set neo3 node status error: %s", err)
 	}
-	return err
+	return nodeStatuses, err
 }
 
 func (e *EthereumHealthMonitor) GetCurrentHeight(sdk *chainsdk.EthereumSdk, chainName string) (uint64, error) {

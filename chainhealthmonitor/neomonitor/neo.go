@@ -42,7 +42,7 @@ func (n *NeoMonitor) GetChainName() string {
 	return n.monitorConfig.ChainName
 }
 
-func (n *NeoMonitor) NodeMonitor() error {
+func (n *NeoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range n.sdks {
 		status := basedef.NodeStatus{
@@ -61,7 +61,7 @@ func (n *NeoMonitor) NodeMonitor() error {
 		if err != nil {
 			n.nodeStatus[url] = err.Error()
 		} else {
-			n.nodeStatus[url] = "OK"
+			n.nodeStatus[url] = basedef.NodeStatusOk
 		}
 		status.Status = n.nodeStatus[url]
 		nodeStatuses = append(nodeStatuses, status)
@@ -71,7 +71,7 @@ func (n *NeoMonitor) NodeMonitor() error {
 	if err != nil {
 		logs.Error("set neo node status error: %s", err)
 	}
-	return err
+	return nodeStatuses, err
 }
 
 func (n *NeoMonitor) GetCurrentHeight(sdk *chainsdk.NeoSdk) (uint64, error) {

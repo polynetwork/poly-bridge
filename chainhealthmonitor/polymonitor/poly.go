@@ -36,7 +36,7 @@ func (p *PolyHealthMonitor) GetChainName() string {
 	return p.monitorConfig.ChainName
 }
 
-func (p *PolyHealthMonitor) NodeMonitor() error {
+func (p *PolyHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range p.sdks {
 		status := basedef.NodeStatus{
@@ -54,7 +54,7 @@ func (p *PolyHealthMonitor) NodeMonitor() error {
 		if err != nil {
 			p.nodeStatus[url] = err.Error()
 		} else {
-			p.nodeStatus[url] = "OK"
+			p.nodeStatus[url] = basedef.NodeStatusOk
 		}
 		status.Status = p.nodeStatus[url]
 		nodeStatuses = append(nodeStatuses, status)
@@ -64,7 +64,7 @@ func (p *PolyHealthMonitor) NodeMonitor() error {
 	if err != nil {
 		logs.Error("set neo node status error: %s", err)
 	}
-	return err
+	return nodeStatuses, err
 }
 
 func (p *PolyHealthMonitor) GetCurrentHeight(sdk *poly_go_sdk.PolySdk, url string) (uint64, error) {

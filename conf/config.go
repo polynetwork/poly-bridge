@@ -216,17 +216,18 @@ type EventEffectConfig struct {
 }
 
 type BotConfig struct {
-	DingUrl        string
-	LargeTxDingUrl string
-	CheckFrom      int64
-	Interval       int64
-	BaseUrl        string
-	DetailUrl      string
-	FinishUrl      string
-	MarkAsPaidUrl  string
-	TxUrl          string
-	ListLargeTxUrl string
-	ApiToken       string
+	DingUrl           string
+	LargeTxDingUrl    string
+	NodeStatusDingUrl string
+	CheckFrom         int64
+	Interval          int64
+	BaseUrl           string
+	DetailUrl         string
+	FinishUrl         string
+	MarkAsPaidUrl     string
+	TxUrl             string
+	ListLargeTxUrl    string
+	ApiToken          string
 }
 
 type HttpConfig struct {
@@ -262,7 +263,7 @@ type Config struct {
 	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
 	NftConfig             *NftConfig
-	RelayUrl			  string
+	RelayUrl              string
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

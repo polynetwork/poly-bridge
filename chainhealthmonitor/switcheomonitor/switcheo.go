@@ -34,7 +34,7 @@ func (s *SwitcheoMonitor) GetChainName() string {
 	return s.monitorConfig.ChainName
 }
 
-func (s *SwitcheoMonitor) NodeMonitor() error {
+func (s *SwitcheoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range s.sdks {
 		status := basedef.NodeStatus{
@@ -52,7 +52,7 @@ func (s *SwitcheoMonitor) NodeMonitor() error {
 		if err != nil {
 			s.nodeStatus[url] = err.Error()
 		} else {
-			s.nodeStatus[url] = "OK"
+			s.nodeStatus[url] = basedef.NodeStatusOk
 		}
 		status.Status = s.nodeStatus[url]
 		nodeStatuses = append(nodeStatuses, status)
@@ -62,7 +62,7 @@ func (s *SwitcheoMonitor) NodeMonitor() error {
 	if err != nil {
 		logs.Error("set neo3 node status error: %s", err)
 	}
-	return err
+	return nodeStatuses, err
 }
 
 func (s *SwitcheoMonitor) GetCurrentHeight(sdk *chainsdk.SwitcheoSDK, url string) (uint64, error) {

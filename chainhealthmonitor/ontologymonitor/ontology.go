@@ -36,7 +36,7 @@ func (o *OntologyMonitor) GetChainName() string {
 	return o.monitorConfig.ChainName
 }
 
-func (o *OntologyMonitor) NodeMonitor() error {
+func (o *OntologyMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range o.sdks {
 		status := basedef.NodeStatus{
@@ -54,7 +54,7 @@ func (o *OntologyMonitor) NodeMonitor() error {
 		if err != nil {
 			o.nodeStatus[url] = err.Error()
 		} else {
-			o.nodeStatus[url] = "OK"
+			o.nodeStatus[url] = basedef.NodeStatusOk
 		}
 		status.Status = o.nodeStatus[url]
 		nodeStatuses = append(nodeStatuses, status)
@@ -64,7 +64,7 @@ func (o *OntologyMonitor) NodeMonitor() error {
 	if err != nil {
 		logs.Error("set neo node status error: %s", err)
 	}
-	return err
+	return nodeStatuses, err
 }
 
 func (o *OntologyMonitor) GetCurrentHeight(sdk *ontology_go_sdk.OntologySdk, url string) (uint64, error) {
