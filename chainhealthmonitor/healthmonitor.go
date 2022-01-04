@@ -96,10 +96,15 @@ func (h *HealthMonitor) NodeMonitor() {
 					if sendAlarm {
 						if err := sendNodeStatusDingAlarm(nodeStatus, exist); err != nil {
 							logs.Error("%s node: %s sendNodeStatusDingAlarm err:", h.handle.GetChainName(), nodeStatus.Url, err)
+							continue
 						}
 						if exist {
 							if _, err := cacheRedis.Redis.Del(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url); err != nil {
 								logs.Error("clear %s node: %s alarm err: %s", h.handle.GetChainName(), nodeStatus.Url, err)
+							}
+						} else {
+							if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Minute*10); err != nil {
+								logs.Error("mark %s node: %s alarm has been sent error: %s", h.handle.GetChainName(), nodeStatus.Url, err)
 							}
 						}
 					}
