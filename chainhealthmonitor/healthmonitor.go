@@ -155,7 +155,7 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 		nodeStatus.Url,
 		nodeStatus.Height,
 		status,
-		nodeStatus.Time,
+		time.Unix(nodeStatus.Time, 0).Format("2006-01-02 15:04:05"),
 	)
 	buttons := []map[string]string{
 		{
