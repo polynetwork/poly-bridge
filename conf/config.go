@@ -363,8 +363,10 @@ func initPolyProxy() {
 type NftConfig struct {
 	Description string
 	ExternalUrl string
-	Image       string
-	Name        string
-	AwsUrl      string
+	ColImage       string
+	DfImage       string
+	ColName     string
+	DfName      string
+	IpfsUrl     string
 	Pwd         string
 }
