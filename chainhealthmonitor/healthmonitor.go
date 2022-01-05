@@ -92,7 +92,7 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 				for _, nodeStatus := range nodeStatuses {
 					oldNodeStatus := oldNodeStatusMap[nodeStatus.Url]
 					var nodeHeightNoGrowthTime uint64
-					if nodeStatus.Height == oldNodeStatus.Height {
+					if oldNodeStatus != nil && nodeStatus.Height == oldNodeStatus.Height {
 						nodeHeightNoGrowthTime = nodeStatus.Height - oldNodeStatus.Height
 						if nodeHeightNoGrowthTime > 180 {
 							nodeStatus.Status = append(nodeStatus.Status, fmt.Sprintf("node height no growth more than %d s", nodeHeightNoGrowthTime))
