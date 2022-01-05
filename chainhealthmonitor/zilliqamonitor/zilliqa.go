@@ -27,6 +27,8 @@ func NewZilliqaHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *ZilliqaMo
 		sdks[node.Url] = chainsdk.NewZilliqaSdk(node.Url)
 	}
 	zilliqaMonitor.sdks = sdks
+	zilliqaMonitor.nodeHeight = make(map[string]uint64, len(sdks))
+	zilliqaMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return zilliqaMonitor
 }
 

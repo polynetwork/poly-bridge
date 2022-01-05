@@ -35,6 +35,8 @@ func NewNeoHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *NeoMonitor {
 		sdks[node.Url] = sdk
 	}
 	neoMonitor.sdks = sdks
+	neoMonitor.nodeHeight = make(map[string]uint64, len(sdks))
+	neoMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return neoMonitor
 }
 

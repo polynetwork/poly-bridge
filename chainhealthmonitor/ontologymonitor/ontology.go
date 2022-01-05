@@ -29,6 +29,8 @@ func NewOntologyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Ontology
 		sdks[node.Url] = sdk
 	}
 	ontologyMonitor.sdks = sdks
+	ontologyMonitor.nodeHeight = make(map[string]uint64, len(sdks))
+	ontologyMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return ontologyMonitor
 }
 

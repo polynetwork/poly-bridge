@@ -29,6 +29,8 @@ func NewPolyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *PolyHealthMo
 		sdks[node.Url] = sdk
 	}
 	polyMonitor.sdks = sdks
+	polyMonitor.nodeHeight = make(map[string]uint64, len(sdks))
+	polyMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return polyMonitor
 }
 
