@@ -264,14 +264,19 @@ type TransactionOnAddress struct {
 
 type NftUser struct {
 	Id              int64   `gorm:"primaryKey;autoIncrement"`
-	NftId           int     `gorm:"index:nftusers_nftid;type:int;not null"`
-	ChainId         uint64  `gorm:"type:bigint(20);not null"`
-	Addrhash        string  `gorm:"type:varchar(66);not null"`
-	Address         string  `gorm:"uniqueIndex:nftusers_address;;type:varchar(66);not null"`
+	ColChainId         uint64  `gorm:"type:bigint(20);not null"`
+	DfChainId         uint64  `gorm:"type:bigint(20);not null"`
+	AddrHash        string  `gorm:"type:varchar(66);not null"`
+	ColAddress         string  `gorm:"uniqueIndex:nftusers_coladdress;;type:varchar(66);not null"`
+	DfAddress         string  `gorm:"uniqueIndex:nftusers_dfaddress;;type:varchar(66);not null"`
 	Txnum           uint64  `gorm:"type:bigint(20);not null"`
 	FirstTime       uint64  `gorm:"type:bigint(20);not null"`
 	TxAmountUsd     *BigInt `gorm:"type:varchar(64);not null"`
 	EffectAmountUsd *BigInt `gorm:"type:varchar(64);not null"`
-	Nftsig          string  `gorm:"size:132;not null"`
-	IsClaim         uint64  `gorm:"type:bigint(20);not null"`
+	NftColId        int     `gorm:"index:nftusers_nftcolid;type:int;not null"`
+	NftDfId         int     `gorm:"index:nftusers_nftdfid;type:int;not null"`
+	NftColsig       string  `gorm:"size:132;not null"`
+	NftDfsig        string  `gorm:"size:132;not null"`
+	IsClaimCol      uint64  `gorm:"type:bigint(20);not null"`
+	IsClaimDf       uint64  `gorm:"type:bigint(20);not null"`
 }

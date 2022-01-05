@@ -65,16 +65,19 @@ func Nft(cfg *conf.Config) {
 	if runflag == "0" {
 		createNft()
 		nftEffectAmount()
-		updateNftId()
+		updateColNftId()
+		updateDfNftId()
 	} else if runflag == "1" {
 		createNft()
 	} else if runflag == "2" {
 		nftEffectAmount()
 	} else if runflag == "3" {
-		updateNftId()
+		updateColNftId()
 	} else if runflag == "4" {
-		createawsjson(nftCfg)
+		updateDfNftId()
 	} else if runflag == "5" {
+		createipfsjson(nftCfg)
+	} else if runflag == "6" {
 		signNft(nftCfg)
 	}
 }
@@ -82,7 +85,7 @@ func Nft(cfg *conf.Config) {
 func createNft() {
 	logs.Info("--------- start createNft --------------------")
 	var counter int
-	err := db.Raw("select count(DISTINCT(t.addr)) from (select a.`from` as addr from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1628744399 group by a.`from`)t").
+	err := db.Raw("select count(DISTINCT(t.addr)) from (select a.`from` as addr from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1640966400 group by a.`from`)t").
 		Scan(&counter).Error
 	if err != nil {
 		panic(fmt.Sprint("Scan(&counter).Error:", err))
@@ -90,7 +93,7 @@ func createNft() {
 	for i := 0; i < counter/100+1; i++ {
 		users := make([]*models.NftUser, 0)
 		//TxAmountUsd,FirstTime,Addrhash
-		res := db.Raw("select a.`from` as addrhash,convert(sum(a.amount*10000/POW(10,b.precision)*d.price/100000000),decimal(37,0)) as tx_amount_usd, min(c.time) as first_time  from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1628744399 group by a.`from` order by tx_amount_usd desc limit ? , ?", i*100, 100).
+		res := db.Raw("select a.`from` as addr_hash,convert(sum(a.amount*10000/POW(10,b.precision)*d.price/100000000),decimal(37,0)) as tx_amount_usd, min(c.time) as first_time  from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1640966400 group by a.`from` order by tx_amount_usd desc limit ? , ?", i*100, 100).
 			Scan(&users)
 		if res.Error != nil {
 			panic(fmt.Sprint("Scan(&users).Error:", err))
@@ -104,18 +107,21 @@ func createNft() {
 				continue
 			}
 			var chainId uint64
-			err := db.Raw("SELECT a.chain_id from src_transactions a INNER JOIN src_transfers b on a.hash=b.tx_hash where a.time= ? and b.`from`= ?", user.FirstTime, user.Addrhash).
+			err := db.Raw("SELECT a.chain_id from src_transactions a INNER JOIN src_transfers b on a.hash=b.tx_hash where a.time= ? and b.`from`= ?", user.FirstTime, user.AddrHash).
 				First(&chainId).Error
 			if err != nil {
 				logs.Error("First(&chainId).Error", err)
 			}
+			if chainId == 0{
+				continue
+			}
 			//ChainId
-			user.ChainId = chainId
+			user.ColChainId = chainId
 			//Address
-			user.Address = basedef.Hash2Address(user.ChainId, user.Addrhash)
+			user.ColAddress = basedef.Hash2Address(user.ColChainId, user.ColAddress)
 
 			var num uint64
-			err = db.Raw("select count(1) from src_transfers where chain_id<>10 and `from`= ?", user.Addrhash).
+			err = db.Raw("select count(1) from src_transfers where chain_id<>10 and `from`= ?", user.AddrHash).
 				First(&num).Error
 			if err != nil {
 				logs.Error("First(&num).Error", err)
@@ -170,8 +176,16 @@ func nftEffectAmount() {
 		effectAmountUsd := new(big.Int).Sub(&v.AmountUsd.Int, &outAmountUsd.Int)
 		if effectAmountUsd.Cmp(big.NewInt(0)) > 0 {
 			//effectAmountUsd
-			err = db.Model(&models.NftUser{}).Where("addrhash = ?", v.Addrhash).Update("effect_amount_usd", models.NewBigInt(effectAmountUsd)).
+			dfUser:=&models.NftUser{}
+			err:=db.Where("addr_hash = ?", v.Addrhash).First(dfUser).
 				Error
+			if err!=nil{
+				continue
+			}
+			dfUser.EffectAmountUsd=models.NewBigInt(effectAmountUsd)
+			dfUser.DfChainId=7
+			dfUser.DfAddress= basedef.Hash2Address(7, dfUser.AddrHash)
+			err=db.Save(dfUser).Error
 			if err != nil {
 				logs.Error("Update stop_amount_usd err:%v,addrhash:%v,effectAmountUsd:%v", err, v.Addrhash, effectAmountUsd)
 			}
@@ -180,27 +194,27 @@ func nftEffectAmount() {
 	logs.Info("********* end effectAmountUsd *********")
 }
 
-func updateNftId() {
-	logs.Info("--------- start updateNftId --------------------")
+func updateColNftId() {
+	logs.Info("--------- start NftColId --------------------")
 	chainIds := make([]uint64, 0)
-	err := db.Raw("select chain_id from nft_users group BY chain_id ORDER BY chain_id").
+	err := db.Raw("select col_chain_id from nft_users group BY col_chain_id ORDER BY col_chain_id").
 		Find(&chainIds).Error
 	if err != nil {
-		logs.Error("updateNftId Find(&chainIds) err", err)
+		logs.Error("updateColNftId Find(&chainIds) err", err)
 	}
-	nowNftId := 0
+	nowNftColId := 0
 	for _, v := range chainIds {
 		var count int64
-		err := db.Model(&models.NftUser{}).Where("chain_id = ?", v).Count(&count).Error
+		err := db.Model(&models.NftUser{}).Where("col_chain_id = ?", v).Count(&count).Error
 		if err != nil {
 			panic(fmt.Sprint("Count(&count).Error:", err))
 		}
 		for i := 0; i < int(count)+1; i++ {
 			nftUsers := make([]*models.NftUser, 0)
-			db.Model(&models.NftUser{}).Where("chain_id = ?", v).Limit(100).Offset(100 * i).Find(&nftUsers)
+			db.Model(&models.NftUser{}).Where("col_chain_id = ?", v).Limit(100).Offset(100 * i).Find(&nftUsers)
 			for _, nftUser := range nftUsers {
-				nftUser.NftId = nowNftId
-				nowNftId++
+				nftUser.NftColId = nowNftColId
+				nowNftColId++
 			}
 			if len(nftUsers) > 0 {
 				err = db.Save(nftUsers).Error
@@ -210,28 +224,68 @@ func updateNftId() {
 			}
 		}
 	}
-	logs.Info("********* end updateNftId *********")
+	logs.Info("--------- end NftColId --------------------")
 }
 
-func createawsjson(nftCfg *conf.NftConfig) {
-	logs.Info("--------- start createawsjson --------------------")
-	if nftCfg == nil || nftCfg.Name == "" {
+func updateDfNftId() {
+	logs.Info("--------- start NftDfId --------------------")
+	chainIds := make([]uint64, 0)
+	err := db.Raw("select df_chain_id from nft_users group BY df_chain_id ORDER BY df_chain_id").
+		Find(&chainIds).Error
+	if err != nil {
+		logs.Error("updateDfNftId Find(&chainIds) err", err)
+	}
+	nowNftDfId := 0
+	for _, v := range chainIds {
+		var count int64
+		err := db.Model(&models.NftUser{}).Where("df_chain_id = ? AND effect_amount_usd > 0", v).Count(&count).Error
+		if err != nil {
+			logs.Error(fmt.Sprint("chain:%v,Count Error:",v, err))
+		}
+		if count==0{
+			continue
+		}
+		for i := 0; i < int(count)+1; i++ {
+			nftUsers := make([]*models.NftUser, 0)
+			db.Model(&models.NftUser{}).Where("df_chain_id = ? AND effect_amount_usd > 0", v).Limit(100).Offset(100 * i).Find(&nftUsers)
+			for _, nftUser := range nftUsers {
+				nftUser.NftDfId = nowNftDfId
+				nowNftDfId++
+			}
+			if len(nftUsers) > 0 {
+				err = db.Save(nftUsers).Error
+				if err != nil {
+					logs.Error("updateDfNftId Save(nftUsers).Error", err)
+				}
+			}
+		}
+	}
+	logs.Info("--------- end NftDfId --------------------")
+
+}
+
+func createipfsjson(nftCfg *conf.NftConfig) {
+	logs.Info("--------- start createipfsjson --------------------")
+	if nftCfg == nil || nftCfg.ColName == "" || nftCfg.DfName == ""{
 		panic(fmt.Sprintf("nftCfg is null"))
 	}
 	description := nftCfg.Description
 	externalurl := nftCfg.ExternalUrl
-	image := nftCfg.Image
-	name := nftCfg.Name
+	colImage := nftCfg.ColImage
+	dfImage := nftCfg.DfImage
+	colName := nftCfg.ColName
+	dfName := nftCfg.DfName
+
+	path := "../polynft"
+	err := os.Mkdir(path, os.ModePerm)
+	if err != nil {
+		logs.Error(err)
+	}
 
 	var count int64
-	err := db.Model(&models.NftUser{}).Count(&count).Error
+	err = db.Model(&models.NftUser{}).Count(&count).Error
 	if err != nil {
 		panic(fmt.Sprint("Count(&count).Error:", err))
-	}
-	path := "../polynft"
-	err = os.Mkdir(path, os.ModePerm)
-	if err != nil {
-		logs.Info(err)
 	}
 	for i := 0; i < int(count)/100+1; i++ {
 		nftUsers := make([]*models.NftUser, 0)
@@ -240,22 +294,10 @@ func createawsjson(nftCfg *conf.NftConfig) {
 			nftJson := new(NftJson)
 			nftJson.Description = description
 			nftJson.ExternalUrl = externalurl
-			nftJson.Image = image
-			nftJson.Name = name
+			nftJson.Image = colImage
+			nftJson.Name = colName
 			attributes := make([]*Attribute, 0)
 			attributes = append(attributes,
-				&Attribute{
-					"NftId",
-					strconv.Itoa(v.NftId),
-				},
-				&Attribute{
-					"ChainId",
-					strconv.Itoa(int(v.ChainId)),
-				},
-				&Attribute{
-					"Address",
-					v.Address,
-				},
 				&Attribute{
 					"Txnum",
 					strconv.Itoa(int(v.Txnum)),
@@ -267,33 +309,65 @@ func createawsjson(nftCfg *conf.NftConfig) {
 				&Attribute{
 					"TxAmountUsd",
 					decimal.NewFromBigInt(&v.TxAmountUsd.Int, -4).StringFixed(2),
-				},
-				&Attribute{
-					"EffectAmountUsd",
-					decimal.NewFromBigInt(&v.EffectAmountUsd.Int, -4).StringFixed(2),
 				})
 			nftJson.Attributes = attributes
-			nftid := strconv.Itoa(v.NftId)
+			nftid := strconv.Itoa(v.NftColId)
 			data, _ := json.Marshal(nftJson)
-			err = ioutil.WriteFile(path+"/"+name+"_"+nftid, data, 0644)
+			err = ioutil.WriteFile(path+"/"+colName+"_"+nftid, data, 0644)
 			if err != nil {
 				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
 			}
 		}
 	}
-	logs.Info("********* end createawsjson *********")
+
+	count=0
+	err = db.Model(&models.NftUser{}).Where("effect_amount_usd > 0").Count(&count).Error
+	if err != nil {
+		panic(fmt.Sprint("Count(&count).Error:", err))
+	}
+	for i := 0; i < int(count)/100+1; i++ {
+		nftUsers := make([]*models.NftUser, 0)
+		db.Model(&models.NftUser{}).Where("effect_amount_usd > 0").
+			Limit(100).Offset(100 * i).Find(&nftUsers)
+		for _, v := range nftUsers {
+			nftJson := new(NftJson)
+			nftJson.Description = description
+			nftJson.ExternalUrl = externalurl
+			nftJson.Image = dfImage
+			nftJson.Name = dfName
+			attributes := make([]*Attribute, 0)
+			attributes = append(attributes,
+				&Attribute{
+					"EffectAmountUsd",
+					decimal.NewFromBigInt(&v.EffectAmountUsd.Int, -4).StringFixed(2),
+				},
+				&Attribute{
+					"Time",
+					"2021-08-10",
+				})
+			nftJson.Attributes = attributes
+			nftid := strconv.Itoa(v.NftDfId)
+			data, _ := json.Marshal(nftJson)
+			err = ioutil.WriteFile(path+"/"+dfName+"_"+nftid, data, 0644)
+			if err != nil {
+				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
+			}
+		}
+	}
+	logs.Info("********* end createipfsjson *********")
 }
 
 func signNft(nftCfg *conf.NftConfig) {
 	logs.Info("--------- start signNft --------------------")
-	if nftCfg == nil || nftCfg.Name == "" {
+	if nftCfg == nil || nftCfg.ColName == "" || nftCfg.DfName == ""{
 		panic(fmt.Sprintf("nftCfg is null"))
 	}
 	if nftCfg.Pwd == "" {
 		panic(fmt.Sprintf("nftCfgPwd is null"))
 	}
-	name := nftCfg.Name
-	awsuri := nftCfg.AwsUrl
+	colName := nftCfg.ColName
+	dfName := nftCfg.DfName
+	ipfsurl := nftCfg.IpfsUrl
 
 	privateKeyBytes := hexutil.MustDecode(nftCfg.Pwd)
 	privateKey, err := crypto.ToECDSA(privateKeyBytes)
@@ -311,14 +385,16 @@ func signNft(nftCfg *conf.NftConfig) {
 		db.Model(&models.NftUser{}).Limit(100).Offset(100 * i).Find(&nftUsers)
 		for j, v := range nftUsers {
 			//tokenId
-			tokenId := big.NewInt(int64(v.NftId))
+			colTokenId := big.NewInt(int64(v.NftColId))
+			dfTokenId := big.NewInt(int64(v.NftDfId))
 			//user addr
-			account := common.HexToAddress(v.Address)
-			//aws uri
-			uri := awsuri + name + "_" + strconv.Itoa(v.NftId)
+			colAccount := common.HexToAddress(v.ColAddress)
+			dfAccount := common.HexToAddress(v.DfAddress)
+			//ipfs uri
+			uri := ipfsurl + colName + "_" + strconv.Itoa(v.NftColId)
 			hash := crypto.Keccak256Hash(
-				common.BigToHash(tokenId).Bytes(),
-				account[:],
+				common.BigToHash(colTokenId).Bytes(),
+				colAccount[:],
 				[]byte(uri),
 			)
 			// normally we sign prefixed hash
@@ -335,8 +411,32 @@ func signNft(nftCfg *conf.NftConfig) {
 			if err != nil {
 				panic(fmt.Sprint("crypto.Sign Error:", err))
 			}
+			v.NftColsig = fmt.Sprintf("%x", sig)
 
-			v.Nftsig = fmt.Sprintf("%x", sig)
+			if v.EffectAmountUsd.Cmp(big.NewInt(0))>0{
+				uri := ipfsurl + dfName + "_" + strconv.Itoa(v.NftDfId)
+				hash := crypto.Keccak256Hash(
+					common.BigToHash(dfTokenId).Bytes(),
+					dfAccount[:],
+					[]byte(uri),
+				)
+				// normally we sign prefixed hash
+				// as in solidity with `ECDSA.toEthSignedMessageHash`
+
+				// expect
+				prefixedHash := crypto.Keccak256Hash(
+					[]byte(fmt.Sprintf("\x19Ethereum Signed Message:\n%v", len(hash))),
+					hash.Bytes(),
+				)
+
+				// sign hash to validate later in Solidity
+				sig, err := crypto.Sign(prefixedHash.Bytes(), privateKey)
+				if err != nil {
+					panic(fmt.Sprint("crypto.Sign Error:", err))
+				}
+				v.NftDfsig = fmt.Sprintf("%x", sig)
+			}
+
 			err = db.Save(v).Error
 			if err != nil {
 				logs.Error("save sign nftUser err", err)
@@ -344,7 +444,7 @@ func signNft(nftCfg *conf.NftConfig) {
 
 			if j == 0 {
 				logs.Info("address: %v sig: %x  hash: %x  preFixedHash: %x  signer: %x  receiver: %x  tokenId: %d  uri %s",
-					v.Address, sig, hash, prefixedHash, crypto.PubkeyToAddress(privateKey.PublicKey), account, tokenId, uri)
+					v.AddrHash, sig, hash, prefixedHash, crypto.PubkeyToAddress(privateKey.PublicKey), colAccount, colTokenId, uri)
 			}
 
 		}
