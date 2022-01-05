@@ -243,28 +243,30 @@ type IPPortConfig struct {
 }
 
 type Config struct {
-	Server                string
-	Env                   string
-	RunMode               string
-	Backup                bool
-	LargeTxAmount         int64
-	LogFile               string
-	HttpConfig            *HttpConfig
-	MetricConfig          *HttpConfig
-	ChainNodes            []*ChainNodes
-	ChainListenConfig     []*ChainListenConfig
-	CoinPriceUpdateSlot   int64
-	CoinPriceListenConfig []*CoinPriceListenConfig
-	FeeUpdateSlot         int64
-	FeeListenConfig       []*FeeListenConfig
-	EventEffectConfig     *EventEffectConfig
-	StatsConfig           *StatsConfig
-	DBConfig              *DBConfig
-	BotConfig             *BotConfig
-	RedisConfig           *RedisConfig
-	IPPortConfig          *IPPortConfig
-	NftConfig             *NftConfig
-	RelayUrl              string
+	Server                       string
+	Env                          string
+	RunMode                      string
+	Backup                       bool
+	LargeTxAmount                int64
+	LogFile                      string
+	HttpConfig                   *HttpConfig
+	MetricConfig                 *HttpConfig
+	ChainNodeStatusCheckInterval uint64
+	ChainNodeStatusAlarmInterval uint64
+	ChainNodes                   []*ChainNodes
+	ChainListenConfig            []*ChainListenConfig
+	CoinPriceUpdateSlot          int64
+	CoinPriceListenConfig        []*CoinPriceListenConfig
+	FeeUpdateSlot                int64
+	FeeListenConfig              []*FeeListenConfig
+	EventEffectConfig            *EventEffectConfig
+	StatsConfig                  *StatsConfig
+	DBConfig                     *DBConfig
+	BotConfig                    *BotConfig
+	RedisConfig                  *RedisConfig
+	IPPortConfig                 *IPPortConfig
+	NftConfig                    *NftConfig
+	RelayUrl                     string
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

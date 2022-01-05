@@ -33,6 +33,8 @@
     "idle_timeout": 10,
     "expiration": 600
   },
+  "ChainNodeStatusCheckInterval": 60,
+  "ChainNodeStatusAlarmInterval": 600,
   "ChainNodes": [
     {
       "ChainName": "Poly",
