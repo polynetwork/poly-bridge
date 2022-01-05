@@ -118,7 +118,7 @@ func createNft() {
 			//ChainId
 			user.ColChainId = chainId
 			//Address
-			user.ColAddress = basedef.Hash2Address(user.ColChainId, user.ColAddress)
+			user.ColAddress = basedef.Hash2Address(user.ColChainId, user.AddrHash)
 
 			var num uint64
 			err = db.Raw("select count(1) from src_transfers where chain_id<>10 and `from`= ?", user.AddrHash).
