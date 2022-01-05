@@ -150,7 +150,7 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 			status = fmt.Sprintf("%s\n%s", status, info)
 		}
 	}
-	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n- Time: %d\n",
+	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n- Time: %s\n",
 		title,
 		nodeStatus.Url,
 		nodeStatus.Height,
