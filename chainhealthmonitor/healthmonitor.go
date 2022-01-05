@@ -143,11 +143,11 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 	status := ""
 	if isRecover {
 		title = fmt.Sprintf("%s Node Recover", nodeStatus.ChainName)
-		status = "<font color=green>OK</font>"
+		status = "OK"
 	} else {
 		title = fmt.Sprintf("%s Node ALarm", nodeStatus.ChainName)
-		for i, info := range nodeStatus.Status {
-			status = fmt.Sprintf("%s\n%d. <font color=red>%s</font>", status, i+1, info)
+		for _, info := range nodeStatus.Status {
+			status = fmt.Sprintf("%s\n%s", status, info)
 		}
 	}
 	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n- Time: %d\n",
