@@ -830,9 +830,8 @@ func (c *BotController) ListNodeStatusPage() {
 		chainNames := make([]string, 0)
 		for _, cfg := range conf.GlobalConfig.ChainNodes {
 			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + cfg.ChainName); err == nil {
-				dataByte := []byte(dataStr)
 				var nodeStatuses []basedef.NodeStatus
-				if err := json.Unmarshal(dataByte, &nodeStatuses); err != nil {
+				if err := json.Unmarshal([]byte(dataStr), &nodeStatuses); err != nil {
 					logs.Error("chain %s node status data Unmarshal error: ", cfg.ChainName, err)
 					continue
 				}
@@ -852,7 +851,7 @@ func (c *BotController) ListNodeStatusPage() {
 					status.Url,
 					strconv.FormatUint(status.Height, 10),
 					status.Status,
-					status.Time,
+					time.Unix(status.Time, 0).Format("2006-01-02 15:04:05"),
 				)
 			}
 			table := fmt.Sprintf(

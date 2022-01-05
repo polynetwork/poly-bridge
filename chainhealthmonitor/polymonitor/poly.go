@@ -43,7 +43,8 @@ func (p *PolyHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 			ChainId:   p.monitorConfig.ChainId,
 			ChainName: p.monitorConfig.ChainName,
 			Url:       url,
-			Time:      time.Now().Format("2006-01-02 15:04:05"),
+			Status:    make([]string, 0),
+			Time:      time.Now().Unix(),
 		}
 		height, err := p.GetCurrentHeight(sdk, url)
 		if err == nil {
@@ -56,13 +57,13 @@ func (p *PolyHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		} else {
 			p.nodeStatus[url] = basedef.NodeStatusOk
 		}
-		status.Status = p.nodeStatus[url]
+		status.Status = append(status.Status, p.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
 	data, _ := json.Marshal(nodeStatuses)
 	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+p.monitorConfig.ChainName, data, time.Hour*24)
 	if err != nil {
-		logs.Error("set neo node status error: %s", err)
+		logs.Error("set %s node status error: %s", p.GetChainName(), err)
 	}
 	return nodeStatuses, err
 }
@@ -71,10 +72,10 @@ func (p *PolyHealthMonitor) GetCurrentHeight(sdk *poly_go_sdk.PolySdk, url strin
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint32 {
 		err := fmt.Errorf("get current block height err: %s", err)
-		logs.Error(fmt.Sprintf("poly node: %s, %s ", url, err))
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", p.GetChainName(), url, err))
 		return 0, err
 	}
-	logs.Info("poly node: %s, latest height: %d", url, height)
+	logs.Info("%s node: %s, latest height: %d", p.GetChainName(), url, height)
 	return uint64(height), nil
 }
 
@@ -82,7 +83,7 @@ func (p *PolyHealthMonitor) CheckAbiCall(sdk *poly_go_sdk.PolySdk, url string) e
 	_, err := sdk.GetSmartContractEventByBlock(uint32(p.nodeHeight[url]) - 1)
 	if err != nil {
 		err := fmt.Errorf("call GetSmartContractEventByBlock err: %s", err)
-		logs.Error(fmt.Sprintf("poly node: %s, %s ", url, err))
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", p.GetChainName(), url, err))
 		return err
 	}
 	return nil

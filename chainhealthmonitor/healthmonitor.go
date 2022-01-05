@@ -1,12 +1,9 @@
 package chainhealthmonitor
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"math"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/chainhealthmonitor/ethereummonitor"
@@ -16,10 +13,8 @@ import (
 	"poly-bridge/chainhealthmonitor/polymonitor"
 	"poly-bridge/chainhealthmonitor/switcheomonitor"
 	"poly-bridge/chainhealthmonitor/zilliqamonitor"
-	"poly-bridge/chainsdk"
 	polycommon "poly-bridge/common"
 	"poly-bridge/conf"
-	"poly-bridge/go_abi/eccm_abi"
 	"runtime/debug"
 	"time"
 )
@@ -46,7 +41,7 @@ func StartHealthMonitor(config *conf.Config) {
 			continue
 		}
 		monitor := &HealthMonitor{healthMonitorHandle}
-		monitor.Start()
+		monitor.Start(config)
 	}
 
 }
@@ -60,11 +55,11 @@ type HealthMonitor struct {
 	handle HealthMonitorHandle
 }
 
-func (h *HealthMonitor) Start() {
-	go h.NodeMonitor()
+func (h *HealthMonitor) Start(config *conf.Config) {
+	go h.NodeMonitor(config)
 }
 
-func (h *HealthMonitor) NodeMonitor() {
+func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 	defer func() {
 		if r := recover(); r != nil {
 			logs.Error("NodeMonitor restart, recover info: %s", string(debug.Stack()))
@@ -72,38 +67,49 @@ func (h *HealthMonitor) NodeMonitor() {
 	}()
 
 	logs.Info("start %s NodeMonitor", h.handle.GetChainName())
-	nodeMonitorTicker := time.NewTicker(time.Second * time.Duration(20))
+	nodeMonitorTicker := time.NewTicker(time.Second * time.Duration(config.ChainNodeStatusCheckInterval))
 	for {
 		select {
 		case <-nodeMonitorTicker.C:
+			oldNodeStatusMap := make(map[string]*basedef.NodeStatus)
+			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + h.handle.GetChainName()); err == nil {
+				var oldNodeStatuses []basedef.NodeStatus
+				if err := json.Unmarshal([]byte(dataStr), &oldNodeStatuses); err != nil {
+					logs.Error("chain %s node status data Unmarshal error: ", h.handle.GetChainName(), err)
+				} else {
+					for _, oldNodeStatus := range oldNodeStatuses {
+						oldNodeStatusMap[oldNodeStatus.Url] = &oldNodeStatus
+					}
+				}
+			}
 			if nodeStatuses, err := h.handle.NodeMonitor(); err == nil {
-				logs.Info("%s nodeStatuses:%+v", h.handle.GetChainName(), nodeStatuses)
+				data, _ := json.Marshal(nodeStatuses)
+				_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+h.handle.GetChainName(), data, time.Hour*24)
+				if err != nil {
+					logs.Error("set %s node status error: %s", h.handle.GetChainName(), err)
+				}
+
 				for _, nodeStatus := range nodeStatuses {
-					sendAlarm := false
-					exist, err := cacheRedis.Redis.Exists(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url)
-					if err == nil {
-						if exist {
-							if nodeStatus.Status == basedef.NodeStatusOk {
-								sendAlarm = true
-							}
-						} else {
-							if nodeStatus.Status != basedef.NodeStatusOk {
-								sendAlarm = true
-							}
+					oldNodeStatus := oldNodeStatusMap[nodeStatus.Url]
+					var nodeHeightNoGrowthTime uint64
+					if nodeStatus.Height == oldNodeStatus.Height {
+						nodeHeightNoGrowthTime = nodeStatus.Height - oldNodeStatus.Height
+						if nodeHeightNoGrowthTime > 180 {
+							nodeStatus.Status = append(nodeStatus.Status, fmt.Sprintf("node height no growth more than %d s", nodeHeightNoGrowthTime))
 						}
 					}
-
-					if sendAlarm {
-						if err := sendNodeStatusDingAlarm(nodeStatus, exist); err != nil {
+					send, recover := needSendNodeStatusAlarm(&nodeStatus)
+					if send {
+						if err := sendNodeStatusDingAlarm(nodeStatus, recover); err != nil {
 							logs.Error("%s node: %s sendNodeStatusDingAlarm err:", h.handle.GetChainName(), nodeStatus.Url, err)
 							continue
 						}
-						if exist {
+						if recover {
 							if _, err := cacheRedis.Redis.Del(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url); err != nil {
 								logs.Error("clear %s node: %s alarm err: %s", h.handle.GetChainName(), nodeStatus.Url, err)
 							}
 						} else {
-							if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Minute*10); err != nil {
+							if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Second*time.Duration(config.ChainNodeStatusAlarmInterval)); err != nil {
 								logs.Error("mark %s node: %s alarm has been sent error: %s", h.handle.GetChainName(), nodeStatus.Url, err)
 							}
 						}
@@ -114,19 +120,42 @@ func (h *HealthMonitor) NodeMonitor() {
 	}
 }
 
+func needSendNodeStatusAlarm(nodeStatus *basedef.NodeStatus) (send, recover bool) {
+	exist, err := cacheRedis.Redis.Exists(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url)
+	if err == nil {
+		if exist {
+			if len(nodeStatus.Status) == 1 && nodeStatus.Status[0] == basedef.NodeStatusOk {
+				send = true
+				recover = true
+			}
+		} else {
+			if len(nodeStatus.Status) >= 1 && nodeStatus.Status[0] != basedef.NodeStatusOk {
+				send = true
+				recover = false
+			}
+		}
+	}
+	return
+}
+
 func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) error {
 	title := ""
+	status := ""
 	if isRecover {
-		title = fmt.Sprintf("%s Node Recover:", nodeStatus.ChainName)
+		title = fmt.Sprintf("%s Node Recover", nodeStatus.ChainName)
+		status = "<font color=green>OK</font>"
 	} else {
-		title = fmt.Sprintf("%s Node ALarm:", nodeStatus.ChainName)
+		title = fmt.Sprintf("%s Node ALarm", nodeStatus.ChainName)
+		for i, info := range nodeStatus.Status {
+			status = fmt.Sprintf("%s\n%d. <font color=red>%s</font>", status, i+1, info)
+		}
 	}
-
-	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n",
+	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n- Time: %d\n",
 		title,
 		nodeStatus.Url,
 		nodeStatus.Height,
 		nodeStatus.Status,
+		nodeStatus.Time,
 	)
 	buttons := []map[string]string{
 		{
@@ -159,62 +188,5 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) HealthMonit
 		return zilliqamonitor.NewZilliqaHealthMonitor(monitorConfig)
 	default:
 		return nil
-	}
-}
-
-func EthNodeMonitor(config *conf.Config) {
-	logs.Info("EthNodeMonitor")
-	var ccmContractAddr string
-	for _, listenConfig := range config.ChainListenConfig {
-		if listenConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
-			ccmContractAddr = listenConfig.CCMContract
-			break
-		}
-	}
-
-	for _, chainNodeConfig := range config.ChainNodes {
-		if chainNodeConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
-			for _, node := range chainNodeConfig.Nodes {
-				sdk, err := chainsdk.NewEthereumSdk(node.Url)
-				if err != nil || sdk == nil || sdk.GetClient() == nil {
-					logs.Info("node: %s,NewEthereumSdk error: %s", node.Url, err)
-					continue
-				}
-				height, err := sdk.GetCurrentBlockHeight()
-				if err != nil || height == 0 || height == math.MaxUint64 {
-					logs.Error("node: %s, get current block height err: %s, ", sdk.GetUrl(), err)
-					continue
-				}
-				height -= 1
-				//height = 13881338
-
-				logs.Info("node: %s, height: %d", node.Url, height)
-
-				eccmContractAddress := common.HexToAddress(ccmContractAddr)
-				client := sdk.GetClient()
-				eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
-				if err != nil {
-					logs.Error("node: %s, NewEthCrossChainManager error: %s", sdk.GetUrl(), err)
-					continue
-				}
-				opt := &bind.FilterOpts{
-					Start:   height,
-					End:     &height,
-					Context: context.Background(),
-				}
-				// get ethereum lock events from given block
-				_, err = eccmContract.FilterCrossChainEvent(opt, nil)
-				if err != nil {
-					logs.Error("node: %s, FilterCrossChainEvent error: %s", sdk.GetUrl(), err)
-					continue
-				}
-				// ethereum unlock events from given block
-				_, err = eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
-				if err != nil {
-					logs.Error("node: %s, FilterVerifyHeaderAndExecuteTxEvent error: %s", sdk.GetUrl(), err)
-					continue
-				}
-			}
-		}
 	}
 }

@@ -41,7 +41,8 @@ func (s *SwitcheoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 			ChainId:   s.monitorConfig.ChainId,
 			ChainName: s.monitorConfig.ChainName,
 			Url:       url,
-			Time:      time.Now().Format("2006-01-02 15:04:05"),
+			Status:    make([]string, 0),
+			Time:      time.Now().Unix(),
 		}
 		height, err := s.GetCurrentHeight(sdk, url)
 		if err == nil {
@@ -54,13 +55,13 @@ func (s *SwitcheoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		} else {
 			s.nodeStatus[url] = basedef.NodeStatusOk
 		}
-		status.Status = s.nodeStatus[url]
+		status.Status = append(status.Status, s.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
 	data, _ := json.Marshal(nodeStatuses)
 	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+s.monitorConfig.ChainName, data, time.Hour*24)
 	if err != nil {
-		logs.Error("set neo3 node status error: %s", err)
+		logs.Error("set %s node status error: %s", s.GetChainName(), err)
 	}
 	return nodeStatuses, err
 }
@@ -69,10 +70,10 @@ func (s *SwitcheoMonitor) GetCurrentHeight(sdk *chainsdk.SwitcheoSDK, url string
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint64 {
 		err := fmt.Errorf("get current block height err: %s", err)
-		logs.Error(fmt.Sprintf("switcheo node: %s, %s ", url, err))
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, err))
 		return 0, err
 	}
-	logs.Info("switcheo node: %s, latest height: %d", url, height)
+	logs.Info("%s node: %s, latest height: %d", s.GetChainName(), url, height)
 	return height, nil
 }
 
@@ -82,12 +83,12 @@ func (s *SwitcheoMonitor) CheckAbiCall(sdk *chainsdk.SwitcheoSDK, url string) er
 	block, err := sdk.Block(&index)
 	if err != nil {
 		err := fmt.Errorf("call Block err: %s", err)
-		logs.Error(fmt.Sprintf("switcheo node: %s, %s ", url, err))
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, err))
 		return err
 	}
 	if block == nil {
-		err := fmt.Errorf("there is no switcheo block")
-		logs.Error(fmt.Sprintf("switcheo node: %s, %s ", url, err))
+		err := fmt.Errorf("there is no %s block", s.GetChainName())
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, err))
 		return err
 	}
 
@@ -95,7 +96,7 @@ func (s *SwitcheoMonitor) CheckAbiCall(sdk *chainsdk.SwitcheoSDK, url string) er
 	_, err = sdk.TxSearch(lockQuery, false, 1, 100, "asc")
 	if err != nil {
 		err := fmt.Errorf("call TxSearch get lock events err: %s", err)
-		logs.Error(fmt.Sprintf("switcheo node: %s, %s ", url, err))
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, err))
 		return err
 	}
 
@@ -103,7 +104,7 @@ func (s *SwitcheoMonitor) CheckAbiCall(sdk *chainsdk.SwitcheoSDK, url string) er
 	_, err = sdk.TxSearch(unlockQuery, false, 1, 100, "asc")
 	if err != nil {
 		err := fmt.Errorf("call TxSearch get unlock events err: %s", err)
-		logs.Error(fmt.Sprintf("switcheo node: %s, %s ", url, err))
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, err))
 		return err
 	}
 	return nil

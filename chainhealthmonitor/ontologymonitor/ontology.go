@@ -43,7 +43,8 @@ func (o *OntologyMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 			ChainId:   o.monitorConfig.ChainId,
 			ChainName: o.monitorConfig.ChainName,
 			Url:       url,
-			Time:      time.Now().Format("2006-01-02 15:04:05"),
+			Status:    make([]string, 0),
+			Time:      time.Now().Unix(),
 		}
 		height, err := o.GetCurrentHeight(sdk, url)
 		if err == nil {
@@ -56,13 +57,13 @@ func (o *OntologyMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		} else {
 			o.nodeStatus[url] = basedef.NodeStatusOk
 		}
-		status.Status = o.nodeStatus[url]
+		status.Status = append(status.Status, o.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
 	data, _ := json.Marshal(nodeStatuses)
 	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+o.monitorConfig.ChainName, data, time.Hour*24)
 	if err != nil {
-		logs.Error("set neo node status error: %s", err)
+		logs.Error("set %s node status error: %s", o.GetChainName(), err)
 	}
 	return nodeStatuses, err
 }
@@ -70,11 +71,11 @@ func (o *OntologyMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 func (o *OntologyMonitor) GetCurrentHeight(sdk *ontology_go_sdk.OntologySdk, url string) (uint64, error) {
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint32 {
-		err := fmt.Errorf("ontology node: %s, get current block height err: %s", url, err)
-		logs.Error(fmt.Sprintf("neo node: %s, %s ", url, err))
+		err := fmt.Errorf("%s node: %s, get current block height err: %s", o.GetChainName(), url, err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, err))
 		return 0, err
 	}
-	logs.Info("ontology node: %s, latest height: %d", url, height)
+	logs.Info("%s node: %s, latest height: %d", o.GetChainName(), url, height)
 	return uint64(height), nil
 }
 
@@ -82,14 +83,14 @@ func (o *OntologyMonitor) CheckAbiCall(sdk *ontology_go_sdk.OntologySdk, url str
 	height := uint32(o.nodeHeight[url]) - 1
 	_, err := sdk.GetBlockByHeight(height)
 	if err != nil {
-		err := fmt.Errorf(" GetBlockByHeight err: %s", err)
-		logs.Error(fmt.Sprintf("ontology node: %s, %s ", url, err))
+		err := fmt.Errorf("GetBlockByHeight err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, err))
 		return err
 	}
 	_, err = sdk.GetSmartContractEventByBlock(height)
 	if err != nil {
 		err := fmt.Errorf("call GetSmartContractEventByBlock err: %s", err)
-		logs.Error(fmt.Sprintf("ontology node: %s, %s ", url, err))
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, err))
 		return err
 	}
 	return nil

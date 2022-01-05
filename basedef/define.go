@@ -73,8 +73,8 @@ type NodeStatus struct {
 	ChainName string
 	Url       string
 	Height    uint64
-	Status    string
-	Time      string
+	Status    []string
+	Time      int64
 }
 
 func GetStateName(state int) string {
