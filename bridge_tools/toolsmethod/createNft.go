@@ -91,14 +91,15 @@ func createNft() {
 		Txnum       uint32
 	}
 	userMap := make(map[string]*userData)
-	var count int64
-	err := db.Model(&models.SrcTransfer{}).Count(&count).Error
+	var maxId int
+	err := db.Raw("select max(id) from src_transfers").
+		Find(&maxId).Error
 	if err != nil {
-		panic(fmt.Sprint("Count SrcTransfer Error:", err))
+		panic(fmt.Sprint("maxId Error:", err))
 	}
-	for i := 0; i < int(count)/100+1; i++ {
+	for i := 0; i < int(maxId)/300+1; i++ {
 		nftUsers := make([]*models.NftUser, 0)
-		res := db.Raw("select a.`from` as addr_hash, a.chain_id as col_chain_id,convert(a.amount*10000/POW(10,b.precision)*d.price/100000000,decimal(37,0)) as tx_amount_usd, c.time as first_time  from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1640966400 limit ?,?", i*100, 100).
+		res := db.Raw("select a.`from` as addr_hash, a.chain_id as col_chain_id,convert(a.amount*10000/POW(10,b.precision)*d.price/100000000,decimal(37,0)) as tx_amount_usd, c.time as first_time  from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.id>? and a.id<=? and a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1640966400",i*300,(i+1)*300 ).
 			Find(&nftUsers)
 		if res.RowsAffected == 0 {
 			continue
