@@ -899,7 +899,7 @@ func (c *BotController) IgnoreNodeStatusAlarm() {
 			if dayNum == 0 {
 				_, err = cacheRedis.Redis.Del(cacheRedis.IgnoreNodeStatusAlarmPrefix + node)
 				if err == nil {
-					resp = fmt.Sprintf("success cancle ignore alarm")
+					resp = fmt.Sprintf("success cancel ignore alarm")
 				}
 			} else {
 				_, err := cacheRedis.Redis.Set(cacheRedis.IgnoreNodeStatusAlarmPrefix+node, "ignore", time.Hour*time.Duration(24*dayNum))
