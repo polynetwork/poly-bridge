@@ -816,3 +816,7 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 	}
 	return lockTokenInfoResps
 }
+
+type NftSignReq struct {
+	Address string `json:"address"`
+}

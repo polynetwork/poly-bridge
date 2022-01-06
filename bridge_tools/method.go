@@ -27,6 +27,7 @@ import (
 	"gorm.io/gorm/logger"
 	"os"
 	"poly-bridge/basedef"
+	"poly-bridge/bridge_tools/toolsmethod"
 	"poly-bridge/coinpricelisten/coinmarketcap"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
@@ -63,6 +64,8 @@ func executeMethod(method string, ctx *cli.Context) {
 		migrateLockTokenStatisticTable(config)
 	case "updateZilliqaPolyOldData":
 		updateZilliqaPolyOldData(config)
+	case "nft":
+		toolsmethod.Nft(config)
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}

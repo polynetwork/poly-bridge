@@ -253,6 +253,7 @@ type Config struct {
 	BotConfig             *BotConfig
 	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
+	NftConfig             *NftConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
@@ -346,4 +347,15 @@ func initPolyProxy() {
 	}
 	PolyProxy[""] = true
 	logs.Info("init polyProxy:", PolyProxy)
+}
+
+type NftConfig struct {
+	Description string
+	ExternalUrl string
+	ColImage       string
+	DfImage       string
+	ColName     string
+	DfName      string
+	IpfsUrl     string
+	Pwd         string
 }
