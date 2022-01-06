@@ -99,7 +99,7 @@ func createNft() {
 	for i := 0; i < int(count)/100+1; i++ {
 		nftUsers := make([]*models.NftUser, 0)
 		res := db.Raw("select a.`from` as addr_hash, a.chain_id as col_chain_id,convert(a.amount*10000/POW(10,b.precision)*d.price/100000000,decimal(37,0)) as tx_amount_usd, c.time as first_time  from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1640966400 limit ?,?", i*100, 100).
-			Find(nftUsers)
+			Find(&nftUsers)
 		if res.RowsAffected == 0 {
 			continue
 		}
