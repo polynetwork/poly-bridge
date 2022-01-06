@@ -27,6 +27,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/botmarkunmarktxaspaid/", &BotController{}, "get:MarkUnMarkTxAsPaid"),
 		web.NSRouter("/botlistlargetx/", &BotController{}, "get:ListLargeTxPage"),
 		web.NSRouter("/botlistnodestatus/", &BotController{}, "get:ListNodeStatusPage"),
+		web.NSRouter("/botignorenodestatusalarm/", &BotController{}, "get:IgnoreNodeStatusAlarm"),
 	)
 	return ns
 }
