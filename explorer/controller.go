@@ -504,15 +504,23 @@ func (c *ExplorerController) GetNftSign() {
 	if nftSignReq.Address[:2] == "0x" || nftSignReq.Address[:2] == "0X" {
 		nftSignReq.Address = nftSignReq.Address[2:]
 	}
-	nftUser := new(models.NftUser)
-	res := db.Where("address = ? ", nftSignReq.Address).
-		First(nftUser)
+	nftUsers := make([]*models.NftUser, 0)
+	colUser := new(models.NftUser)
+	res := db.Where("col_address = ? ", nftSignReq.Address).
+		First(colUser)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("%v does not exist", nftSignReq.Address))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
-	c.Data["json"] = nftUser
+	nftUsers = append(nftUsers, colUser)
+	dfUser := new(models.NftUser)
+	res = db.Where("df_address = ? ", nftSignReq.Address).
+		First(dfUser)
+	if res.RowsAffected > 0 {
+		nftUsers = append(nftUsers, dfUser)
+	}
+	c.Data["json"] = nftUsers
 	c.ServeJSON()
 }
