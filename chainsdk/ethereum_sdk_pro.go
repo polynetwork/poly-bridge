@@ -148,6 +148,7 @@ func (pro *EthereumSdkPro) GetLatestHeight() (uint64, error) {
 	if info == nil {
 		return 0, fmt.Errorf("all node is not working")
 	}
+	logs.Info("node_GetLatestHeight chain:%v,node:%v,height:%v", pro.id, info.sdk.url, info.latestHeight)
 	return info.latestHeight, nil
 }
 
