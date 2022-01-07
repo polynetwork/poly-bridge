@@ -162,7 +162,7 @@ func (pro *EthereumSdkPro) GetHeaderByNumber(number uint64) (*types.Header, erro
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("GetHeaderByNumber_chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
 				flag = 0
 				time.Sleep(time.Second)
 			}
