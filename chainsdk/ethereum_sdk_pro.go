@@ -143,6 +143,16 @@ func (pro *EthereumSdkPro) GetClient() *ethclient.Client {
 	return info.sdk.GetClient()
 }
 
+func (pro *EthereumSdkPro) SetClientHeightZero(cli *ethclient.Client) {
+	for node, info := range pro.infos {
+		if info.sdk.GetClient() == cli {
+			logs.Error("SetClientHeightZero node:%v is err", node)
+			info.latestHeight = 0
+			break
+		}
+	}
+}
+
 func (pro *EthereumSdkPro) GetLatestHeight() (uint64, error) {
 	info := pro.GetLatest()
 	if info == nil {
@@ -162,7 +172,7 @@ func (pro *EthereumSdkPro) GetHeaderByNumber(number uint64) (*types.Header, erro
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("GetHeaderByNumber_chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
 				flag = 0
 				time.Sleep(time.Second)
 			}
