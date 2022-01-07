@@ -27,6 +27,10 @@ func NewZilliqaSdk(url string) *ZilliqaSdk {
 	}
 }
 
+func (zs *ZilliqaSdk) GetUrl() string {
+	return zs.url
+}
+
 func (zs *ZilliqaSdk) GetCurrentBlockHeight() (uint64, error) {
 	txBlock, err := zs.client.GetLatestTxBlock()
 	if err != nil {
