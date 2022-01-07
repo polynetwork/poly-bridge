@@ -391,6 +391,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 	eccmLockEvents := make([]*models.ECCMLockEvent, 0)
 	crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt, nil)
 	if err != nil {
+		this.ethSdk.SetClientHeightZero(client)
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, filter lock events :%s", err.Error())
 	}
 	for crossChainEvents.Next() {
