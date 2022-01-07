@@ -91,8 +91,8 @@ func (pro *EthereumSdkPro) nodeSelection() {
 func (pro *EthereumSdkPro) selection() {
 	for url, info := range pro.infos {
 		height, err := info.sdk.GetCurrentBlockHeight()
-		if err != nil || height == math.MaxUint64 {
-			logs.Error("get current block height err: %v, url: %s", err, url)
+		if err != nil || height == math.MaxUint64 || height == 0 {
+			logs.Error("nodeselection get current block height err: %v, url: %s", err, url)
 			height = 1
 		}
 		/*
@@ -156,20 +156,20 @@ func (pro *EthereumSdkPro) GetHeaderByNumber(number uint64) (*types.Header, erro
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
-	flag:=0
+	flag := 0
 	for info != nil {
 		header, err := info.sdk.GetHeaderByNumber(number)
 		if err != nil {
 			flag++
-			if flag>3{
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v",pro.id,info.sdk.url,err)
-				flag=0
+			if flag > 3 {
+				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				flag = 0
 				time.Sleep(time.Second)
 			}
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			flag=0
+			flag = 0
 			return header, nil
 		}
 	}
@@ -181,20 +181,20 @@ func (pro *EthereumSdkPro) GetTransactionByHash(hash common.Hash) (*types.Transa
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
-	flag:=0
+	flag := 0
 	for info != nil {
 		tx, err := info.sdk.GetTransactionByHash(hash)
 		if err != nil {
 			flag++
-			if flag>3{
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v",pro.id,info.sdk.url,err)
-				flag=0
+			if flag > 3 {
+				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				flag = 0
 				time.Sleep(time.Second)
 			}
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			flag=0
+			flag = 0
 			return tx, nil
 		}
 	}
@@ -206,20 +206,20 @@ func (pro *EthereumSdkPro) GetTransactionReceipt(hash common.Hash) (*types.Recei
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
-	flag:=0
+	flag := 0
 	for info != nil {
 		receipt, err := info.sdk.GetTransactionReceipt(hash)
 		if err != nil {
 			flag++
-			if flag>3{
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v",pro.id,info.sdk.url,err)
-				flag=0
+			if flag > 3 {
+				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				flag = 0
 				time.Sleep(time.Second)
 			}
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			flag=0
+			flag = 0
 			return receipt, nil
 		}
 	}
