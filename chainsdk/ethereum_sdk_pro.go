@@ -382,13 +382,17 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(erc20 string, lockProxies []string,
 	info := pro.GetLatest()
 	erc20Address := common.HexToAddress(erc20)
 	for info != nil {
-		for _, addr := range lockProxies {
-			proxy := common.HexToAddress(addr)
-			_, err := info.sdk.GetBoundAssetHash(erc20Address, proxy, chainId)
+		for _, proxy := range lockProxies {
+			proxyAddr := common.HexToAddress(proxy)
+			addr, err := info.sdk.GetBoundAssetHash(erc20Address, proxyAddr, chainId)
 			if err != nil {
 				continue
 			}
-			return addr, nil
+			addrHash := addr.Hex()
+			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
+			if len(addrHash) > 2 {
+				return proxy, nil
+			}
 		}
 		info.latestHeight = 0
 		info = pro.GetLatest()
