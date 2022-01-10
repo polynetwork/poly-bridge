@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"poly-bridge/basedef"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -380,7 +381,8 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 
 func (pro *EthereumSdkPro) GetBoundLockProxy(erc20 string, lockProxies []string, chainId uint64) (string, error) {
 	info := pro.GetLatest()
-	erc20Address := common.HexToAddress(erc20)
+	erc20Address := common.HexToAddress(basedef.HexStringReverse(erc20))
+
 	for info != nil {
 		for _, proxy := range lockProxies {
 			proxyAddr := common.HexToAddress(proxy)
