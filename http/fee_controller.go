@@ -125,24 +125,12 @@ func (c *FeeController) GetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && (strings.EqualFold(tokenMap.SrcTokenHash, "deaddeaddeaddeaddeaddeaddeaddeaddead0000") || strings.EqualFold(tokenMap.SrcTokenHash, "F3eCc2FF57DF74aE638551b060864717EFE493d2")) && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
-					lockproxy := "960Ff3132b72E3F0b1B9F588e7122d78BB5C4946"
+				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.SrcTokenHash == "deaddeaddeaddeaddeaddeaddeaddeaddead0000" && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
+					lockproxy := "712EA8f50032Ce78eC74c2389B4544a14F9ADDce"
 					if basedef.ENV == basedef.TESTNET {
 						lockproxy = "e6E89cde11B89D940D25c35eaec7aCB489D29820"
 					}
 					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
-				} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && (strings.EqualFold(tokenMap.DstTokenHash, "deaddeaddeaddeaddeaddeaddeaddeaddead0000") || strings.EqualFold(tokenMap.DstTokenHash, "F3eCc2FF57DF74aE638551b060864717EFE493d2")) && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
-					lockproxy := "bE46E4c47958A79E7F789ea94C5D8071a0DeE31e"
-					if basedef.ENV == basedef.TESTNET {
-						lockproxy = "B4004B93f1ce1E63131413cA201D35D1F3f40e5D"
-					}
-					tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
-				} else if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
-					lockproxy := "fB571d4dd7039f96D34bB41E695AdC92dF4A332f"
-					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
-				} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
-					lockproxy := "eFB5a01Ed9f3E94B646233FB68537C5Cb45e301D"
-					tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
 				} else {
 					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 				}
