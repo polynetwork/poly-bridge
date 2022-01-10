@@ -390,7 +390,7 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(erc20 string, lockProxies []string,
 			}
 			addrHash := addr.Hex()
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
-			if len(addrHash) > 2 {
+			if len(addrHash) > 2 && addrHash[2:] != "0000000000000000000000000000000000000000" {
 				return proxy, nil
 			}
 		}
