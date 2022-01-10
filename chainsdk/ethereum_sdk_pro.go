@@ -377,6 +377,26 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 	}
 	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
+
+func (pro *EthereumSdkPro) GetBoundLockProxy(erc20 string, lockProxies []string, chainId uint64) (string, error) {
+	info := pro.GetLatest()
+	erc20Address := common.HexToAddress(erc20)
+	for info != nil {
+		for _, addr := range lockProxies {
+			proxy := common.HexToAddress(addr)
+			_, err := info.sdk.GetBoundAssetHash(erc20Address, proxy, chainId)
+			if err != nil {
+				continue
+			}
+			return addr, nil
+		}
+		info.latestHeight = 0
+		info = pro.GetLatest()
+
+	}
+	return "", fmt.Errorf("all node is not working")
+}
+
 func (pro *EthereumSdkPro) Erc20TotalSupply(erc20 string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {

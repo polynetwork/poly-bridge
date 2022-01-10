@@ -20,6 +20,7 @@
 package chainsdk
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
@@ -309,6 +310,27 @@ func (s *EthereumSdk) GetBoundNFTProxy(
 	}
 
 	return common.BytesToAddress(bz), nil
+}
+
+func (s *EthereumSdk) GetBoundAssetHash(
+	assetHash, lockProxy common.Address,
+	chainId uint64,
+) (common.Address, error) {
+	proxy, err := erc20lp.NewLockProxy(lockProxy, s.backend())
+	opts := &bind.CallOpts{
+		From:    lockProxy,
+		Context: context.Background(),
+	}
+	bz, err := proxy.AssetHashMap(opts, assetHash, chainId)
+	if err == nil {
+		boundHash := common.BytesToAddress(bz)
+		if len(boundHash.Hex()) > 2 {
+			return boundHash, nil
+		} else {
+			return [20]byte{}, fmt.Errorf("can not find bound hash")
+		}
+	}
+	return [20]byte{}, err
 }
 
 func (s *EthereumSdk) TransferECCDOwnership(key *ecdsa.PrivateKey, eccd, eccm common.Address) (common.Hash, error) {

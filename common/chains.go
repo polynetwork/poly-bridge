@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -29,6 +30,7 @@ var (
 	optimisticSdk *chainsdk.EthereumSdkPro
 	metisSdk      *chainsdk.EthereumSdkPro
 	config        *conf.Config
+	ethSdkMap     map[uint64]*chainsdk.EthereumSdkPro
 )
 
 func SetupChainsSDK(cfg *conf.Config) {
@@ -40,6 +42,7 @@ func SetupChainsSDK(cfg *conf.Config) {
 }
 
 func newChainSdks(config *conf.Config) {
+	ethSdkMap = make(map[uint64]*chainsdk.EthereumSdkPro, 0)
 	{
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
@@ -47,6 +50,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := ethereumConfig.GetNodesUrl()
 		ethereumSdk = chainsdk.NewEthereumSdkPro(urls, ethereumConfig.ListenSlot, ethereumConfig.ChainId)
+		ethSdkMap[basedef.ETHEREUM_CROSSCHAIN_ID] = ethereumSdk
 	}
 	{
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
@@ -55,6 +59,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := maticConfig.GetNodesUrl()
 		maticSdk = chainsdk.NewEthereumSdkPro(urls, maticConfig.ListenSlot, maticConfig.ChainId)
+		ethSdkMap[basedef.MATIC_CROSSCHAIN_ID] = maticSdk
 	}
 	{
 		bscConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
@@ -63,6 +68,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := bscConfig.GetNodesUrl()
 		bscSdk = chainsdk.NewEthereumSdkPro(urls, bscConfig.ListenSlot, bscConfig.ChainId)
+		ethSdkMap[basedef.BSC_CROSSCHAIN_ID] = bscSdk
 	}
 	{
 		hecoConfig := config.GetChainListenConfig(basedef.HECO_CROSSCHAIN_ID)
@@ -71,6 +77,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := hecoConfig.GetNodesUrl()
 		hecoSdk = chainsdk.NewEthereumSdkPro(urls, hecoConfig.ListenSlot, hecoConfig.ChainId)
+		ethSdkMap[basedef.HECO_CROSSCHAIN_ID] = hecoSdk
 	}
 	{
 		okConfig := config.GetChainListenConfig(basedef.OK_CROSSCHAIN_ID)
@@ -79,6 +86,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := okConfig.GetNodesUrl()
 		okSdk = chainsdk.NewEthereumSdkPro(urls, okConfig.ListenSlot, okConfig.ChainId)
+		ethSdkMap[basedef.OK_CROSSCHAIN_ID] = okSdk
 	}
 	{
 		neoConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
@@ -117,6 +125,7 @@ func newChainSdks(config *conf.Config) {
 		if conf != nil {
 			urls := conf.GetNodesUrl()
 			pltSdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+			ethSdkMap[basedef.PLT_CROSSCHAIN_ID] = pltSdk
 		} else {
 			logs.Error("Missing plt chain sdk config")
 		}
@@ -128,6 +137,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := arbitrumConfig.GetNodesUrl()
 		arbitrumSdk = chainsdk.NewEthereumSdkPro(urls, arbitrumConfig.ListenSlot, arbitrumConfig.ChainId)
+		ethSdkMap[basedef.ARBITRUM_CROSSCHAIN_ID] = arbitrumSdk
 	}
 	{
 		xdaiConfig := config.GetChainListenConfig(basedef.XDAI_CROSSCHAIN_ID)
@@ -136,6 +146,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := xdaiConfig.GetNodesUrl()
 		xdaiSdk = chainsdk.NewEthereumSdkPro(urls, xdaiConfig.ListenSlot, xdaiConfig.ChainId)
+		ethSdkMap[basedef.XDAI_CROSSCHAIN_ID] = xdaiSdk
 	}
 	{
 		zilliqaCfg := config.GetChainListenConfig(basedef.ZILLIQA_CROSSCHAIN_ID)
@@ -152,6 +163,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := fantomConfig.GetNodesUrl()
 		fantomSdk = chainsdk.NewEthereumSdkPro(urls, fantomConfig.ListenSlot, fantomConfig.ChainId)
+		ethSdkMap[basedef.FANTOM_CROSSCHAIN_ID] = fantomSdk
 	}
 	{
 		avaxConfig := config.GetChainListenConfig(basedef.AVAX_CROSSCHAIN_ID)
@@ -160,6 +172,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := avaxConfig.GetNodesUrl()
 		avaxSdk = chainsdk.NewEthereumSdkPro(urls, avaxConfig.ListenSlot, avaxConfig.ChainId)
+		ethSdkMap[basedef.AVAX_CROSSCHAIN_ID] = avaxSdk
 	}
 	{
 		optimisticConfig := config.GetChainListenConfig(basedef.OPTIMISTIC_CROSSCHAIN_ID)
@@ -168,6 +181,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := optimisticConfig.GetNodesUrl()
 		optimisticSdk = chainsdk.NewEthereumSdkPro(urls, optimisticConfig.ListenSlot, optimisticConfig.ChainId)
+		ethSdkMap[basedef.OPTIMISTIC_CROSSCHAIN_ID] = optimisticSdk
 	}
 	{
 		metisConfig := config.GetChainListenConfig(basedef.METIS_CROSSCHAIN_ID)
@@ -176,6 +190,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := metisConfig.GetNodesUrl()
 		metisSdk = chainsdk.NewEthereumSdkPro(urls, metisConfig.ListenSlot, metisConfig.ChainId)
+		ethSdkMap[basedef.METIS_CROSSCHAIN_ID] = metisSdk
 	}
 }
 
@@ -558,5 +573,21 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return metisSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
+	}
+}
+
+func GetBoundLockProxy(tokenHash string, lockProxies []string, chainId uint64) (string, error) {
+	switch chainId {
+	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
+		basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
+		basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
+		basedef.METIS_CROSSCHAIN_ID:
+		if sdk, ok := ethSdkMap[chainId]; ok {
+			return sdk.GetBoundLockProxy(tokenHash, lockProxies, chainId)
+		} else {
+			return "", fmt.Errorf("chain %d sdk not initialized", chainId)
+		}
+	default:
+		return "", fmt.Errorf("chain %d is not ethereum based", chainId)
 	}
 }

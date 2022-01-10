@@ -258,61 +258,89 @@ func (c *FeeController) NewGetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && (strings.EqualFold(tokenMap.SrcTokenHash, "deaddeaddeaddeaddeaddeaddeaddeaddead0000") || strings.EqualFold(tokenMap.SrcTokenHash, "F3eCc2FF57DF74aE638551b060864717EFE493d2")) && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
-					lockproxy := "960Ff3132b72E3F0b1B9F588e7122d78BB5C4946"
-					if basedef.ENV == basedef.TESTNET {
-						lockproxy = "e6E89cde11B89D940D25c35eaec7aCB489D29820"
+				switch tokenMap.DstChainId {
+				case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
+					basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
+					basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
+					basedef.METIS_CROSSCHAIN_ID:
+					var lockProsxies []string
+					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
+						if cfg.ChainId == tokenMap.DstChainId {
+							lockProsxies = cfg.ProxyContract
+						}
 					}
-					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
-				} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && (strings.EqualFold(tokenMap.DstTokenHash, "deaddeaddeaddeaddeaddeaddeaddeaddead0000") || strings.EqualFold(tokenMap.DstTokenHash, "F3eCc2FF57DF74aE638551b060864717EFE493d2")) && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
-					lockproxy := "bE46E4c47958A79E7F789ea94C5D8071a0DeE31e"
-					if basedef.ENV == basedef.TESTNET {
-						lockproxy = "B4004B93f1ce1E63131413cA201D35D1F3f40e5D"
-					}
-					tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
-				} else if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
-					lockproxy := "fB571d4dd7039f96D34bB41E695AdC92dF4A332f"
-					tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
-				} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
-					lockproxy := "eFB5a01Ed9f3E94B646233FB68537C5Cb45e301D"
-					tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
-				} else {
-					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
-				}
-				if err != nil {
-					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
+					lockProxy, err := common.GetBoundLockProxy(tokenMap.SrcTokenHash, lockProsxies, tokenMap.DstChainId)
 					if err != nil {
-						c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-							getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+						c.Data["json"] = fmt.Sprintf("select lock proxy error: %s", err)
+						c.ServeJSON()
+						return
+					}
+					tokenBalance, err = common.GetProxyBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, lockProxy)
+				default:
+					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+					if err != nil {
+						c.Data["json"] = fmt.Sprintf("common.GetBalance error: %s", err)
 						c.ServeJSON()
 						return
 					}
 				}
-				setErr := cacheRedis.Redis.SetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
-				if setErr != nil {
-					logs.Error("qweasdredis SetTokenBalance err", setErr)
-				}
-				setErr1 := cacheRedis.Redis.SetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
-				if setErr1 != nil {
-					logs.Error("qweasdredis SetLongTokenBalance err", setErr1)
-				}
+
+				//	if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && (strings.EqualFold(tokenMap.SrcTokenHash, "deaddeaddeaddeaddeaddeaddeaddeaddead0000") || strings.EqualFold(tokenMap.SrcTokenHash, "F3eCc2FF57DF74aE638551b060864717EFE493d2")) && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
+				//		lockproxy := "960Ff3132b72E3F0b1B9F588e7122d78BB5C4946"
+				//		if basedef.ENV == basedef.TESTNET {
+				//			lockproxy = "e6E89cde11B89D940D25c35eaec7aCB489D29820"
+				//		}
+				//		tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
+				//	} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && (strings.EqualFold(tokenMap.DstTokenHash, "deaddeaddeaddeaddeaddeaddeaddeaddead0000") || strings.EqualFold(tokenMap.DstTokenHash, "F3eCc2FF57DF74aE638551b060864717EFE493d2")) && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
+				//		lockproxy := "bE46E4c47958A79E7F789ea94C5D8071a0DeE31e"
+				//		if basedef.ENV == basedef.TESTNET {
+				//			lockproxy = "B4004B93f1ce1E63131413cA201D35D1F3f40e5D"
+				//		}
+				//		tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
+				//	} else if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
+				//		lockproxy := "fB571d4dd7039f96D34bB41E695AdC92dF4A332f"
+				//		tokenBalance, err = common.GetProxyBalance(basedef.BSC_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
+				//	} else if tokenMap.SrcChainId == basedef.BSC_CROSSCHAIN_ID && tokenMap.DstChainId == basedef.METIS_CROSSCHAIN_ID {
+				//		lockproxy := "eFB5a01Ed9f3E94B646233FB68537C5Cb45e301D"
+				//		tokenBalance, err = common.GetProxyBalance(basedef.METIS_CROSSCHAIN_ID, tokenMap.DstTokenHash, lockproxy)
+				//	} else {
+				//		tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+				//	}
+				//	if err != nil {
+				//		tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
+				//		if err != nil {
+				//			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				//				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+				//			c.ServeJSON()
+				//			return
+				//		}
+				//	}
+				//	setErr := cacheRedis.Redis.SetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				//	if setErr != nil {
+				//		logs.Error("qweasdredis SetTokenBalance err", setErr)
+				//	}
+				//	setErr1 := cacheRedis.Redis.SetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				//	if setErr1 != nil {
+				//		logs.Error("qweasdredis SetLongTokenBalance err", setErr1)
+				//	}
+				//}
 			}
-		}
-		balance, result := new(big.Float).SetString(tokenBalance.String())
-		if !result {
+			balance, result := new(big.Float).SetString(tokenBalance.String())
+			if !result {
+				c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+					getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+				c.ServeJSON()
+				return
+			}
+			tokenBalanceWithoutPrecision := new(big.Float).Quo(balance, new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, balance, tokenBalanceWithoutPrecision)
+			c.ServeJSON()
+		} else {
 			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
 			c.ServeJSON()
-			return
 		}
-		tokenBalanceWithoutPrecision := new(big.Float).Quo(balance, new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
-		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-			getFeeReq.SwapTokenHash, balance, tokenBalanceWithoutPrecision)
-		c.ServeJSON()
-	} else {
-		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-			getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
-		c.ServeJSON()
 	}
 }
 
