@@ -267,9 +267,11 @@ func (c *FeeController) NewGetFee() {
 					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
 						if cfg.ChainId == tokenMap.DstChainId {
 							lockProsxies = cfg.ProxyContract
+							break
 						}
 					}
 					lockProxy, err := common.GetBoundLockProxy(tokenMap.SrcTokenHash, lockProsxies, tokenMap.DstChainId)
+					logs.Info("GetBoundLockProxy lockProxy=%s, err=%s", lockProxy, err)
 					if err != nil {
 						c.Data["json"] = fmt.Sprintf("select lock proxy error: %s", err)
 						c.ServeJSON()
