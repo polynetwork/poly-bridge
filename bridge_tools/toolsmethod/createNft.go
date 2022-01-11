@@ -17,8 +17,8 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/models"
-	"poly-bridge/utils/decimal"
 	"strconv"
+	"strings"
 )
 
 var db *gorm.DB
@@ -289,8 +289,9 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 	colImage := nftCfg.ColImage
 	dfImage := nftCfg.DfImage
 	colName := nftCfg.ColName
+	txtColName:=strings.ReplaceAll(colName," ","_")
 	dfName := nftCfg.DfName
-
+	txtDfName:=strings.ReplaceAll(dfName," ","_")
 	path := "../polynft"
 	err := os.Mkdir(path, os.ModePerm)
 	if err != nil {
@@ -314,21 +315,17 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 			attributes := make([]*Attribute, 0)
 			attributes = append(attributes,
 				&Attribute{
-					"Txnum",
-					strconv.Itoa(int(v.Txnum)),
+					"name",
+					colName,
 				},
 				&Attribute{
-					"FirstTime",
-					strconv.FormatUint(v.FirstTime, 10),
-				},
-				&Attribute{
-					"TxAmountUsd",
-					decimal.NewFromBigInt(&v.TxAmountUsd.Int, -4).StringFixed(2),
+					"id",
+					strconv.Itoa(v.NftColId),
 				})
 			nftJson.Attributes = attributes
 			nftid := strconv.Itoa(v.NftColId)
-			data, _ := json.Marshal(nftJson)
-			err = ioutil.WriteFile(path+"/"+colName+"_"+nftid, data, 0644)
+			data, _ := json.MarshalIndent(nftJson, "", "    ")
+			err = ioutil.WriteFile(path+"/"+txtColName+"#"+nftid, data, 0644)
 			if err != nil {
 				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
 			}
@@ -353,17 +350,17 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 			attributes := make([]*Attribute, 0)
 			attributes = append(attributes,
 				&Attribute{
-					"EffectAmountUsd",
-					decimal.NewFromBigInt(&v.EffectAmountUsd.Int, -4).StringFixed(2),
+					"name",
+					dfName,
 				},
 				&Attribute{
-					"Time",
-					"2021-08-10",
+					"id",
+					strconv.Itoa(v.NftDfId),
 				})
 			nftJson.Attributes = attributes
 			nftid := strconv.Itoa(v.NftDfId)
-			data, _ := json.Marshal(nftJson)
-			err = ioutil.WriteFile(path+"/"+dfName+"_"+nftid, data, 0644)
+			data, _ := json.MarshalIndent(nftJson, "", "    ")
+			err = ioutil.WriteFile(path+"/"+txtDfName+"#"+nftid, data, 0644)
 			if err != nil {
 				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
 			}
