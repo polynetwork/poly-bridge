@@ -379,7 +379,7 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
 
-func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, dstTokenHash, srcTokenHash string, chainId uint64) (string, error) {
+func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash, dstTokenHash string, chainId uint64) (string, error) {
 	info := pro.GetLatest()
 	dstTokenAddress := common.HexToAddress(dstTokenHash)
 
