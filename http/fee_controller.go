@@ -270,7 +270,7 @@ func (c *FeeController) NewGetFee() {
 							break
 						}
 					}
-					lockProxy, err := common.GetBoundLockProxy(tokenMap.DstTokenHash, lockProsxies, tokenMap.SrcChainId, tokenMap.DstChainId)
+					lockProxy, err := common.GetBoundLockProxy(lockProsxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
 					logs.Info("GetBoundLockProxy lockProxy=%s, err=%s", lockProxy, err)
 					if err != nil {
 						c.Data["json"] = fmt.Sprintf("select lock proxy error: %s", err)

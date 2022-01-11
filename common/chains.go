@@ -581,7 +581,7 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	}
 }
 
-func GetBoundLockProxy(tokenHash string, lockProxies []string, srcChainId, dstChainId uint64) (string, error) {
+func GetBoundLockProxy(lockProxies []string, srcTokenHash, DstTokenHash string, srcChainId, dstChainId uint64) (string, error) {
 	//switch dstChainId {
 	//case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
 	//	basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
@@ -600,7 +600,7 @@ func GetBoundLockProxy(tokenHash string, lockProxies []string, srcChainId, dstCh
 
 	if sdk, ok := sdkMap[dstChainId]; ok {
 		if value, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
-			return value.GetBoundLockProxy(tokenHash, lockProxies, srcChainId)
+			return value.GetBoundLockProxy(lockProxies, srcTokenHash, DstTokenHash, srcChainId)
 		}
 	}
 	return "", fmt.Errorf("chain %d is not ethereum based", dstChainId)
