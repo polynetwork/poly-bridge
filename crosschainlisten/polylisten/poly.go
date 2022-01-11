@@ -30,7 +30,9 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
+	"poly-bridge/go_abi/main_chain_lock_proxy_abi"
 	"poly-bridge/models"
+	"strings"
 )
 
 type PolyChainListen struct {
@@ -125,6 +127,63 @@ func (this *PolyChainListen) getECCMEventByBlockNumber(height uint64, tt uint64)
 	}
 	return polyTransactions, nil
 }
+func (this *PolyChainListen) getNativeECCMEventByBlockNumber(nativeEccmContractAddr string, height uint64, tt uint64) ([]*models.PolyTransaction, error) {
+	nativeEccmContractAddress := common.HexToAddress(nativeEccmContractAddr)
+	client := this.polySdk.GetClient()
+	if client == nil {
+		return nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
+	}
+	opt := &bind.FilterOpts{
+		Start:   height,
+		End:     &height,
+		Context: context.Background(),
+	}
+	polyTransactions := make([]*models.PolyTransaction, 0)
+
+	eccmContract, err := main_chain_lock_proxy_abi.NewIMainChainLockProxy(nativeEccmContractAddress, client)
+	if err != nil {
+		return nil, fmt.Errorf("POLY NewIMainChainLockProxy eccmContract error: %s", err.Error())
+	}
+	crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt)
+	if err != nil {
+		return nil,  fmt.Errorf("POLY FilterCrossChainEvent err: %s", err.Error())
+	}
+	for crossChainEvents.Next() {
+		evt := crossChainEvents.Event
+		fee := this.GetConsumeGas(evt.Raw.TxHash)
+		polyTransactions = append(polyTransactions, &models.PolyTransaction{
+			Hash:evt.Raw.TxHash.String()[2:],
+			ChainId:this.GetChainId(),
+			State:1,
+			Time:tt,
+			Fee:models.NewBigIntFromInt(int64(fee)),
+			Height:height,
+			SrcChainId:this.GetChainId(),
+			SrcHash:evt.Raw.TxHash.String()[2:],
+			DstChainId:evt.ToChainId,
+		})
+	}
+	executeTxEvents, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
+	if err != nil {
+		return nil,  fmt.Errorf("POLY FilterVerifyHeaderAndExecuteTxEvent err: %s", err.Error())
+	}
+	for executeTxEvents.Next() {
+		evt := executeTxEvents.Event
+		fee := this.GetConsumeGas(evt.Raw.TxHash)
+		polyTransactions = append(polyTransactions, &models.PolyTransaction{
+			Hash:evt.Raw.TxHash.String()[2:],
+			ChainId:this.GetChainId(),
+			State:1,
+			Time:tt,
+			Fee:models.NewBigIntFromInt(int64(fee)),
+			Height:height,
+			SrcChainId:evt.FromChainID,
+			SrcHash:evt.Raw.TxHash.String()[2:],
+			DstChainId:this.GetChainId(),
+		})
+	}
+	return polyTransactions,nil
+}
 
 func (this *PolyChainListen) GetConsumeGas(hash common.Hash) uint64 {
 	tx, err := this.polySdk.GetTransactionByHash(hash)
@@ -147,10 +206,19 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no poly block!")
 	}
 	tt := block.Time
-	polyTransactions, err := this.getECCMEventByBlockNumber(height, tt)
+	polyTransactions := make([]*models.PolyTransaction, 0)
+	if this.polyCfg.CCMContract != nil && len(strings.TrimSpace(this.polyCfg.CCMContract[0])) == 0{
+		nativePolyTransactions, err := this.getNativeECCMEventByBlockNumber(this.polyCfg.CCMContract[0], height, tt)
+		if err != nil {
+			return nil, nil, nil, nil, 0, 0, err
+		}
+		polyTransactions = append(polyTransactions, nativePolyTransactions...)
+	}
+	eccmPolyTransactions, err := this.getECCMEventByBlockNumber(height, tt)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
+	polyTransactions = append(polyTransactions, eccmPolyTransactions...)
 	return nil, nil, polyTransactions, nil, 0, 0, nil
 }
 
