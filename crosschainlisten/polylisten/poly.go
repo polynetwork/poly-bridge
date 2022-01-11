@@ -178,7 +178,7 @@ func (this *PolyChainListen) getNativeECCMEventByBlockNumber(nativeEccmContractA
 			Fee:models.NewBigIntFromInt(int64(fee)),
 			Height:height,
 			SrcChainId:evt.FromChainID,
-			SrcHash:evt.Raw.TxHash.String()[2:],
+			SrcHash:hex.EncodeToString(evt.FromChainTxHash),
 			DstChainId:this.GetChainId(),
 		})
 	}
