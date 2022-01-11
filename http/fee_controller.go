@@ -21,14 +21,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
+	"poly-bridge/common"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 	"poly-bridge/utils/fee"
 	"strings"
-
-	"poly-bridge/basedef"
-	"poly-bridge/common"
-	"poly-bridge/models"
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
@@ -38,7 +37,160 @@ type FeeController struct {
 	web.Controller
 }
 
+var dstLockProxyMap = make(map[string]string, 0)
+
 func (c *FeeController) GetFee() {
+	var getFeeReq models.GetFeeReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+	token := new(models.Token)
+	res := db.Where("hash = ? and chain_id = ?", getFeeReq.Hash, getFeeReq.SrcChainId).Preload("TokenBasic").First(token)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have token: %s", getFeeReq.SrcChainId, getFeeReq.Hash))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	chainFee := new(models.ChainFee)
+	res = db.Where("chain_id = ?", getFeeReq.DstChainId).Preload("TokenBasic").First(chainFee)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+	usdtFee := new(big.Float).Mul(proxyFee, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
+	usdtFee = new(big.Float).Quo(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
+	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
+
+	// get optimistic L1 fee on ethereum
+	if basedef.OPTIMISTIC_CROSSCHAIN_ID == getFeeReq.DstChainId {
+		ethChainFee := new(models.ChainFee)
+		res = db.Where("chain_id = ?", basedef.ETHEREUM_CROSSCHAIN_ID).Preload("TokenBasic").First(ethChainFee)
+		if res.RowsAffected == 0 {
+			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", basedef.ETHEREUM_CROSSCHAIN_ID))
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
+
+		_, l1UsdtFee, err := fee.GetL1Fee(ethChainFee, getFeeReq.DstChainId)
+		if err != nil {
+			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("get ethereum L1 fee failed. err=%v", err))
+			c.Ctx.ResponseWriter.WriteHeader(400)
+			c.ServeJSON()
+			return
+		}
+
+		l1TokenFee := new(big.Float).Mul(l1UsdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
+		l1TokenFee = new(big.Float).Quo(l1TokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
+		l1TokenFeeWithPrecision := new(big.Float).Mul(l1TokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
+		tokenFee = new(big.Float).Add(tokenFee, l1TokenFee)
+		tokenFeeWithPrecision = new(big.Float).Add(tokenFeeWithPrecision, l1TokenFeeWithPrecision)
+	}
+
+	{
+		chainFeeJson, _ := json.Marshal(chainFee)
+		logs.Error("chain fee: %s", string(chainFeeJson))
+	}
+	{
+		tokenJson, _ := json.Marshal(token)
+		logs.Error("token: %s", string(tokenJson))
+	}
+
+	if getFeeReq.SwapTokenHash != "" {
+		tokenMap := new(models.TokenMap)
+		res := db.Where("src_token_hash = ? and src_chain_id = ? and dst_chain_id = ?", getFeeReq.SwapTokenHash, getFeeReq.SrcChainId, getFeeReq.DstChainId).Preload("DstToken").First(tokenMap)
+		if res.RowsAffected == 0 {
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+			c.ServeJSON()
+			return
+		}
+		if tokenMap.DstChainId != getFeeReq.DstChainId || tokenMap.DstToken == nil {
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+			c.ServeJSON()
+			return
+		}
+		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
+		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
+			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
+			if err != nil {
+				switch tokenMap.DstChainId {
+				case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
+					basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
+					basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
+					basedef.METIS_CROSSCHAIN_ID:
+					var dstLockProsxies []string
+					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
+						if cfg.ChainId == tokenMap.DstChainId {
+							dstLockProsxies = cfg.ProxyContract
+							break
+						}
+					}
+					var dstLockProxy string
+					lockProxyKey := fmt.Sprintf("%d-%d-%s", tokenMap.SrcChainId, tokenMap.DstChainId, strings.ToLower(tokenMap.SrcTokenHash))
+					dstLockProxy, ok := dstLockProxyMap[lockProxyKey]
+					if !ok || len(dstLockProxy) == 0 {
+						dstLockProxy, err = common.GetBoundLockProxy(dstLockProsxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
+						logs.Info("GetBoundLockProxy srcChain=%d, srcTokenHash=%s, dstTokenHash=%s dstLockProxy=%s, err=%s", tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, dstLockProxy, err)
+						if err == nil {
+							dstLockProxyMap[lockProxyKey] = dstLockProxy
+						}
+					}
+					tokenBalance, err = common.GetProxyBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, dstLockProxy)
+				default:
+					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
+				}
+
+				if err != nil {
+					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
+					if err != nil {
+						c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+							getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+						c.ServeJSON()
+						return
+					}
+				}
+				setErr := cacheRedis.Redis.SetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				if setErr != nil {
+					logs.Error("qweasdredis SetTokenBalance err", setErr)
+				}
+				setErr1 := cacheRedis.Redis.SetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash, tokenBalance)
+				if setErr1 != nil {
+					logs.Error("qweasdredis SetLongTokenBalance err", setErr1)
+				}
+			}
+		}
+		balance, result := new(big.Float).SetString(tokenBalance.String())
+		if !result {
+			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+				getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+			c.ServeJSON()
+			return
+		}
+		tokenBalanceWithoutPrecision := new(big.Float).Quo(balance, new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
+		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+			getFeeReq.SwapTokenHash, balance, tokenBalanceWithoutPrecision)
+		c.ServeJSON()
+	} else {
+		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
+			getFeeReq.SwapTokenHash, new(big.Float).SetUint64(0), new(big.Float).SetUint64(0))
+		c.ServeJSON()
+	}
+}
+
+func (c *FeeController) OldGetFee() {
 	var getFeeReq models.GetFeeReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
