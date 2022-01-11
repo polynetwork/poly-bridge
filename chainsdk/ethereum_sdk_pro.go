@@ -379,30 +379,6 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
 
-func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash, dstTokenHash string, chainId uint64) (string, error) {
-	info := pro.GetLatest()
-	dstTokenAddress := common.HexToAddress(dstTokenHash)
-
-	for info != nil {
-		for _, proxy := range lockProxies {
-			proxyAddr := common.HexToAddress(proxy)
-			addr, err := info.sdk.GetBoundAssetHash(dstTokenAddress, proxyAddr, chainId)
-			if err != nil {
-				continue
-			}
-			addrHash := addr.Hex()
-			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
-			if len(addrHash) > 2 && strings.EqualFold(addrHash[2:], srcTokenHash) {
-				return proxy, nil
-			}
-		}
-		info.latestHeight = 0
-		info = pro.GetLatest()
-
-	}
-	return "", fmt.Errorf("catnot get bounded asset hash of %s", dstTokenHash)
-}
-
 func (pro *EthereumSdkPro) Erc20TotalSupply(erc20 string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
@@ -590,4 +566,28 @@ func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int)
 func (pro *EthereumSdkPro) reset(info *EthereumInfo) *EthereumInfo {
 	info.latestHeight = 0
 	return pro.GetLatest()
+}
+
+func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash, dstTokenHash string, chainId uint64) (string, error) {
+	info := pro.GetLatest()
+	dstTokenAddress := common.HexToAddress(dstTokenHash)
+
+	for info != nil {
+		for _, proxy := range lockProxies {
+			proxyAddr := common.HexToAddress(proxy)
+			addr, err := info.sdk.GetBoundAssetHash(dstTokenAddress, proxyAddr, chainId)
+			if err != nil {
+				continue
+			}
+			addrHash := addr.Hex()
+			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
+			if len(addrHash) > 2 && strings.EqualFold(addrHash[2:], srcTokenHash) {
+				return proxy, nil
+			}
+		}
+		info.latestHeight = 0
+		info = pro.GetLatest()
+
+	}
+	return "", fmt.Errorf("catnot get bounded asset hash of %s", dstTokenHash)
 }

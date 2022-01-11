@@ -29,8 +29,8 @@ var (
 	avaxSdk       *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
 	metisSdk      *chainsdk.EthereumSdkPro
-	config        *conf.Config
 	sdkMap        map[uint64]interface{}
+	config        *conf.Config
 )
 
 func SetupChainsSDK(cfg *conf.Config) {
@@ -582,23 +582,7 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 }
 
 func GetBoundLockProxy(lockProxies []string, srcTokenHash, DstTokenHash string, srcChainId, dstChainId uint64) (string, error) {
-	//switch dstChainId {
-	//case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
-	//	basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
-	//	basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
-	//	basedef.METIS_CROSSCHAIN_ID:
-	//	if sdk, ok := sdkMap[dstChainId]; ok {
-	//		if value, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
-	//			return value.GetBoundLockProxy(tokenHash, lockProxies, dstChainId)
-	//		}
-	//	} else {
-	//		return "", fmt.Errorf("chain %d sdk not initialized", dstChainId)
-	//	}
-	//default:
-	//	return "", fmt.Errorf("chain %d is not ethereum based", dstChainId)
-	//}
-
-	if sdk, ok := sdkMap[dstChainId]; ok {
+	if sdk, exist := sdkMap[dstChainId]; exist {
 		if value, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
 			return value.GetBoundLockProxy(lockProxies, srcTokenHash, DstTokenHash, srcChainId)
 		}
