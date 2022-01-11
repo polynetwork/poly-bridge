@@ -25,6 +25,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/utils/fee"
 	"strings"
+	"time"
 
 	"poly-bridge/basedef"
 	"poly-bridge/common"
@@ -138,8 +139,19 @@ func (c *FeeController) GetFee() {
 						}
 					}
 					var dstLockProxy string
-					dstLockProxy, err = common.GetBoundLockProxy(dstLockProsxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
-					logs.Info("GetBoundLockProxy srcChain=%d, srcTokenHash=%s, dstTokenHash=%s dstLockProxy=%s, err=%s", tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, dstLockProxy, err)
+					lockProxyKey := fmt.Sprintf("%s%d-%d-%s", cacheRedis.AssetBoundDstLockProxyPrefix, tokenMap.SrcChainId, tokenMap.DstChainId, strings.ToLower(tokenMap.SrcTokenHash))
+					dstLockProxy, err = cacheRedis.Redis.Get(lockProxyKey)
+					if err != nil {
+						dstLockProxy, err = common.GetBoundLockProxy(dstLockProsxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
+						logs.Info("GetBoundLockProxy srcChain=%d, srcTokenHash=%s, dstTokenHash=%s dstLockProxy=%s, err=%s", tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, dstLockProxy, err)
+						if err == nil {
+							_, err := cacheRedis.Redis.Set(lockProxyKey, dstLockProxy, time.Hour*time.Duration(24))
+							if err != nil {
+								logs.Error("set dstLockProxy error: %s", err)
+							}
+						}
+
+					}
 					tokenBalance, err = common.GetProxyBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, dstLockProxy)
 				default:
 					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
