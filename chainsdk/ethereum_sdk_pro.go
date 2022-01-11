@@ -400,7 +400,7 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 		info = pro.GetLatest()
 
 	}
-	return "", fmt.Errorf("catnot get bounded hash of %s on chain %d", dstTokenHash, chainId)
+	return "", fmt.Errorf("catnot get bounded asset hash of %s", dstTokenHash)
 }
 
 func (pro *EthereumSdkPro) Erc20TotalSupply(erc20 string) (*big.Int, error) {
