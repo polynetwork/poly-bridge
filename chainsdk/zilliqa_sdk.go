@@ -58,7 +58,7 @@ func (zs *ZilliqaSdk) GetBlock(height uint64) (*ZilBlock, error) {
 	zilBlock.Timestamp = tt
 	transactions, err := zs.client.GetTxnBodiesForTxBlock(strconv.FormatUint(height, 10))
 	if err != nil {
-		if strings.Contains(err.Error(), "TxBlock has no transactions") {
+		if strings.Contains(err.Error(), "TxBlock has no transactions") || strings.Contains(err.Error(), "Failed to get Microblock") {
 			return &ZilBlock{
 				tt,
 				[]core.Transaction{},
