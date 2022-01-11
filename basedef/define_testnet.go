@@ -41,6 +41,7 @@ const (
 	AVAX_CROSSCHAIN_ID       = uint64(209)
 	OPTIMISTIC_CROSSCHAIN_ID = uint64(210)
 	METIS_CROSSCHAIN_ID      = uint64(300)
+	PIXIE_CROSSCHAIN_ID      = uint64(316)
 
 	ENV = "testnet"
 )
