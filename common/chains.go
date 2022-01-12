@@ -29,6 +29,7 @@ var (
 	avaxSdk       *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
 	metisSdk      *chainsdk.EthereumSdkPro
+	bobaSdk       *chainsdk.EthereumSdkPro
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	config        *conf.Config
@@ -197,6 +198,15 @@ func newChainSdks(config *conf.Config) {
 		urls := metisConfig.GetNodesUrl()
 		metisSdk = chainsdk.NewEthereumSdkPro(urls, metisConfig.ListenSlot, metisConfig.ChainId)
 		sdkMap[basedef.METIS_CROSSCHAIN_ID] = metisSdk
+	}
+	{
+		bobaConfig := config.GetChainListenConfig(basedef.BOBA_CROSSCHAIN_ID)
+		if bobaConfig == nil {
+			panic("boba chain is invalid")
+		}
+		urls := bobaConfig.GetNodesUrl()
+		bobaSdk = chainsdk.NewEthereumSdkPro(urls, bobaConfig.ListenSlot, bobaConfig.ChainId)
+		sdkMap[basedef.BOBA_CROSSCHAIN_ID] = bobaSdk
 	}
 	{
 		rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
@@ -427,6 +437,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.BOBA_CROSSCHAIN_ID {
+		bobaConfig := config.GetChainListenConfig(basedef.BOBA_CROSSCHAIN_ID)
+		if bobaConfig == nil {
+			panic("boba chain is invalid")
+		}
+		for _, v := range bobaConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := bobaSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if chainId == basedef.RINKEBY_CROSSCHAIN_ID {
 		rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
 		if rinkebyConfig == nil {
@@ -559,6 +583,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return metisSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.BOBA_CROSSCHAIN_ID {
+		bobaConfig := config.GetChainListenConfig(basedef.BOBA_CROSSCHAIN_ID)
+		if bobaConfig == nil {
+			panic("boba chain GetTotalSupply invalid")
+		}
+		return bobaSdk.Erc20TotalSupply(hash)
+	}
 	if chainId == basedef.RINKEBY_CROSSCHAIN_ID {
 		rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
 		if rinkebyConfig == nil {
@@ -607,6 +638,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return optimisticSdk.Erc20Balance(hash, proxy)
 	case basedef.METIS_CROSSCHAIN_ID:
 		return metisSdk.Erc20Balance(hash, proxy)
+	case basedef.BOBA_CROSSCHAIN_ID:
+		return bobaSdk.Erc20Balance(hash, proxy)
 	case basedef.RINKEBY_CROSSCHAIN_ID:
 		return rinkebySdk.Erc20Balance(hash, proxy)
 	default:
