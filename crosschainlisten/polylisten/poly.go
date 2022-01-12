@@ -144,45 +144,37 @@ func (this *PolyChainListen) getNativeECCMEventByBlockNumber(nativeEccmContractA
 	if err != nil {
 		return nil, fmt.Errorf("POLY NewIMainChainLockProxy eccmContract error: %s", err.Error())
 	}
-	crossChainEvents, err := eccmContract.FilterCrossChainEvent(opt)
-	if err != nil {
-		return nil,  fmt.Errorf("POLY FilterCrossChainEvent err: %s", err.Error())
-	}
-	for crossChainEvents.Next() {
-		evt := crossChainEvents.Event
-		fee := this.GetConsumeGas(evt.Raw.TxHash)
-		polyTransactions = append(polyTransactions, &models.PolyTransaction{
-			Hash:evt.Raw.TxHash.String()[2:],
-			ChainId:this.GetChainId(),
-			State:1,
-			Time:tt,
-			Fee:models.NewBigIntFromInt(int64(fee)),
-			Height:height,
-			SrcChainId:this.GetChainId(),
-			SrcHash:evt.Raw.TxHash.String()[2:],
-			DstChainId:evt.ToChainId,
-		})
-	}
 	executeTxEvents, err := eccmContract.FilterVerifyHeaderAndExecuteTxEvent(opt)
 	if err != nil {
-		return nil,  fmt.Errorf("POLY FilterVerifyHeaderAndExecuteTxEvent err: %s", err.Error())
+		return nil, fmt.Errorf("POLY FilterVerifyHeaderAndExecuteTxEvent err: %s", err.Error())
 	}
 	for executeTxEvents.Next() {
 		evt := executeTxEvents.Event
 		fee := this.GetConsumeGas(evt.Raw.TxHash)
 		polyTransactions = append(polyTransactions, &models.PolyTransaction{
-			Hash:evt.Raw.TxHash.String()[2:],
-			ChainId:this.GetChainId(),
-			State:1,
-			Time:tt,
-			Fee:models.NewBigIntFromInt(int64(fee)),
-			Height:height,
-			SrcChainId:evt.FromChainID,
-			SrcHash:hex.EncodeToString(evt.FromChainTxHash),
-			DstChainId:this.GetChainId(),
+			Hash:       evt.Raw.TxHash.String()[2:],
+			ChainId:    this.GetChainId(),
+			State:      1,
+			Time:       tt,
+			Fee:        models.NewBigIntFromInt(int64(fee)),
+			Height:     height,
+			SrcChainId: evt.FromChainID,
+			DstChainId: this.GetChainId(),
+			SrcHash: func() string {
+				data := hex.EncodeToString(evt.Raw.Data)
+				if len(data) < 64 {
+					return ""
+				}
+				switch evt.FromChainID {
+				case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+					return basedef.HexStringReverse(data[len(data)-64:])
+				default:
+					return data[len(data)-64:]
+				}
+			}(),
 		})
 	}
-	return polyTransactions,nil
+	return polyTransactions, nil
 }
 
 func (this *PolyChainListen) GetConsumeGas(hash common.Hash) uint64 {
@@ -207,7 +199,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	}
 	tt := block.Time
 	polyTransactions := make([]*models.PolyTransaction, 0)
-	if this.polyCfg.CCMContract != nil && len(strings.TrimSpace(this.polyCfg.CCMContract[0])) == 0{
+	if this.polyCfg.CCMContract != nil && len(strings.TrimSpace(this.polyCfg.CCMContract[0])) != 0 {
 		nativePolyTransactions, err := this.getNativeECCMEventByBlockNumber(this.polyCfg.CCMContract[0], height, tt)
 		if err != nil {
 			return nil, nil, nil, nil, 0, 0, err
