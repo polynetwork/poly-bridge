@@ -79,6 +79,8 @@ func Nft(cfg *conf.Config) {
 		createipfsjson(nftCfg)
 	} else if runflag == "6" {
 		signNft(nftCfg)
+	} else if runflag == "-99" {
+		db.Exec("DELETE FROM nft_users")
 	}
 }
 
@@ -217,12 +219,15 @@ func updateColNftId() {
 	if err != nil {
 		logs.Error("updateColNftId Find(&chainIds) err", err)
 	}
-	nowNftColId := 0
+	nowNftColId := 1
 	for _, v := range chainIds {
 		var count int64
 		err := db.Model(&models.NftUser{}).Where("col_chain_id = ?", v).Count(&count).Error
 		if err != nil {
 			panic(fmt.Sprint("Count(&count).Error:", err))
+		}
+		if count == 0 {
+			continue
 		}
 		for i := 0; i < int(count)+1; i++ {
 			nftUsers := make([]*models.NftUser, 0)
@@ -250,7 +255,7 @@ func updateDfNftId() {
 	if err != nil {
 		logs.Error("updateDfNftId Find(&chainIds) err", err)
 	}
-	nowNftDfId := 0
+	nowNftDfId := 1
 	for _, v := range chainIds {
 		var count int64
 		err := db.Model(&models.NftUser{}).Where("df_chain_id = ? AND effect_amount_usd > 0", v).Count(&count).Error
