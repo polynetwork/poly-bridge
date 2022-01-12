@@ -40,6 +40,7 @@ const (
 	OPTIMISTIC_CROSSCHAIN_ID = uint64(210)
 	METIS_CROSSCHAIN_ID      = uint64(300)
 	PIXIE_CROSSCHAIN_ID      = uint64(316)
+	RINKEBY_CROSSCHAIN_ID    = uint64(402)
 
 	ENV = "devnet"
 )

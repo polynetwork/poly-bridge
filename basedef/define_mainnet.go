@@ -41,6 +41,7 @@ const (
 	FANTOM_CROSSCHAIN_ID     = uint64(22)
 	OPTIMISTIC_CROSSCHAIN_ID = uint64(23)
 	METIS_CROSSCHAIN_ID      = uint64(24)
+	RINKEBY_CROSSCHAIN_ID    = uint64(1000001)
 
 	ENV = "mainnet"
 )
