@@ -1,6 +1,7 @@
 package toolsmethod
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -65,8 +66,6 @@ func Nft(cfg *conf.Config) {
 	if runflag == "0" {
 		createNft()
 		nftEffectAmount()
-		updateColNftId()
-		updateDfNftId()
 	} else if runflag == "1" {
 		createNft()
 	} else if runflag == "2" {
@@ -79,6 +78,8 @@ func Nft(cfg *conf.Config) {
 		createipfsjson(nftCfg)
 	} else if runflag == "6" {
 		signNft(nftCfg)
+	} else if runflag == "11" {
+		outSwitcheoUsers()
 	} else if runflag == "-99" {
 		db.Exec("DELETE FROM nft_users")
 	}
@@ -101,7 +102,7 @@ func createNft() {
 	}
 	for i := 0; i < int(maxId)/300+1; i++ {
 		nftUsers := make([]*models.NftUser, 0)
-		res := db.Raw("select a.`from` as addr_hash, a.chain_id as col_chain_id,convert(a.amount*10000/POW(10,b.precision)*d.price/100000000,decimal(37,0)) as tx_amount_usd, c.time as first_time  from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.id>? and a.id<=? and a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1640966400",i*300,(i+1)*300 ).
+		res := db.Raw("select a.`from` as addr_hash, a.chain_id as col_chain_id,convert(a.amount*10000/POW(10,b.precision)*d.price/100000000,decimal(37,0)) as tx_amount_usd, c.time as first_time  from src_transfers a inner join tokens b on a.chain_id =b.chain_id and a.asset=b.hash inner join src_transactions c on a.tx_hash = c.hash inner join token_basics d on b.token_basic_name = d.name  where a.id>? and a.id<=? and a.`from`<> '' and  a.`from` is not null and a.chain_id <> 0 and d.price<>0 and b.precision<>0 and c.time<>0 and a.chain_id<>10 and c.time < 1640966400", i*300, (i+1)*300).
 			Find(&nftUsers)
 		if res.RowsAffected == 0 {
 			continue
@@ -294,9 +295,9 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 	colImage := nftCfg.ColImage
 	dfImage := nftCfg.DfImage
 	colName := nftCfg.ColName
-	txtColName:=strings.ReplaceAll(colName," ","_")
+	txtColName := strings.ReplaceAll(colName, " ", "_")
 	dfName := nftCfg.DfName
-	txtDfName:=strings.ReplaceAll(dfName," ","_")
+	txtDfName := strings.ReplaceAll(dfName, " ", "_")
 	path := "../polynft"
 	err := os.Mkdir(path, os.ModePerm)
 	if err != nil {
@@ -467,4 +468,26 @@ func signNft(nftCfg *conf.NftConfig) {
 		}
 	}
 	logs.Info("********* end signNft *********")
+}
+
+func outSwitcheoUsers() {
+	logs.Info("--------- start outSwitcheoUsers --------------------")
+	swthAddrs := make([]string, 0)
+	swthChain := basedef.SWITCHEO_CROSSCHAIN_ID
+	if basedef.ENV == basedef.TESTNET {
+		swthChain = 2
+	}
+	db.Model(&models.NftUser{}).Select("col_address").Where("col_chain_id = ?", swthChain).
+		Find(&swthAddrs)
+	filePath := "./switcheousers.txt"
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println("open file fail", err)
+	}
+	defer file.Close()
+	write := bufio.NewWriter(file)
+	for _,addr:=range swthAddrs{
+		write.WriteString(addr+"\n")
+	}
+	write.Flush()
 }
