@@ -43,6 +43,7 @@ const (
 	METIS_CROSSCHAIN_ID      = uint64(300)
 	PIXIE_CROSSCHAIN_ID      = uint64(316)
 	RINKEBY_CROSSCHAIN_ID    = uint64(402)
+	BOBA_CROSSCHAIN_ID       = uint64(400)
 
 	ENV = "testnet"
 )

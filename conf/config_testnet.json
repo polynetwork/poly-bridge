@@ -225,6 +225,15 @@
           "Url": "https://http-testnet.chain.pixie.xyz"
         }
       ]
+    },
+    {
+      "ChainName": "Boba",
+      "ChainId": 400,
+      "Nodes": [
+        {
+          "Url": "https://rinkeby.boba.network/"
+        }
+      ]
     }
   ],
   "ChainListenConfig": [
@@ -560,6 +569,21 @@
         "8a85143cA6ec1e181C3A5Ae4042ca999bFbF571B",
         "30e6ec356ceF1cfe3c7e14392EA08448382327bD"
       ]
+    },
+    {
+      "ChainName": "Boba",
+      "ChainId": 400,
+      "ListenSlot": 1,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "F87527a74215777391fE4AfD082FeeED3E5A0ca5"
+      ],
+      "CCMContract": "a65bD4431C38A4dD9c92ebE60dE3cb8C252c04E5",
+      "ProxyContract": [
+        "46Fc99509c4Aab0c958B8b2175edAa9C4963Ac09"
+      ]
     }
   ],
   "StatsConfig": {
@@ -713,6 +737,13 @@
       "ChainName": "Rinkeby",
       "GasLimit": 120000,
       "ProxyFee": 140,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 400,
+      "ChainName": "Boba",
+      "GasLimit":120000,
+      "ProxyFee":140,
       "MinFee": 80
     }
   ],
