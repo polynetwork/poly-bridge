@@ -143,6 +143,16 @@ func (pro *EthereumSdkPro) GetClient() *ethclient.Client {
 	return info.sdk.GetClient()
 }
 
+func (pro *EthereumSdkPro) SetClientHeightZero(cli *ethclient.Client) {
+	for node, info := range pro.infos {
+		if info.sdk.GetClient() == cli {
+			logs.Error("SetClientHeightZero node:%v is err", node)
+			info.latestHeight = 0
+			break
+		}
+	}
+}
+
 func (pro *EthereumSdkPro) GetLatestHeight() (uint64, error) {
 	info := pro.GetLatest()
 	if info == nil {
