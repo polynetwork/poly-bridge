@@ -384,7 +384,9 @@ func signNft(nftCfg *conf.NftConfig) {
 		panic(fmt.Sprintf("nftCfgPwd is null"))
 	}
 	colName := nftCfg.ColName
+	txtColName := strings.ReplaceAll(colName, " ", "_")
 	dfName := nftCfg.DfName
+	txtDfName := strings.ReplaceAll(dfName, " ", "_")
 	ipfsurl := nftCfg.IpfsUrl
 
 	privateKeyBytes := hexutil.MustDecode(nftCfg.Pwd)
@@ -409,7 +411,7 @@ func signNft(nftCfg *conf.NftConfig) {
 			colAccount := common.HexToAddress(v.ColAddress)
 			dfAccount := common.HexToAddress(v.DfAddress)
 			//ipfs uri
-			uri := ipfsurl + colName + "_" + strconv.Itoa(v.NftColId)
+			uri := ipfsurl + txtColName + "#" + strconv.Itoa(v.NftColId)
 			hash := crypto.Keccak256Hash(
 				common.BigToHash(colTokenId).Bytes(),
 				colAccount[:],
@@ -432,7 +434,7 @@ func signNft(nftCfg *conf.NftConfig) {
 			v.NftColsig = fmt.Sprintf("%x", sig)
 
 			if v.EffectAmountUsd.Cmp(big.NewInt(0)) > 0 {
-				uri := ipfsurl + dfName + "_" + strconv.Itoa(v.NftDfId)
+				uri := ipfsurl + txtDfName + "#" + strconv.Itoa(v.NftDfId)
 				hash := crypto.Keccak256Hash(
 					common.BigToHash(dfTokenId).Bytes(),
 					dfAccount[:],
