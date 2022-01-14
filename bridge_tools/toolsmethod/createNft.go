@@ -331,7 +331,7 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 			nftJson.Attributes = attributes
 			nftid := strconv.Itoa(v.NftColId)
 			data, _ := json.MarshalIndent(nftJson, "", "    ")
-			err = ioutil.WriteFile(path+"/"+txtColName+"#"+nftid, data, 0644)
+			err = ioutil.WriteFile(path+"/"+txtColName+"_"+nftid, data, 0644)
 			if err != nil {
 				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
 			}
@@ -366,7 +366,7 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 			nftJson.Attributes = attributes
 			nftid := strconv.Itoa(v.NftDfId)
 			data, _ := json.MarshalIndent(nftJson, "", "    ")
-			err = ioutil.WriteFile(path+"/"+txtDfName+"#"+nftid, data, 0644)
+			err = ioutil.WriteFile(path+"/"+txtDfName+"_"+nftid, data, 0644)
 			if err != nil {
 				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
 			}
@@ -411,12 +411,7 @@ func signNft(nftCfg *conf.NftConfig) {
 			colAccount := common.HexToAddress(v.ColAddress)
 			dfAccount := common.HexToAddress(v.DfAddress)
 			//ipfs uri
-			uri := ipfsurl + txtColName + "#" + strconv.Itoa(v.NftColId)
-			if v.NftColId == 208 {
-				logs.Error("colTokenId is:", v.NftColId)
-				logs.Error("uri is:", uri)
-				logs.Error("colAccount is:", colAccount)
-			}
+			uri := ipfsurl + txtColName + "_" + strconv.Itoa(v.NftColId)
 			hash := crypto.Keccak256Hash(
 				common.BigToHash(colTokenId).Bytes(),
 				colAccount[:],
@@ -439,7 +434,7 @@ func signNft(nftCfg *conf.NftConfig) {
 			v.NftColsig = fmt.Sprintf("%x", sig)
 
 			if v.EffectAmountUsd.Cmp(big.NewInt(0)) > 0 {
-				uri := ipfsurl + txtDfName + "#" + strconv.Itoa(v.NftDfId)
+				uri := ipfsurl + txtDfName + "_" + strconv.Itoa(v.NftDfId)
 				hash := crypto.Keccak256Hash(
 					common.BigToHash(dfTokenId).Bytes(),
 					dfAccount[:],
