@@ -412,6 +412,11 @@ func signNft(nftCfg *conf.NftConfig) {
 			dfAccount := common.HexToAddress(v.DfAddress)
 			//ipfs uri
 			uri := ipfsurl + txtColName + "#" + strconv.Itoa(v.NftColId)
+			if v.NftColId == 208 {
+				logs.Error("colTokenId is:", v.NftColId)
+				logs.Error("uri is:", uri)
+				logs.Error("colAccount is:", colAccount)
+			}
 			hash := crypto.Keccak256Hash(
 				common.BigToHash(colTokenId).Bytes(),
 				colAccount[:],
@@ -488,8 +493,8 @@ func outSwitcheoUsers() {
 	}
 	defer file.Close()
 	write := bufio.NewWriter(file)
-	for _,addr:=range swthAddrs{
-		write.WriteString(addr+"\n")
+	for _, addr := range swthAddrs {
+		write.WriteString(addr + "\n")
 	}
 	write.Flush()
 }
