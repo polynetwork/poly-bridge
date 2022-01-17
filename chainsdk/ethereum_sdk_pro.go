@@ -404,14 +404,15 @@ func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (balance *big
 	return
 }
 
-func (pro *EthereumSdkPro) GetNFTOwner(asset common.Address, tokenId *big.Int) (owner common.Address, err error) {
+func (pro *EthereumSdkPro) GetNFTOwner(asset string, tokenId *big.Int) (owner common.Address, err error) {
+	assetAddr:=common.HexToAddress(asset)
 	info := pro.GetLatest()
 	if info == nil {
 		return EmptyAddress, fmt.Errorf("all node is not working")
 	}
 
 	for info != nil {
-		if owner, err = info.sdk.GetNFTOwner(asset, tokenId); err != nil {
+		if owner, err = info.sdk.GetNFTOwner(assetAddr, tokenId); err != nil {
 			info = pro.reset(info)
 		} else {
 			return
