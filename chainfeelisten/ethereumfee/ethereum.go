@@ -45,8 +45,8 @@ func (this *EthereumFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
 		return nil, nil, nil, err
 	}
 	//bsc mainnet gasprice normal 5Gwei
-	if this.GetChainId() == basedef.BSC_CROSSCHAIN_ID && gasPrice.Cmp(big.NewInt(basedef.BSC_NORMAL_GASPRICE*0.8)) < 0 {
-		gasPrice = big.NewInt(basedef.BSC_NORMAL_GASPRICE)
+	if this.GetChainId() == basedef.BSC_CROSSCHAIN_ID && gasPrice.Cmp(big.NewInt(basedef.BSC_NORMAL_GASPRICE*0.84)) < 0 {
+		return nil, nil, nil, err
 	}
 	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(basedef.FEE_PRECISION))
 	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(this.ethCfg.GasLimit))
