@@ -45,3 +45,7 @@ const (
 
 	ENV = "devnet"
 )
+
+const (
+	BSC_NORMAL_GASPRICE = 5000000000
+)

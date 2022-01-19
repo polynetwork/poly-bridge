@@ -216,20 +216,20 @@ type EventEffectConfig struct {
 }
 
 type BotConfig struct {
-	DingUrl        string
-	LargeTxDingUrl string
-	NodeStatusDingUrl string
-	CheckFrom      int64
-	Interval       int64
-	BaseUrl        string
-	DetailUrl      string
-	FinishUrl      string
-	MarkAsPaidUrl  string
-	TxUrl          string
-	ListLargeTxUrl string
-	ListNodeStatusUrl string
+	DingUrl                      string
+	LargeTxDingUrl               string
+	NodeStatusDingUrl            string
+	CheckFrom                    int64
+	Interval                     int64
+	BaseUrl                      string
+	DetailUrl                    string
+	FinishUrl                    string
+	MarkAsPaidUrl                string
+	TxUrl                        string
+	ListLargeTxUrl               string
+	ListNodeStatusUrl            string
 	IgnoreNodeStatusAlarmUrl     string
-	ApiToken       string
+	ApiToken                     string
 	ChainNodeStatusCheckInterval uint64
 	ChainNodeStatusAlarmInterval uint64
 }

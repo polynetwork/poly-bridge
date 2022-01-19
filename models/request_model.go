@@ -350,6 +350,9 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		tokenAmount := ccc.Div(precision)
 		getFeeRsp.TokenAmount = tokenAmount.String()
 	}
+	if getFeeRsp.DstChainId == basedef.BSC_CROSSCHAIN_ID {
+		logs.Info("tobscgetfee srcChain:%v swapTokenHash:%v feeAmount:%v", srcChainId, swapTokenHash, getFeeRsp.TokenAmount)
+	}
 	return getFeeRsp
 }
 
