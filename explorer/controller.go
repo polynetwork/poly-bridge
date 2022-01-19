@@ -261,7 +261,7 @@ func (c *ExplorerController) GetCrossTx() {
 	fmt.Println("crossTxReq.TxHash", crossTxReq.TxHash)
 	relations := make([]*models.PolyTxRelation, 0)
 	tx := &struct{ Hash string }{}
-	err := db.Raw(`select hash from src_transactions where hash=?
+	err := db.Debug().Raw(`select hash from src_transactions where hash=?
 		UNION select s.hash from src_transactions s left join poly_transactions p on p.src_hash=s.hash where p.hash=?
 		UNION select s.hash from src_transactions s left join poly_transactions p on p.src_hash=s.hash
 		left join dst_transactions d on d.poly_hash=p.hash where d.hash=?`,
@@ -272,7 +272,7 @@ func (c *ExplorerController) GetCrossTx() {
 		c.ServeJSON()
 		return
 	}
-	res := db.Model(&models.SrcTransaction{}).
+	res := db.Debug().Model(&models.SrcTransaction{}).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, src_transfers.asset as token_hash, src_transfers.dst_chain_id as to_chain_id, src_transfers.dst_asset as to_token_hash, dst_transfers.chain_id as dst_chain_id, dst_transfers.asset as dst_token_hash").
 		Where("src_transactions.hash = ? AND src_transactions.standard = ?", tx.Hash, 0).
 		Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
