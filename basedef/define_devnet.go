@@ -42,6 +42,7 @@ const (
 	PIXIE_CROSSCHAIN_ID      = uint64(316)
 	RINKEBY_CROSSCHAIN_ID    = uint64(402)
 	BOBA_CROSSCHAIN_ID       = uint64(400)
+	OASIS_CROSSCHAIN_ID      = uint64(500)
 
 	ENV = "devnet"
 )

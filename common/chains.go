@@ -32,6 +32,7 @@ var (
 	pixieSdk      *chainsdk.EthereumSdkPro
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	bobaSdk       *chainsdk.EthereumSdkPro
+	oasisSdk      *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	config        *conf.Config
 )
@@ -226,6 +227,14 @@ func newChainSdks(config *conf.Config) {
 		urls := bobaConfig.GetNodesUrl()
 		bobaSdk = chainsdk.NewEthereumSdkPro(urls, bobaConfig.ListenSlot, bobaConfig.ChainId)
 		sdkMap[basedef.BOBA_CROSSCHAIN_ID] = bobaSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.OASIS_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("oasis chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		oasisSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 	}
 }
 
@@ -447,6 +456,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.OASIS_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.OASIS_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("oasis chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := oasisSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if chainId == basedef.PIXIE_CROSSCHAIN_ID {
 		pixieConfig := config.GetChainListenConfig(basedef.PIXIE_CROSSCHAIN_ID)
 		if pixieConfig == nil {
@@ -628,6 +651,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return bobaSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.OASIS_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.OASIS_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("oasis chain GetTotalSupply invalid")
+		}
+		return oasisSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -675,6 +705,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return rinkebySdk.Erc20Balance(hash, proxy)
 	case basedef.BOBA_CROSSCHAIN_ID:
 		return bobaSdk.Erc20Balance(hash, proxy)
+	case basedef.OASIS_CROSSCHAIN_ID:
+		return oasisSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
