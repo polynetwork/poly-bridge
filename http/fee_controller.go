@@ -21,15 +21,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
+	"poly-bridge/common"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 	"poly-bridge/utils/fee"
 	"strings"
-	"time"
-
-	"poly-bridge/basedef"
-	"poly-bridge/common"
-	"poly-bridge/models"
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
@@ -38,6 +36,8 @@ import (
 type FeeController struct {
 	web.Controller
 }
+
+var dstLockProxyMap = make(map[string]string, 0)
 
 func (c *FeeController) GetFee() {
 	var getFeeReq models.GetFeeReq
@@ -139,18 +139,14 @@ func (c *FeeController) GetFee() {
 						}
 					}
 					var dstLockProxy string
-					lockProxyKey := fmt.Sprintf("%s%d-%d-%s", cacheRedis.AssetBoundDstLockProxyPrefix, tokenMap.SrcChainId, tokenMap.DstChainId, strings.ToLower(tokenMap.SrcTokenHash))
-					dstLockProxy, err = cacheRedis.Redis.Get(lockProxyKey)
-					if err != nil {
+					lockProxyKey := fmt.Sprintf("%d-%d-%s", tokenMap.SrcChainId, tokenMap.DstChainId, strings.ToLower(tokenMap.SrcTokenHash))
+					dstLockProxy, ok := dstLockProxyMap[lockProxyKey]
+					if !ok || len(dstLockProxy) == 0 {
 						dstLockProxy, err = common.GetBoundLockProxy(dstLockProsxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
 						logs.Info("GetBoundLockProxy srcChain=%d, srcTokenHash=%s, dstTokenHash=%s dstLockProxy=%s, err=%s", tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, dstLockProxy, err)
 						if err == nil {
-							_, err := cacheRedis.Redis.Set(lockProxyKey, dstLockProxy, time.Hour*time.Duration(24))
-							if err != nil {
-								logs.Error("set dstLockProxy error: %s", err)
-							}
+							dstLockProxyMap[lockProxyKey] = dstLockProxy
 						}
-
 					}
 					tokenBalance, err = common.GetProxyBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, dstLockProxy)
 				default:
