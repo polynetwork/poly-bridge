@@ -39,7 +39,7 @@ type FeeController struct {
 
 var dstLockProxyMap = make(map[string]string, 0)
 
-func (c *FeeController) GetFee() {
+func (c *FeeController) OldGetFee() {
 	var getFeeReq models.GetFeeReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
@@ -148,6 +148,7 @@ func (c *FeeController) GetFee() {
 							dstLockProxyMap[lockProxyKey] = dstLockProxy
 						}
 					}
+					logs.Info("lockProxyKey=%s, dstLockProxy=%s", lockProxyKey, dstLockProxy)
 					tokenBalance, err = common.GetProxyBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, dstLockProxy)
 				default:
 					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
@@ -190,7 +191,7 @@ func (c *FeeController) GetFee() {
 	}
 }
 
-func (c *FeeController) OldGetFee() {
+func (c *FeeController) GetFee() {
 	var getFeeReq models.GetFeeReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
