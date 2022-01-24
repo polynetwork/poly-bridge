@@ -731,13 +731,9 @@ func (s *EthereumSdk) GetBoundAssetHash(
 		Context: context.Background(),
 	}
 	bz, err := proxy.AssetHashMap(opts, assetHash, chainId)
-	if err == nil {
+	if err == nil && len(bz) > 0 {
 		boundHash := common.BytesToAddress(bz)
-		if len(boundHash.Hex()) > 2 {
-			return boundHash, nil
-		} else {
-			return [20]byte{}, fmt.Errorf("can not find bound hash")
-		}
+		return boundHash, nil
 	}
 	return [20]byte{}, err
 }
