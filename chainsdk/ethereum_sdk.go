@@ -50,17 +50,17 @@ func NewEthereumSdk(url string) (*EthereumSdk, error) {
 	}, nil
 }
 
-func (ec *EthereumSdk) GetClient() *ethclient.Client {
-	return ec.rawClient
+func (s *EthereumSdk) GetClient() *ethclient.Client {
+	return s.rawClient
 }
 
-func (ec *EthereumSdk) GetUrl() string {
-	return ec.url
+func (s *EthereumSdk) GetUrl() string {
+	return s.url
 }
 
-func (ec *EthereumSdk) GetCurrentBlockHeight() (uint64, error) {
+func (s *EthereumSdk) GetCurrentBlockHeight() (uint64, error) {
 	var result hexutil.Big
-	err := ec.rpcClient.CallContext(context.Background(), &result, "eth_blockNumber")
+	err := s.rpcClient.CallContext(context.Background(), &result, "eth_blockNumber")
 	for err != nil {
 		return 0, err
 	}
@@ -75,7 +75,7 @@ func toBlockNumArg(number *big.Int) string {
 }
 
 // GetHeaderByNumber returns the given header
-func (ec *EthereumSdk) GetHeaderByNumber(number uint64) (*types.Header, error) {
+func (s *EthereumSdk) GetHeaderByNumber(number uint64) (*types.Header, error) {
 	var header *types.Header
 	var newNumber *big.Int
 	if number < 0 {
@@ -83,71 +83,71 @@ func (ec *EthereumSdk) GetHeaderByNumber(number uint64) (*types.Header, error) {
 	} else {
 		newNumber = big.NewInt(int64(number))
 	}
-	err := ec.rpcClient.CallContext(context.Background(), &header, "eth_getBlockByNumber", toBlockNumArg(newNumber), false)
+	err := s.rpcClient.CallContext(context.Background(), &header, "eth_getBlockByNumber", toBlockNumArg(newNumber), false)
 	for err != nil {
 		return nil, err
 	}
 	return header, err
 }
 
-func (ec *EthereumSdk) GetBlockByNumber(number uint64) (*types.Block, error) {
-	return ec.rawClient.BlockByNumber(context.Background(), new(big.Int).SetUint64(number))
+func (s *EthereumSdk) GetBlockByNumber(number uint64) (*types.Block, error) {
+	return s.rawClient.BlockByNumber(context.Background(), new(big.Int).SetUint64(number))
 }
 
-func (ec *EthereumSdk) GetTransactionByHash(hash common.Hash) (*types.Transaction, error) {
-	tx, _, err := ec.rawClient.TransactionByHash(context.Background(), hash)
+func (s *EthereumSdk) GetTransactionByHash(hash common.Hash) (*types.Transaction, error) {
+	tx, _, err := s.rawClient.TransactionByHash(context.Background(), hash)
 	for err != nil {
 		return nil, err
 	}
 	return tx, err
 }
 
-func (ec *EthereumSdk) GetTransactionReceipt(hash common.Hash) (*types.Receipt, error) {
-	receipt, err := ec.rawClient.TransactionReceipt(context.Background(), hash)
+func (s *EthereumSdk) GetTransactionReceipt(hash common.Hash) (*types.Receipt, error) {
+	receipt, err := s.rawClient.TransactionReceipt(context.Background(), hash)
 	for err != nil {
 		return nil, err
 	}
 	return receipt, nil
 }
 
-func (ec *EthereumSdk) NonceAt(addr common.Address) (uint64, error) {
-	nonce, err := ec.rawClient.PendingNonceAt(context.Background(), addr)
+func (s *EthereumSdk) NonceAt(addr common.Address) (uint64, error) {
+	nonce, err := s.rawClient.PendingNonceAt(context.Background(), addr)
 	for err != nil {
 		return 0, err
 	}
 	return nonce, nil
 }
 
-func (ec *EthereumSdk) SendRawTransaction(tx *types.Transaction) error {
+func (s *EthereumSdk) SendRawTransaction(tx *types.Transaction) error {
 	data, err := rlp.EncodeToBytes(tx)
 	if err != nil {
 		return err
 	}
-	err = ec.rpcClient.CallContext(context.Background(), nil, "eth_sendRawTransaction", hexutil.Encode(data))
+	err = s.rpcClient.CallContext(context.Background(), nil, "eth_sendRawTransaction", hexutil.Encode(data))
 	for err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ec *EthereumSdk) TransactionByHash(hash common.Hash) (*types.Transaction, bool, error) {
-	tx, isPending, err := ec.rawClient.TransactionByHash(context.Background(), hash)
+func (s *EthereumSdk) TransactionByHash(hash common.Hash) (*types.Transaction, bool, error) {
+	tx, isPending, err := s.rawClient.TransactionByHash(context.Background(), hash)
 	for err != nil {
 		return nil, false, err
 	}
 	return tx, isPending, err
 }
 
-func (ec *EthereumSdk) SuggestGasPrice() (*big.Int, error) {
-	gasPrice, err := ec.rawClient.SuggestGasPrice(context.Background())
+func (s *EthereumSdk) SuggestGasPrice() (*big.Int, error) {
+	gasPrice, err := s.rawClient.SuggestGasPrice(context.Background())
 	for err != nil {
 		return nil, err
 	}
 	return gasPrice, err
 }
 
-func (ec *EthereumSdk) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
-	gasLimit, err := ec.rawClient.EstimateGas(context.Background(), msg)
+func (s *EthereumSdk) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
+	gasLimit, err := s.rawClient.EstimateGas(context.Background(), msg)
 	for err != nil {
 		return 0, err
 	}
@@ -195,9 +195,9 @@ func (ec *EthereumSdk) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
 //	return balance.Uint64(), nil
 //}
 
-func (ec *EthereumSdk) EthBalance(addr string) (*big.Int, error) {
+func (s *EthereumSdk) EthBalance(addr string) (*big.Int, error) {
 	var result hexutil.Big
 	ctx := context.Background()
-	err := ec.rpcClient.CallContext(ctx, &result, "eth_getBalance", "0x"+addr, "latest")
+	err := s.rpcClient.CallContext(ctx, &result, "eth_getBalance", "0x"+addr, "latest")
 	return (*big.Int)(&result), err
 }
