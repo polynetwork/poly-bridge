@@ -583,10 +583,9 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 			if boundAsset == nil {
 				continue
 			}
-			addrHash := boundAsset.Hex()
-			reverseAddrHash := basedef.HexStringReverse(addrHash)
+			addrHash := (boundAsset.Hex())[2:]
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
-			if len(addrHash) > 2 && (strings.EqualFold(addrHash[2:], srcTokenHash) || strings.EqualFold(reverseAddrHash[2:], srcTokenHash)) {
+			if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
 				return proxy, nil
 			}
 		}
