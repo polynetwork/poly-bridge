@@ -126,12 +126,12 @@ func (c *FeeController) GetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				switch tokenMap.DstChainId {
-				case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
-					basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
-					basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
-					basedef.METIS_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID:
-					var dstLockProsxies []string
+				ethChains := make(map[uint64]struct{})
+				for _, chainId := range basedef.ETH_CHAINS {
+					ethChains[chainId] = struct{}{}
+				}
+				if _, ok := ethChains[tokenMap.DstChainId]; ok {
+					var dstLockProxies []string
 					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
 						if cfg.ChainId == tokenMap.DstChainId {
 							dstLockProxies = cfg.ProxyContract
