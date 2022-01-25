@@ -39,7 +39,7 @@ type FeeController struct {
 
 var dstLockProxyMap = make(map[string]string, 0)
 
-func (c *FeeController) OldGetFee() {
+func (c *FeeController) GetFee() {
 	var getFeeReq models.GetFeeReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {
@@ -126,15 +126,15 @@ func (c *FeeController) OldGetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				switch tokenMap.DstChainId {
-				case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
-					basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
-					basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
-					basedef.METIS_CROSSCHAIN_ID:
-					var dstLockProsxies []string
+				ethChains := make(map[uint64]struct{})
+				for _, chainId := range basedef.ETH_CHAINS {
+					ethChains[chainId] = struct{}{}
+				}
+				if _, ok := ethChains[tokenMap.DstChainId]; ok {
+					var dstLockProxies []string
 					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
 						if cfg.ChainId == tokenMap.DstChainId {
-							dstLockProsxies = cfg.ProxyContract
+							dstLockProxies = cfg.ProxyContract
 							break
 						}
 					}
@@ -142,7 +142,7 @@ func (c *FeeController) OldGetFee() {
 					lockProxyKey := fmt.Sprintf("%d-%d-%s", tokenMap.SrcChainId, tokenMap.DstChainId, strings.ToLower(tokenMap.SrcTokenHash))
 					dstLockProxy, ok := dstLockProxyMap[lockProxyKey]
 					if !ok || len(dstLockProxy) == 0 {
-						dstLockProxy, err = common.GetBoundLockProxy(dstLockProsxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
+						dstLockProxy, err = common.GetBoundLockProxy(dstLockProxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
 						logs.Info("GetBoundLockProxy srcChain=%d, srcTokenHash=%s, dstTokenHash=%s dstLockProxy=%s, err=%s", tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, dstLockProxy, err)
 						if err == nil {
 							dstLockProxyMap[lockProxyKey] = dstLockProxy
@@ -150,7 +150,7 @@ func (c *FeeController) OldGetFee() {
 					}
 					logs.Info("lockProxyKey=%s, dstLockProxy=%s", lockProxyKey, dstLockProxy)
 					tokenBalance, err = common.GetProxyBalance(tokenMap.DstChainId, tokenMap.DstTokenHash, dstLockProxy)
-				default:
+				} else {
 					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 				}
 
@@ -191,7 +191,7 @@ func (c *FeeController) OldGetFee() {
 	}
 }
 
-func (c *FeeController) GetFee() {
+func (c *FeeController) OldGetFee() {
 	var getFeeReq models.GetFeeReq
 	var err error
 	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &getFeeReq); err != nil {

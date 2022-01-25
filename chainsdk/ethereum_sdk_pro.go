@@ -574,19 +574,20 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 	for info != nil {
 		for _, proxy := range lockProxies {
 			proxyAddr := common.HexToAddress(proxy)
-			addr, err := info.sdk.GetBoundAssetHash(dstTokenAddress, proxyAddr, chainId)
-			if err != nil {
+			boundAsset, err := info.sdk.GetBoundAssetHash(dstTokenAddress, proxyAddr, chainId)
+			if err != nil || boundAsset == nil {
+				logs.Info("GetBoundAssetHash err:%s", err)
 				continue
 			}
-			addrHash := addr.Hex()
+			if boundAsset == nil {
+				continue
+			}
+			addrHash := boundAsset.Hex()
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
 			if len(addrHash) > 2 && strings.EqualFold(addrHash[2:], srcTokenHash) {
 				return proxy, nil
 			}
 		}
-		info.latestHeight = 0
-		info = pro.GetLatest()
-
 	}
 	return "", fmt.Errorf("catnot get bounded asset hash of %s", dstTokenHash)
 }
