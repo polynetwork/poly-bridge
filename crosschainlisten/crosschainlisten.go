@@ -176,7 +176,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 	}
 	height, err := ccl.handle.GetLatestHeight()
 	if err != nil || height == 0 {
-		panic(err)
+		panic(fmt.Sprintf("chain:",ccl.handle.GetChainName(),"err:",err))
 	}
 	if chain.Height == 0 {
 		chain.Height = height
