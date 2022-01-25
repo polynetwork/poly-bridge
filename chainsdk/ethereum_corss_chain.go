@@ -724,7 +724,7 @@ func (s *EthereumSdk) backend() bind.ContractBackend {
 func (s *EthereumSdk) GetBoundAssetHash(
 	assetHash, lockProxy common.Address,
 	chainId uint64,
-) (common.Address, error) {
+) (*common.Address, error) {
 	proxy, err := erc20lp.NewLockProxy(lockProxy, s.backend())
 	opts := &bind.CallOpts{
 		From:    lockProxy,
@@ -733,7 +733,7 @@ func (s *EthereumSdk) GetBoundAssetHash(
 	bz, err := proxy.AssetHashMap(opts, assetHash, chainId)
 	if err == nil && len(bz) > 0 {
 		boundHash := common.BytesToAddress(bz)
-		return boundHash, nil
+		return &boundHash, nil
 	}
-	return [20]byte{}, err
+	return nil, err
 }
