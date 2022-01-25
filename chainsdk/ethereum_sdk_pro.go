@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"poly-bridge/basedef"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -583,8 +584,9 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 				continue
 			}
 			addrHash := boundAsset.Hex()
+			reverseAddrHash := basedef.HexStringReverse(addrHash)
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
-			if len(addrHash) > 2 && strings.EqualFold(addrHash[2:], srcTokenHash) {
+			if len(addrHash) > 2 && (strings.EqualFold(addrHash[2:], srcTokenHash) || strings.EqualFold(reverseAddrHash[2:], srcTokenHash)) {
 				return proxy, nil
 			}
 		}
