@@ -208,15 +208,18 @@ func newChainSdks(config *conf.Config) {
 		bobaSdk = chainsdk.NewEthereumSdkPro(urls, bobaConfig.ListenSlot, bobaConfig.ChainId)
 		sdkMap[basedef.BOBA_CROSSCHAIN_ID] = bobaSdk
 	}
-	{
-		rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
-		if rinkebyConfig == nil {
-			panic("metis chain is invalid")
+	if basedef.ENV == basedef.TESTNET {
+		{
+			rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
+			if rinkebyConfig == nil {
+				panic("rinkeby chain is invalid")
+			}
+			urls := rinkebyConfig.GetNodesUrl()
+			rinkebySdk = chainsdk.NewEthereumSdkPro(urls, rinkebyConfig.ListenSlot, rinkebyConfig.ChainId)
+			sdkMap[basedef.RINKEBY_CROSSCHAIN_ID] = rinkebySdk
 		}
-		urls := rinkebyConfig.GetNodesUrl()
-		rinkebySdk = chainsdk.NewEthereumSdkPro(urls, rinkebyConfig.ListenSlot, rinkebyConfig.ChainId)
-		sdkMap[basedef.RINKEBY_CROSSCHAIN_ID] = rinkebySdk
 	}
+
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
