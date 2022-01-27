@@ -30,7 +30,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/polynetwork/bridge-common/metrics"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
@@ -176,7 +175,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 	}
 	height, err := ccl.handle.GetLatestHeight()
 	if err != nil || height == 0 {
-		panic(fmt.Sprintf("chain:",ccl.handle.GetChainName(),"err:",err))
+		panic(fmt.Sprintf("chain:", ccl.handle.GetChainName(), "err:", err))
 	}
 	if chain.Height == 0 {
 		chain.Height = height
@@ -215,9 +214,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				} else if extendHeight >= height+21 {
 					logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
 				}
-				metrics.Record(height, "%v.lastest_height", chain.ChainId)
-				metrics.Record(extendHeight, "%v.watch_height", chain.ChainId)
-				metrics.Record(chain.Height, "%v.height", chain.ChainId)
+				//metrics.Record(height, "%v.lastest_height", chain.ChainId)
+				//metrics.Record(extendHeight, "%v.watch_height", chain.ChainId)
+				//metrics.Record(chain.Height, "%v.height", chain.ChainId)
 				if chain.Height >= height-ccl.handle.GetDefer() {
 					continue
 				}

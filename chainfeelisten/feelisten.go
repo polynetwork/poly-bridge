@@ -18,7 +18,6 @@
 package chainfeelisten
 
 import (
-	"github.com/polynetwork/bridge-common/metrics"
 	"math/big"
 	"runtime/debug"
 	"strings"
@@ -208,8 +207,8 @@ func (fl *FeeListen) updateChainFees(chainFees []*models.ChainFee) error {
 		}
 		for _, feeListenCfg := range listenFeeCfgs {
 			if feeListenCfg.ChainId == chainId {
-				metrics.Record(minFee, "minfee_chain.%v", chainId)
-				metrics.Record(new(big.Int).Div(maxFee, big.NewInt(feeListenCfg.GasLimit)), "gasPrice_chain.%v", chainId)
+				//metrics.Record(minFee, "minfee_chain.%v", chainId)
+				//metrics.Record(new(big.Int).Div(maxFee, big.NewInt(feeListenCfg.GasLimit)), "gasPrice_chain.%v", chainId)
 				break
 			}
 		}
