@@ -108,11 +108,29 @@ type ChainListenConfig struct {
 }
 
 type HealthMonitorConfig struct {
-	ChainId      uint64
-	ChainName    string
-	ChainNodes   *ChainNodes
-	CCMContract  string
-	RelayerAddrs []string
+	ChainId        uint64
+	ChainName      string
+	ChainNodes     *ChainNodes
+	CCMContract    string
+	RelayerAccount *RelayAccountConfig
+}
+
+type RelayAccountConfig struct {
+	ChainName   string
+	ChainId     uint64
+	Address     []string
+	Neo3Account []Neo3Account
+	Threshold   float64
+}
+
+type Neo3Account struct {
+	Address string
+	Key     string
+	Pwd     string
+}
+
+type RelayerConfig struct {
+	RelayAccountConfig []*RelayAccountConfig
 }
 
 func (cfg *ChainListenConfig) GetNodesUrl() []string {
@@ -219,6 +237,7 @@ type BotConfig struct {
 	DingUrl                      string
 	LargeTxDingUrl               string
 	NodeStatusDingUrl            string
+	RelayerAccountStatusDingUrl  string
 	CheckFrom                    int64
 	Interval                     int64
 	BaseUrl                      string
@@ -228,6 +247,7 @@ type BotConfig struct {
 	TxUrl                        string
 	ListLargeTxUrl               string
 	ListNodeStatusUrl            string
+	ListRelayerAccountStatusUrl  string
 	IgnoreNodeStatusAlarmUrl     string
 	ApiToken                     string
 	ChainNodeStatusCheckInterval uint64
@@ -246,30 +266,28 @@ type IPPortConfig struct {
 }
 
 type Config struct {
-	Server                       string
-	Env                          string
-	RunMode                      string
-	Backup                       bool
-	LargeTxAmount                int64
-	LogFile                      string
-	HttpConfig                   *HttpConfig
-	MetricConfig                 *HttpConfig
-	ChainNodeStatusCheckInterval uint64
-	ChainNodeStatusAlarmInterval uint64
-	ChainNodes                   []*ChainNodes
-	ChainListenConfig            []*ChainListenConfig
-	CoinPriceUpdateSlot          int64
-	CoinPriceListenConfig        []*CoinPriceListenConfig
-	FeeUpdateSlot                int64
-	FeeListenConfig              []*FeeListenConfig
-	EventEffectConfig            *EventEffectConfig
-	StatsConfig                  *StatsConfig
-	DBConfig                     *DBConfig
-	BotConfig                    *BotConfig
-	RedisConfig                  *RedisConfig
-	IPPortConfig                 *IPPortConfig
-	NftConfig                    *NftConfig
-	RelayUrl                     string
+	Server                string
+	Env                   string
+	RunMode               string
+	Backup                bool
+	LargeTxAmount         int64
+	LogFile               string
+	HttpConfig            *HttpConfig
+	MetricConfig          *HttpConfig
+	ChainNodes            []*ChainNodes
+	ChainListenConfig     []*ChainListenConfig
+	CoinPriceUpdateSlot   int64
+	CoinPriceListenConfig []*CoinPriceListenConfig
+	FeeUpdateSlot         int64
+	FeeListenConfig       []*FeeListenConfig
+	EventEffectConfig     *EventEffectConfig
+	StatsConfig           *StatsConfig
+	DBConfig              *DBConfig
+	BotConfig             *BotConfig
+	RedisConfig           *RedisConfig
+	IPPortConfig          *IPPortConfig
+	NftConfig             *NftConfig
+	RelayUrl              string
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

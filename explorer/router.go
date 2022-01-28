@@ -28,6 +28,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/botlistlargetx/", &BotController{}, "get:ListLargeTxPage"),
 		web.NSRouter("/botlistnodestatus/", &BotController{}, "get:ListNodeStatusPage"),
 		web.NSRouter("/botignorenodestatusalarm/", &BotController{}, "get:IgnoreNodeStatusAlarm"),
+		web.NSRouter("/botlistrelayeraccountstatus/", &BotController{}, "get:ListRelayerAccountStatus"),
 	)
 	return ns
 }

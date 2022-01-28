@@ -4,7 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/joeqian10/neo3-gogogo/helper"
+	"github.com/joeqian10/neo3-gogogo/keys"
+	"github.com/joeqian10/neo3-gogogo/tx"
+	"github.com/joeqian10/neo3-gogogo/wallet"
 	"math"
+	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/chainsdk"
@@ -44,6 +49,64 @@ func (n *Neo3Monitor) GetChainName() string {
 	return n.monitorConfig.ChainName
 }
 
+func (n *Neo3Monitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	var precision float64 = 100000000
+	balanceSuccessMap := make(map[string]*big.Int, 0)
+	balanceFailedMap := make(map[string]string, 0)
+	for _, sdk := range n.sdks {
+		for _, account := range n.monitorConfig.RelayerAccount.Neo3Account {
+			if _, ok := balanceSuccessMap[account.Address]; ok {
+				continue
+			}
+			keypair, err := keys.NewKeyPairFromNEP2(account.Key, account.Pwd, helper.DefaultAddressVersion, keys.N, keys.R, keys.P)
+			if err != nil {
+				balanceFailedMap[account.Address] = err.Error()
+				continue
+			}
+			wh, err := wallet.NewWalletHelperFromPrivateKey(sdk.GetClient(), keypair.PrivateKey)
+			if err != nil {
+				balanceFailedMap[account.Address] = err.Error()
+			}
+			accountAndBalances, err := wh.GetAccountAndBalance(tx.GasToken)
+			total := big.NewInt(0)
+			if err == nil {
+				for _, balance := range accountAndBalances {
+					total = total.Add(total, balance.Value)
+				}
+				balanceSuccessMap[account.Address] = total
+				delete(balanceFailedMap, account.Address)
+			} else {
+				balanceFailedMap[account.Address] = err.Error()
+			}
+		}
+	}
+	relayerStatus := make([]*basedef.RelayerAccountStatus, 0)
+	for address, balance := range balanceSuccessMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   n.monitorConfig.ChainId,
+			ChainName: n.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   float64(balance.Uint64()) / precision,
+			Threshold: n.monitorConfig.RelayerAccount.Threshold / precision,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	for address, err := range balanceFailedMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   n.monitorConfig.ChainId,
+			ChainName: n.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   0,
+			Threshold: n.monitorConfig.RelayerAccount.Threshold / precision,
+			Status:    err,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	return relayerStatus, nil
+}
+
 func (n *Neo3Monitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range n.sdks {
@@ -63,7 +126,7 @@ func (n *Neo3Monitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err != nil {
 			n.nodeStatus[url] = err.Error()
 		} else {
-			n.nodeStatus[url] = basedef.NodeStatusOk
+			n.nodeStatus[url] = basedef.StatusOk
 		}
 		status.Status = append(status.Status, n.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)

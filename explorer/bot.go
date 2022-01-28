@@ -920,3 +920,68 @@ func (c *BotController) IgnoreNodeStatusAlarm() {
 	c.Data["json"] = models.MakeErrorRsp(resp)
 	c.ServeJSON()
 }
+
+func (c *BotController) ListRelayerAccountStatus() {
+	apiToken := c.Ctx.Input.Query("token")
+	if apiToken == conf.GlobalConfig.BotConfig.ApiToken {
+		accountStatusesMap := make(map[string][]basedef.RelayerAccountStatus, 0)
+		chainNames := make([]string, 0)
+		for _, cfg := range conf.GlobalConfig.ChainNodes {
+			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.RelayerAccountStatusPrefix + cfg.ChainName); err == nil {
+				var accountStatuses []basedef.RelayerAccountStatus
+				if err := json.Unmarshal([]byte(dataStr), &accountStatuses); err != nil {
+					logs.Error("%s relayer account status data Unmarshal error: ", cfg.ChainName, err)
+					continue
+				}
+				chainNames = append(chainNames, cfg.ChainName)
+				accountStatusesMap[cfg.ChainName] = accountStatuses
+			}
+		}
+		sort.Strings(chainNames)
+		tables := make([]string, 0)
+		for _, chainName := range chainNames {
+			accountStatuses := accountStatusesMap[chainName]
+			rows := make([]string, len(accountStatuses))
+			for i, status := range accountStatuses {
+				rows[i] = fmt.Sprintf(
+					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>\n", 5)),
+					status.Address,
+					strconv.FormatFloat(status.Balance, 'f', 6, 64),
+					strconv.FormatFloat(status.Threshold, 'f', 6, 64),
+					status.Status,
+					time.Unix(status.Time, 0).Format("2006-01-02 15:04:05"),
+				)
+			}
+			table := fmt.Sprintf(
+				`<h2> %s </h2>
+					<table style="width:100%%">
+						<tr>
+							<th>Address</th>
+							<th>Balance</th>
+							<th>Threshold</th>
+							<th>Status</th>
+							<th>Time</th>
+						</tr>
+						%s
+					</table>`,
+				chainName, strings.Join(rows, "\n"))
+			tables = append(tables, table)
+		}
+
+		htmlBytes := []byte(fmt.Sprintf(`<html><body>
+				<h1><center>Relayer Account Status</center></h1>
+				%s
+				</body></html>`,
+			strings.Join(tables, "\n")))
+		if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
+			c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
+		}
+		c.Ctx.Output.Body(htmlBytes)
+		return
+	} else {
+		err := fmt.Errorf("access denied")
+		c.Data["json"] = err.Error()
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+	}
+}
