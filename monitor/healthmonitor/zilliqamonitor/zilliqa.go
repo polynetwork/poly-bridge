@@ -36,6 +36,10 @@ func (z *ZilliqaMonitor) GetChainName() string {
 	return z.monitorConfig.ChainName
 }
 
+func (z *ZilliqaMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	return nil, nil
+}
+
 func (z *ZilliqaMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range z.sdks {
@@ -55,7 +59,7 @@ func (z *ZilliqaMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err != nil {
 			z.nodeStatus[url] = err.Error()
 		} else {
-			z.nodeStatus[url] = basedef.NodeStatusOk
+			z.nodeStatus[url] = basedef.StatusOk
 		}
 		status.Status = append(status.Status, z.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)

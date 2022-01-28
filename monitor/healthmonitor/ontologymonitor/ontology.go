@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ontio/ontology-go-sdk"
+	"github.com/ontio/ontology/common"
 	"math"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
@@ -38,6 +39,55 @@ func (o *OntologyMonitor) GetChainName() string {
 	return o.monitorConfig.ChainName
 }
 
+func (o *OntologyMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	balanceSuccessMap := make(map[string]uint64, 0)
+	balanceFailedMap := make(map[string]string, 0)
+	var precision float64 = 1000000000
+	for _, sdk := range o.sdks {
+		for _, address := range o.monitorConfig.RelayerAccount.Address {
+			if _, ok := balanceSuccessMap[address]; ok {
+				continue
+			}
+			account, err := common.AddressFromBase58(address)
+			if err != nil {
+				balanceFailedMap[address] = err.Error()
+			}
+			balance, err := sdk.Native.Ong.BalanceOf(account)
+			if err == nil {
+				balanceSuccessMap[address] = balance
+				delete(balanceFailedMap, address)
+			} else {
+				balanceFailedMap[address] = err.Error()
+			}
+		}
+	}
+	relayerStatus := make([]*basedef.RelayerAccountStatus, 0)
+	for address, balance := range balanceSuccessMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   o.monitorConfig.ChainId,
+			ChainName: o.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   float64(balance) / precision,
+			Threshold: o.monitorConfig.RelayerAccount.Threshold / precision,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	for address, err := range balanceFailedMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   o.monitorConfig.ChainId,
+			ChainName: o.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   0,
+			Threshold: o.monitorConfig.RelayerAccount.Threshold / precision,
+			Status:    err,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	return relayerStatus, nil
+}
+
 func (o *OntologyMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range o.sdks {
@@ -57,7 +107,7 @@ func (o *OntologyMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err != nil {
 			o.nodeStatus[url] = err.Error()
 		} else {
-			o.nodeStatus[url] = basedef.NodeStatusOk
+			o.nodeStatus[url] = basedef.StatusOk
 		}
 		status.Status = append(status.Status, o.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/joeqian10/neo-gogogo/tx"
+	"github.com/joeqian10/neo-gogogo/wallet"
 	"math"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
@@ -44,6 +46,57 @@ func (n *NeoMonitor) GetChainName() string {
 	return n.monitorConfig.ChainName
 }
 
+func (n *NeoMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	balanceSuccessMap := make(map[string]float64, 0)
+	balanceFailedMap := make(map[string]string, 0)
+	var precision float64 = 1
+	for _, sdk := range n.sdks {
+		for _, address := range n.monitorConfig.RelayerAccount.Address {
+			if _, ok := balanceSuccessMap[address]; ok {
+				continue
+			}
+			txBuilder := &tx.TransactionBuilder{
+				EndPoint: sdk.GetUrl(),
+				Client:   sdk.GetClient(),
+			}
+			walletHelper := wallet.NewWalletHelper(txBuilder, nil)
+			_, gasBalance, err := walletHelper.GetBalance(address)
+
+			if err == nil {
+				balanceSuccessMap[address] = gasBalance
+				delete(balanceFailedMap, address)
+			} else {
+				balanceFailedMap[address] = err.Error()
+			}
+		}
+	}
+	relayerStatus := make([]*basedef.RelayerAccountStatus, 0)
+	for address, balance := range balanceSuccessMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   n.monitorConfig.ChainId,
+			ChainName: n.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   balance / precision,
+			Threshold: n.monitorConfig.RelayerAccount.Threshold / precision,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	for address, err := range balanceFailedMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   n.monitorConfig.ChainId,
+			ChainName: n.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   0,
+			Threshold: n.monitorConfig.RelayerAccount.Threshold / precision,
+			Status:    err,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	return relayerStatus, nil
+}
+
 func (n *NeoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range n.sdks {
@@ -64,7 +117,7 @@ func (n *NeoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err != nil {
 			n.nodeStatus[url] = err.Error()
 		} else {
-			n.nodeStatus[url] = basedef.NodeStatusOk
+			n.nodeStatus[url] = basedef.StatusOk
 		}
 		status.Status = append(status.Status, n.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)

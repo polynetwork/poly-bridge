@@ -108,11 +108,29 @@ type ChainListenConfig struct {
 }
 
 type HealthMonitorConfig struct {
-	ChainId      uint64
-	ChainName    string
-	ChainNodes   *ChainNodes
-	CCMContract  string
-	RelayerAddrs []string
+	ChainId        uint64
+	ChainName      string
+	ChainNodes     *ChainNodes
+	CCMContract    string
+	RelayerAccount *RelayAccountConfig
+}
+
+type RelayAccountConfig struct {
+	ChainName   string
+	ChainId     uint64
+	Address     []string
+	Neo3Account []Neo3Account
+	Threshold   float64
+}
+
+type Neo3Account struct {
+	Address string
+	Key     string
+	Pwd     string
+}
+
+type RelayerConfig struct {
+	RelayAccountConfig []*RelayAccountConfig
 }
 
 func (cfg *ChainListenConfig) GetNodesUrl() []string {
@@ -219,6 +237,7 @@ type BotConfig struct {
 	DingUrl                      string
 	LargeTxDingUrl               string
 	NodeStatusDingUrl            string
+	RelayerAccountStatusDingUrl  string
 	CheckFrom                    int64
 	Interval                     int64
 	BaseUrl                      string
@@ -228,6 +247,7 @@ type BotConfig struct {
 	TxUrl                        string
 	ListLargeTxUrl               string
 	ListNodeStatusUrl            string
+	ListRelayerAccountStatusUrl  string
 	IgnoreNodeStatusAlarmUrl     string
 	ApiToken                     string
 	ChainNodeStatusCheckInterval uint64
@@ -267,7 +287,7 @@ type Config struct {
 	RedisConfig           *RedisConfig
 	IPPortConfig          *IPPortConfig
 	NftConfig             *NftConfig
-	RelayUrl			  string
+	RelayUrl              string
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
@@ -366,10 +386,25 @@ func initPolyProxy() {
 type NftConfig struct {
 	Description string
 	ExternalUrl string
-	ColImage       string
-	DfImage       string
+	ColImage    string
+	DfImage     string
 	ColName     string
 	DfName      string
 	IpfsUrl     string
 	Pwd         string
+}
+
+func NewRelayerConfig(filePath string) *RelayerConfig {
+	fileContent, err := basedef.ReadFile(filePath)
+	if err != nil {
+		logs.Error("NewRelayerConfig: failed, err: %s", err)
+		return nil
+	}
+	config := &RelayerConfig{}
+	err = json.Unmarshal(fileContent, config)
+	if err != nil {
+		logs.Error("NewRelayerConfig: failed, err: %s", err)
+		return nil
+	}
+	return config
 }

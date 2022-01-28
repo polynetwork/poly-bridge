@@ -53,7 +53,7 @@ const (
 )
 
 const (
-	NodeStatusOk = "OK"
+	StatusOk = "OK"
 )
 
 type LargeTx struct {
@@ -74,6 +74,16 @@ type NodeStatus struct {
 	Url       string
 	Height    uint64
 	Status    []string
+	Time      int64
+}
+
+type RelayerAccountStatus struct {
+	ChainId   uint64
+	ChainName string
+	Address   string
+	Balance   float64
+	Threshold float64
+	Status    string
 	Time      int64
 }
 

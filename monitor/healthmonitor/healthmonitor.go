@@ -6,7 +6,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
-	polycommon "poly-bridge/common"
+	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/monitor/healthmonitor/ethereummonitor"
 	"poly-bridge/monitor/healthmonitor/neo3monitor"
@@ -21,7 +21,7 @@ import (
 
 var healthMonitorConfigMap = make(map[uint64]*conf.HealthMonitorConfig, 0)
 
-func StartHealthMonitor(config *conf.Config) {
+func StartHealthMonitor(config *conf.Config, relayerConfig *conf.RelayerConfig) {
 	for _, cfg := range config.ChainNodes {
 		monitorConfig := &conf.HealthMonitorConfig{ChainId: cfg.ChainId, ChainName: cfg.ChainName, ChainNodes: cfg}
 		healthMonitorConfigMap[cfg.ChainId] = monitorConfig
@@ -29,9 +29,9 @@ func StartHealthMonitor(config *conf.Config) {
 	for _, cfg := range config.ChainListenConfig {
 		healthMonitorConfigMap[cfg.ChainId].CCMContract = cfg.CCMContract
 	}
-	//for i, i2 := range collection {
-	//	TODO RelayerAddrs
-	//}
+	for _, cfg := range relayerConfig.RelayAccountConfig {
+		healthMonitorConfigMap[cfg.ChainId].RelayerAccount = cfg
+	}
 	for _, monitorConfig := range healthMonitorConfigMap {
 		healthMonitorHandle := NewHealthMonitorHandle(monitorConfig)
 		if healthMonitorHandle == nil {
@@ -41,11 +41,11 @@ func StartHealthMonitor(config *conf.Config) {
 		monitor := &HealthMonitor{healthMonitorHandle}
 		monitor.Start(config)
 	}
-
 }
 
 type MonitorHandle interface {
 	NodeMonitor() ([]basedef.NodeStatus, error)
+	RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error)
 	GetChainName() string
 }
 
@@ -55,6 +55,7 @@ type HealthMonitor struct {
 
 func (h *HealthMonitor) Start(config *conf.Config) {
 	go h.NodeMonitor(config)
+	go h.RelayerAccountMonitor(config)
 }
 
 func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
@@ -118,16 +119,71 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 	}
 }
 
+func (h *HealthMonitor) RelayerAccountMonitor(config *conf.Config) {
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error("%s RelayerAccountMonitor recover info: %s", h.handle.GetChainName(), string(debug.Stack()))
+		}
+	}()
+	logs.Info("start %s RelayerBalanceMonitor", h.handle.GetChainName())
+
+	monitorTicker := time.NewTicker(time.Minute * 5)
+	for {
+		select {
+		case <-monitorTicker.C:
+			if relayerAccountStatuses, err := h.handle.RelayerBalanceMonitor(); relayerAccountStatuses != nil && err == nil {
+				for _, accountStatus := range relayerAccountStatuses {
+					if len(accountStatus.Status) == 0 {
+						if accountStatus.Balance < accountStatus.Threshold {
+							accountStatus.Status = "insufficient"
+							logs.Error("%s relayer %s", h.handle.GetChainName(), accountStatus.Status)
+							continue
+						} else {
+							accountStatus.Status = basedef.StatusOk
+						}
+					}
+				}
+				data, _ := json.Marshal(relayerAccountStatuses)
+				_, err := cacheRedis.Redis.Set(cacheRedis.RelayerAccountStatusPrefix+h.handle.GetChainName(), data, time.Hour*24)
+				if err != nil {
+					logs.Error("set %s node status error: %s", h.handle.GetChainName(), err)
+				}
+				for _, accountStatus := range relayerAccountStatuses {
+					sendAlarm, recoverAlarm := needSendRelayerAccountStatusAlarm(accountStatus)
+					if sendAlarm {
+						if err := sendRelayerAccountStatusDingAlarm(accountStatus, recoverAlarm); err != nil {
+							logs.Error("%s relayer address: %s sendRelayerAccountStatusDingAlarm err:", h.handle.GetChainName(), accountStatus.Address, err)
+							continue
+						}
+						alarmKey := fmt.Sprintf("%s%s-%s", cacheRedis.RelayerAccountStatusAlarmPrefix, accountStatus.ChainName, accountStatus.Address)
+						if recoverAlarm {
+							if _, err := cacheRedis.Redis.Del(alarmKey); err != nil {
+								logs.Error("clear %s relayer address: %s alarm err: %s", h.handle.GetChainName(), accountStatus.Address, err)
+							}
+							logs.Info("clear %s relayer address: %s alarm", h.handle.GetChainName(), accountStatus.Address)
+						} else {
+							if _, err := cacheRedis.Redis.Set(alarmKey, "alarm has been sent", time.Hour*12); err != nil {
+								logs.Error("mark %s relayer address: %s alarm has been sent error: %s", h.handle.GetChainName(), accountStatus.Address, err)
+							}
+							logs.Info("mark %s relayer address: %s alarm has been sent", h.handle.GetChainName(), accountStatus.Address)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 func needSendNodeStatusAlarm(nodeStatus *basedef.NodeStatus) (send, recover bool) {
 	exist, err := cacheRedis.Redis.Exists(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url)
 	if err == nil {
 		if exist {
-			if len(nodeStatus.Status) == 1 && nodeStatus.Status[0] == basedef.NodeStatusOk {
+			if len(nodeStatus.Status) == 1 && nodeStatus.Status[0] == basedef.StatusOk {
 				send = true
 				recover = true
 			}
 		} else {
-			if len(nodeStatus.Status) >= 1 && nodeStatus.Status[0] != basedef.NodeStatusOk {
+			if len(nodeStatus.Status) >= 1 && nodeStatus.Status[0] != basedef.StatusOk {
 				send = true
 				recover = false
 			}
@@ -139,6 +195,25 @@ func needSendNodeStatusAlarm(nodeStatus *basedef.NodeStatus) (send, recover bool
 		if ignore {
 			send = false
 			logs.Info("ignore %s node: %s alarm", nodeStatus.ChainName, nodeStatus.Url)
+		}
+	}
+	return
+}
+
+func needSendRelayerAccountStatusAlarm(relayerStatus *basedef.RelayerAccountStatus) (send, recover bool) {
+	alarmKey := fmt.Sprintf("%s%s-%s", cacheRedis.RelayerAccountStatusAlarmPrefix, relayerStatus.ChainName, relayerStatus.Address)
+	exist, err := cacheRedis.Redis.Exists(alarmKey)
+	if err == nil {
+		if exist {
+			if relayerStatus.Status == basedef.StatusOk {
+				send = true
+				recover = true
+			}
+		} else {
+			if relayerStatus.Status != basedef.StatusOk {
+				send = true
+				recover = false
+			}
 		}
 	}
 	return
@@ -188,7 +263,34 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 
 	logs.Info(body)
 	logs.Info(buttons)
-	return polycommon.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
+	return common.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
+}
+
+func sendRelayerAccountStatusDingAlarm(relayerStatus *basedef.RelayerAccountStatus, isRecover bool) error {
+	title := ""
+	if isRecover {
+		title = fmt.Sprintf("%s relayer refilled", relayerStatus.ChainName)
+	} else {
+		title = fmt.Sprintf("%s relayer insufficient", relayerStatus.ChainName)
+	}
+
+	body := fmt.Sprintf("## %s\n- Address: %s\n- Balance: %f\n-  Threshold:%f\n- Time: %s\n",
+		title,
+		relayerStatus.Address,
+		relayerStatus.Balance,
+		relayerStatus.Threshold,
+		time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05"),
+	)
+
+	buttons := make([]map[string]string, 0)
+	buttons = append(buttons, map[string]string{
+		"title":     "List All",
+		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListRelayerAccountStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+	})
+
+	logs.Info(body)
+	logs.Info(buttons)
+	return common.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.RelayerAccountStatusDingUrl)
 }
 
 func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHandle {
