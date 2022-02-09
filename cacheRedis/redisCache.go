@@ -17,20 +17,20 @@ import (
 const (
 	_CrossTxCounter        = "CrossTxCounter"
 	_TransferStatisticResp = "TransferStatisticRes"
+	_ShortTokenBalance        = "ShortTokenBalance"
 	//getfee TokenBalance time.Hour*72
-	_ShortTokenBalance           = "ShortTokenBalance"
-	_LongTokenBalance            = "LongTokenBalance"
-	TxCheckBot                   = "TxCheckBot"
-	LargeTxAlarmPrefix           = "LargeTxAlarm_"
-	LargeTxList                  = "LargeTxList"
-	MarkTxAsPaidPrefix           = "MarkTxAsPaid_"
-	MarkTxAsSkipPrefix           = "MarkTxAsSkip_"
-	_GetManualTxData             = "GetManualTxData_"
+	_LongTokenBalance         = "LongTokenBalance"
+	TxCheckBot                = "TxCheckBot"
+	LargeTxAlarmPrefix        = "LargeTxAlarm_"
+	LargeTxList               = "LargeTxList"
+	MarkTxAsPaidPrefix        = "MarkTxAsPaid_"
+	MarkTxAsSkipPrefix        = "MarkTxAsSkip_"
 	StuckTxAlarmHasSendPrefix    = "StuckTxAlarmHasSendPrefix_"
-	NodeStatusPrefix             = "NodeStatusPrefix_"
-	NodeStatusAlarmPrefix        = "NodeStatusAlarmPrefix_"
+	NodeStatusPrefix          = "NodeStatusPrefix_"
+	NodeStatusAlarmPrefix     = "NodeStatusAlarmPrefix_"
 	IgnoreNodeStatusAlarmPrefix  = "IgnoreNodeStatusAlarmPrefix_"
 	AssetBoundDstLockProxyPrefix = "AssetBoundDstLockProxyPrefix_"
+	_GetManualTxData   = "GetManualTxData_"
 )
 
 type RedisCache struct {

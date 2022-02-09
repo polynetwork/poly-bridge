@@ -187,6 +187,7 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 	})
 
 	logs.Info(body)
+	logs.Info(buttons)
 	return polycommon.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
 }
 

@@ -29,11 +29,11 @@ var (
 	avaxSdk       *chainsdk.EthereumSdkPro
 	optimisticSdk *chainsdk.EthereumSdkPro
 	metisSdk      *chainsdk.EthereumSdkPro
-	pixieSdk      *chainsdk.EthereumSdkPro
-	rinkebySdk    *chainsdk.EthereumSdkPro
 	bobaSdk       *chainsdk.EthereumSdkPro
-	oasisSdk      *chainsdk.EthereumSdkPro
+	rinkebySdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
+	pixieSdk      *chainsdk.EthereumSdkPro
+	oasisSdk      *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
