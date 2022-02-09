@@ -228,6 +228,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := chainConfig.GetNodesUrl()
 		oasisSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.OASIS_CROSSCHAIN_ID] = oasisSdk
 	}
 }
 
