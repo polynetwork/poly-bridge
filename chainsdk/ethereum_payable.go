@@ -23,6 +23,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"strings"
 
@@ -575,6 +576,6 @@ func filterTokenInfo(enc []byte) map[string]string {
 			break
 		}
 	}
-
+	logs.Info("filterTokenInfo: res=%+v", res)
 	return res
 }
