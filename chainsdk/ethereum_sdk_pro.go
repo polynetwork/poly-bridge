@@ -21,7 +21,9 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"poly-bridge/basedef"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 
@@ -564,4 +566,29 @@ func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int)
 func (pro *EthereumSdkPro) reset(info *EthereumInfo) *EthereumInfo {
 	info.latestHeight = 0
 	return pro.GetLatest()
+}
+
+func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash, dstTokenHash string, chainId uint64) (string, error) {
+	info := pro.GetLatest()
+	dstTokenAddress := common.HexToAddress(dstTokenHash)
+
+	if info != nil {
+		for _, proxy := range lockProxies {
+			proxyAddr := common.HexToAddress(proxy)
+			boundAsset, err := info.sdk.GetBoundAssetHash(dstTokenAddress, proxyAddr, chainId)
+			if err != nil || boundAsset == nil {
+				logs.Info("GetBoundAssetHash err:%s", err)
+				continue
+			}
+			if boundAsset == nil {
+				continue
+			}
+			addrHash := (boundAsset.Hex())[2:]
+			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
+			if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
+				return proxy, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("catnot get bounded asset hash of %s", dstTokenHash)
 }

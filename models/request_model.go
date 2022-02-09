@@ -1238,3 +1238,26 @@ func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
 	}
 	return v
 }
+
+func MakeBottxsRsp(pageSize int, pageNo int, totalPage int, totalCount int, transactions []*SrcPolyDstRelation, fees map[string]CheckFeeResult) map[string]interface{} {
+	rsp := map[string]interface{}{}
+	rsp["PageSize"] = pageSize
+	rsp["PageNo"] = pageNo
+	rsp["TotalPage"] = totalPage
+	rsp["TotalCount"] = totalCount
+	txs := make([]BotTx, len(transactions))
+	for i, tx := range transactions {
+		txs[i] = ParseBotTx(tx, fees)
+	}
+	rsp["Transactions"] = txs
+	return rsp
+}
+
+type ManualTxDataReq struct {
+	PolyHash string
+}
+
+type ManualTxDataResp struct {
+	Data   string `json:"data"`
+	DstCCM string `json:"dst_ccm"`
+}

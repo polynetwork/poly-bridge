@@ -20,7 +20,10 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/models"
 	"time"
 
@@ -31,6 +34,12 @@ import (
 
 type TransactionController struct {
 	web.Controller
+}
+
+func (c *TransactionController) return400(message string) {
+	c.Data["json"] = models.MakeErrorRsp(message)
+	c.Ctx.ResponseWriter.WriteHeader(400)
+	c.ServeJSON()
 }
 
 func (c *TransactionController) Transactions() {
@@ -453,4 +462,64 @@ func (c *TransactionController) TransactionsOfAsset() {
 	c.Data["json"] = models.MakeTransactionOfUnfinishedRsp(transactionsOfAssetReq.PageSize, transactionsOfAssetReq.PageNo,
 		(int(transactionNum)+transactionsOfAssetReq.PageSize-1)/transactionsOfAssetReq.PageSize, int(transactionNum), srcPolyDstRelations)
 	c.ServeJSON()
+}
+
+func (c *TransactionController) GetManualTxData() {
+	var manualTxDataReq models.ManualTxDataReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &manualTxDataReq); err != nil {
+		c.return400("request parameter is invalid!")
+		return
+	}
+	if manualTxDataReq.PolyHash[:2] == "0x" || manualTxDataReq.PolyHash[:2] == "0X" {
+		manualTxDataReq.PolyHash = manualTxDataReq.PolyHash[2:]
+	}
+	polyTransaction := new(models.PolyTransaction)
+	res := db.Where("hash = ?", manualTxDataReq.PolyHash).First(polyTransaction)
+	if res.RowsAffected == 0 {
+		c.return400(fmt.Sprintf("%v is not polyhash", manualTxDataReq.PolyHash))
+		return
+	}
+	if polyTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID {
+		c.return400(fmt.Sprintf("%v can not submit to dst chain", manualTxDataReq.PolyHash))
+		return
+	}
+	var x string
+	res = db.Model(&models.DstTransaction{}).Select("hash").Where("poly_hash = ?", manualTxDataReq.PolyHash).First(&x)
+	if res.RowsAffected != 0 {
+		c.return400(fmt.Sprintf("%v was submitted to dst chain", manualTxDataReq.PolyHash))
+		return
+	}
+	manualTxDataResp := new(models.ManualTxDataResp)
+	manualData, err := cacheRedis.Redis.GetManualTx(manualTxDataReq.PolyHash)
+	if err == nil {
+		if manualData == "" {
+			c.return400(fmt.Sprintf("%v getManualData loading", manualTxDataReq.PolyHash))
+			return
+		}
+		json.Unmarshal([]byte(manualData), manualTxDataResp)
+		c.Data["json"] = manualTxDataResp
+		c.ServeJSON()
+		return
+	}
+	url := relayUrl + "/api/v1/composetx?hash=" + manualTxDataReq.PolyHash
+	for i := 0; i < 2; i++ {
+		resp, err := http.Get(url)
+		if err != nil {
+			logs.Error("getManualData polyhash:", manualTxDataReq.PolyHash, "err:", err)
+			time.Sleep(time.Millisecond * 500)
+			continue
+		}
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		json.Unmarshal(body, manualTxDataResp)
+		manualData = string(body)
+		cacheRedis.Redis.SetManualTx(manualTxDataReq.PolyHash, manualData)
+
+		c.Data["json"] = manualTxDataResp
+		c.ServeJSON()
+		return
+	}
+	c.return400(fmt.Sprintf("%v getManualData timeout", manualTxDataReq.PolyHash))
+	return
 }
