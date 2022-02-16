@@ -511,7 +511,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			if len(strings.TrimSpace(v)) == 0 {
 				continue
 			}
-			balance, err := oasisSdk.Erc20Balance(hash, v)
+			balance, err := oasis1Sdk.Erc20Balance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
 		}
@@ -660,7 +660,7 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		if chainConfig == nil {
 			panic("oasis1 chain GetTotalSupply invalid")
 		}
-		return oasisSdk.Erc20TotalSupply(hash)
+		return oasis1Sdk.Erc20TotalSupply(hash)
 	}
 	return new(big.Int).SetUint64(0), nil
 }
