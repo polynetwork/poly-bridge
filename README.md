@@ -1,6 +1,6 @@
 # Poly Bridge
 
-PolyBridge的API。
+Here are API provided by PolyBridge. 
 
 ## API
 
