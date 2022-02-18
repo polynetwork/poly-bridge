@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"math"
+	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/chainsdk"
@@ -48,6 +49,57 @@ func (e *EthereumHealthMonitor) GetChainName() string {
 	return e.monitorConfig.ChainName
 }
 
+func (e *EthereumHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	switch e.monitorConfig.ChainId {
+	case basedef.PLT_CROSSCHAIN_ID:
+		return nil, nil
+	case basedef.O3_CROSSCHAIN_ID:
+		return nil, nil
+	}
+	balanceSuccessMap := make(map[string]*big.Int, 0)
+	balanceFailedMap := make(map[string]string, 0)
+	var precision float64 = 1000000000000000000
+	for _, sdk := range e.sdks {
+		for _, address := range e.monitorConfig.RelayerAccount.Address {
+			if _, ok := balanceSuccessMap[address]; ok {
+				continue
+			}
+			balance, err := sdk.GetNativeBalance(common.HexToAddress(address))
+			if err == nil {
+				balanceSuccessMap[address] = balance
+				delete(balanceFailedMap, address)
+			} else {
+				balanceFailedMap[address] = err.Error()
+			}
+		}
+	}
+	relayerStatus := make([]*basedef.RelayerAccountStatus, 0)
+	for address, balance := range balanceSuccessMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   e.monitorConfig.ChainId,
+			ChainName: e.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   float64(balance.Uint64()) / precision,
+			Threshold: e.monitorConfig.RelayerAccount.Threshold / precision,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	for address, err := range balanceFailedMap {
+		status := basedef.RelayerAccountStatus{
+			ChainId:   e.monitorConfig.ChainId,
+			ChainName: e.monitorConfig.ChainName,
+			Address:   address,
+			Balance:   0,
+			Threshold: e.monitorConfig.RelayerAccount.Threshold / precision,
+			Status:    err,
+			Time:      time.Now().Unix(),
+		}
+		relayerStatus = append(relayerStatus, &status)
+	}
+	return relayerStatus, nil
+}
+
 func (e *EthereumHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range e.sdks {
@@ -67,7 +119,7 @@ func (e *EthereumHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err != nil {
 			e.nodeStatus[url] = err.Error()
 		} else {
-			e.nodeStatus[url] = basedef.NodeStatusOk
+			e.nodeStatus[url] = basedef.StatusOk
 		}
 		status.Status = append(status.Status, e.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)

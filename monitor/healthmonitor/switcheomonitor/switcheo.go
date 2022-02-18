@@ -36,6 +36,10 @@ func (s *SwitcheoMonitor) GetChainName() string {
 	return s.monitorConfig.ChainName
 }
 
+func (s *SwitcheoMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	return nil, nil
+}
+
 func (s *SwitcheoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range s.sdks {
@@ -55,7 +59,7 @@ func (s *SwitcheoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err != nil {
 			s.nodeStatus[url] = err.Error()
 		} else {
-			s.nodeStatus[url] = basedef.NodeStatusOk
+			s.nodeStatus[url] = basedef.StatusOk
 		}
 		status.Status = append(status.Status, s.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)

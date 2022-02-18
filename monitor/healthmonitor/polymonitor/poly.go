@@ -38,6 +38,10 @@ func (p *PolyHealthMonitor) GetChainName() string {
 	return p.monitorConfig.ChainName
 }
 
+func (p *PolyHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	return nil, nil
+}
+
 func (p *PolyHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 	nodeStatuses := make([]basedef.NodeStatus, 0)
 	for url, sdk := range p.sdks {
@@ -57,7 +61,7 @@ func (p *PolyHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err != nil {
 			p.nodeStatus[url] = err.Error()
 		} else {
-			p.nodeStatus[url] = basedef.NodeStatusOk
+			p.nodeStatus[url] = basedef.StatusOk
 		}
 		status.Status = append(status.Status, p.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
