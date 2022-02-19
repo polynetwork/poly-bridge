@@ -62,11 +62,15 @@ func (n *NeoMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, e
 			walletHelper := wallet.NewWalletHelper(txBuilder, nil)
 			_, gasBalance, err := walletHelper.GetBalance(address)
 
-			if err == nil {
-				balanceSuccessMap[address] = gasBalance
-				delete(balanceFailedMap, address)
-			} else {
+			if err != nil {
 				balanceFailedMap[address] = err.Error()
+			} else {
+				if gasBalance != 0 {
+					balanceSuccessMap[address] = gasBalance
+					delete(balanceFailedMap, address)
+				} else {
+					balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
+				}
 			}
 		}
 	}

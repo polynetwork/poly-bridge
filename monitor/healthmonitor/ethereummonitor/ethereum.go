@@ -65,11 +65,15 @@ func (e *EthereumHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccou
 				continue
 			}
 			balance, err := sdk.GetNativeBalance(common.HexToAddress(address))
-			if err == nil {
-				balanceSuccessMap[address] = balance
-				delete(balanceFailedMap, address)
-			} else {
+			if err != nil {
 				balanceFailedMap[address] = err.Error()
+			} else {
+				if balance != nil && balance.Uint64() != 0 {
+					balanceSuccessMap[address] = balance
+					delete(balanceFailedMap, address)
+				} else {
+					balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
+				}
 			}
 		}
 	}

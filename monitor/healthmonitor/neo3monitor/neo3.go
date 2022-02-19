@@ -69,14 +69,19 @@ func (n *Neo3Monitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, 
 			}
 			accountAndBalances, err := wh.GetAccountAndBalance(tx.GasToken)
 			total := big.NewInt(0)
-			if err == nil {
+
+			if err != nil {
+				balanceFailedMap[account.Address] = err.Error()
+			} else {
 				for _, balance := range accountAndBalances {
 					total = total.Add(total, balance.Value)
 				}
-				balanceSuccessMap[account.Address] = total
-				delete(balanceFailedMap, account.Address)
-			} else {
-				balanceFailedMap[account.Address] = err.Error()
+				if total.Uint64() != 0 {
+					balanceSuccessMap[account.Address] = total
+					delete(balanceFailedMap, account.Address)
+				} else {
+					balanceFailedMap[account.Address] = "balance is 0 or all nodes are unavailable"
+				}
 			}
 		}
 	}
