@@ -83,6 +83,7 @@ func (n *NeoMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, e
 		relayerStatus = append(relayerStatus, &status)
 	}
 	for address, err := range balanceFailedMap {
+		logs.Error("get %s relayer[%s] balance failed. err: %s", n.monitorConfig.ChainName, address, err)
 		status := basedef.RelayerAccountStatus{
 			ChainId:   n.monitorConfig.ChainId,
 			ChainName: n.monitorConfig.ChainName,

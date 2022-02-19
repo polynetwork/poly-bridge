@@ -86,6 +86,7 @@ func (e *EthereumHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccou
 		relayerStatus = append(relayerStatus, &status)
 	}
 	for address, err := range balanceFailedMap {
+		logs.Error("get %s relayer[%s] balance failed. err: %s", e.monitorConfig.ChainName, address, err)
 		status := basedef.RelayerAccountStatus{
 			ChainId:   e.monitorConfig.ChainId,
 			ChainName: e.monitorConfig.ChainName,
