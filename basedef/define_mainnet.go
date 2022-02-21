@@ -43,7 +43,7 @@ const (
 	METIS_CROSSCHAIN_ID      = uint64(24)
 	BOBA_CROSSCHAIN_ID       = uint64(25)
 	RINKEBY_CROSSCHAIN_ID    = uint64(1000001)
-	OASIS_CROSSCHAIN_ID      = uint64(500)
+	OASIS_CROSSCHAIN_ID      = uint64(26)
 
 	ENV = "mainnet"
 )
