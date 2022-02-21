@@ -1,6 +1,6 @@
 # Poly Bridge
 
-Here are API provided by PolyBridge. 
+This file involves essential APIs provided by PolyBridge and describes how to...... 
 
 ## API
 
@@ -25,11 +25,12 @@ Here are API provided by PolyBridge.
 
 ## Test Node
 [testnet](https://bridge.poly.network/testnet/v1/)
+
 [mainnet](https://bridge.poly.network/v1/)
 
-## 交易状态码
+## Status Codes of Transaction
 
-状态码|描述
+Code|Message
 :--:|:--:
 0|finished
 1|pendding
@@ -37,19 +38,19 @@ Here are API provided by PolyBridge.
 3|source confirmed
 4|poly confirmed
 
-## 跨链交易手续费
+## Charges of Cross-Chain Transaction
 
-### 手续费计算
-代理收取的手续费 = 目标链交易的手续费 * 120% （120%可配置）
+### Accounting
+The fee charged by agent = The transaction fee on target chain * 120% （the rate, 120%, is configurable）
 
-以BSC上的BNB跨链到以太手续费来计算：
-fee = (eth.gas_limit * eth.gas_price) * (eth的USDT价格) / (BNB的USDT价格)
+e.g., if BNB of chain BSC is transferred onto ETH, 
+the fee = (eth.gas_limit * eth.gas_price) * (eth.USDT_price) / (BNB.USDT_price)
 
-收取的手续费的资产为BNB
+Attention: The asset charged is BNB. 
 
-### 手续费检查
+### Checking
 
-hasPay = 收取的手续费 > 目标链交易的手续费 * 20% （20%可配置）
+hasPay = Charges > 目标链交易的手续费 * 20% （20%可配置）
 
 以BSC上的BNB跨链到以太的过程来检查手续费：
 
