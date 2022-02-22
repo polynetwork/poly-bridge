@@ -53,11 +53,16 @@ func (o *OntologyMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStat
 				balanceFailedMap[address] = err.Error()
 			}
 			balance, err := sdk.Native.Ong.BalanceOf(account)
-			if err == nil {
-				balanceSuccessMap[address] = balance
-				delete(balanceFailedMap, address)
-			} else {
+
+			if err != nil {
 				balanceFailedMap[address] = err.Error()
+			} else {
+				if balance != 0 {
+					balanceSuccessMap[address] = balance
+					delete(balanceFailedMap, address)
+				} else {
+					balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
+				}
 			}
 		}
 	}
@@ -74,6 +79,7 @@ func (o *OntologyMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStat
 		relayerStatus = append(relayerStatus, &status)
 	}
 	for address, err := range balanceFailedMap {
+		logs.Error("get %s relayer[%s] balance failed. err: %s", o.monitorConfig.ChainName, address, err)
 		status := basedef.RelayerAccountStatus{
 			ChainId:   o.monitorConfig.ChainId,
 			ChainName: o.monitorConfig.ChainName,
