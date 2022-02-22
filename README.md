@@ -1,6 +1,6 @@
 # Poly Bridge
 
-This file involves essential APIs provided by PolyBridge and describes how to...... 
+This file involves essential APIs provided by PolyBridge and describes how to deploy these APIs. 
 
 ## API
 
@@ -44,21 +44,21 @@ Code|Message
 The fee charged by agent = The transaction fee on target chain * 120% （the rate, 120%, is configurable）
 
 e.g., if BNB of chain BSC is transferred onto ETH, 
-the fee = (eth.gas_limit * eth.gas_price) * (eth.USDT_price) / (BNB.USDT_price)
+the fee = (eth.gas_limit * eth.gas_price) * (eth to USDT) / (BNB to USDT)
 
-Attention: The asset charged is BNB. 
+**Attention:** The asset charged is BNB. 
 
 ### Checking
 
-hasPay = Charges > 目标链交易的手续费 * 20% （20%可配置）
+hasPay = Charges > The transaction fee on target chain * 20% （the rate, 20%, is configurable）
 
-以BSC上的BNB跨链到以太的过程来检查手续费：
+e.g., if checking the fee charged during BNB transaction between BSC and ETH,
 
-hasPay = 收取的BNB * (BNB的USDT价格) > (eth.gas_limit * eth.gas_price) * (eth的USDT价格) * 20%
+hasPay = BNB charged * (BNB to USDT) > (eth.gas_limit * eth.gas_price) * (eth to USDT) * 20%
 
 ## API Info
 
-查询服务的状态
+Status querying is shown in the following. 
 
 ### GET /
 
@@ -82,11 +82,11 @@ Example Response
 
 ### POST tokenbasics
 
-获取目前可以跨链的资产信息。
+This API enables you to check assets that can be transferred cross chains currently.
 
-TokenBasic是币的本位信息，各链上不同的usdt，都对应usdt为本位。
-Token为本位币在各个链上的详细信息，如eth上的usdt，bsc上的usdt。
-TokenMap为币之间的跨链映射关系，如eth上的usdt可以跨链到bsc上的usdt，则有eth的usdt到bsc的usdt的映射，如bsc上的usdt不可以跨链到eth上的usdt，则没有bsc的usdt到eth的usdt的映射。
+TokenBasic shows standard coin, e.g., USDT. 
+Token refers to the detailed information of standard coin in each chains, e.g., USDT in ETH and BSC chains.
+TokenMap refers to the mapping relations among different assets, e.g., it will show the mapping of USDT between ETH and BSC if USDT can be transferred from ETH to BSC. 
 
 Request 
 ```
@@ -317,11 +317,11 @@ Example Response
 
 ### POST tokenbasicsinfo
 
-获取目前可以跨链的资产信息和统计信息。
+This API enables you to check information of statistic and assets that can be transferred cross chains currently.
 
-TokenBasic是币的本位信息，各链上不同的usdt，都对应usdt为本位。
-Token为本位币在各个链上的详细信息，如eth上的usdt，bsc上的usdt。
-TokenMap为币之间的跨链映射关系，如eth上的usdt可以跨链到bsc上的usdt，则有eth的usdt到bsc的usdt的映射，如bsc上的usdt不可以跨链到eth上的usdt，则没有bsc的usdt到eth的usdt的映射。
+TokenBasic shows standard coin, e.g., USDT.
+Token refers to the detailed information of standard coin in each chains, e.g., USDT in ETH and BSC chains.
+TokenMap refers to the mapping relations among different assets, e.g., it will show the mapping of USDT between ETH and BSC if USDT can be transferred from ETH to BSC.
 
 Request 
 ```
@@ -401,7 +401,7 @@ Example Response
 
 ### POST tokens
 
-获取一条链上，目前支持跨链的资产列表。
+This API lists tokens that are transferable across chains currently on one chain. 
 
 Request 
 ```
@@ -627,7 +627,7 @@ Example Response
 
 ### POST token
 
-获取一条链上的一个跨链资产的信息。
+This API shows assigned asset status on one chain.
 
 Request 
 ```
@@ -700,7 +700,7 @@ Example Response
 
 ### POST tokenmap
 
-查询一条链上一个资产的跨链到目标链以及资产的映射关系。
+This API returns the mapping relations of one token between chains. 
 
 Request 
 ```
@@ -775,7 +775,7 @@ Example Response
 
 ### POST tokenmapreverse
 
-查询一条链上一个资产可以被跨链过来的源链以及资产的映射关系。
+This API returns the source chains supporting cross chain transaction of specified token onto this chain and mapping relations of assets. 
 
 Request 
 ```
@@ -850,10 +850,8 @@ Example Response
 
 ### POST getfee
 
-获取到一个指定链的跨链需要收取的源链上资产金额。
-用户在做一次跨链操作时，在源链交易上收取了用户的费用。
-如果指定了SwapTokenHash，那么回返回可用余额。
-
+This API returns the amount of assets as cross-chain fee that needs to be charged on the source chain when crossing to the target chain.
+When the user performs a cross-chain operation, the user's fee is charged on the source chain transaction.If SwapTokenHash is specified, the available balance is returned
 Request 
 ```
 http://localhost:8080/v1/getfee/
@@ -897,7 +895,7 @@ Example Response
 
 ### POST checkfee
 
-检查一个源链交易是否支付了满足要求的手续费。
+This API is used to check whether the source transaction pays required fee.
 
 Request 
 ```
@@ -944,7 +942,7 @@ Example Response
 
 ### POST transactions
 
-获取跨链交易列表。
+This API returns cross chain transaction lists.
 
 Request 
 ```
@@ -993,7 +991,7 @@ Example Response
 
 ### POST transactionswithfilter
 
-获取跨链交易列表，支持参数(SrcChainId, DstChainId, Assets)：
+This API returns cross chain transaction lists, supporting parameter: SrcChainId, DstChainId, and Assets.
 
 Request 
 ```
@@ -1082,7 +1080,7 @@ Example Response
 
 ### POST transactionsofaddress
 
-获取指定地址上的跨链交易列表。
+This API returns the cross-chain history of the specified address.
 
 Request 
 ```
@@ -1164,7 +1162,8 @@ Example Response
 ```
 
 ### POST transactionofhash
-获取指定hash的跨链交易。
+
+This API returns the details of the specified hash, and you can view the cross-chain progress through the TransactionState in the response.
 
 Request 
 ```
@@ -1235,7 +1234,7 @@ Example Response
 
 ### POST transactionsofstate
 
-获取指定状态的跨链交易。
+This API returns the details of the specified hash, and you can view the cross-chain progress through the TransactionState in the response.
 
 Request 
 ```
@@ -1286,7 +1285,7 @@ Example Response
 
 ### POST transactionofcurve
 
-根据curve链上的交易hash查询整个交易流程详情。
+This API returns the detailed information of the whole transaction according to the hash in curve.
 
 Request 
 ```
@@ -1366,7 +1365,7 @@ Example Response
 
 ### POST transactionsofunfinished
 
-查询未完成交易列表
+This API returns the unfinished transaction.
 
 Request 
 ```
@@ -1921,7 +1920,7 @@ Example Response
 
 ### POST transactionsofasset
 
-根据资产查询跨链交易列表。
+This API returns detailed information of transaction according to asset.
 
 Request 
 ```
@@ -2747,7 +2746,7 @@ Example Response
 
 ### POST expecttime
 
-查询两条链之间跨链的预期时间。
+This API returns the expected elapsed time transferring from source chain to target chain
 
 Request 
 ```
@@ -2781,7 +2780,7 @@ Example Response
 ```
 ### POST gettokenasset
 
- 查资产balance与totalsupply(根据token或name)
+This API returns the token balance and total supply according to token or name.
 
 Request
 ```
