@@ -201,6 +201,9 @@ func needSendNodeStatusAlarm(nodeStatus *basedef.NodeStatus) (send, recover bool
 }
 
 func needSendRelayerAccountStatusAlarm(relayerStatus *basedef.RelayerAccountStatus) (send, recover bool) {
+	if relayerStatus.Balance == 0 {
+		return false, false
+	}
 	alarmKey := fmt.Sprintf("%s%s-%s", cacheRedis.RelayerAccountStatusAlarmPrefix, relayerStatus.ChainName, relayerStatus.Address)
 	exist, err := cacheRedis.Redis.Exists(alarmKey)
 	if err == nil {
