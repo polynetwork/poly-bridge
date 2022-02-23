@@ -401,7 +401,7 @@ Example Response
 
 ### POST tokens
 
-This API lists tokens that are transferable across chains currently on one chain. 
+This API lists tokens that are transferable across chains currently on assigned chain. 
 
 Request 
 ```
@@ -627,7 +627,7 @@ Example Response
 
 ### POST token
 
-This API shows assigned asset status on one chain.
+This API shows assigned asset status on assigned chain.
 
 Request 
 ```
@@ -700,7 +700,7 @@ Example Response
 
 ### POST tokenmap
 
-This API returns the mapping relations of one token between chains. 
+This API returns the mapping relations of assigned token between chains. 
 
 Request 
 ```
@@ -775,7 +775,7 @@ Example Response
 
 ### POST tokenmapreverse
 
-This API returns the source chains supporting cross chain transaction of specified token onto this chain and mapping relations of assets. 
+This API returns the source chains supporting cross chain transaction of assigned token onto this chain and mapping relations of assets. 
 
 Request 
 ```
@@ -850,8 +850,9 @@ Example Response
 
 ### POST getfee
 
-This API returns the amount of assets as cross-chain fee that needs to be charged on the source chain when crossing to the target chain.
-When the user performs a cross-chain operation, the user's fee is charged on the source chain transaction.If SwapTokenHash is specified, the available balance is returned
+This API returns transaction fee which will be charged on the source chain in cross-chain transaction.
+And if SwapTokenHash is specified, the transferable amount will be returned.
+
 Request 
 ```
 http://localhost:8080/v1/getfee/
@@ -2746,7 +2747,7 @@ Example Response
 
 ### POST expecttime
 
-This API returns the expected elapsed time transferring from source chain to target chain
+This API returns the expected elapsed time for token to transfer from source chain to target chain.
 
 Request 
 ```
