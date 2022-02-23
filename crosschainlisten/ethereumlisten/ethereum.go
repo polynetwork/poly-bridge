@@ -112,6 +112,9 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			return nil, nil, nil, nil, 0, 0, err
 		}
 		if blockHeader == nil {
+			if basedef.ENV == basedef.TESTNET && this.GetChainId() == basedef.OPTIMISTIC_CROSSCHAIN_ID {
+				continue
+			}
 			return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no ethereum block on height: %d!", i)
 		}
 		blockTimer[i] = blockHeader.Time

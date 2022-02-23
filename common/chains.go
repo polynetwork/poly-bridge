@@ -32,6 +32,7 @@ var (
 	bobaSdk       *chainsdk.EthereumSdkPro
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
+	oasisSdk      *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -219,7 +220,15 @@ func newChainSdks(config *conf.Config) {
 			sdkMap[basedef.RINKEBY_CROSSCHAIN_ID] = rinkebySdk
 		}
 	}
-
+	{
+		chainConfig := config.GetChainListenConfig(basedef.OASIS_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("oasis chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		oasisSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.OASIS_CROSSCHAIN_ID] = oasisSdk
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -468,6 +477,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.OASIS_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.OASIS_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("oasis chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := oasisSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -600,6 +623,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return rinkebySdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.OASIS_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.OASIS_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("oasis chain GetTotalSupply invalid")
+		}
+		return oasisSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -645,6 +675,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return bobaSdk.Erc20Balance(hash, proxy)
 	case basedef.RINKEBY_CROSSCHAIN_ID:
 		return rinkebySdk.Erc20Balance(hash, proxy)
+	case basedef.OASIS_CROSSCHAIN_ID:
+		return oasisSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
