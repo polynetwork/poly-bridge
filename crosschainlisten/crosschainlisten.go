@@ -171,7 +171,7 @@ func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperT
 func (ccl *CrossChainListen) listenChain() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("service start, recover info: %s", string(debug.Stack()))
+			logs.Error("%s listenChain service start, recover info: %s", ccl.handle.GetChainName(), string(debug.Stack()))
 			exit = false
 		}
 	}()
