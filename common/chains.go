@@ -36,6 +36,7 @@ var (
 	pixieSdk      *chainsdk.EthereumSdkPro
 	oasisSdk      *chainsdk.EthereumSdkPro
 	oasis1Sdk     *chainsdk.EthereumSdkPro
+	starcoinSdk   *chainsdk.StarcoinSdkPro
 	config        *conf.Config
 )
 
@@ -247,6 +248,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		oasis1Sdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.OASIS1_CROSSCHAIN_ID] = oasis1Sdk
+	}
+	{
+		starcoinConfig := config.GetChainListenConfig(basedef.STARCOIN_CROSSCHAIN_ID)
+		if starcoinConfig == nil {
+			panic("starcoin chain is invalid")
+		}
+		urls := starcoinConfig.GetNodesUrl()
+		starcoinSdk = chainsdk.NewStarcoinSdkPro(urls, starcoinConfig.ListenSlot, starcoinConfig.ChainId)
+		sdkMap[basedef.STARCOIN_CROSSCHAIN_ID] = starcoinSdk
 	}
 }
 
@@ -538,6 +548,9 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
+		// todo starcoin
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -691,6 +704,9 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return oasis1Sdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
+		// todo starcoin
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -742,6 +758,9 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return oasisSdk.Erc20Balance(hash, proxy)
 	case basedef.OASIS1_CROSSCHAIN_ID:
 		return oasis1Sdk.Erc20Balance(hash, proxy)
+	//	todo starcoin
+	//case basedef.STARCOIN_CROSSCHAIN_ID:
+	//	return starcoinSdk.
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
