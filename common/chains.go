@@ -33,11 +33,12 @@ var (
 	bobaSdk       *chainsdk.EthereumSdkPro
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	bytomSdk      *chainsdk.EthereumSdkPro
-	sdkMap        map[uint64]interface{}
 	oasisSdk      *chainsdk.EthereumSdkPro
 	harmonySdk    *chainsdk.EthereumSdkPro
 	kccSdk        *chainsdk.EthereumSdkPro
 	hscSdk        *chainsdk.EthereumSdkPro
+	starcoinSdk   *chainsdk.StarcoinSdkPro
+	sdkMap        map[uint64]interface{}
 	config        *conf.Config
 )
 
@@ -213,6 +214,15 @@ func newChainSdks(config *conf.Config) {
 		urls := bobaConfig.GetNodesUrl()
 		bobaSdk = chainsdk.NewEthereumSdkPro(urls, bobaConfig.ListenSlot, bobaConfig.ChainId)
 		sdkMap[basedef.BOBA_CROSSCHAIN_ID] = bobaSdk
+	}
+	{
+		starcoinConfig := config.GetChainListenConfig(basedef.STARCOIN_CROSSCHAIN_ID)
+		if starcoinConfig == nil {
+			panic("starcoin chain is invalid")
+		}
+		urls := starcoinConfig.GetNodesUrl()
+		starcoinSdk = chainsdk.NewStarcoinSdkPro(urls, starcoinConfig.ListenSlot, starcoinConfig.ChainId)
+		sdkMap[basedef.STARCOIN_CROSSCHAIN_ID] = starcoinSdk
 	}
 	if basedef.ENV == basedef.TESTNET {
 		{
@@ -588,6 +598,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
+		starcoinConfig := config.GetChainListenConfig(basedef.STARCOIN_CROSSCHAIN_ID)
+		if starcoinConfig == nil {
+			panic("starcoin chain is invalid")
+		}
+		for _, v := range starcoinConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := starcoinSdk.GetBalance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -802,6 +826,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return bytomSdk.Erc20Balance(hash, proxy)
 	case basedef.HSC_CROSSCHAIN_ID:
 		return hscSdk.Erc20Balance(hash, proxy)
+	case basedef.STARCOIN_CROSSCHAIN_ID:
+		return starcoinSdk.GetBalance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}

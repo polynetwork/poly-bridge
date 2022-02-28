@@ -45,6 +45,7 @@ const (
 	HARMONY_CROSSCHAIN_ID    = uint64(800)
 	KCC_CROSSCHAIN_ID        = uint64(900)
 	HSC_CROSSCHAIN_ID        = uint64(603)
+	STARCOIN_CROSSCHAIN_ID   = uint64(318)
 
 	ENV = "devnet"
 )
