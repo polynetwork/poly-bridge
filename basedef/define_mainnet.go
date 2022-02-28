@@ -44,6 +44,7 @@ const (
 	RINKEBY_CROSSCHAIN_ID    = uint64(1000001)
 	BOBA_CROSSCHAIN_ID       = uint64(25)
 	OASIS_CROSSCHAIN_ID      = uint64(500)
+	STARCOIN_CROSSCHAIN_ID   = uint64(1000002)
 
 	ENV = "mainnet"
 )

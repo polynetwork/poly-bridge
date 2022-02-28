@@ -22,6 +22,7 @@ import (
 	"math"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
+	"poly-bridge/crosschainlisten/starcoinlisten"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"poly-bridge/utils/decimal"
 	"runtime/debug"
@@ -105,6 +106,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return neo3listen.NewNeo3ChainListen(chainListenConfig)
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		return zilliqalisten.NewZilliqaChainListen(chainListenConfig)
+	case basedef.STARCOIN_CROSSCHAIN_ID:
+		return starcoinlisten.NewStarcoinChainListen(chainListenConfig)
 
 	default:
 		return nil

@@ -46,6 +46,7 @@ const (
 	BOBA_CROSSCHAIN_ID       = uint64(400)
 	OASIS_CROSSCHAIN_ID      = uint64(500)
 	OASIS1_CROSSCHAIN_ID     = uint64(501)
+	STARCOIN_CROSSCHAIN_ID   = uint64(318)
 
 	ENV = "testnet"
 )

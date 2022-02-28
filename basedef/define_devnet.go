@@ -43,6 +43,7 @@ const (
 	RINKEBY_CROSSCHAIN_ID    = uint64(402)
 	BOBA_CROSSCHAIN_ID       = uint64(400)
 	OASIS_CROSSCHAIN_ID      = uint64(500)
+	STARCOIN_CROSSCHAIN_ID   = uint64(318)
 
 	ENV = "devnet"
 )
