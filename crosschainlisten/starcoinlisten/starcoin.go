@@ -168,7 +168,8 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 		}
 
 		starcoinEventsMap := make(map[string]*StarcoinEvents, 0)
-		for _, event := range starcoinEvents {
+		for i, _ := range starcoinEvents {
+			event := starcoinEvents[i]
 			srcHash := event.TransactionHash[2:]
 			var starcoinEvents *StarcoinEvents
 			if evts, ok := starcoinEventsMap[srcHash]; ok {
