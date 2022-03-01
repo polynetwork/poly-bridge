@@ -493,34 +493,27 @@ func (c *ExplorerController) GetLockTokenInfo() {
 	c.ServeJSON()
 }
 
-func (c *ExplorerController) GetNftSign() {
-	var nftSignReq models.NftSignReq
+func (c *ExplorerController) GetEthEffectUser() {
+	var evmosEthNftInfoReq models.EvmosEthNftInfoReq
 	var err error
-	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &nftSignReq); err != nil {
+	err = json.Unmarshal(c.Ctx.Input.RequestBody, &evmosEthNftInfoReq)
+	if  err != nil || evmosEthNftInfoReq.ChainId!=basedef.ETHEREUM_CROSSCHAIN_ID{
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-	if nftSignReq.Address[:2] == "0x" || nftSignReq.Address[:2] == "0X" {
-		nftSignReq.Address = nftSignReq.Address[2:]
-	}
-	nftUsers := make([]*models.NftUser, 0)
-	colUser := new(models.NftUser)
-	res := db.Where("col_address = ? ", nftSignReq.Address).
-		First(colUser)
-	if res.RowsAffected == 0 {
-		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("%v does not exist", nftSignReq.Address))
+	var total int64
+	err=db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
+		Count(&total).Error
+	if err!=nil{
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("no data!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
-		return
 	}
-	nftUsers = append(nftUsers, colUser)
-	dfUser := new(models.NftUser)
-	res = db.Where("df_address = ? ", nftSignReq.Address).
-		First(dfUser)
-	if res.RowsAffected > 0 {
-		nftUsers = append(nftUsers, dfUser)
-	}
-	c.Data["json"] = nftUsers
+	nftUsers:=make([]models.NftUser,0)
+	db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
+		Limit(evmosEthNftInfoReq.PageSize).Offset((evmosEthNftInfoReq.PageNo - 1) * evmosEthNftInfoReq.PageSize).
+		Find(&nftUsers)
+	c.Data["json"] = models.MakeEvmosEthNftInfoResp(nftUsers,total)
 	c.ServeJSON()
 }

@@ -12,6 +12,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"io"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -80,6 +81,8 @@ func Nft(cfg *conf.Config) {
 		signNft(nftCfg)
 	} else if runflag == "11" {
 		outSwitcheoUsers()
+	} else if runflag == "12" {
+		addeffectdata()
 	} else if runflag == "-99" {
 		db.Exec("DELETE FROM nft_users")
 	}
@@ -492,4 +495,47 @@ func outSwitcheoUsers() {
 		write.WriteString(addr + "\n")
 	}
 	write.Flush()
+}
+
+func addeffectdata() {
+	logs.Info("--------- start addeffectdata --------------------")
+	filePath := "./effect_mergedata.txt"
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("open fail = ", err)
+	}
+	defer file.Close()
+	reader := bufio.NewReader(file)
+
+	i, j := 0, 0
+	for {
+		str, _, err := reader.ReadLine()
+		if err == io.EOF {
+			break
+		}
+		i++
+		strlist := strings.Split(string(str), " ")
+		chainId, err := strconv.Atoi(strlist[0])
+		if err != nil {
+			panic("panic strconv.Atoi err")
+		}
+		amount, _ := new(big.Int).SetString(strlist[2], 10)
+		hash := strlist[1]
+		nftUser := new(models.NftUser)
+		err1 := db.Where("col_address = ?", hash).First(nftUser).Error
+		if err1 != nil {
+			continue
+		}
+		j++
+		nftUser.DfChainId = uint64(chainId)
+		nftUser.DfAddress = hash
+		nftUser.EffectAmountUsd = models.NewBigInt(amount)
+		err2 := db.Updates(nftUser).Error
+		if err2 != nil {
+			logs.Error("db Updates(nftUser) Error")
+		}
+
+	}
+	logs.Info(fmt.Sprintf("len:%d,reallen:%d", i, j))
+	logs.Info("--------- end addeffectdata --------------------")
 }

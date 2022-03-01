@@ -30,6 +30,7 @@ package models
 import (
 	"encoding/json"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/utils/decimal"
@@ -819,4 +820,32 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 
 type NftSignReq struct {
 	Address string `json:"address"`
+}
+
+type EvmosEthNftInfoReq struct {
+	ChainId  uint64
+	PageSize int
+	PageNo   int
+}
+
+type EvmosEthNftInfoResp struct {
+	EvmosEthNftInfos []*EvmosEthNftInfo
+	totalNum int64
+}
+
+type EvmosEthNftInfo struct {
+	Address string
+	Amount_Usdt *big.Int
+}
+
+func MakeEvmosEthNftInfoResp(nftUsers []NftUser,total int64) *EvmosEthNftInfoResp {
+	evmosEthNftInfoResp:=new(EvmosEthNftInfoResp)
+	evmosEthNftInfoResp.totalNum=total
+	for _,v:=range nftUsers{
+		evmosEthNftInfo:=new(EvmosEthNftInfo)
+		evmosEthNftInfo.Amount_Usdt=new(big.Int).Quo(&v.EffectAmountUsd.Int,big.NewInt(10000))
+		evmosEthNftInfo.Address=common.HexToAddress(v.DfAddress).Hex()
+		evmosEthNftInfoResp.EvmosEthNftInfos=append(evmosEthNftInfoResp.EvmosEthNftInfos,evmosEthNftInfo)
+	}
+	return evmosEthNftInfoResp
 }
