@@ -830,7 +830,7 @@ type EvmosEthNftInfoReq struct {
 
 type EvmosEthNftInfoResp struct {
 	EvmosEthNftInfos []*EvmosEthNftInfo
-	totalNum int64
+	TotalNum int64
 }
 
 type EvmosEthNftInfo struct {
@@ -840,7 +840,7 @@ type EvmosEthNftInfo struct {
 
 func MakeEvmosEthNftInfoResp(nftUsers []NftUser,total int64) *EvmosEthNftInfoResp {
 	evmosEthNftInfoResp:=new(EvmosEthNftInfoResp)
-	evmosEthNftInfoResp.totalNum=total
+	evmosEthNftInfoResp.TotalNum=total
 	for _,v:=range nftUsers{
 		evmosEthNftInfo:=new(EvmosEthNftInfo)
 		evmosEthNftInfo.Amount_Usdt=new(big.Int).Quo(&v.EffectAmountUsd.Int,big.NewInt(10000))
