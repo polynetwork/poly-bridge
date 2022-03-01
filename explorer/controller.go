@@ -505,7 +505,6 @@ func (c *ExplorerController) GetEthEffectUser() {
 	var total int64
 	err=db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
 		Count(&total).Error
-	logs.Error("totaltotaltotal1",total)
 	if err!=nil{
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("no data!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
