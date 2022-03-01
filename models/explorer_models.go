@@ -839,8 +839,12 @@ type EvmosEthNftInfo struct {
 }
 
 func MakeEvmosEthNftInfoResp(nftUsers []NftUser,total int64) *EvmosEthNftInfoResp {
+	logs.Error("totaltotaltotal2",total)
 	evmosEthNftInfoResp:=new(EvmosEthNftInfoResp)
 	evmosEthNftInfoResp.totalNum=total
+	logs.Error("totaltotaltotal3",total)
+	evmosEthNftInfoResp.totalNum=10
+	logs.Error("totaltotaltotal4",total)
 	for _,v:=range nftUsers{
 		evmosEthNftInfo:=new(EvmosEthNftInfo)
 		evmosEthNftInfo.Amount_Usdt=new(big.Int).Quo(&v.EffectAmountUsd.Int,big.NewInt(10000))
