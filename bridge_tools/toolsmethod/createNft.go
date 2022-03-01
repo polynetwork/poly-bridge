@@ -12,6 +12,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"io"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -80,6 +81,8 @@ func Nft(cfg *conf.Config) {
 		signNft(nftCfg)
 	} else if runflag == "11" {
 		outSwitcheoUsers()
+	} else if runflag == "12" {
+		addeffectdata()
 	} else if runflag == "-99" {
 		db.Exec("DELETE FROM nft_users")
 	}
@@ -331,7 +334,7 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 			nftJson.Attributes = attributes
 			nftid := strconv.Itoa(v.NftColId)
 			data, _ := json.MarshalIndent(nftJson, "", "    ")
-			err = ioutil.WriteFile(path+"/"+txtColName+"#"+nftid, data, 0644)
+			err = ioutil.WriteFile(path+"/"+txtColName+"_"+nftid, data, 0644)
 			if err != nil {
 				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
 			}
@@ -366,7 +369,7 @@ func createipfsjson(nftCfg *conf.NftConfig) {
 			nftJson.Attributes = attributes
 			nftid := strconv.Itoa(v.NftDfId)
 			data, _ := json.MarshalIndent(nftJson, "", "    ")
-			err = ioutil.WriteFile(path+"/"+txtDfName+"#"+nftid, data, 0644)
+			err = ioutil.WriteFile(path+"/"+txtDfName+"_"+nftid, data, 0644)
 			if err != nil {
 				panic(fmt.Sprint("WriteFile POLYNFT Error:", err))
 			}
@@ -384,7 +387,9 @@ func signNft(nftCfg *conf.NftConfig) {
 		panic(fmt.Sprintf("nftCfgPwd is null"))
 	}
 	colName := nftCfg.ColName
+	txtColName := strings.ReplaceAll(colName, " ", "_")
 	dfName := nftCfg.DfName
+	txtDfName := strings.ReplaceAll(dfName, " ", "_")
 	ipfsurl := nftCfg.IpfsUrl
 
 	privateKeyBytes := hexutil.MustDecode(nftCfg.Pwd)
@@ -409,7 +414,7 @@ func signNft(nftCfg *conf.NftConfig) {
 			colAccount := common.HexToAddress(v.ColAddress)
 			dfAccount := common.HexToAddress(v.DfAddress)
 			//ipfs uri
-			uri := ipfsurl + colName + "_" + strconv.Itoa(v.NftColId)
+			uri := ipfsurl + txtColName + "_" + strconv.Itoa(v.NftColId)
 			hash := crypto.Keccak256Hash(
 				common.BigToHash(colTokenId).Bytes(),
 				colAccount[:],
@@ -432,7 +437,7 @@ func signNft(nftCfg *conf.NftConfig) {
 			v.NftColsig = fmt.Sprintf("%x", sig)
 
 			if v.EffectAmountUsd.Cmp(big.NewInt(0)) > 0 {
-				uri := ipfsurl + dfName + "_" + strconv.Itoa(v.NftDfId)
+				uri := ipfsurl + txtDfName + "_" + strconv.Itoa(v.NftDfId)
 				hash := crypto.Keccak256Hash(
 					common.BigToHash(dfTokenId).Bytes(),
 					dfAccount[:],
@@ -486,8 +491,51 @@ func outSwitcheoUsers() {
 	}
 	defer file.Close()
 	write := bufio.NewWriter(file)
-	for _,addr:=range swthAddrs{
-		write.WriteString(addr+"\n")
+	for _, addr := range swthAddrs {
+		write.WriteString(addr + "\n")
 	}
 	write.Flush()
+}
+
+func addeffectdata() {
+	logs.Info("--------- start addeffectdata --------------------")
+	filePath := "./effect_mergedata.txt"
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("open fail = ", err)
+	}
+	defer file.Close()
+	reader := bufio.NewReader(file)
+
+	i, j := 0, 0
+	for {
+		str, _, err := reader.ReadLine()
+		if err == io.EOF {
+			break
+		}
+		i++
+		strlist := strings.Split(string(str), " ")
+		chainId, err := strconv.Atoi(strlist[0])
+		if err != nil {
+			panic("panic strconv.Atoi err")
+		}
+		amount, _ := new(big.Int).SetString(strlist[2], 10)
+		hash := strlist[1]
+		nftUser := new(models.NftUser)
+		err1 := db.Where("col_address = ?", hash).First(nftUser).Error
+		if err1 != nil {
+			continue
+		}
+		j++
+		nftUser.DfChainId = uint64(chainId)
+		nftUser.DfAddress = hash
+		nftUser.EffectAmountUsd = models.NewBigInt(amount)
+		err2 := db.Updates(nftUser).Error
+		if err2 != nil {
+			logs.Error("db Updates(nftUser) Error")
+		}
+
+	}
+	logs.Info(fmt.Sprintf("len:%d,reallen:%d", i, j))
+	logs.Info("--------- end addeffectdata --------------------")
 }

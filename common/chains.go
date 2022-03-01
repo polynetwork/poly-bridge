@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -679,6 +680,27 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return oasisSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
+	}
+}
+
+func GetNftOwner(chainId uint64,asset string, tokenId int) (owner common.Address, err error) {
+	switch chainId {
+	case basedef.ETHEREUM_CROSSCHAIN_ID:
+		return ethereumSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.MATIC_CROSSCHAIN_ID:
+		return maticSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.BSC_CROSSCHAIN_ID:
+		return bscSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.HECO_CROSSCHAIN_ID:
+		return hecoSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.OK_CROSSCHAIN_ID:
+		return okSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.ARBITRUM_CROSSCHAIN_ID:
+		return arbitrumSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.XDAI_CROSSCHAIN_ID:
+		return xdaiSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	default:
+		return common.Address{}, fmt.Errorf("has nat func with chain:%v",chainId)
 	}
 }
 
