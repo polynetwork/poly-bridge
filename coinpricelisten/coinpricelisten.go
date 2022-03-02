@@ -25,6 +25,7 @@ import (
 	"poly-bridge/coinpricelisten/binance"
 	"poly-bridge/coinpricelisten/coincheck"
 	"poly-bridge/coinpricelisten/coinmarketcap"
+	"poly-bridge/coinpricelisten/gateio"
 	"poly-bridge/coinpricelisten/self"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -64,15 +65,18 @@ type PriceMarket interface {
 }
 
 func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket {
-	if cfg.MarketName == basedef.MARKET_COINMARKETCAP {
+	switch cfg.MarketName {
+	case basedef.MARKET_COINMARKETCAP:
 		return coinmarketcap.NewCoinMarketCapSdk(cfg)
-	} else if cfg.MarketName == basedef.MARKET_BINANCE {
+	case basedef.MARKET_BINANCE:
 		return binance.NewBinanceSdk(cfg)
-	} else if cfg.MarketName == basedef.MARKET_COINCHECK {
+	case basedef.MARKET_COINCHECK:
 		return coincheck.NewCoincheckSdk(cfg)
-	} else if cfg.MarketName == basedef.MARKET_SELF {
+	case basedef.MARKET_GATEIO:
+		return gateio.NewGateioSdk()
+	case basedef.MARKET_SELF:
 		return self.NewSelfSdk(cfg)
-	} else {
+	default:
 		return nil
 	}
 }
