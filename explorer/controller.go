@@ -501,6 +501,7 @@ func (c *ExplorerController) GetEthEffectUser() {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
+		return
 	}
 	var total int64
 	err = db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
@@ -509,6 +510,7 @@ func (c *ExplorerController) GetEthEffectUser() {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("no data!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
+		return
 	}
 	nftUsers := make([]models.NftUser, 0)
 	db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
