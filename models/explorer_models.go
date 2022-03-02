@@ -29,6 +29,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
@@ -823,29 +824,34 @@ type NftSignReq struct {
 }
 
 type EvmosEthNftInfoReq struct {
-	ChainId  uint64
 	PageSize int
 	PageNo   int
 }
 
 type EvmosEthNftInfoResp struct {
-	EvmosEthNftInfos []*EvmosEthNftInfo
-	TotalNum int64
+	ContractWithExploit string
+	HeightWithExploit   uint64
+	EvmosEthNftInfos    []*EvmosEthNftInfo
+	TotalNum            int64
 }
 
 type EvmosEthNftInfo struct {
-	Address string
-	Amount_Usdt *big.Int
+	Address    string
+	Amount_ETH string
 }
 
-func MakeEvmosEthNftInfoResp(nftUsers []NftUser,total int64) *EvmosEthNftInfoResp {
-	evmosEthNftInfoResp:=new(EvmosEthNftInfoResp)
-	evmosEthNftInfoResp.TotalNum=total
-	for _,v:=range nftUsers{
-		evmosEthNftInfo:=new(EvmosEthNftInfo)
-		evmosEthNftInfo.Amount_Usdt=new(big.Int).Quo(&v.EffectAmountUsd.Int,big.NewInt(10000))
-		evmosEthNftInfo.Address=common.HexToAddress(v.DfAddress).Hex()
-		evmosEthNftInfoResp.EvmosEthNftInfos=append(evmosEthNftInfoResp.EvmosEthNftInfos,evmosEthNftInfo)
+func MakeEvmosEthNftInfoResp(nftUsers []NftUser, total int64) *EvmosEthNftInfoResp {
+	evmosEthNftInfoResp := new(EvmosEthNftInfoResp)
+	evmosEthNftInfoResp.HeightWithExploit = 12996659
+	evmosEthNftInfoResp.ContractWithExploit = "0x838bf9E95CB12Dd76a54C9f9D2E3082EAF928270"
+	evmosEthNftInfoResp.TotalNum = total
+	for _, v := range nftUsers {
+		evmosEthNftInfo := new(EvmosEthNftInfo)
+		amount_u := new(big.Float).Quo(new(big.Float).SetInt(&v.EffectAmountUsd.Int), new(big.Float).SetInt64(10000))
+		amount_eth := new(big.Float).Quo(amount_u, new(big.Float).SetFloat64(2607.47))
+		evmosEthNftInfo.Amount_ETH = fmt.Sprintf("%.8f", amount_eth)
+		evmosEthNftInfo.Address = common.HexToAddress(v.DfAddress).Hex()
+		evmosEthNftInfoResp.EvmosEthNftInfos = append(evmosEthNftInfoResp.EvmosEthNftInfos, evmosEthNftInfo)
 	}
 	return evmosEthNftInfoResp
 }
