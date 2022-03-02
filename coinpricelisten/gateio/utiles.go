@@ -20,7 +20,7 @@ func NewGateioSdk() *GateioSdk {
 }
 
 func (g *GateioSdk) GetMarketName() string {
-	return basedef.MARKET_COINCHECK
+	return basedef.MARKET_GATEIO
 }
 
 func (g *GateioSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
