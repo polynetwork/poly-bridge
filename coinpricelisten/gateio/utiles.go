@@ -46,5 +46,6 @@ func (g *GateioSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]flo
 		}
 		coinPrice[coin.PriceMarketName] = basedef.String2Float64(lastPriceString)
 	}
+	logs.Info("gateio coin price: %+v", coinPrice)
 	return coinPrice, nil
 }
