@@ -61,3 +61,7 @@ func (sdk *StarCoinSdk) GetTransactionInfoByHash(hash string) (*client.Transacti
 	}
 	return tx, nil
 }
+
+func (sdk *StarCoinSdk) GetGasPrice() (int, error) {
+	return sdk.client.GetGasUnitPrice(context.Background())
+}

@@ -148,3 +148,22 @@ func (pro *StarcoinSdkPro) GetTransactionInfoByHash(hash string) (*client.Transa
 	}
 	return nil, fmt.Errorf("all nodes are not working")
 }
+
+func (pro *StarcoinSdkPro) GetGasPrice() (int, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return 1, fmt.Errorf("all nodes are not working")
+	}
+
+	for info != nil {
+		gasPrice, err := info.sdk.GetGasPrice()
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return gasPrice, nil
+		}
+	}
+	return 1, fmt.Errorf("all nodes are not working")
+
+}
