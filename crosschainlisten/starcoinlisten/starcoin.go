@@ -123,7 +123,6 @@ func (s *StarcoinChainListen) GetBatchSize() uint64 {
 }
 
 func (s *StarcoinChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
-	logs.Info("Starcoin HandleNewBlock height=%s", height)
 	block, err := s.starcoinSdk.GetBlockByIndex(height)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
