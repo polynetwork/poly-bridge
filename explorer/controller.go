@@ -497,23 +497,23 @@ func (c *ExplorerController) GetEthEffectUser() {
 	var evmosEthNftInfoReq models.EvmosEthNftInfoReq
 	var err error
 	err = json.Unmarshal(c.Ctx.Input.RequestBody, &evmosEthNftInfoReq)
-	if  err != nil || evmosEthNftInfoReq.ChainId!=basedef.ETHEREUM_CROSSCHAIN_ID{
+	if err != nil || evmosEthNftInfoReq.PageSize > 500 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
 	var total int64
-	err=db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
+	err = db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
 		Count(&total).Error
-	if err!=nil{
+	if err != nil {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("no data!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
-	nftUsers:=make([]models.NftUser,0)
+	nftUsers := make([]models.NftUser, 0)
 	db.Model(&models.NftUser{}).Where("df_chain_id = ? and effect_amount_usd > 0", basedef.ETHEREUM_CROSSCHAIN_ID).
 		Limit(evmosEthNftInfoReq.PageSize).Offset((evmosEthNftInfoReq.PageNo - 1) * evmosEthNftInfoReq.PageSize).
 		Find(&nftUsers)
-	c.Data["json"] = models.MakeEvmosEthNftInfoResp(nftUsers,total)
+	c.Data["json"] = models.MakeEvmosEthNftInfoResp(nftUsers, total)
 	c.ServeJSON()
 }
