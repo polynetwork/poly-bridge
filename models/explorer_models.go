@@ -820,7 +820,6 @@ type NftSignReq struct {
 }
 
 type EvmosEthNftInfoReq struct {
-	ChainId  uint64
 	PageSize int
 	PageNo   int
 }
