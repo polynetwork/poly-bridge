@@ -590,6 +590,7 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
 			if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
 				srcTokenHashByteString := hex.EncodeToString([]byte(srcTokenHash))
+				logs.Info("srcTokenHashByteString =%s", srcTokenHashByteString)
 				if strings.Contains(srcTokenHashByteString, addrHash) {
 					return proxy, nil
 				}
