@@ -312,7 +312,7 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 					wrapperTx.Time = uint64(blockTime)
 					wrapperTx.DstChainId = ccEvent.ToChainId
 					wrapperTx.DstUser = models.FormatString(hex.EncodeToString(lockEvent.ToAddress))
-					wrapperTx.FeeTokenHash = "00000000000000000000000000000001::STC::STC"
+					wrapperTx.FeeTokenHash = "0x00000000000000000000000000000001::STC::STC"
 					wrapperTx.FeeAmount = models.NewBigInt(Uint128ToBigInt(&feeEvent.Fee))
 					wrapperTx.Status = basedef.STATE_SOURCE_DONE
 					wrapperTransactions = append(wrapperTransactions, wrapperTx)
