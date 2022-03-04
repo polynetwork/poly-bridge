@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/starcoinorg/starcoin-go/client"
+	"math/big"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -166,4 +167,23 @@ func (pro *StarcoinSdkPro) GetGasPrice() (int, error) {
 	}
 	return 1, fmt.Errorf("all nodes are not working")
 
+}
+
+func (pro *StarcoinSdkPro) GetBalance(tokenHash string, genesisAccountAddress string) (*big.Int, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		balance := new(big.Int).SetUint64(0)
+
+		balance, err := info.sdk.GetBalance(tokenHash, genesisAccountAddress)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return balance, nil
+		}
+	}
+	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }

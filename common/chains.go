@@ -549,7 +549,18 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 	}
 	if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
-		// todo starcoin
+		starcoinConfig := config.GetChainListenConfig(basedef.STARCOIN_CROSSCHAIN_ID)
+		if starcoinConfig == nil {
+			panic("starcoin chain is invalid")
+		}
+		for _, v := range starcoinConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := starcoinSdk.GetBalance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
 	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil

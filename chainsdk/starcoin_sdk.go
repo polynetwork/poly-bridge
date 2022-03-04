@@ -2,12 +2,23 @@ package chainsdk
 
 import (
 	"context"
+	"fmt"
 	"github.com/starcoinorg/starcoin-go/client"
+	"math/big"
 )
 
 type StarCoinSdk struct {
 	client *client.StarcoinClient
 	url    string
+}
+
+type LockTreasuryResource struct {
+	Raw  string `json:"raw"`
+	Json struct {
+		Token struct {
+			Value big.Int `json:"value"`
+		} `json:"token"`
+	} `json:"json"`
 }
 
 func NewStarCoinSdk(url string) *StarCoinSdk {
@@ -64,4 +75,21 @@ func (sdk *StarCoinSdk) GetTransactionInfoByHash(hash string) (*client.Transacti
 
 func (sdk *StarCoinSdk) GetGasPrice() (int, error) {
 	return sdk.client.GetGasUnitPrice(context.Background())
+}
+
+func (sdk *StarCoinSdk) GetBalance(tokenHash string, genesisAccountAddress string) (*big.Int, error) {
+	lockTreasuryTag := "::LockProxy::LockTreasury"
+	resType := fmt.Sprintf("%s%s<%s>", genesisAccountAddress, lockTreasuryTag, tokenHash)
+	getResOption := client.GetResourceOption{
+		Decode: true,
+	}
+	lockRes := new(LockTreasuryResource)
+	r, err := sdk.client.GetResource(context.Background(), genesisAccountAddress, resType, getResOption, lockRes)
+	if err != nil {
+		return new(big.Int).SetUint64(0), err
+	}
+	if lockRes, ok := r.(*LockTreasuryResource); ok && lockRes != nil {
+		return &lockRes.Json.Token.Value, nil
+	}
+	return new(big.Int).SetUint64(0), nil
 }
