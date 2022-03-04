@@ -179,6 +179,7 @@ func (pro *StarcoinSdkPro) GetBalance(tokenHash string, genesisAccountAddress st
 
 		balance, err := info.sdk.GetBalance(tokenHash, genesisAccountAddress)
 		if err != nil {
+			logs.Error("starcoin GetBalance [token hash=%s, genesisAccountAddress=%s] err=%s", tokenHash, genesisAccountAddress, err)
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
