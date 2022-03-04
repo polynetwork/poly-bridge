@@ -594,8 +594,7 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 				if strings.Contains(srcTokenHashByteString, addrHash) {
 					return proxy, nil
 				}
-			}
-			if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
+			} else if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
 				return proxy, nil
 			}
 		}
