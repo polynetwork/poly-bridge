@@ -715,9 +715,7 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return oasis1Sdk.Erc20TotalSupply(hash)
 	}
-	if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
-		// todo starcoin
-	}
+
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -769,9 +767,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return oasisSdk.Erc20Balance(hash, proxy)
 	case basedef.OASIS1_CROSSCHAIN_ID:
 		return oasis1Sdk.Erc20Balance(hash, proxy)
-	//	todo starcoin
-	//case basedef.STARCOIN_CROSSCHAIN_ID:
-	//	return starcoinSdk.
+	case basedef.STARCOIN_CROSSCHAIN_ID:
+		return starcoinSdk.GetBalance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
