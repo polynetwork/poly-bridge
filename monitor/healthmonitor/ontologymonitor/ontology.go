@@ -40,29 +40,44 @@ func (o *OntologyMonitor) GetChainName() string {
 }
 
 func (o *OntologyMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	var sdk *ontology_go_sdk.OntologySdk
+	var maxHeight uint32
+	isMaxHeight := func(height uint32) bool {
+		if height >= maxHeight {
+			maxHeight = height
+			return true
+		}
+		return false
+	}
+	for _, s := range o.sdks {
+		height, _ := s.GetCurrentBlockHeight()
+		if isMaxHeight(height) {
+			sdk = s
+		}
+	}
+
 	balanceSuccessMap := make(map[string]uint64, 0)
 	balanceFailedMap := make(map[string]string, 0)
 	var precision float64 = 1000000000
-	for _, sdk := range o.sdks {
-		for _, address := range o.monitorConfig.RelayerAccount.Address {
-			if _, ok := balanceSuccessMap[address]; ok {
-				continue
-			}
-			account, err := common.AddressFromBase58(address)
-			if err != nil {
-				balanceFailedMap[address] = err.Error()
-			}
-			balance, err := sdk.Native.Ong.BalanceOf(account)
 
-			if err != nil {
-				balanceFailedMap[address] = err.Error()
+	for _, address := range o.monitorConfig.RelayerAccount.Address {
+		if _, ok := balanceSuccessMap[address]; ok {
+			continue
+		}
+		account, err := common.AddressFromBase58(address)
+		if err != nil {
+			balanceFailedMap[address] = err.Error()
+		}
+		balance, err := sdk.Native.Ong.BalanceOf(account)
+
+		if err != nil {
+			balanceFailedMap[address] = err.Error()
+		} else {
+			if balance != 0 {
+				balanceSuccessMap[address] = balance
+				delete(balanceFailedMap, address)
 			} else {
-				if balance != 0 {
-					balanceSuccessMap[address] = balance
-					delete(balanceFailedMap, address)
-				} else {
-					balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
-				}
+				balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
 			}
 		}
 	}
