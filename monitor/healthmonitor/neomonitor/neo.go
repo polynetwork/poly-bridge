@@ -47,30 +47,44 @@ func (n *NeoMonitor) GetChainName() string {
 }
 
 func (n *NeoMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
+	var sdk *chainsdk.NeoSdk
+	var maxHeight uint64
+	isMaxHeight := func(height uint64) bool {
+		if height >= maxHeight {
+			maxHeight = height
+			return true
+		}
+		return false
+	}
+	for _, s := range n.sdks {
+		height, _ := s.GetBlockCount()
+		if isMaxHeight(height) {
+			sdk = s
+		}
+	}
+
 	balanceSuccessMap := make(map[string]float64, 0)
 	balanceFailedMap := make(map[string]string, 0)
 	var precision float64 = 1
-	for _, sdk := range n.sdks {
-		for _, address := range n.monitorConfig.RelayerAccount.Address {
-			if _, ok := balanceSuccessMap[address]; ok {
-				continue
-			}
-			txBuilder := &tx.TransactionBuilder{
-				EndPoint: sdk.GetUrl(),
-				Client:   sdk.GetClient(),
-			}
-			walletHelper := wallet.NewWalletHelper(txBuilder, nil)
-			_, gasBalance, err := walletHelper.GetBalance(address)
+	for _, address := range n.monitorConfig.RelayerAccount.Address {
+		if _, ok := balanceSuccessMap[address]; ok {
+			continue
+		}
+		txBuilder := &tx.TransactionBuilder{
+			EndPoint: sdk.GetUrl(),
+			Client:   sdk.GetClient(),
+		}
+		walletHelper := wallet.NewWalletHelper(txBuilder, nil)
+		_, gasBalance, err := walletHelper.GetBalance(address)
 
-			if err != nil {
-				balanceFailedMap[address] = err.Error()
+		if err != nil {
+			balanceFailedMap[address] = err.Error()
+		} else {
+			if gasBalance != 0 {
+				balanceSuccessMap[address] = gasBalance
+				delete(balanceFailedMap, address)
 			} else {
-				if gasBalance != 0 {
-					balanceSuccessMap[address] = gasBalance
-					delete(balanceFailedMap, address)
-				} else {
-					balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
-				}
+				balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
 			}
 		}
 	}

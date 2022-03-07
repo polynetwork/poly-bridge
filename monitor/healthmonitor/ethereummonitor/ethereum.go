@@ -56,24 +56,38 @@ func (e *EthereumHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccou
 	case basedef.O3_CROSSCHAIN_ID:
 		return nil, nil
 	}
+	var sdk *chainsdk.EthereumSdk
+	var maxHeight uint64
+	isMaxHeight := func(height uint64) bool {
+		if height >= maxHeight {
+			maxHeight = height
+			return true
+		}
+		return false
+	}
+	for _, s := range e.sdks {
+		height, _ := s.GetCurrentBlockHeight()
+		if isMaxHeight(height) {
+			sdk = s
+		}
+	}
+
 	balanceSuccessMap := make(map[string]*big.Int, 0)
 	balanceFailedMap := make(map[string]string, 0)
 	var precision float64 = 1000000000000000000
-	for _, sdk := range e.sdks {
-		for _, address := range e.monitorConfig.RelayerAccount.Address {
-			if _, ok := balanceSuccessMap[address]; ok {
-				continue
-			}
-			balance, err := sdk.GetNativeBalance(common.HexToAddress(address))
-			if err != nil {
-				balanceFailedMap[address] = err.Error()
+	for _, address := range e.monitorConfig.RelayerAccount.Address {
+		if _, ok := balanceSuccessMap[address]; ok {
+			continue
+		}
+		balance, err := sdk.GetNativeBalance(common.HexToAddress(address))
+		if err != nil {
+			balanceFailedMap[address] = err.Error()
+		} else {
+			if balance != nil && balance.Uint64() != 0 {
+				balanceSuccessMap[address] = balance
+				delete(balanceFailedMap, address)
 			} else {
-				if balance != nil && balance.Uint64() != 0 {
-					balanceSuccessMap[address] = balance
-					delete(balanceFailedMap, address)
-				} else {
-					balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
-				}
+				balanceFailedMap[address] = "balance is 0 or all nodes are unavailable"
 			}
 		}
 	}

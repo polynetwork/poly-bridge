@@ -51,37 +51,51 @@ func (n *Neo3Monitor) GetChainName() string {
 
 func (n *Neo3Monitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
 	var precision float64 = 100000000
+	var sdk *chainsdk.Neo3Sdk
+	var maxHeight uint64
+	isMaxHeight := func(height uint64) bool {
+		if height >= maxHeight {
+			maxHeight = height
+			return true
+		}
+		return false
+	}
+	for _, s := range n.sdks {
+		height, _ := s.GetBlockCount()
+		if isMaxHeight(height) {
+			sdk = s
+		}
+	}
+
 	balanceSuccessMap := make(map[string]*big.Int, 0)
 	balanceFailedMap := make(map[string]string, 0)
-	for _, sdk := range n.sdks {
-		for _, account := range n.monitorConfig.RelayerAccount.Neo3Account {
-			if _, ok := balanceSuccessMap[account.Address]; ok {
-				continue
-			}
-			keypair, err := keys.NewKeyPairFromNEP2(account.Key, account.Pwd, helper.DefaultAddressVersion, keys.N, keys.R, keys.P)
-			if err != nil {
-				balanceFailedMap[account.Address] = err.Error()
-				continue
-			}
-			wh, err := wallet.NewWalletHelperFromPrivateKey(sdk.GetClient(), keypair.PrivateKey)
-			if err != nil {
-				balanceFailedMap[account.Address] = err.Error()
-			}
-			accountAndBalances, err := wh.GetAccountAndBalance(tx.GasToken)
-			total := big.NewInt(0)
+	for _, account := range n.monitorConfig.RelayerAccount.Neo3Account {
+		if _, ok := balanceSuccessMap[account.Address]; ok {
+			continue
+		}
+		keypair, err := keys.NewKeyPairFromNEP2(account.Key, account.Pwd, helper.DefaultAddressVersion, keys.N, keys.R, keys.P)
+		if err != nil {
+			balanceFailedMap[account.Address] = err.Error()
+			continue
+		}
+		wh, err := wallet.NewWalletHelperFromPrivateKey(sdk.GetClient(), keypair.PrivateKey)
+		if err != nil {
+			balanceFailedMap[account.Address] = err.Error()
+		}
+		accountAndBalances, err := wh.GetAccountAndBalance(tx.GasToken)
+		total := big.NewInt(0)
 
-			if err != nil {
-				balanceFailedMap[account.Address] = err.Error()
+		if err != nil {
+			balanceFailedMap[account.Address] = err.Error()
+		} else {
+			for _, balance := range accountAndBalances {
+				total = total.Add(total, balance.Value)
+			}
+			if total.Uint64() != 0 {
+				balanceSuccessMap[account.Address] = total
+				delete(balanceFailedMap, account.Address)
 			} else {
-				for _, balance := range accountAndBalances {
-					total = total.Add(total, balance.Value)
-				}
-				if total.Uint64() != 0 {
-					balanceSuccessMap[account.Address] = total
-					delete(balanceFailedMap, account.Address)
-				} else {
-					balanceFailedMap[account.Address] = "balance is 0 or all nodes are unavailable"
-				}
+				balanceFailedMap[account.Address] = "balance is 0 or all nodes are unavailable"
 			}
 		}
 	}
