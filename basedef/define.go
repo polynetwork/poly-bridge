@@ -12,6 +12,7 @@ var (
 	MARKET_BINANCE       = "binance"
 	MARKET_HUOBI         = "huobi"
 	MARKET_COINCHECK     = "coincheck"
+	MARKET_GATEIO        = "gateio"
 	MARKET_SELF          = "self"
 )
 

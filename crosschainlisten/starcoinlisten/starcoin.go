@@ -2,6 +2,7 @@ package starcoinlisten
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/novifinancial/serde-reflection/serde-generate/runtime/golang/serde"
@@ -166,7 +167,8 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 		}
 
 		starcoinEventsMap := make(map[string]*StarcoinEvents, 0)
-		for _, event := range starcoinEvents {
+		for i, _ := range starcoinEvents {
+			event := starcoinEvents[i]
 			srcHash := event.TransactionHash[2:]
 			var starcoinEvents *StarcoinEvents
 			if evts, ok := starcoinEventsMap[srcHash]; ok {
@@ -197,7 +199,11 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 				txFee = models.NewBigIntFromInt(gasUsed)
 			}
 
-			// lock
+			var ccEvent *CrossChainEvent
+			var lockEvent *LockEvent
+			var feeEvent *CrossChainFeeLockEvent
+			var executeTxEvent *VerifyHeaderAndExecuteTxEvent
+			var unlockEvent *UnlockEvent
 			if evts.crossChainEvent != nil {
 				// ccm lock event
 				crossChainEventData, err := HexToBytes(evts.crossChainEvent.Data)
@@ -205,33 +211,68 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 					logs.Error("starcoin crossChainEvent.Data HexToBytes err=%s", err)
 					continue
 				}
-				ccEvent, err := BcsDeserializeCrossChainEvent(crossChainEventData)
+				ccEvent, err = BcsDeserializeCrossChainEvent(crossChainEventData)
 				if err != nil {
 					logs.Error("starcoin BcsDeserializeCrossChainEvent err=%s", err)
 				}
-
+			}
+			if evts.lockEvent != nil {
 				// lock event
 				lockEventData, err := HexToBytes(evts.lockEvent.Data)
 				if err != nil {
 					logs.Error("starcoin lockEvent.Data HexToBytes err=%s", err)
 					continue
 				}
-				lockEvent, err := BcsDeserializeLockEvent(lockEventData)
+				lockEvent, err = BcsDeserializeLockEvent(lockEventData)
 				if err != nil {
 					logs.Error("starcoin BcsDeserializeLockEvent err=%s", err)
 				}
-
+			}
+			if evts.crossChainFeeLockEvent != nil {
 				// fee event
 				feeEventData, err := HexToBytes(evts.crossChainFeeLockEvent.Data)
 				if err != nil {
 					logs.Error("starcoin crossChainFeeLockEvent.Data HexToBytes err=%s", err)
 					continue
 				}
-				feeEvent, err := BcsDeserializeCrossChainFeeLockEvent(feeEventData)
+				feeEvent, err = BcsDeserializeCrossChainFeeLockEvent(feeEventData)
 				if err != nil {
 					logs.Error("starcoin BcsDeserializeCrossChainFeeLockEvent err=%s", err)
 				}
+			}
+			if evts.executeTxEvent != nil {
+				// ccm execute event
+				executeTxEventData, err := HexToBytes(evts.executeTxEvent.Data)
+				if err != nil {
+					logs.Error("starcoin executeTxEvent.Data HexToBytes err=%s", err)
+					continue
+				}
+				executeTxEvent, err = BcsDeserializeVerifyHeaderAndExecuteTxEvent(executeTxEventData)
+				if err != nil {
+					logs.Error("starcoin BcsDeserializeVerifyHeaderAndExecuteTxEvent err=%s", err)
+				}
+			}
+			if evts.unlockEvent != nil {
+				// unlock event
+				unlockEventData, err := HexToBytes(evts.unlockEvent.Data)
+				if err != nil {
+					logs.Error("starcoin unlockEvent.Data HexToBytes err=%s", err)
+					continue
+				}
+				unlockEvent, err = BcsDeserializeUnlockEvent(unlockEventData)
+				if err != nil {
+					logs.Error("starcoin BcsDeserializeUnlockEvent err=%s", err)
+				}
+			}
+			ccEventJson, _ := json.Marshal(ccEvent)
+			lockEventJson, _ := json.Marshal(lockEvent)
+			feeEventJson, _ := json.Marshal(feeEvent)
+			executeTxEventJson, _ := json.Marshal(executeTxEvent)
+			unlockEventJson, _ := json.Marshal(unlockEvent)
+			logs.Info("starcoin height=%d, ccEvent=%s, lockEvent=%s, feeEvent=%s, executeTxEvent=%s, unlockEvent=%s",
+				height, ccEventJson, lockEventJson, feeEventJson, executeTxEventJson, unlockEventJson)
 
+			if ccEvent != nil && lockEvent != nil {
 				// source transfer
 				srcTransfer := &models.SrcTransfer{}
 				srcTransfer.Time = uint64(blockTime)
@@ -242,7 +283,7 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 				srcTransfer.To = models.FormatString(contract)
 				srcTransfer.Asset = models.FormatString(GetTokenCodeString(&lockEvent.FromAssetHash))
 				srcTransfer.Amount = models.NewBigInt(Uint128ToBigInt(&lockEvent.Amount))
-				srcTransfer.DstAsset = models.FormatString(string(lockEvent.ToAssetHash))
+				srcTransfer.DstAsset = models.FormatString(hex.EncodeToString(lockEvent.ToAssetHash))
 				srcTransfer.DstUser = models.FormatString(hex.EncodeToString(lockEvent.ToAddress))
 
 				// source transaction
@@ -261,45 +302,24 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 				srcTx.Param = hex.EncodeToString(ccEvent.RawData)
 				srcTransactions = append(srcTransactions, srcTx)
 
-				// wrapper transaction
-				wrapperTx := &models.WrapperTransaction{}
-				wrapperTx.Hash = hash
-				wrapperTx.User = models.FormatString(hex.EncodeToString(lockEvent.FromAddress))
-				wrapperTx.SrcChainId = s.GetChainId()
-				wrapperTx.BlockHeight = height
-				wrapperTx.Time = uint64(blockTime)
-				wrapperTx.DstChainId = ccEvent.ToChainId
-				wrapperTx.DstUser = models.FormatString(hex.EncodeToString(lockEvent.ToAddress))
-				wrapperTx.FeeTokenHash = "00000000000000000000000000000001::STC::STC"
-				wrapperTx.FeeAmount = models.NewBigInt(Uint128ToBigInt(&feeEvent.Fee))
-				wrapperTx.Status = basedef.STATE_SOURCE_DONE
-				wrapperTransactions = append(wrapperTransactions, wrapperTx)
+				if feeEvent != nil {
+					// wrapper transaction
+					wrapperTx := &models.WrapperTransaction{}
+					wrapperTx.Hash = hash
+					wrapperTx.User = models.FormatString(hex.EncodeToString(lockEvent.FromAddress))
+					wrapperTx.SrcChainId = s.GetChainId()
+					wrapperTx.BlockHeight = height
+					wrapperTx.Time = uint64(blockTime)
+					wrapperTx.DstChainId = ccEvent.ToChainId
+					wrapperTx.DstUser = models.FormatString(hex.EncodeToString(lockEvent.ToAddress))
+					wrapperTx.FeeTokenHash = "0x00000000000000000000000000000001::STC::STC"
+					wrapperTx.FeeAmount = models.NewBigInt(Uint128ToBigInt(&feeEvent.Fee))
+					wrapperTx.Status = basedef.STATE_SOURCE_DONE
+					wrapperTransactions = append(wrapperTransactions, wrapperTx)
+				}
 			}
 
-			// unlock
-			if evts.executeTxEvent != nil {
-				// ccm execute event
-				executeTxEventData, err := HexToBytes(evts.executeTxEvent.Data)
-				if err != nil {
-					logs.Error("starcoin executeTxEvent.Data HexToBytes err=%s", err)
-					continue
-				}
-				executeTxEvent, err := BcsDeserializeVerifyHeaderAndExecuteTxEvent(executeTxEventData)
-				if err != nil {
-					logs.Error("starcoin BcsDeserializeVerifyHeaderAndExecuteTxEvent err=%s", err)
-				}
-
-				// unlock event
-				unlockEventData, err := HexToBytes(evts.unlockEvent.Data)
-				if err != nil {
-					logs.Error("starcoin unlockEvent.Data HexToBytes err=%s", err)
-					continue
-				}
-				unlockEvent, err := BcsDeserializeUnlockEvent(unlockEventData)
-				if err != nil {
-					logs.Error("starcoin BcsDeserializeLockEvent err=%s", err)
-				}
-
+			if unlockEvent != nil && executeTxEvent != nil {
 				// dst transfer
 				dstTransfer := &models.DstTransfer{}
 				dstTransfer.TxHash = hash

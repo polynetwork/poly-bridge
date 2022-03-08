@@ -26,17 +26,16 @@ func Uint128ToBigInt(u *serde.Uint128) *big.Int {
 	return new(big.Int).SetBytes(append(h.Bytes(), l.Bytes()...))
 }
 
-func BcsDeserializeCrossChainEvent(input []byte) (CrossChainEvent, error) {
+func BcsDeserializeCrossChainEvent(input []byte) (*CrossChainEvent, error) {
 	if input == nil {
-		var obj CrossChainEvent
-		return obj, fmt.Errorf("cannot deserialize null array")
+		return nil, fmt.Errorf("cannot deserialize null array")
 	}
 	deserializer := bcs.NewDeserializer(input)
 	obj, err := DeserializeCrossChainEvent(deserializer)
 	if err == nil && deserializer.GetBufferOffset() < uint64(len(input)) {
-		return obj, fmt.Errorf("some input bytes were not read")
+		return nil, fmt.Errorf("some input bytes were not read")
 	}
-	return obj, err
+	return &obj, err
 }
 
 func DeserializeCrossChainEvent(deserializer serde.Deserializer) (CrossChainEvent, error) {
@@ -78,17 +77,16 @@ func DeserializeCrossChainEvent(deserializer serde.Deserializer) (CrossChainEven
 	return obj, nil
 }
 
-func BcsDeserializeLockEvent(input []byte) (LockEvent, error) {
+func BcsDeserializeLockEvent(input []byte) (*LockEvent, error) {
 	if input == nil {
-		var obj LockEvent
-		return obj, fmt.Errorf("Cannot deserialize null array")
+		return nil, fmt.Errorf("Cannot deserialize null array")
 	}
 	deserializer := bcs.NewDeserializer(input)
 	obj, err := DeserializeLockEvent(deserializer)
 	if err == nil && deserializer.GetBufferOffset() < uint64(len(input)) {
-		return obj, fmt.Errorf("Some input bytes were not read")
+		return nil, fmt.Errorf("Some input bytes were not read")
 	}
-	return obj, err
+	return &obj, err
 }
 
 func DeserializeLockEvent(deserializer serde.Deserializer) (LockEvent, error) {
@@ -180,17 +178,16 @@ func deserialize_array16_u8_array(deserializer serde.Deserializer) ([16]uint8, e
 	return obj, nil
 }
 
-func BcsDeserializeCrossChainFeeLockEvent(input []byte) (CrossChainFeeLockEvent, error) {
+func BcsDeserializeCrossChainFeeLockEvent(input []byte) (*CrossChainFeeLockEvent, error) {
 	if input == nil {
-		var obj CrossChainFeeLockEvent
-		return obj, fmt.Errorf("Cannot deserialize null array")
+		return nil, fmt.Errorf("Cannot deserialize null array")
 	}
 	deserializer := bcs.NewDeserializer(input)
 	obj, err := DeserializeCrossChainFeeLockEvent(deserializer)
 	if err == nil && deserializer.GetBufferOffset() < uint64(len(input)) {
-		return obj, fmt.Errorf("Some input bytes were not read")
+		return nil, fmt.Errorf("Some input bytes were not read")
 	}
-	return obj, err
+	return &obj, err
 }
 
 func DeserializeCrossChainFeeLockEvent(deserializer serde.Deserializer) (CrossChainFeeLockEvent, error) {
@@ -237,17 +234,16 @@ func DeserializeCrossChainFeeLockEvent(deserializer serde.Deserializer) (CrossCh
 	return obj, nil
 }
 
-func BcsDeserializeVerifyHeaderAndExecuteTxEvent(input []byte) (VerifyHeaderAndExecuteTxEvent, error) {
+func BcsDeserializeVerifyHeaderAndExecuteTxEvent(input []byte) (*VerifyHeaderAndExecuteTxEvent, error) {
 	if input == nil {
-		var obj VerifyHeaderAndExecuteTxEvent
-		return obj, fmt.Errorf("Cannot deserialize null array")
+		return nil, fmt.Errorf("Cannot deserialize null array")
 	}
 	deserializer := bcs.NewDeserializer(input)
 	obj, err := DeserializeVerifyHeaderAndExecuteTxEvent(deserializer)
 	if err == nil && deserializer.GetBufferOffset() < uint64(len(input)) {
-		return obj, fmt.Errorf("Some input bytes were not read")
+		return nil, fmt.Errorf("Some input bytes were not read")
 	}
-	return obj, err
+	return &obj, err
 }
 
 func DeserializeVerifyHeaderAndExecuteTxEvent(deserializer serde.Deserializer) (VerifyHeaderAndExecuteTxEvent, error) {
@@ -279,17 +275,16 @@ func DeserializeVerifyHeaderAndExecuteTxEvent(deserializer serde.Deserializer) (
 	return obj, nil
 }
 
-func BcsDeserializeUnlockEvent(input []byte) (UnlockEvent, error) {
+func BcsDeserializeUnlockEvent(input []byte) (*UnlockEvent, error) {
 	if input == nil {
-		var obj UnlockEvent
-		return obj, fmt.Errorf("Cannot deserialize null array")
+		return nil, fmt.Errorf("Cannot deserialize null array")
 	}
 	deserializer := bcs.NewDeserializer(input)
 	obj, err := DeserializeUnlockEvent(deserializer)
 	if err == nil && deserializer.GetBufferOffset() < uint64(len(input)) {
-		return obj, fmt.Errorf("Some input bytes were not read")
+		return nil, fmt.Errorf("Some input bytes were not read")
 	}
-	return obj, err
+	return &obj, err
 }
 
 func DeserializeUnlockEvent(deserializer serde.Deserializer) (UnlockEvent, error) {

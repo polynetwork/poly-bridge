@@ -10,6 +10,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/devfans/cogroup v1.1.0
 	github.com/ethereum/go-ethereum v1.9.25
+	github.com/gateio/gateapi-go/v6 v6.23.2
 	github.com/go-redis/redis v6.14.2+incompatible
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
