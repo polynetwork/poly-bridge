@@ -243,6 +243,15 @@
           "Url": "https://barnard-seed.starcoin.org"
         }
       ]
+    },
+    {
+      "ChainName": "Harmony",
+      "ChainId": 800,
+      "Nodes": [
+        {
+          "Url": "https://api.s0.b.hmny.io"
+        }
+      ]
     }
   ],
   "ChainListenConfig": [
@@ -606,6 +615,21 @@
       "ProxyContract": [
         "0x18351d311d32201149a4df2a9fc2db8a"
       ]
+    },
+    {
+      "ChainName": "Harmony",
+      "ChainId": 800,
+      "ListenSlot": 1,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "c927f0EF4f25E19a40F0Cb34da841B45c13649fd"
+      ],
+      "CCMContract": "55a59c57a133d1c999b3Eaf5B16ad5c1F2e365c8",
+      "ProxyContract": [
+        "0AF53d318De279C8e67FcC6914acF387CFaA8B7E"
+      ]
     }
   ],
   "StatsConfig": {
@@ -772,6 +796,13 @@
       "ChainId": 318,
       "ChainName": "Starcoin",
       "GasLimit": 18000000,,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 800,
+      "ChainName": "Harmony",
+      "GasLimit": 120000,
       "ProxyFee": 120,
       "MinFee": 80
     }

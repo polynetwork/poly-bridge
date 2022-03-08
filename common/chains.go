@@ -37,6 +37,7 @@ var (
 	oasisSdk      *chainsdk.EthereumSdkPro
 	oasis1Sdk     *chainsdk.EthereumSdkPro
 	starcoinSdk   *chainsdk.StarcoinSdkPro
+	harmonySdk    *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -257,6 +258,15 @@ func newChainSdks(config *conf.Config) {
 		urls := starcoinConfig.GetNodesUrl()
 		starcoinSdk = chainsdk.NewStarcoinSdkPro(urls, starcoinConfig.ListenSlot, starcoinConfig.ChainId)
 		sdkMap[basedef.STARCOIN_CROSSCHAIN_ID] = starcoinSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.HARMONY_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("harmony chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		harmonySdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.HARMONY_CROSSCHAIN_ID] = harmonySdk
 	}
 }
 
@@ -562,6 +572,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.HARMONY_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.HARMONY_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("harmony chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := harmonySdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -769,6 +793,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return oasis1Sdk.Erc20Balance(hash, proxy)
 	case basedef.STARCOIN_CROSSCHAIN_ID:
 		return starcoinSdk.GetBalance(hash, proxy)
+	case basedef.HARMONY_CROSSCHAIN_ID:
+		return harmonySdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
