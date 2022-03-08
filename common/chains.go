@@ -34,6 +34,7 @@ var (
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	oasisSdk      *chainsdk.EthereumSdkPro
+	harmonySdk    *chainsdk.EthereumSdkPro
 	kccSdk        *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
@@ -230,6 +231,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		oasisSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.OASIS_CROSSCHAIN_ID] = oasisSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.HARMONY_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("harmony chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		harmonySdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.HARMONY_CROSSCHAIN_ID] = harmonySdk
 	}
 	{
 		chainConfig := config.GetChainListenConfig(basedef.KCC_CROSSCHAIN_ID)
@@ -502,6 +512,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.HARMONY_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.HARMONY_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("harmony chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := harmonySdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if chainId == basedef.KCC_CROSSCHAIN_ID {
 		chainConfig := config.GetChainListenConfig(basedef.KCC_CROSSCHAIN_ID)
 		if chainConfig == nil {
@@ -709,6 +733,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return rinkebySdk.Erc20Balance(hash, proxy)
 	case basedef.OASIS_CROSSCHAIN_ID:
 		return oasisSdk.Erc20Balance(hash, proxy)
+	case basedef.HARMONY_CROSSCHAIN_ID:
+		return harmonySdk.Erc20Balance(hash, proxy)
 	case basedef.KCC_CROSSCHAIN_ID:
 		return kccSdk.Erc20Balance(hash, proxy)
 	default:
