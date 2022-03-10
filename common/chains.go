@@ -34,6 +34,7 @@ var (
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	oasisSdk      *chainsdk.EthereumSdkPro
+	hscSdk        *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -229,6 +230,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		oasisSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.OASIS_CROSSCHAIN_ID] = oasisSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.HSC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("chain HSC is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		hscSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.HSC_CROSSCHAIN_ID] = hscSdk
 	}
 }
 
@@ -492,6 +502,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.HSC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.HSC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("hsc chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := hscSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -631,6 +655,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return oasisSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.HSC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.HSC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("hsc chain GetTotalSupply invalid")
+		}
+		return hscSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -678,12 +709,14 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return rinkebySdk.Erc20Balance(hash, proxy)
 	case basedef.OASIS_CROSSCHAIN_ID:
 		return oasisSdk.Erc20Balance(hash, proxy)
+	case basedef.HSC_CROSSCHAIN_ID:
+		return hscSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
 }
 
-func GetNftOwner(chainId uint64,asset string, tokenId int) (owner common.Address, err error) {
+func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Address, err error) {
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		return ethereumSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
@@ -700,7 +733,7 @@ func GetNftOwner(chainId uint64,asset string, tokenId int) (owner common.Address
 	case basedef.XDAI_CROSSCHAIN_ID:
 		return xdaiSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	default:
-		return common.Address{}, fmt.Errorf("has nat func with chain:%v",chainId)
+		return common.Address{}, fmt.Errorf("has nat func with chain:%v", chainId)
 	}
 }
 
