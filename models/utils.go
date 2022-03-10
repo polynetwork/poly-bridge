@@ -198,9 +198,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.OASIS_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ROSE"
-	case basedef.OASIS1_CROSSCHAIN_ID:
+	case basedef.HSC_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
-		return fee_new.Div(precision_new).String() + " ROSE1"
+		return fee_new.Div(precision_new).String() + " HOO"
 	case basedef.HARMONY_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ONE"

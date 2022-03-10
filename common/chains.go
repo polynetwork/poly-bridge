@@ -38,6 +38,7 @@ var (
 	oasis1Sdk     *chainsdk.EthereumSdkPro
 	starcoinSdk   *chainsdk.StarcoinSdkPro
 	harmonySdk    *chainsdk.EthereumSdkPro
+	hscSdk        *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -215,15 +216,6 @@ func newChainSdks(config *conf.Config) {
 		sdkMap[basedef.PIXIE_CROSSCHAIN_ID] = pixieSdk
 	}
 	{
-		rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
-		if rinkebyConfig == nil {
-			panic("metis chain is invalid")
-		}
-		urls := rinkebyConfig.GetNodesUrl()
-		rinkebySdk = chainsdk.NewEthereumSdkPro(urls, rinkebyConfig.ListenSlot, rinkebyConfig.ChainId)
-		sdkMap[basedef.RINKEBY_CROSSCHAIN_ID] = rinkebySdk
-	}
-	{
 		bobaConfig := config.GetChainListenConfig(basedef.BOBA_CROSSCHAIN_ID)
 		if bobaConfig == nil {
 			panic("boba chain is invalid")
@@ -231,6 +223,17 @@ func newChainSdks(config *conf.Config) {
 		urls := bobaConfig.GetNodesUrl()
 		bobaSdk = chainsdk.NewEthereumSdkPro(urls, bobaConfig.ListenSlot, bobaConfig.ChainId)
 		sdkMap[basedef.BOBA_CROSSCHAIN_ID] = bobaSdk
+	}
+	if basedef.ENV == basedef.TESTNET {
+		{
+			rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
+			if rinkebyConfig == nil {
+				panic("rinkeby chain is invalid")
+			}
+			urls := rinkebyConfig.GetNodesUrl()
+			rinkebySdk = chainsdk.NewEthereumSdkPro(urls, rinkebyConfig.ListenSlot, rinkebyConfig.ChainId)
+			sdkMap[basedef.RINKEBY_CROSSCHAIN_ID] = rinkebySdk
+		}
 	}
 	{
 		chainConfig := config.GetChainListenConfig(basedef.OASIS_CROSSCHAIN_ID)
@@ -242,13 +245,13 @@ func newChainSdks(config *conf.Config) {
 		sdkMap[basedef.OASIS_CROSSCHAIN_ID] = oasisSdk
 	}
 	{
-		chainConfig := config.GetChainListenConfig(basedef.OASIS1_CROSSCHAIN_ID)
+		chainConfig := config.GetChainListenConfig(basedef.HSC_CROSSCHAIN_ID)
 		if chainConfig == nil {
-			panic("oasis1 chain is invalid")
+			panic("chain HSC is invalid")
 		}
 		urls := chainConfig.GetNodesUrl()
-		oasis1Sdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
-		sdkMap[basedef.OASIS1_CROSSCHAIN_ID] = oasis1Sdk
+		hscSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.HSC_CROSSCHAIN_ID] = hscSdk
 	}
 	{
 		starcoinConfig := config.GetChainListenConfig(basedef.STARCOIN_CROSSCHAIN_ID)
@@ -544,16 +547,16 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
-	if chainId == basedef.OASIS1_CROSSCHAIN_ID {
-		chainConfig := config.GetChainListenConfig(basedef.OASIS1_CROSSCHAIN_ID)
+	if chainId == basedef.HSC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.HSC_CROSSCHAIN_ID)
 		if chainConfig == nil {
-			panic("oasis1 chain is invalid")
+			panic("hsc chain is invalid")
 		}
 		for _, v := range chainConfig.ProxyContract {
 			if len(strings.TrimSpace(v)) == 0 {
 				continue
 			}
-			balance, err := oasis1Sdk.Erc20Balance(hash, v)
+			balance, err := hscSdk.Erc20Balance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
 		}
@@ -732,14 +735,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return oasisSdk.Erc20TotalSupply(hash)
 	}
-	if chainId == basedef.OASIS1_CROSSCHAIN_ID {
-		chainConfig := config.GetChainListenConfig(basedef.OASIS1_CROSSCHAIN_ID)
+	if chainId == basedef.HSC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.HSC_CROSSCHAIN_ID)
 		if chainConfig == nil {
-			panic("oasis1 chain GetTotalSupply invalid")
+			panic("hsc chain GetTotalSupply invalid")
 		}
-		return oasis1Sdk.Erc20TotalSupply(hash)
+		return hscSdk.Erc20TotalSupply(hash)
 	}
-
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -789,27 +791,18 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return bobaSdk.Erc20Balance(hash, proxy)
 	case basedef.OASIS_CROSSCHAIN_ID:
 		return oasisSdk.Erc20Balance(hash, proxy)
-	case basedef.OASIS1_CROSSCHAIN_ID:
-		return oasis1Sdk.Erc20Balance(hash, proxy)
 	case basedef.STARCOIN_CROSSCHAIN_ID:
 		return starcoinSdk.GetBalance(hash, proxy)
 	case basedef.HARMONY_CROSSCHAIN_ID:
 		return harmonySdk.Erc20Balance(hash, proxy)
+	case basedef.HSC_CROSSCHAIN_ID:
+		return hscSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
 }
 
-func GetBoundLockProxy(lockProxies []string, srcTokenHash, DstTokenHash string, srcChainId, dstChainId uint64) (string, error) {
-	if sdk, exist := sdkMap[dstChainId]; exist {
-		if value, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
-			return value.GetBoundLockProxy(lockProxies, srcTokenHash, DstTokenHash, srcChainId)
-		}
-	}
-	return "", fmt.Errorf("chain %d is not ethereum based", dstChainId)
-}
-
-func GetNftOwner(chainId uint64,asset string, tokenId int) (owner common.Address, err error) {
+func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Address, err error) {
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		return ethereumSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
@@ -826,6 +819,15 @@ func GetNftOwner(chainId uint64,asset string, tokenId int) (owner common.Address
 	case basedef.XDAI_CROSSCHAIN_ID:
 		return xdaiSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	default:
-		return common.Address{}, fmt.Errorf("has nat func with chain:%v",chainId)
+		return common.Address{}, fmt.Errorf("has nat func with chain:%v", chainId)
 	}
+}
+
+func GetBoundLockProxy(lockProxies []string, srcTokenHash, DstTokenHash string, srcChainId, dstChainId uint64) (string, error) {
+	if sdk, exist := sdkMap[dstChainId]; exist {
+		if value, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
+			return value.GetBoundLockProxy(lockProxies, srcTokenHash, DstTokenHash, srcChainId)
+		}
+	}
+	return "", fmt.Errorf("chain %d is not ethereum based", dstChainId)
 }

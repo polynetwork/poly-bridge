@@ -386,10 +386,25 @@ func initPolyProxy() {
 type NftConfig struct {
 	Description string
 	ExternalUrl string
-	ColImage       string
-	DfImage       string
+	ColImage    string
+	DfImage     string
 	ColName     string
 	DfName      string
 	IpfsUrl     string
 	Pwd         string
+}
+
+func NewRelayerConfig(filePath string) *RelayerConfig {
+	fileContent, err := basedef.ReadFile(filePath)
+	if err != nil {
+		logs.Error("NewRelayerConfig: failed, err: %s", err)
+		return nil
+	}
+	config := &RelayerConfig{}
+	err = json.Unmarshal(fileContent, config)
+	if err != nil {
+		logs.Error("NewRelayerConfig: failed, err: %s", err)
+		return nil
+	}
+	return config
 }

@@ -92,7 +92,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
 		basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID,
 		basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID,
-		basedef.PIXIE_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID, basedef.OASIS1_CROSSCHAIN_ID, basedef.HARMONY_CROSSCHAIN_ID:
+		basedef.PIXIE_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID, basedef.HARMONY_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
@@ -174,7 +174,7 @@ func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperT
 func (ccl *CrossChainListen) listenChain() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("service start, chain:",ccl.handle.GetChainName(),"recover info: %s", string(debug.Stack()))
+			logs.Error("%s listenChain service start, recover info: %s", ccl.handle.GetChainName(), string(debug.Stack()))
 			exit = false
 		}
 	}()
