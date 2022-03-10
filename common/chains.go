@@ -35,7 +35,6 @@ var (
 	sdkMap        map[uint64]interface{}
 	pixieSdk      *chainsdk.EthereumSdkPro
 	oasisSdk      *chainsdk.EthereumSdkPro
-	oasis1Sdk     *chainsdk.EthereumSdkPro
 	starcoinSdk   *chainsdk.StarcoinSdkPro
 	harmonySdk    *chainsdk.EthereumSdkPro
 	hscSdk        *chainsdk.EthereumSdkPro
