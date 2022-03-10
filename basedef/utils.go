@@ -103,6 +103,9 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == HSC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == BYTOM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -186,6 +189,9 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == HSC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == BYTOM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
@@ -250,6 +256,8 @@ func GetChainName(id uint64) string {
 		return "OASIS"
 	case HSC_CROSSCHAIN_ID:
 		return "HSC"
+	case BYTOM_CROSSCHAIN_ID:
+		return "BYTOM"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}

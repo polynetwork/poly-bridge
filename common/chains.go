@@ -38,6 +38,7 @@ var (
 	starcoinSdk   *chainsdk.StarcoinSdkPro
 	harmonySdk    *chainsdk.EthereumSdkPro
 	hscSdk        *chainsdk.EthereumSdkPro
+	bytomSdk      *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -269,6 +270,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		harmonySdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.HARMONY_CROSSCHAIN_ID] = harmonySdk
+	}
+	{
+		bytomConfig := config.GetChainListenConfig(basedef.BYTOM_CROSSCHAIN_ID)
+		if bytomConfig == nil {
+			panic("bytom chain is invalid")
+		}
+		urls := bytomConfig.GetNodesUrl()
+		bytomSdk = chainsdk.NewEthereumSdkPro(urls, bytomConfig.ListenSlot, bytomConfig.ChainId)
+		sdkMap[basedef.BYTOM_CROSSCHAIN_ID] = bytomSdk
 	}
 }
 
@@ -588,6 +598,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.BYTOM_CROSSCHAIN_ID {
+		bytomConfig := config.GetChainListenConfig(basedef.BYTOM_CROSSCHAIN_ID)
+		if bytomConfig == nil {
+			panic("chain is invalid")
+		}
+		for _, v := range bytomConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := bytomSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -655,7 +679,6 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 				return ontologySdk.Oep4TotalSupply(hash, v)
 			}
 		}
-
 	}
 	if chainId == basedef.MATIC_CROSSCHAIN_ID {
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
@@ -741,6 +764,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return hscSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.BYTOM_CROSSCHAIN_ID {
+		bytomConfig := config.GetChainListenConfig(basedef.BYTOM_CROSSCHAIN_ID)
+		if bytomConfig == nil {
+			panic("bytom chain GetTotalSupply invalid")
+		}
+		return bytomSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -796,6 +826,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return harmonySdk.Erc20Balance(hash, proxy)
 	case basedef.HSC_CROSSCHAIN_ID:
 		return hscSdk.Erc20Balance(hash, proxy)
+	case basedef.BYTOM_CROSSCHAIN_ID:
+		return bytomSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
