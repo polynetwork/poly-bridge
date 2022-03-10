@@ -248,8 +248,8 @@ func GetChainName(id uint64) string {
 		return "BOBA"
 	case OASIS_CROSSCHAIN_ID:
 		return "OASIS"
-	case HSC_CROSSCHAIN_ID:
-		return "HSC"
+	case BCSPALETTE_CROSSCHAIN_ID:
+		return "BCS Palette"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}

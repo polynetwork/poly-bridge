@@ -31,14 +31,15 @@ var (
 	optimisticSdk *chainsdk.EthereumSdkPro
 	metisSdk      *chainsdk.EthereumSdkPro
 	bobaSdk       *chainsdk.EthereumSdkPro
-	rinkebySdk    *chainsdk.EthereumSdkPro
-	sdkMap        map[uint64]interface{}
+	rinkebySdk    *chainsdk.EthereumSdkPro	
 	pixieSdk      *chainsdk.EthereumSdkPro
 	oasisSdk      *chainsdk.EthereumSdkPro
 	starcoinSdk   *chainsdk.StarcoinSdkPro
 	harmonySdk    *chainsdk.EthereumSdkPro
 	hscSdk        *chainsdk.EthereumSdkPro
+	bcspaletteSdk *chainsdk.EthereumSdkPro
 	config        *conf.Config
+	sdkMap        map[uint64]interface{}
 )
 
 func SetupChainsSDK(cfg *conf.Config) {
@@ -269,6 +270,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		harmonySdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.HARMONY_CROSSCHAIN_ID] = harmonySdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.BCSPALETTE_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("bcspalette chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		bcspaletteSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.BCSPALETTE_CROSSCHAIN_ID] = bcspaletteSdk
 	}
 }
 

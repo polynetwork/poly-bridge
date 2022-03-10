@@ -184,7 +184,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Key = lockEvent.Txid
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			var lock *models.ProxyLockEvent
-			if srcTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID && !this.isNFTECCMLockEvent(lockEvent) {
+			if (srcTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID || srcTransaction.ChainId == basedef.BCSPALETTE_CROSSCHAIN_ID) && !this.isNFTECCMLockEvent(lockEvent) {
 				// TODO: with retry later
 				lock, _ = this.GetPaletteLockProxyLockEvent(common.HexToHash("0x" + lockEvent.TxHash))
 			} else {
@@ -268,7 +268,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.Contract = models.FormatString(unLockEvent.Contract)
 			dstTransaction.PolyHash = unLockEvent.RTxHash
 			var unlock *models.ProxyUnlockEvent
-			if dstTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID && !this.isNFTECCMUnlockEvent(unLockEvent) {
+			if (dstTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID || dstTransaction.ChainId == basedef.BCSPALETTE_CROSSCHAIN_ID) && !this.isNFTECCMUnlockEvent(unLockEvent) {
 				unlock = this.getPLTUnlock(common.HexToHash("0x" + unLockEvent.TxHash))
 			} else {
 				for _, v := range proxyUnlockEvents {

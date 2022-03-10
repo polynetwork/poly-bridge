@@ -123,7 +123,7 @@ func (c *FeeController) GetFee() {
 			return
 		}
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
-		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
+		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.BCSPALETTE_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
 				ethChains := make(map[uint64]struct{})
