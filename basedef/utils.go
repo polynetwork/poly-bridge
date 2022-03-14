@@ -250,6 +250,8 @@ func GetChainName(id uint64) string {
 		return "OPTIMISTIC"
 	case METIS_CROSSCHAIN_ID:
 		return "METIS"
+	case PIXIE_CROSSCHAIN_ID:
+		return "PIXIE"
 	case BOBA_CROSSCHAIN_ID:
 		return "BOBA"
 	case OASIS_CROSSCHAIN_ID:
