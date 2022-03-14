@@ -103,6 +103,9 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == HSC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == BYTOM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -186,6 +189,9 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == HSC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == BYTOM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
@@ -244,12 +250,22 @@ func GetChainName(id uint64) string {
 		return "OPTIMISTIC"
 	case METIS_CROSSCHAIN_ID:
 		return "METIS"
+	case PIXIE_CROSSCHAIN_ID:
+		return "PIXIE"
 	case BOBA_CROSSCHAIN_ID:
 		return "BOBA"
 	case OASIS_CROSSCHAIN_ID:
 		return "OASIS"
 	case BCSPALETTE_CROSSCHAIN_ID:
 		return "BCS Palette"
+	case RINKEBY_CROSSCHAIN_ID:
+		return "RINKEBY"
+	case HARMONY_CROSSCHAIN_ID:
+		return "HARMONY"
+	case HSC_CROSSCHAIN_ID:
+		return "HSC"
+	case BYTOM_CROSSCHAIN_ID:
+		return "BYTOM"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
