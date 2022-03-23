@@ -39,6 +39,7 @@ var (
 	hscSdk        *chainsdk.EthereumSdkPro
 	bcspaletteSdk *chainsdk.EthereumSdkPro
 	bytomSdk      *chainsdk.EthereumSdkPro
+	kccSdk        *chainsdk.EthereumSdkPro
 	config        *conf.Config
 	sdkMap        map[uint64]interface{}
 )
@@ -289,6 +290,15 @@ func newChainSdks(config *conf.Config) {
 		urls := bytomConfig.GetNodesUrl()
 		bytomSdk = chainsdk.NewEthereumSdkPro(urls, bytomConfig.ListenSlot, bytomConfig.ChainId)
 		sdkMap[basedef.BYTOM_CROSSCHAIN_ID] = bytomSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.KCC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("kcc chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		kccSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.KCC_CROSSCHAIN_ID] = kccSdk
 	}
 }
 
@@ -622,6 +632,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.KCC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.KCC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("kcc chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := kccSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -781,6 +805,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return bytomSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.KCC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.KCC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("kcc chain GetTotalSupply invalid")
+		}
+		return kccSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -838,6 +869,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return hscSdk.Erc20Balance(hash, proxy)
 	case basedef.BYTOM_CROSSCHAIN_ID:
 		return bytomSdk.Erc20Balance(hash, proxy)
+	case basedef.KCC_CROSSCHAIN_ID:
+		return kccSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}

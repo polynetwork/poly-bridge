@@ -261,6 +261,15 @@
           "Url": "http://18.220.17.201:22004"
         }
       ]
+    },
+    {
+      "ChainName": "KCC",
+      "ChainId": 900,
+      "Nodes": [
+        {
+          "Url": "https://rpc-testnet.kcc.network"
+        }
+      ]
     }
   ],
   "ChainListenConfig": [
@@ -661,6 +670,21 @@
       "ProxyContract": [
         "0000000000000000000000000000000000000103"
       ]
+    },
+    {
+      "ChainName": "KCC",
+      "ChainId": 900,
+      "ListenSlot": 1,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "c2d365475EEf3ec83e59D1BcDF3A291D7B23Ba99"
+      ],
+      "CCMContract": "d6fc5374649cea121395a4860FdB33F21783c4Af",
+      "ProxyContract": [
+        "0AF53d318De279C8e67FcC6914acF387CFaA8B7E"
+      ]
     }
   ],
   "StatsConfig": {
@@ -835,6 +859,13 @@
       "ChainName": "Harmony",
       "GasLimit": 120000,
       "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 900,
+      "ChainName": "KCC",
+      "GasLimit":30000,
+      "ProxyFee":120,
       "MinFee": 80
     }
   ],
