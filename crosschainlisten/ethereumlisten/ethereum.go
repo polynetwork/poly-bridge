@@ -440,8 +440,14 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 }
 
 func (this *EthereumChainListen) getProxyEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
+	lockProxies := make([]string, 0)
+	lockProxies = append(lockProxies, this.ethCfg.ProxyContract...)
+	for _, other := range this.ethCfg.OtherProxyContract {
+		lockProxies = append(lockProxies, other.ItemProxy)
+	}
+
 	erc20ProxyLockEvents, erc20ProxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
-	for _, lockContract := range this.ethCfg.ProxyContract {
+	for _, lockContract := range lockProxies {
 		if len(strings.TrimSpace(lockContract)) == 0 {
 			continue
 		}
