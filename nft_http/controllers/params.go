@@ -254,16 +254,20 @@ type TransactionBriefRelation struct {
 }
 
 type TransactionBriefRsp struct {
-	Hash        string
-	Status      uint64
-	BlockHeight uint64
-	SrcChainId  uint64
-	DstChainId  uint64
-	Time        uint64
-	TokenId     string
-	AssetName   string
-	From        string
-	To          string
+	Hash         string
+	Status       uint64
+	BlockHeight  uint64
+	SrcChainId   uint64
+	SrcChainName string `json:"srcchainname"`
+	SrcChainLogo string `json:"srcchainlogo"`
+	DstChainId   uint64
+	DstChainName string `json:"dstchainname"`
+	DstChainLogo string `json:"dstchainlogo"`
+	Time         uint64
+	TokenId      string
+	AssetName    string
+	From         string
+	To           string
 }
 
 func (s *TransactionBriefRsp) instance(assetName string, r *TransactionBriefRelation) *TransactionBriefRsp {
@@ -272,7 +276,11 @@ func (s *TransactionBriefRsp) instance(assetName string, r *TransactionBriefRela
 	s.Status = r.Status
 	s.BlockHeight = r.BlockHeight
 	s.SrcChainId = r.SrcChainId
+	s.SrcChainName = models.ChainId2Name(r.SrcChainId)
+	s.SrcChainLogo = models.ChainId2ChainCache(r.SrcChainId).ChainLogo
 	s.DstChainId = r.DstChainId
+	s.DstChainName = models.ChainId2Name(r.DstChainId)
+	s.DstChainLogo = models.ChainId2ChainCache(r.DstChainId).ChainLogo
 	s.Time = r.Time
 	s.TokenId = r.TokenId
 	s.From = r.User
@@ -312,16 +320,21 @@ type TransactionDetailRelation struct {
 }
 
 type SideChainRsp struct {
-	Hash        string
-	ChainId     uint64
-	Asset       string
-	AssetHash   string
-	BlockHeight uint64
-	Time        uint64
-	Fee         string
-	Status      uint64
-	From        string
-	To          string
+	Hash             string
+	ChainId          uint64
+	ChainName        string `json:"chainname"`
+	ChainLogo        string `json:"chainlogo"`
+	ChainExplorerUrl string `json:"chainexplorerurl"`
+	Asset            string
+	AssetHash        string
+	BlockHeight      uint64
+	Time             uint64
+	Fee              string
+	FeeName          string `json:"feename"`
+	FeeLogo          string `json:"feelogo"`
+	Status           uint64
+	From             string
+	To               string
 }
 
 type PolyChainRsp struct {
@@ -359,7 +372,12 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	s.Transaction.Status = r.WrapperTransaction.Status
 	s.Transaction.BlockHeight = r.WrapperTransaction.BlockHeight
 	s.Transaction.SrcChainId = r.WrapperTransaction.SrcChainId
+	s.Transaction.SrcChainName = models.ChainId2Name(r.WrapperTransaction.SrcChainId)
+	s.Transaction.SrcChainLogo = models.ChainId2ChainCache(r.WrapperTransaction.SrcChainId).ChainLogo
+
 	s.Transaction.DstChainId = r.WrapperTransaction.DstChainId
+	s.Transaction.DstChainName = models.ChainId2Name(r.WrapperTransaction.DstChainId)
+	s.Transaction.DstChainLogo = models.ChainId2ChainCache(r.WrapperTransaction.DstChainId).ChainLogo
 	s.Transaction.Time = r.WrapperTransaction.Time
 	s.Transaction.From = r.WrapperTransaction.User
 	s.Transaction.To = r.WrapperTransaction.DstUser
@@ -382,6 +400,11 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.SrcTransaction.Time = r.SrcTransaction.Time
 		s.SrcTransaction.Status = r.SrcTransaction.State
 		s.SrcTransaction.ChainId = r.SrcTransaction.ChainId
+		s.SrcTransaction.ChainName = models.ChainId2Name(r.SrcTransaction.ChainId)
+		s.SrcTransaction.ChainLogo = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainLogo
+		s.SrcTransaction.ChainExplorerUrl = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainExplorerUrl
+		s.SrcTransaction.FeeName = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainFeeName
+		s.SrcTransaction.FeeLogo = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainFeeLogo
 
 		feeToken := feeTokens[s.SrcTransaction.ChainId]
 		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.Precision)))
@@ -409,6 +432,11 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.DstTransaction.Time = r.DstTransaction.Time
 		s.DstTransaction.Status = r.DstTransaction.State
 		s.DstTransaction.ChainId = r.DstTransaction.ChainId
+		s.DstTransaction.ChainName = models.ChainId2Name(r.DstTransaction.ChainId)
+		s.DstTransaction.ChainLogo = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainLogo
+		s.DstTransaction.ChainExplorerUrl = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainExplorerUrl
+		s.DstTransaction.FeeName = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainFeeName
+		s.DstTransaction.FeeLogo = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainFeeLogo
 
 		feeToken := feeTokens[s.DstTransaction.ChainId]
 		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.Precision)))

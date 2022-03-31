@@ -24,6 +24,8 @@ type Chain struct {
 	Height              uint64 `gorm:"type:bigint(20);not null"`
 	HeightSwap          uint64 `gorm:"type:bigint(20);not null"`
 	BackwardBlockNumber uint64 `gorm:"type:bigint(20);not null"`
+	ChainLogo           string `gorm:"type:varchar(128)"`
+	ChainExplorerUrl    string `gorm:"type:varchar(128)"`
 }
 
 type ChainStatistic struct {
@@ -261,6 +263,7 @@ type TransactionOnAddress struct {
 	TokenType string
 	Direct    uint32
 	Precision uint64
+	Meta      string
 }
 
 type NftUser struct {
