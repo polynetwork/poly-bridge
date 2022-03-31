@@ -224,7 +224,9 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 	if token != nil {
 		fChainTxResp.Transfer.TokenHash = token.Hash
 		fChainTxResp.Transfer.TokenName = token.Name
-		fChainTxResp.Transfer.TokenLogo = token.TokenBasic.Meta
+		if token.TokenBasic != nil {
+			fChainTxResp.Transfer.TokenLogo = token.TokenBasic.Meta
+		}
 		fChainTxResp.Transfer.TokenType = token.TokenType
 		fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
 	} else {
@@ -235,7 +237,9 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 	if toToken != nil {
 		fChainTxResp.Transfer.ToTokenHash = toToken.Hash
 		fChainTxResp.Transfer.ToTokenName = toToken.Name
-		fChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
+		if toToken.TokenBasic != nil {
+			fChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
+		}
 		fChainTxResp.Transfer.ToTokenType = toToken.TokenType
 	} else {
 		fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
@@ -356,7 +360,9 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTxResp.Transfer.TokenHash = toToken.Hash
 		tChainTxResp.Transfer.TokenName = toToken.Name
 		tChainTxResp.Transfer.TokenType = toToken.TokenType
-		tChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
+		if toToken.TokenBasic != nil {
+			tChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
+		}
 		tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
 	} else {
 		tChainTxResp.Transfer.TokenName = tChainTx.DstTransfer.Asset
