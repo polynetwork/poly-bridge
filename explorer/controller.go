@@ -53,9 +53,14 @@ func Init() {
 	chains := []*models.Chain{}
 	err = db.Find(&chains).Error
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Fatal: %s error %+v", "explorer init chains", err))
 	}
-	models.Init(chains)
+	chainFees := []*models.ChainFee{}
+	err = db.Preload("TokenBasic").Find(&chainFees).Error
+	if err != nil {
+		panic(fmt.Sprintf("Fatal: %s error %+v", "explorer init chainFees", err))
+	}
+	models.Init(chains, chainFees)
 }
 
 type ExplorerController struct {
@@ -150,8 +155,8 @@ func (c *ExplorerController) GetAddressTxList() {
 	}
 	addressTxListReq.Address, _ = basedef.Address2Hash(addressTxListReq.ChainId, addressTxListReq.Address)
 	transactionOnAddresses := make([]*models.TransactionOnAddress, 0)
-	res := db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.token_type, c.name as token_name, 1 as direct, m.precision from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id left JOIN token_basics m on c.token_basic_name = m.name where b.from = ? and b.chain_id = ? 
-		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.token_type, f.name as token_name, 2,n.precision as direct from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id left JOIN token_basics n on f.token_basic_name = n.name where e.to = ? and e.chain_id = ? 
+	res := db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.token_type, c.name as token_name, 1 as direct, m.precision, m.meta from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id left JOIN token_basics m on c.token_basic_name = m.name where b.from = ? and b.chain_id = ? 
+		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.token_type, f.name as token_name, 2 as direct, n.precision, n.meta from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id left JOIN token_basics n on f.token_basic_name = n.name where e.to = ? and e.chain_id = ? 
 		order by height desc limit ?,?`,
 		addressTxListReq.Address, addressTxListReq.ChainId, addressTxListReq.Address, addressTxListReq.ChainId, (addressTxListReq.PageNo-1)*addressTxListReq.PageSize, addressTxListReq.PageSize).
 		Find(&transactionOnAddresses)
@@ -300,6 +305,12 @@ func (c *ExplorerController) GetCrossTx() {
 		First(token).Error
 	if err == nil {
 		relation.Token = token
+		tokenBasic := new(models.TokenBasic)
+		err = db.Where("token_basic_name = ?", token.TokenBasicName).
+			First(tokenBasic).Error
+		if err == nil {
+			relation.Token.TokenBasic = tokenBasic
+		}
 	}
 	srcTransaction := new(models.SrcTransaction)
 	err = db.Where("hash = ?", relation.SrcHash).
@@ -348,12 +359,24 @@ func (c *ExplorerController) GetCrossTx() {
 		First(toToken).Error
 	if err == nil {
 		relation.ToToken = toToken
+		tokenBasic := new(models.TokenBasic)
+		err = db.Where("token_basic_name = ?", toToken.TokenBasicName).
+			First(tokenBasic).Error
+		if err == nil {
+			relation.ToToken.TokenBasic = tokenBasic
+		}
 	}
 	dstToken := new(models.Token)
 	err = db.Where("hash = ? and chain_id =?", relation.DstTokenHash, relation.DstChainId).
 		First(dstToken).Error
 	if err == nil {
 		relation.DstToken = dstToken
+		tokenBasic := new(models.TokenBasic)
+		err = db.Where("token_basic_name = ?", dstToken.TokenBasicName).
+			First(tokenBasic).Error
+		if err == nil {
+			relation.DstToken.TokenBasic = tokenBasic
+		}
 	}
 	c.Data["json"] = models.MakeCrossTxResp(relation)
 	c.ServeJSON()
@@ -361,7 +384,8 @@ func (c *ExplorerController) GetCrossTx() {
 
 func (c *ExplorerController) GetAssetStatistic() {
 	assetStatistics := make([]*models.AssetStatistic, 0)
-	res := db.Find(&assetStatistics)
+	res := db.Preload("TokenBasic").
+		Find(&assetStatistics)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("assetStatistic does not exist"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
@@ -482,6 +506,7 @@ func (c *ExplorerController) GetLockTokenInfo() {
 	lockTokenStatistics := make([]*models.LockTokenStatistic, 0)
 	res := db.Where("chain_id = ? and in_amount_usd > 0", lockTokenInfoReq.ChainId).
 		Preload("Token").
+		Preload("TokenBasic").
 		Find(&lockTokenStatistics)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("lockTokenStatistics does not exist"))

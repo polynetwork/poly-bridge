@@ -89,10 +89,11 @@ func MakeExplorerInfoResp(chains []*Chain, statistics []*ChainStatistic, tokenBa
 }
 
 type ChainInfoResp struct {
-	Id     uint32 `json:"chainid"`
-	Name   string `json:"chainname"`
-	Height uint32 `json:"blockheight"`
-	In     int64  `json:"in"`
+	Id        uint32 `json:"chainid"`
+	Name      string `json:"chainname"`
+	ChainLogo string `json:"chainlogo"`
+	Height    uint32 `json:"blockheight"`
+	In        int64  `json:"in"`
 	//InCrossChainTxStatus []*CrossChainTxStatus    `json:"incrosschaintxstatus"`
 	Out int64 `json:"out"`
 	//OutCrossChainTxStatus []*CrossChainTxStatus    `json:"outcrosschaintxstatus"`
@@ -103,9 +104,10 @@ type ChainInfoResp struct {
 
 func MakeChainInfoResp(chain *Chain) *ChainInfoResp {
 	chainInfoResp := &ChainInfoResp{
-		Id:     uint32(chain.ChainId),
-		Name:   chain.Name,
-		Height: uint32(chain.Height),
+		Id:        uint32(chain.ChainId),
+		Name:      chain.Name,
+		Height:    uint32(chain.Height),
+		ChainLogo: chain.ChainLogo,
 	}
 	return chainInfoResp
 }
@@ -129,6 +131,7 @@ type ChainTokenResp struct {
 	Type      string `json:"type"`
 	Precision uint64 `json:"precision"`
 	Desc      string `json:"desc"`
+	Meta      string `json:"meta"`
 }
 
 func MakeChainTokenResp(token *Token) *ChainTokenResp {
@@ -145,13 +148,15 @@ func MakeChainTokenResp(token *Token) *ChainTokenResp {
 }
 
 type CrossChainTokenResp struct {
-	Name   string            `json:"name"`
-	Tokens []*ChainTokenResp `json:"tokens"`
+	Name      string            `json:"name"`
+	TokenLogo string            `json:"tokenlogo"`
+	Tokens    []*ChainTokenResp `json:"tokens"`
 }
 
 func MakeTokenBasicResp(tokenBasic *TokenBasic) *CrossChainTokenResp {
 	crossChainTokenResp := &CrossChainTokenResp{
-		Name: tokenBasic.Name,
+		Name:      tokenBasic.Name,
+		TokenLogo: tokenBasic.Meta,
 	}
 	for _, token := range tokenBasic.Tokens {
 		if token.Property == int64(1) {
@@ -162,37 +167,47 @@ func MakeTokenBasicResp(tokenBasic *TokenBasic) *CrossChainTokenResp {
 }
 
 type FChainTxResp struct {
-	ChainId    uint32              `json:"chainid"`
-	ChainName  string              `json:"chainname"`
-	TxHash     string              `json:"txhash"`
-	State      byte                `json:"state"`
-	TT         uint32              `json:"timestamp"`
-	Fee        string              `json:"fee"`
-	Height     uint32              `json:"blockheight"`
-	User       string              `json:"user"`
-	TChainId   uint32              `json:"tchainid"`
-	TChainName string              `json:"tchainname"`
-	Contract   string              `json:"contract"`
-	Key        string              `json:"key"`
-	Param      string              `json:"param"`
-	Transfer   *FChainTransferResp `json:"transfer"`
+	ChainId          uint32              `json:"chainid"`
+	ChainName        string              `json:"chainname"`
+	ChainLogo        string              `json:"chainlogo"`
+	ChainExplorerUrl string              `json:"chainexplorerurl"`
+	TxHash           string              `json:"txhash"`
+	State            byte                `json:"state"`
+	TT               uint32              `json:"timestamp"`
+	Fee              string              `json:"fee"`
+	FeeName          string              `json:"feename"`
+	FeeLogo          string              `json:"feelogo"`
+	Height           uint32              `json:"blockheight"`
+	User             string              `json:"user"`
+	TChainId         uint32              `json:"tchainid"`
+	TChainName       string              `json:"tchainname"`
+	TChainLogo       string              `json:"tchainlogo"`
+	Contract         string              `json:"contract"`
+	Key              string              `json:"key"`
+	Param            string              `json:"param"`
+	Transfer         *FChainTransferResp `json:"transfer"`
 }
 
 func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTxResp {
 	fChainTxResp := &FChainTxResp{
-		ChainId:    uint32(fChainTx.ChainId),
-		ChainName:  ChainId2Name(fChainTx.ChainId),
-		TxHash:     fChainTx.Hash,
-		State:      byte(fChainTx.State),
-		TT:         uint32(fChainTx.Time),
-		Fee:        FormatFee(fChainTx.ChainId, fChainTx.Fee),
-		Height:     uint32(fChainTx.Height),
-		User:       basedef.Hash2Address(fChainTx.ChainId, fChainTx.User),
-		TChainId:   uint32(fChainTx.DstChainId),
-		TChainName: ChainId2Name(fChainTx.DstChainId),
-		Contract:   fChainTx.Contract,
-		Key:        fChainTx.Key,
-		Param:      fChainTx.Param,
+		ChainId:          uint32(fChainTx.ChainId),
+		ChainName:        ChainId2Name(fChainTx.ChainId),
+		ChainLogo:        ChainId2ChainCache(fChainTx.ChainId).ChainFeeLogo,
+		ChainExplorerUrl: ChainId2ChainCache(fChainTx.ChainId).ChainExplorerUrl,
+		TxHash:           fChainTx.Hash,
+		State:            byte(fChainTx.State),
+		TT:               uint32(fChainTx.Time),
+		Fee:              FormatFee(fChainTx.ChainId, fChainTx.Fee),
+		FeeName:          ChainId2ChainCache(fChainTx.ChainId).ChainFeeName,
+		FeeLogo:          ChainId2ChainCache(fChainTx.ChainId).ChainFeeLogo,
+		Height:           uint32(fChainTx.Height),
+		User:             basedef.Hash2Address(fChainTx.ChainId, fChainTx.User),
+		TChainId:         uint32(fChainTx.DstChainId),
+		TChainName:       ChainId2Name(fChainTx.DstChainId),
+		TChainLogo:       ChainId2ChainCache(fChainTx.DstChainId).ChainLogo,
+		Contract:         fChainTx.Contract,
+		Key:              fChainTx.Key,
+		Param:            fChainTx.Param,
 	}
 	if fChainTx.SrcTransfer.Amount == nil {
 		fChainTx.SrcTransfer.Amount = NewBigIntFromInt(0)
@@ -209,6 +224,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 	if token != nil {
 		fChainTxResp.Transfer.TokenHash = token.Hash
 		fChainTxResp.Transfer.TokenName = token.Name
+		fChainTxResp.Transfer.TokenLogo = token.TokenBasic.Meta
 		fChainTxResp.Transfer.TokenType = token.TokenType
 		fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
 	} else {
@@ -219,6 +235,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 	if toToken != nil {
 		fChainTxResp.Transfer.ToTokenHash = toToken.Hash
 		fChainTxResp.Transfer.ToTokenName = toToken.Name
+		fChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
 		fChainTxResp.Transfer.ToTokenType = toToken.TokenType
 	} else {
 		fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
@@ -234,6 +251,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 type FChainTransferResp struct {
 	TokenHash   string `json:"tokenhash"`
 	TokenName   string `json:"tokenname"`
+	TokenLogo   string `json:"tokenlogo"`
 	TokenType   string `json:"tokentype"`
 	From        string `json:"from"`
 	To          string `json:"to"`
@@ -242,6 +260,7 @@ type FChainTransferResp struct {
 	ToChainName string `json:"tchainname"`
 	ToTokenHash string `json:"totokenhash"`
 	ToTokenName string `json:"totokenname"`
+	ToTokenLogo string `json:"totokenlogo"`
 	ToTokenType string `json:"totokentype"`
 	ToUser      string `json:"tuser"`
 }
@@ -256,9 +275,11 @@ type MChainTxResp struct {
 	Height     uint32 `json:"blockheight"`
 	FChainId   uint32 `json:"fchainid"`
 	FChainName string `json:"fchainname"`
+	FChainLogo string `json:"fchainlogo"`
 	FTxHash    string `json:"ftxhash"`
 	TChainId   uint32 `json:"tchainid"`
 	TChainName string `json:"tchainname"`
+	TChainLogo string `json:"tchainlogo"`
 	Key        string `json:"key"`
 }
 
@@ -273,42 +294,54 @@ func makeMChainTxResp(mChainTx *PolyTransaction) *MChainTxResp {
 		Height:     uint32(mChainTx.Height),
 		FChainId:   uint32(mChainTx.SrcChainId),
 		FChainName: ChainId2Name(mChainTx.SrcChainId),
+		FChainLogo: ChainId2ChainCache(mChainTx.SrcChainId).ChainLogo,
 		FTxHash:    mChainTx.SrcHash,
 		TChainId:   uint32(mChainTx.DstChainId),
 		TChainName: ChainId2Name(mChainTx.DstChainId),
+		TChainLogo: ChainId2ChainCache(mChainTx.DstChainId).ChainLogo,
 		Key:        mChainTx.Key,
 	}
 	return mChainTxResp
 }
 
 type TChainTxResp struct {
-	ChainId    uint32              `json:"chainid"`
-	ChainName  string              `json:"chainname"`
-	TxHash     string              `json:"txhash"`
-	State      byte                `json:"state"`
-	TT         uint32              `json:"timestamp"`
-	Fee        string              `json:"fee"`
-	Height     uint32              `json:"blockheight"`
-	FChainId   uint32              `json:"fchainid"`
-	FChainName string              `json:"fchainname"`
-	Contract   string              `json:"contract"`
-	RTxHash    string              `json:"mtxhash"`
-	Transfer   *TChainTransferResp `json:"transfer"`
+	ChainId          uint32              `json:"chainid"`
+	ChainName        string              `json:"chainname"`
+	ChainLogo        string              `json:"chainlogo"`
+	TxHash           string              `json:"txhash"`
+	State            byte                `json:"state"`
+	TT               uint32              `json:"timestamp"`
+	Fee              string              `json:"fee"`
+	FeeName          string              `json:"feename"`
+	FeeLogo          string              `json:"feelogo"`
+	Height           uint32              `json:"blockheight"`
+	FChainId         uint32              `json:"fchainid"`
+	FChainName       string              `json:"fchainname"`
+	FChainLogo       string              `json:"fchainlogo"`
+	Contract         string              `json:"contract"`
+	RTxHash          string              `json:"mtxhash"`
+	Transfer         *TChainTransferResp `json:"transfer"`
+	ChainExplorerUrl string              `json:"chainExplorerUrl"`
 }
 
 func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 	tChainTxResp := &TChainTxResp{
-		ChainId:    uint32(tChainTx.ChainId),
-		ChainName:  ChainId2Name(tChainTx.ChainId),
-		TxHash:     tChainTx.Hash,
-		State:      byte(tChainTx.State),
-		TT:         uint32(tChainTx.Time),
-		Fee:        FormatFee(tChainTx.ChainId, tChainTx.Fee),
-		Height:     uint32(tChainTx.Height),
-		FChainId:   uint32(tChainTx.SrcChainId),
-		FChainName: ChainId2Name(tChainTx.SrcChainId),
-		Contract:   tChainTx.Contract,
-		RTxHash:    tChainTx.PolyHash,
+		ChainId:          uint32(tChainTx.ChainId),
+		ChainName:        ChainId2Name(tChainTx.ChainId),
+		ChainLogo:        ChainId2ChainCache(tChainTx.ChainId).ChainLogo,
+		ChainExplorerUrl: ChainId2ChainCache(tChainTx.ChainId).ChainExplorerUrl,
+		TxHash:           tChainTx.Hash,
+		State:            byte(tChainTx.State),
+		TT:               uint32(tChainTx.Time),
+		Fee:              FormatFee(tChainTx.ChainId, tChainTx.Fee),
+		FeeName:          ChainId2ChainCache(tChainTx.ChainId).ChainFeeName,
+		FeeLogo:          ChainId2ChainCache(tChainTx.ChainId).ChainFeeLogo,
+		Height:           uint32(tChainTx.Height),
+		FChainId:         uint32(tChainTx.SrcChainId),
+		FChainName:       ChainId2Name(tChainTx.SrcChainId),
+		FChainLogo:       ChainId2ChainCache(tChainTx.SrcChainId).ChainLogo,
+		Contract:         tChainTx.Contract,
+		RTxHash:          tChainTx.PolyHash,
 	}
 	if tChainTx.DstTransfer.Amount == nil {
 		tChainTx.DstTransfer.Amount = NewBigIntFromInt(0)
@@ -323,6 +356,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTxResp.Transfer.TokenHash = toToken.Hash
 		tChainTxResp.Transfer.TokenName = toToken.Name
 		tChainTxResp.Transfer.TokenType = toToken.TokenType
+		tChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
 		tChainTxResp.Transfer.Amount = FormatAmount(toToken.Precision, tChainTx.DstTransfer.Amount)
 	} else {
 		tChainTxResp.Transfer.TokenName = tChainTx.DstTransfer.Asset
@@ -340,6 +374,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 type TChainTransferResp struct {
 	TokenHash string `json:"tokenhash"`
 	TokenName string `json:"tokenname"`
+	TokenLogo string `json:"tokenlogo"`
 	TokenType string `json:"tokentype"`
 	From      string `json:"from"`
 	To        string `json:"to"`
@@ -347,18 +382,20 @@ type TChainTransferResp struct {
 }
 
 type CrossTransferResp struct {
-	CrossTxType uint32 `json:"crosstxtype"`
-	CrossTxName string `json:"crosstxname"`
-	FromChainId uint32 `json:"fromchainid"`
-	FromChain   string `json:"fromchainname"`
-	FromAddress string `json:"fromaddress"`
-	ToChainId   uint32 `json:"tochainid"`
-	ToChain     string `json:"tochainname"`
-	ToAddress   string `json:"toaddress"`
-	TokenHash   string `json:"tokenhash"`
-	TokenName   string `json:"tokenname"`
-	TokenType   string `json:"tokentype"`
-	Amount      string `json:"amount"`
+	CrossTxType   uint32 `json:"crosstxtype"`
+	CrossTxName   string `json:"crosstxname"`
+	FromChainId   uint32 `json:"fromchainid"`
+	FromChain     string `json:"fromchainname"`
+	FromChainLogo string `json:"fromchainlogo"`
+	FromAddress   string `json:"fromaddress"`
+	ToChainId     uint32 `json:"tochainid"`
+	ToChain       string `json:"tochainname"`
+	ToChainLogo   string `json:"tochainlogo"`
+	ToAddress     string `json:"toaddress"`
+	TokenHash     string `json:"tokenhash"`
+	TokenName     string `json:"tokenname"`
+	TokenType     string `json:"tokentype"`
+	Amount        string `json:"amount"`
 }
 
 func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token *Token) *CrossTransferResp {
@@ -370,9 +407,11 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.CrossTxName = TxType2Name(crossTransfer.CrossTxType)
 	crossTransfer.FromChainId = uint32(chainid)
 	crossTransfer.FromChain = ChainId2Name(uint64(crossTransfer.FromChainId))
+	crossTransfer.FromChainLogo = ChainId2ChainCache(uint64(crossTransfer.FromChainId)).ChainLogo
 	crossTransfer.FromAddress = basedef.Hash2Address(chainid, user)
 	crossTransfer.ToChainId = uint32(transfer.DstChainId)
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
+	crossTransfer.ToChainLogo = ChainId2ChainCache(uint64(crossTransfer.ToChainId)).ChainLogo
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
 	jsonToken, _ := json.Marshal(token)
 	logs.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
@@ -450,8 +489,10 @@ type CrossTxOutlineResp struct {
 	Height     uint32 `json:"blockheight"`
 	FChainId   uint32 `json:"fchainid"`
 	FChainName string `json:"fchainname"`
+	FChainLogo string `json:"fchainlogo"`
 	TChainId   uint32 `json:"tchainid"`
 	TChainName string `json:"tchainname"`
+	TChainLogo string `json:"tchainlogo"`
 }
 
 type CrossTxListResp struct {
@@ -472,8 +513,10 @@ func MakeCrossTxListResp(txs []*SrcPolyDstRelation, counter int64) *CrossTxListR
 			Height:     uint32(tx.PolyTransaction.Height),
 			FChainId:   uint32(tx.PolyTransaction.SrcChainId),
 			FChainName: ChainId2Name(tx.PolyTransaction.SrcChainId),
+			FChainLogo: ChainId2ChainCache(tx.PolyTransaction.SrcChainId).ChainLogo,
 			TChainId:   uint32(tx.PolyTransaction.DstChainId),
 			TChainName: ChainId2Name(tx.PolyTransaction.DstChainId),
+			TChainLogo: ChainId2ChainCache(tx.PolyTransaction.DstChainId).ChainLogo,
 		})
 	}
 	crossTxListResp.Total = counter
@@ -534,6 +577,8 @@ type AddressTxListReq struct {
 
 type AddressTxResp struct {
 	TxHash    string `json:"txhash"`
+	ChainName string `json:"chainname"`
+	ChainLogo string `json:"chainlogo"`
 	From      string `json:"from"`
 	To        string `json:"to"`
 	Amount    string `json:"amount"`
@@ -541,6 +586,7 @@ type AddressTxResp struct {
 	Height    uint32 `json:"blockheight"`
 	TokenHash string `json:"tokenhash"`
 	TokenName string `json:"tokenname"`
+	TokenLogo string `json:"tokenlogo"`
 	TokenType string `json:"tokentype"`
 	Direct    uint32 `json:"direct"`
 }
@@ -557,6 +603,8 @@ func MakeAddressTxList(transactoins []*TransactionOnAddress, counter int64) *Add
 	for _, transactoin := range transactoins {
 		addressTxListResp.AddressTxList = append(addressTxListResp.AddressTxList, &AddressTxResp{
 			TxHash:    transactoin.Hash,
+			ChainName: ChainId2Name(transactoin.ChainId),
+			ChainLogo: ChainId2ChainCache(transactoin.ChainId).ChainLogo,
 			From:      basedef.Hash2Address(transactoin.ChainId, transactoin.From),
 			To:        basedef.Hash2Address(transactoin.ChainId, transactoin.To),
 			Amount:    FormatAmount(transactoin.Precision, transactoin.Amount),
@@ -566,6 +614,7 @@ func MakeAddressTxList(transactoins []*TransactionOnAddress, counter int64) *Add
 			TokenHash: transactoin.TokenHash,
 			TokenName: transactoin.TokenName,
 			TokenType: transactoin.TokenType,
+			TokenLogo: transactoin.Meta,
 		})
 	}
 	return addressTxListResp
@@ -593,6 +642,7 @@ type AllTransferStatisticResp struct {
 type ChainTransferStatisticResp struct {
 	Chain                   uint32 `json:"chainid"`
 	ChainName               string `json:"chainname"`
+	ChainLogo               string `json:"chainlogo"`
 	AmountBtc               string `json:"amount_btc"`
 	AmountUsd               string `json:"amount_usd"`
 	TxAmount                int64  `json:"txAmount"`
@@ -606,6 +656,7 @@ type ChainTransferStatisticResp struct {
 type AssetTransferStatisticResp struct {
 	Name             string `json:"name"`
 	Token            string `json:"token"`
+	TokenLogo        string `json:"tokenlogo"`
 	Hash             string `json:"hash"`
 	Amount           string `json:"amount"`
 	Amount1          *big.Int
@@ -616,6 +667,7 @@ type AssetTransferStatisticResp struct {
 	SourceName       string `json:"source_name"`
 	SourceChain      uint32 `json:"source_chainid"`
 	SourceChainName  string `json:"source_chainname"`
+	SourceChainLogo  string `json:"source_chainlogo"`
 }
 
 func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*ChainStatistic, chains []*Chain) *AllTransferStatisticResp {
@@ -662,7 +714,9 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 					assetTransferStatisticResp.Name = tokenStatistic.Token.Name
 					assetTransferStatisticResp.Hash = tokenStatistic.Hash
 					if tokenStatistic.Token.TokenBasic != nil {
+						assetTransferStatisticResp.TokenLogo = tokenStatistic.Token.TokenBasic.Meta
 						assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
+						assetTransferStatisticResp.SourceChainLogo = ChainId2ChainCache(tokenStatistic.Token.TokenBasic.ChainId).ChainLogo
 					} else {
 						logs.Info("MakeTransferInfoResp tokenStatistic_Token_TokenBasic!=nil nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
 					}
@@ -683,6 +737,7 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		chainTransferStatisticResp := &ChainTransferStatisticResp{
 			Chain:                   uint32(chainStatistic.ChainId),
 			ChainName:               ChainId2Name(chainStatistic.ChainId),
+			ChainLogo:               ChainId2ChainCache(chainStatistic.ChainId).ChainLogo,
 			AmountBtc:               FormatAmount(4, NewBigInt(amountBtcTotal)),
 			AmountUsd:               FormatAmount(4, NewBigInt(amountUsdTotal)),
 			AmountUsd1:              amountUsdTotal,
@@ -712,6 +767,7 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 
 type AssetStatisticResp struct {
 	Name              string `json:"name"`
+	TokenLogo         string `json:"tokenlogo"`
 	AddressNum        uint64 `json:"addressnumber"`
 	AddressNumPrecent string `json:"addressnumber_precent"`
 	Amount            string `json:"amount"`
@@ -749,6 +805,7 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 	for _, assetStatistic := range assetStatistics {
 		assetStatisticResp := &AssetStatisticResp{
 			Name:              assetStatistic.TokenBasicName,
+			TokenLogo:         assetStatistic.TokenBasic.Meta,
 			AddressNum:        assetStatistic.Addressnum,
 			AddressNumPrecent: Precent(assetStatistic.Addressnum, addressNumberTotal),
 			Amount:            FormatAmount(2, assetStatistic.Amount),
@@ -770,7 +827,8 @@ func MakeAssetInfoResp(assetStatistics []*AssetStatistic) *AssetInfoResp {
 
 type LockTokenResp struct {
 	ChainId      uint64  `json:"chainId"`
-	ChainName    string  `json:"chainName"`
+	ChainName    string  `json:"chainname"`
+	ChainLogo    string  `json:"chainlogo"`
 	InAmountUsd  *BigInt `json:"-"`
 	InAmountUsd1 string  `json:"amountUsd"`
 	TokenNum     int     `json:"tokenNum"`
@@ -783,6 +841,7 @@ func MakeLockTokenListResp(lockTokenResps []*LockTokenResp) []*LockTokenResp {
 	})
 	for _, lockTokenResp := range lockTokenResps {
 		lockTokenResp.ChainName = ChainId2Name(lockTokenResp.ChainId)
+		lockTokenResp.ChainLogo = ChainId2ChainCache(lockTokenResp.ChainId).ChainLogo
 		lockTokenResp.InAmountUsd1 = decimal.NewFromBigInt(&lockTokenResp.InAmountUsd.Int, -4).String()
 	}
 	return lockTokenResps
@@ -792,12 +851,15 @@ type LockTokenInfoReq struct {
 	ChainId uint64 `json:"chainId"`
 }
 type LockTokenInfoResp struct {
-	ChainId   uint64
-	ChainName string
-	TokenName string
-	Hash      string
-	ItemProxy string
-	AmountUsd string
+	ChainId          uint64
+	ChainName        string
+	TokenName        string
+	TokenLogo        string `json:"tokenlogo"`
+	Hash             string
+	ItemProxy        string
+	AmountUsd        string
+	ChainLogo        string `json:"chainlogo"`
+	ChainExplorerUrl string `json:"chainexplorerurl"`
 }
 
 func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTokenInfoResp {
@@ -810,8 +872,11 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 		resp := new(LockTokenInfoResp)
 		resp.ChainId = lockTokenStatistic.ChainId
 		resp.ChainName = ChainId2Name(resp.ChainId)
+		resp.ChainLogo = ChainId2ChainCache(resp.ChainId).ChainLogo
+		resp.ChainExplorerUrl = ChainId2ChainCache(resp.ChainId).ChainExplorerUrl
 		resp.Hash = lockTokenStatistic.Hash
 		resp.TokenName = lockTokenStatistic.Token.Name
+		resp.TokenLogo = lockTokenStatistic.Token.TokenBasic.Meta
 		resp.ItemProxy = basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy)
 		resp.AmountUsd = decimal.NewFromBigInt(&lockTokenStatistic.InAmountUsd.Int, -4).String()
 		lockTokenInfoResps = append(lockTokenInfoResps, resp)

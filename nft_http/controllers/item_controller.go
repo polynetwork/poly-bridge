@@ -18,6 +18,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"math/big"
 	"poly-bridge/chainsdk"
 	"poly-bridge/models"
@@ -181,14 +182,19 @@ func getSingleItem(
 }
 
 func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrlMap map[string]string) []*Item {
+	logs.Error("qqqqqqqqqqqqqqqqq_tokenIdUrlMap:", tokenIdUrlMap)
 	list := make([]*Item, 0)
 
 	// get cache if exist
 	profileReqs := make([]*mcm.FetchRequestParams, 0)
 	for tokenId, url := range tokenIdUrlMap {
 		cache, ok := GetItemCache(chainId, asset, tokenId)
+		jsoncache, _ := json.Marshal(cache)
+		logs.Error("qqqqqqqqqqqqqqqqq_jsoncache:", string(jsoncache))
 		if ok {
 			list = append(list, cache)
+			jsonlist1, _ := json.Marshal(list)
+			logs.Error("qqqqqqqqqqqqqqqqq_profileReqs:", string(jsonlist1))
 			delete(tokenIdUrlMap, tokenId)
 			continue
 		}
@@ -199,7 +205,8 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 		}
 		profileReqs = append(profileReqs, req)
 	}
-
+	jsonprofileReqs, err := json.Marshal(profileReqs)
+	logs.Error("qqqqqqqqqqqqqqqqq_profileReqs:", string(jsonprofileReqs))
 	// fetch meta data list and show rpc time
 	tBeforeBatchFetch := time.Now().UnixNano()
 	profiles, err := fetcher.BatchFetch(chainId, name, profileReqs)
@@ -232,7 +239,8 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 		itemj, _ := string2Big(list[j].TokenId)
 		return itemi.Cmp(itemj) < 0
 	})
-
+	jsonlist, err := json.Marshal(list)
+	logs.Error("qqqqqqqqqqqqqqqqq_list:", string(jsonlist))
 	return list
 }
 

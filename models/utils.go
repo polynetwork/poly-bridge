@@ -65,11 +65,37 @@ type TxnReceipt struct {
 	L1BlockNumber     *hexutil.Big    `json:"l1BlockNumber"`
 }
 
-var chainsNamesCache = map[uint64]string{}
+type chainCache struct {
+	ChainLogo        string
+	ChainExplorerUrl string
+	ChainFeeName     string
+	ChainFeeLogo     string
+}
 
-func Init(chains []*Chain) {
+var chainsNamesCache = map[uint64]string{}
+var chainsCache = map[uint64]chainCache{}
+
+func Init(chains []*Chain, chainFees []*ChainFee) {
 	for _, chain := range chains {
 		chainsNamesCache[chain.ChainId] = chain.Name
+		for _, chainFee := range chainFees {
+			if chain.ChainId == chainFee.ChainId {
+				chainsCache[chain.ChainId] = chainCache{
+					chain.ChainLogo,
+					chain.ChainExplorerUrl,
+					chainFee.TokenBasicName,
+					chainFee.TokenBasic.Meta,
+				}
+			}
+		}
+		if _, ok := chainsCache[chain.ChainId]; !ok {
+			chainsCache[chain.ChainId] = chainCache{
+				chain.ChainLogo,
+				chain.ChainExplorerUrl,
+				"",
+				"",
+			}
+		}
 	}
 }
 
@@ -79,6 +105,14 @@ func ChainId2Name(id uint64) string {
 		return name
 	}
 	return fmt.Sprintf("%v", id)
+}
+
+func ChainId2ChainCache(id uint64) chainCache {
+	cache, ok := chainsCache[id]
+	if ok {
+		return cache
+	}
+	return chainCache{}
 }
 
 type BigInt struct {
