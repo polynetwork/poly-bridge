@@ -310,6 +310,7 @@ func (c *ExplorerController) GetCrossTx() {
 			First(tokenBasic).Error
 		if err == nil {
 			relation.Token.TokenBasic = tokenBasic
+			logs.Error("qqqppppppppppppprelation.Token.TokenBasic", relation.Token.TokenBasic.Meta)
 		}
 	}
 	srcTransaction := new(models.SrcTransaction)
@@ -364,6 +365,8 @@ func (c *ExplorerController) GetCrossTx() {
 			First(tokenBasic).Error
 		if err == nil {
 			relation.ToToken.TokenBasic = tokenBasic
+			logs.Error("qqqppppppppppppprelation.ToToken.TokenBasic", relation.ToToken.TokenBasic.Meta)
+
 		}
 	}
 	dstToken := new(models.Token)
@@ -376,6 +379,7 @@ func (c *ExplorerController) GetCrossTx() {
 			First(tokenBasic).Error
 		if err == nil {
 			relation.DstToken.TokenBasic = tokenBasic
+			logs.Error("qqqppppppppppppprelation.DstToken.TokenBasic", relation.DstToken.TokenBasic.Meta)
 		}
 	}
 	c.Data["json"] = models.MakeCrossTxResp(relation)
