@@ -510,7 +510,7 @@ func (c *ExplorerController) GetLockTokenInfo() {
 	lockTokenStatistics := make([]*models.LockTokenStatistic, 0)
 	res := db.Where("chain_id = ? and in_amount_usd > 0", lockTokenInfoReq.ChainId).
 		Preload("Token").
-		Preload("TokenBasic").
+		Preload("Token.TokenBasic").
 		Find(&lockTokenStatistics)
 	if res.RowsAffected == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("lockTokenStatistics does not exist"))
