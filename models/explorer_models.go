@@ -682,7 +682,8 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 
 	allAmountUsdTotal := new(big.Int).SetInt64(0)
 	for _, tokenStatistic := range tokenStatistics {
-		if tokenStatistic.ChainId == tokenStatistic.Token.TokenBasic.ChainId {
+		if tokenStatistic.Token != nil && tokenStatistic.Token.TokenBasic != nil &&
+			tokenStatistic.ChainId == tokenStatistic.Token.TokenBasic.ChainId {
 			allAmountUsdTotal.Add(allAmountUsdTotal, &tokenStatistic.InAmountUsd.Int)
 		}
 	}
