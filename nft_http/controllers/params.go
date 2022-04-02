@@ -268,6 +268,7 @@ type TransactionBriefRsp struct {
 	AssetName    string
 	From         string
 	To           string
+	NftImage     string `json:"image"`
 }
 
 func (s *TransactionBriefRsp) instance(assetName string, r *TransactionBriefRelation) *TransactionBriefRsp {
@@ -392,6 +393,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			s.SrcTransaction.Asset = token.TokenBasicName
 			s.SrcTransaction.AssetHash = token.Hash
 			s.Transaction.AssetName = token.TokenBasicName
+			s.Transaction.NftImage = token.TokenBasic.Meta
 			s.Transaction.TokenId = r.SrcTransaction.SrcTransfer.Amount.String()
 		}
 
@@ -425,6 +427,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			s.DstTransaction.AssetHash = token.Hash
 
 			s.Transaction.AssetName = token.TokenBasicName
+			s.Transaction.NftImage = token.TokenBasic.Meta
 		}
 
 		s.DstTransaction.Hash = r.DstTransaction.Hash
