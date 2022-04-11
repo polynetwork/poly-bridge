@@ -14,10 +14,11 @@ import (
 )
 
 const (
-	SKIP     models.CheckFeeStatus = -2 // Skip since not our tx
-	NOT_PAID models.CheckFeeStatus = -1 // Not paid or paid too low
-	MISSING  models.CheckFeeStatus = 0  // Tx not received yet
-	PAID     models.CheckFeeStatus = 1  // Paid and enough pass
+	SKIP        models.CheckFeeStatus = -2 // Skip since not our tx
+	NOT_PAID    models.CheckFeeStatus = -1 // Not paid or paid too low
+	MISSING     models.CheckFeeStatus = 0  // Tx not received yet
+	PAID        models.CheckFeeStatus = 1  // Paid and enough pass
+	EstimatePay models.CheckFeeStatus = 2  // Paid but need EstimateGas
 )
 
 func (c *FeeController) NewCheckFee() {
@@ -97,11 +98,15 @@ func (c *FeeController) NewCheckFee() {
 			}
 			x := new(big.Int).Mul(&v.WrapperTransactionWithToken.FeeAmount.Int, big.NewInt(v.WrapperTransactionWithToken.FeeToken.TokenBasic.Price))
 			feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(v.WrapperTransactionWithToken.FeeToken.Precision))))
+			gasPay := feePay
 			feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 			x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
 			feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+
+			gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
+			gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
 			// get optimistic L1 fee on ethereum
 			if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
@@ -129,11 +134,31 @@ func (c *FeeController) NewCheckFee() {
 			if res.Error == nil {
 				if _, ok := excludeChainIds[polyTx.DstChainId]; !ok {
 					FluctuatingFeeMin = new(big.Float).Mul(FluctuatingFeeMin, new(big.Float).SetFloat64(0.9))
+					gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetFloat64(0.9))
 				}
 			}
 
 			v.Paid, _ = feePay.Float64()
 			v.Min, _ = FluctuatingFeeMin.Float64()
+
+			if _, in := conf.EstimateProxy[strings.ToUpper(v.SrcTransaction.Contract)]; in {
+				//is estimateGas proxy
+				if gasPay.Cmp(new(big.Float).SetInt64(0)) <= 0 {
+					v.Status = NOT_PAID
+					continue
+				}
+				v.Status = EstimatePay
+				if minFee, in := conf.EstimateFeeMin[v.WrapperTransactionWithToken.DstChainId]; in {
+					if minFee > 0 && minFee < 100 {
+						gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetInt64(100))
+						gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(minFee))
+					}
+				}
+				v.PaidGas, _ = gasPay.Float64()
+				logs.Info("check fee poly_hash %s is EstimateProxy,PaidGas %v", k, v.PaidGas)
+				continue
+			}
+
 			if feePay.Cmp(feeMin) >= 0 {
 				v.Status = PAID
 				logs.Info("check fee poly_hash %s PAID,feePay %v >= feeMin %v", k, v.Paid, v.Min)
