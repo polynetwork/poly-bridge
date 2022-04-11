@@ -19,7 +19,7 @@ const (
 	NOTPASS models.CheckFeeStatus = -1 // Paid too low
 	MISSING models.CheckFeeStatus = 0  // Tx not received yet and Not paid
 	PAID    models.CheckFeeStatus = 1  // Paid and enough pass
-	FREE    models.CheckFeeStatus = 1  // Force paid tx
+	FREE    models.CheckFeeStatus = 2  // Force paid tx
 )
 
 func (c *FeeController) NewCheckFee() {
