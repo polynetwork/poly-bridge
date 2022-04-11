@@ -29,6 +29,8 @@ import (
 
 var GlobalConfig *Config
 var PolyProxy map[string]bool
+var EstimateProxy map[string]bool
+var EstimateFeeMin map[uint64]int64
 
 var (
 	ConfigPathFlag = cli.StringFlag{
@@ -354,6 +356,8 @@ func NewConfig(filePath string) *Config {
 
 	GlobalConfig = config
 	initPolyProxy()
+	initEstimateProxy()
+	initEstimateFeeMin()
 	return config
 }
 
@@ -386,6 +390,33 @@ func initPolyProxy() {
 	}
 	PolyProxy[""] = true
 	logs.Info("init polyProxy:", PolyProxy)
+}
+
+func initEstimateProxy() {
+	EstimateProxy = make(map[string]bool, 0)
+	proxyConfigs := GlobalConfig.ChainListenConfig
+	for _, v := range proxyConfigs {
+		//some chain only listen,don't need our relayer cross
+		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+			continue
+		}
+		for _, proxy := range v.OtherProxyContract {
+			if proxy.ItemName == "O3V2" {
+				EstimateProxy[strings.ToUpper(proxy.ItemProxy)] = true
+				EstimateProxy[strings.ToUpper(basedef.HexStringReverse(proxy.ItemProxy))] = true
+			}
+		}
+	}
+	logs.Info("init EstimateProxy:", EstimateProxy)
+}
+
+func initEstimateFeeMin() {
+	EstimateFeeMin = make(map[uint64]int64, 0)
+	feeListenConfig := GlobalConfig.FeeListenConfig
+	for _, v := range feeListenConfig {
+		EstimateFeeMin[v.ChainId] = v.MinFee
+	}
+	logs.Info("init EstimateFeeMin:", EstimateFeeMin)
 }
 
 type NftConfig struct {
