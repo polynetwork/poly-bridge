@@ -14,10 +14,12 @@ import (
 )
 
 const (
-	SKIP     models.CheckFeeStatus = -2 // Skip since not our tx
-	NOT_PAID models.CheckFeeStatus = -1 // Not paid or paid too low
-	MISSING  models.CheckFeeStatus = 0  // Tx not received yet
-	PAID     models.CheckFeeStatus = 1  // Paid and enough pass
+	DELETE  models.CheckFeeStatus = -3 //	Force delete tx
+	SKIP    models.CheckFeeStatus = -2 // Skip since not our tx
+	NOTPASS models.CheckFeeStatus = -1 // Paid too low
+	MISSING models.CheckFeeStatus = 0  // Tx not received yet and Not paid
+	PAID    models.CheckFeeStatus = 1  // Paid and enough pass
+	FREE    models.CheckFeeStatus = 1  // Force paid tx
 )
 
 func (c *FeeController) NewCheckFee() {
@@ -62,7 +64,7 @@ func (c *FeeController) NewCheckFee() {
 			exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsPaidPrefix + v.SrcTransaction.Hash)
 			if exists {
 				logs.Info("check fee poly_hash %s marked as paid", k)
-				v.Status = PAID
+				v.Status = FREE
 				continue
 			}
 		}
@@ -78,37 +80,41 @@ func (c *FeeController) NewCheckFee() {
 					logs.Info("check fee poly_hash %s SKIP, because it is a NEO/NEO3 tx with no wrapper_transactions", k)
 				}
 
-				v.Status = NOT_PAID
+				v.Status = MISSING
 				logs.Info("check fee poly_hash %s NOT_PAID,src_transaction but not wrapper_transaction", k)
 				continue
 			}
 		} else {
 			chainFee, ok := chain2Fees[v.WrapperTransactionWithToken.DstChainId]
 			if !ok {
-				v.Status = NOT_PAID
+				v.Status = MISSING
 				logs.Info("check fee poly_hash %s NOT_PAID,chainFee hasn't DstChainId's fee", k)
 				continue
 			}
 			x := new(big.Int).Mul(&v.WrapperTransactionWithToken.FeeAmount.Int, big.NewInt(v.WrapperTransactionWithToken.FeeToken.TokenBasic.Price))
 			feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(v.WrapperTransactionWithToken.FeeToken.Precision))))
+			gasPay := feePay
 			feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 			x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
 			feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
+			gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
+			gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetUint64(chainFee.TokenBasic.Precision))
+
 			// get optimistic L1 fee on ethereum
 			if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
 				ethChainFee, ok := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
 				if !ok {
-					v.Status = NOT_PAID
+					v.Status = MISSING
 					logs.Info("check fee poly_hash %s NOT_PAID,chainFee hasn't ethereum fee", k)
 					continue
 				}
 
 				L1MinFee, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
 				if err != nil {
-					v.Status = NOT_PAID
+					v.Status = MISSING
 					logs.Info("check fee poly_hash %s NOT_PAID, get L1 fee failed. err=%v", k, err)
 					continue
 				}
@@ -128,6 +134,7 @@ func (c *FeeController) NewCheckFee() {
 
 			v.Paid, _ = feePay.Float64()
 			v.Min, _ = FluctuatingFeeMin.Float64()
+			v.PaidGas, _ = gasPay.Float64()
 			if feePay.Cmp(feeMin) >= 0 {
 				v.Status = PAID
 				logs.Info("check fee poly_hash %s PAID,feePay %v >= feeMin %v", k, v.Paid, v.Min)
@@ -135,8 +142,8 @@ func (c *FeeController) NewCheckFee() {
 				v.Status = PAID
 				logs.Info("check fee poly_hash %s PAID,feePay %v >= FluctuatingFeeMin %v", k, v.Paid, v.Min)
 			} else {
-				v.Status = NOT_PAID
-				logs.Info("check fee poly_hash %s NOT_PAID,feePay %v < FluctuatingFeeMin %v", k, v.Paid, v.Min)
+				v.Status = NOTPASS
+				logs.Info("check fee poly_hash %s NOTPASS,feePay %v < FluctuatingFeeMin %v", k, v.Paid, v.Min)
 			}
 		}
 	}
