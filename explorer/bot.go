@@ -89,27 +89,27 @@ func (c *BotController) BotPage() {
 		} else {
 			rows := make([]string, len(txs))
 			for i, tx := range txs {
-				entry, err := getSrcPolyDstRelation(tx)
-				if err != nil {
-					logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, err)
+				entry, e := getSrcPolyDstRelation(tx)
+				if e != nil {
+					logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, e)
 					continue
 				}
-				tx := models.ParseBotTx(entry, fees)
+				botTx := models.ParseBotTx(entry, fees)
 				rows[i] = fmt.Sprintf(
 					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 13)),
-					tx.Asset,
-					tx.Amount,
-					tx.SrcChainName,
-					tx.DstChainName,
-					tx.Hash,
-					tx.FeeToken,
-					tx.FeePaid,
-					tx.FeeMin,
-					tx.FeePass,
-					tx.Status,
-					tx.Time,
-					tx.Duration,
-					tx.PolyHash,
+					botTx.Asset,
+					botTx.Amount,
+					botTx.SrcChainName,
+					botTx.DstChainName,
+					botTx.Hash,
+					botTx.FeeToken,
+					botTx.FeePaid,
+					botTx.FeeMin,
+					botTx.FeePass,
+					botTx.Status,
+					botTx.Time,
+					botTx.Duration,
+					botTx.PolyHash,
 				)
 
 			}
@@ -166,8 +166,8 @@ func (c *BotController) FinishTx() {
 	if token == conf.GlobalConfig.BotConfig.ApiToken {
 		switch status {
 		case "skip":
-			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsSkipPrefix+tx, "markAsSkipByBot", time.Hour*24*7)
-			if err == nil {
+			_, e := cacheRedis.Redis.Set(cacheRedis.MarkTxAsSkipPrefix+tx, "markAsSkipByBot", time.Hour*24*7)
+			if e == nil {
 				resp = fmt.Sprintf("Success mark %s as skip", tx)
 			}
 		case "wait":
@@ -203,8 +203,8 @@ func (c *BotController) MarkUnMarkTxAsPaid() {
 				resp = fmt.Sprintf("Success unmark %s as paid", tx)
 			}
 		} else {
-			_, err := cacheRedis.Redis.Set(cacheRedis.MarkTxAsPaidPrefix+tx, "markAsPaidByBot", time.Hour*12)
-			if err == nil {
+			_, e := cacheRedis.Redis.Set(cacheRedis.MarkTxAsPaidPrefix+tx, "markAsPaidByBot", time.Hour*12)
+			if e == nil {
 				resp = fmt.Sprintf("Success mark %s as paid", tx)
 			}
 		}
@@ -309,10 +309,10 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 
 		// get optimistic L1 fee on ethereum
 		if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
-			ethChainFee, ok := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
-			if ok {
-				l1MinFee, _, err := fee.GetL1Fee(ethChainFee, chainId)
-				if err == nil {
+			ethChainFee, ok2 := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
+			if ok2 {
+				l1MinFee, _, e := fee.GetL1Fee(ethChainFee, chainId)
+				if e == nil {
 					minFee = new(big.Float).Add(minFee, l1MinFee)
 				}
 			}
@@ -529,25 +529,25 @@ func (c *BotController) RunChecks() {
 		botIp, err := cacheRedis.Redis.Get(cacheRedis.TxCheckBot)
 		if err != nil {
 			//lock
-			lock, err := cacheRedis.Redis.Lock(cacheRedis.TxCheckBot, LOCAL_IPV4, 2*time.Second*time.Duration(interval))
-			if err != nil {
+			lock, e := cacheRedis.Redis.Lock(cacheRedis.TxCheckBot, LOCAL_IPV4, 2*time.Second*time.Duration(interval))
+			if e != nil {
 				return
 			}
 			if lock {
 				isCheckBot = true
 			}
 		} else if botIp == LOCAL_IPV4 {
-			_, err := cacheRedis.Redis.Expire(cacheRedis.TxCheckBot, 2*time.Second*time.Duration(interval))
-			if err != nil {
+			_, e := cacheRedis.Redis.Expire(cacheRedis.TxCheckBot, 2*time.Second*time.Duration(interval))
+			if e != nil {
 				return
 			}
 			isCheckBot = true
 		}
 
 		if isCheckBot {
-			err := c.checkTxs()
-			if err != nil {
-				logs.Error("check txs error %s", err)
+			e := c.checkTxs()
+			if e != nil {
+				logs.Error("check txs error %s", e)
 			}
 		}
 	}
@@ -576,13 +576,13 @@ func (c *BotController) checkTxs() (err error) {
 		return err
 	}
 	for _, tx := range txs {
-		srcPolyDstRelation, err := getSrcPolyDstRelation(tx)
-		if err != nil {
-			logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, err)
+		srcPolyDstRelation, e := getSrcPolyDstRelation(tx)
+		if e != nil {
+			logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, e)
 			continue
 		}
 		entry := models.ParseBotTx(srcPolyDstRelation, fees)
-		if existed, err := cacheRedis.Redis.Exists(cacheRedis.StuckTxAlarmHasSendPrefix + strings.ToLower(entry.Hash)); err == nil && existed {
+		if existed, e2 := cacheRedis.Redis.Exists(cacheRedis.StuckTxAlarmHasSendPrefix + strings.ToLower(entry.Hash)); e2 == nil && existed {
 			logs.Info("stuck TX alarm has been sent: %s", tx.SrcHash)
 			continue
 		}
@@ -630,8 +630,8 @@ func (c *BotController) checkTxs() (err error) {
 		if err != nil {
 			logs.Error("send tx stuck ding alarm error. hash: %s, err:", tx.SrcHash, err)
 		} else {
-			if _, err := cacheRedis.Redis.Set(cacheRedis.StuckTxAlarmHasSendPrefix+strings.ToLower(entry.Hash), "done", time.Hour*24*time.Duration(conf.GlobalConfig.BotConfig.CheckFrom)); err != nil {
-				logs.Error("mark tx stuck alarm hash been sent error. hash: %s err: %s", entry.Hash, err)
+			if _, e2 := cacheRedis.Redis.Set(cacheRedis.StuckTxAlarmHasSendPrefix+strings.ToLower(entry.Hash), "done", time.Hour*24*time.Duration(conf.GlobalConfig.BotConfig.CheckFrom)); e2 != nil {
+				logs.Error("mark tx stuck alarm hash been sent error. hash: %s err: %s", entry.Hash, e2)
 			}
 		}
 	}
@@ -685,7 +685,6 @@ func (c *BotController) postDing(payload interface{}) error {
 
 func (c *BotController) ListLargeTxPage() {
 	apiToken := c.Ctx.Input.Query("token")
-	var err error
 	largeTxs := make([]*basedef.LargeTx, 0)
 	if apiToken == conf.GlobalConfig.BotConfig.ApiToken {
 		ltxs, err := cacheRedis.Redis.LRange(cacheRedis.LargeTxList, -100, -1)
@@ -719,11 +718,11 @@ func (c *BotController) ListLargeTxPage() {
 						dstChainName = dstChain.Name
 					}
 					if v.SrcTransaction.SrcSwap != nil && v.SrcTransaction.SrcSwap.DstChainId != 0 {
-						dstChain := new(models.Chain)
+						dstChain2 := new(models.Chain)
 						dstChainName = strconv.FormatUint(v.SrcTransaction.SrcSwap.DstChainId, 10)
-						err = db.Where("chain_id = ?", v.SrcTransaction.SrcSwap.DstChainId).First(dstChain).Error
+						err = db.Where("chain_id = ?", v.SrcTransaction.SrcSwap.DstChainId).First(dstChain2).Error
 						if err == nil {
-							dstChainName = dstChain.Name
+							dstChainName = dstChain2.Name
 						}
 					}
 
@@ -816,8 +815,7 @@ func (c *BotController) ListLargeTxPage() {
 		c.Ctx.Output.Body(rb)
 		return
 	} else {
-		err = fmt.Errorf("access denied")
-		c.Data["json"] = err.Error()
+		c.Data["json"] = "access denied"
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
@@ -829,10 +827,10 @@ func (c *BotController) ListNodeStatusPage() {
 		nodeStatusesMap := make(map[string][]basedef.NodeStatus, 0)
 		chainNames := make([]string, 0)
 		for _, cfg := range conf.GlobalConfig.ChainNodes {
-			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + cfg.ChainName); err == nil {
+			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + strconv.FormatUint(cfg.ChainId, 10)); err == nil {
 				var nodeStatuses []basedef.NodeStatus
-				if err := json.Unmarshal([]byte(dataStr), &nodeStatuses); err != nil {
-					logs.Error("chain %s node status data Unmarshal error: ", cfg.ChainName, err)
+				if e := json.Unmarshal([]byte(dataStr), &nodeStatuses); e != nil {
+					logs.Error("chain %s node status data Unmarshal error: ", cfg.ChainName, e)
 					continue
 				}
 				chainNames = append(chainNames, cfg.ChainName)
@@ -894,21 +892,21 @@ func (c *BotController) IgnoreNodeStatusAlarm() {
 	var err error
 	resp := ""
 	if token == conf.GlobalConfig.BotConfig.ApiToken {
-		dayNum, err := strconv.Atoi(day)
-		if err == nil && dayNum >= 0 {
+		dayNum, e := strconv.Atoi(day)
+		if e == nil && dayNum >= 0 {
 			if dayNum == 0 {
-				_, err = cacheRedis.Redis.Del(cacheRedis.IgnoreNodeStatusAlarmPrefix + node)
-				if err == nil {
+				_, e = cacheRedis.Redis.Del(cacheRedis.IgnoreNodeStatusAlarmPrefix + node)
+				if e == nil {
 					resp = fmt.Sprintf("success cancel ignore alarm")
 				}
 			} else {
-				_, err := cacheRedis.Redis.Set(cacheRedis.IgnoreNodeStatusAlarmPrefix+node, "ignore", time.Hour*time.Duration(24*dayNum))
-				if err == nil {
+				_, e2 := cacheRedis.Redis.Set(cacheRedis.IgnoreNodeStatusAlarmPrefix+node, "ignore", time.Hour*time.Duration(24*dayNum))
+				if e2 == nil {
 					resp = fmt.Sprintf("success ignore alarm for %d days", dayNum)
 				}
 			}
 		} else {
-			err = fmt.Errorf("invalid parameter day：%s, err: %s", day, err)
+			e = fmt.Errorf("invalid parameter day：%s, err: %s", day, e)
 		}
 	} else {
 		err = fmt.Errorf("Access denied")
@@ -929,8 +927,8 @@ func (c *BotController) ListRelayerAccountStatus() {
 		for _, cfg := range conf.GlobalConfig.ChainNodes {
 			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.RelayerAccountStatusPrefix + cfg.ChainName); err == nil {
 				var accountStatuses []basedef.RelayerAccountStatus
-				if err := json.Unmarshal([]byte(dataStr), &accountStatuses); err != nil {
-					logs.Error("%s relayer account status data Unmarshal error: ", cfg.ChainName, err)
+				if e := json.Unmarshal([]byte(dataStr), &accountStatuses); e != nil {
+					logs.Error("%s relayer account status data Unmarshal error: ", cfg.ChainName, e)
 					continue
 				}
 				chainNames = append(chainNames, cfg.ChainName)

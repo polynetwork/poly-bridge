@@ -1,7 +1,6 @@
 package neomonitor
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/joeqian10/neo-gogogo/tx"
@@ -18,7 +17,6 @@ type NeoMonitor struct {
 	monitorConfig *conf.HealthMonitorConfig
 	sdks          map[string]*chainsdk.NeoSdk
 	nodeHeight    map[string]uint64
-	nodeStatus    map[string]string
 }
 
 func NewNeoHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *NeoMonitor {
@@ -38,12 +36,15 @@ func NewNeoHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *NeoMonitor {
 	}
 	neoMonitor.sdks = sdks
 	neoMonitor.nodeHeight = make(map[string]uint64, len(sdks))
-	neoMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return neoMonitor
 }
 
 func (n *NeoMonitor) GetChainName() string {
 	return n.monitorConfig.ChainName
+}
+
+func (n *NeoMonitor) GetChainId() uint64 {
+	return n.monitorConfig.ChainId
 }
 
 func (n *NeoMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
@@ -115,27 +116,24 @@ func (n *NeoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		}
 		err = n.CheckAbiCall(sdk)
 		if err != nil {
-			n.nodeStatus[url] = err.Error()
-		} else {
-			n.nodeStatus[url] = basedef.StatusOk
+			status.Status = append(status.Status, err.Error())
 		}
-		status.Status = append(status.Status, n.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
-	data, _ := json.Marshal(nodeStatuses)
-	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+n.monitorConfig.ChainName, data, time.Hour*24)
-	if err != nil {
-		logs.Error("set %s node status error: %s", n.GetChainName(), err)
-	}
-	return nodeStatuses, err
+	//data, _ := json.Marshal(nodeStatuses)
+	//_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+n.monitorConfig.ChainName, data, time.Hour*24)
+	//if err != nil {
+	//	logs.Error("set %s node status error: %s", n.GetChainName(), err)
+	//}
+	return nodeStatuses, nil
 }
 
 func (n *NeoMonitor) GetCurrentHeight(sdk *chainsdk.NeoSdk) (uint64, error) {
 	height, err := sdk.GetBlockCount()
 	if err != nil || height == 0 || height == math.MaxUint64 {
-		err := fmt.Errorf("get current block height err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", n.GetChainName(), sdk.GetUrl(), err))
-		return 0, err
+		e := fmt.Errorf("get current block height err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", n.GetChainName(), sdk.GetUrl(), e))
+		return 0, e
 	}
 	logs.Info("%s node: %s, latest height: %d", n.GetChainName(), sdk.GetUrl(), height)
 	return height, nil
@@ -144,8 +142,8 @@ func (n *NeoMonitor) GetCurrentHeight(sdk *chainsdk.NeoSdk) (uint64, error) {
 func (n *NeoMonitor) CheckAbiCall(sdk *chainsdk.NeoSdk) error {
 	_, err := sdk.GetBlockByIndex(n.nodeHeight[sdk.GetUrl()] - 1)
 	if err != nil {
-		err := fmt.Errorf("call GetBlockByIndex error: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", n.GetChainName(), sdk.GetUrl(), err))
+		e := fmt.Errorf("call GetBlockByIndex error: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", n.GetChainName(), sdk.GetUrl(), e))
 		return err
 	}
 	return nil

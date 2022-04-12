@@ -29,6 +29,7 @@ const (
 	NodeStatusPrefix                = "NodeStatusPrefix_"
 	NodeStatusAlarmPrefix           = "NodeStatusAlarmPrefix_"
 	IgnoreNodeStatusAlarmPrefix     = "IgnoreNodeStatusAlarmPrefix_"
+	ChainStatusPrefix               = "ChainStatusPrefix_"
 	AssetBoundDstLockProxyPrefix    = "AssetBoundDstLockProxyPrefix_"
 	_GetManualTxData                = "GetManualTxData_"
 	RelayerAccountStatusPrefix      = "RelayerAccountStatusPrefix_"
