@@ -16,7 +16,6 @@ type ZilliqaMonitor struct {
 	monitorConfig *conf.HealthMonitorConfig
 	sdks          map[string]*chainsdk.ZilliqaSdk
 	nodeHeight    map[string]uint64
-	nodeStatus    map[string]string
 }
 
 func NewZilliqaHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *ZilliqaMonitor {
@@ -28,12 +27,15 @@ func NewZilliqaHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *ZilliqaMo
 	}
 	zilliqaMonitor.sdks = sdks
 	zilliqaMonitor.nodeHeight = make(map[string]uint64, len(sdks))
-	zilliqaMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return zilliqaMonitor
 }
 
 func (z *ZilliqaMonitor) GetChainName() string {
 	return z.monitorConfig.ChainName
+}
+
+func (z *ZilliqaMonitor) GetChainId() uint64 {
+	return z.monitorConfig.ChainId
 }
 
 func (z *ZilliqaMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
@@ -57,11 +59,8 @@ func (z *ZilliqaMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 			err = z.CheckAbiCall(sdk)
 		}
 		if err != nil {
-			z.nodeStatus[url] = err.Error()
-		} else {
-			z.nodeStatus[url] = basedef.StatusOk
+			status.Status = append(status.Status, err.Error())
 		}
-		status.Status = append(status.Status, z.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
 	data, _ := json.Marshal(nodeStatuses)
@@ -75,9 +74,9 @@ func (z *ZilliqaMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 func (z *ZilliqaMonitor) GetCurrentHeight(sdk *chainsdk.ZilliqaSdk) (uint64, error) {
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint64 {
-		err := fmt.Errorf("get current block height err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", z.GetChainName(), sdk.GetUrl(), err))
-		return 0, err
+		e := fmt.Errorf("get current block height err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", z.GetChainName(), sdk.GetUrl(), e))
+		return 0, e
 	}
 	logs.Info("%s node: %s, latest height: %d", z.GetChainName(), sdk.GetUrl(), height)
 	return height, nil
@@ -86,9 +85,9 @@ func (z *ZilliqaMonitor) GetCurrentHeight(sdk *chainsdk.ZilliqaSdk) (uint64, err
 func (z *ZilliqaMonitor) CheckAbiCall(sdk *chainsdk.ZilliqaSdk) error {
 	_, err := sdk.GetBlock(z.nodeHeight[sdk.GetUrl()] - 1)
 	if err != nil {
-		err := fmt.Errorf("call GetBlock error: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", z.GetChainName(), sdk.GetUrl(), err))
-		return err
+		e := fmt.Errorf("call GetBlock error: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", z.GetChainName(), sdk.GetUrl(), e))
+		return e
 	}
 	return nil
 }
