@@ -100,7 +100,7 @@ func (c *FeeController) NewCheckFee() {
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
 			gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
-			gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetUint64(chainFee.TokenBasic.Precision))
+			gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
 			// get optimistic L1 fee on ethereum
 			if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
