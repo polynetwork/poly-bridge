@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	DELETE  models.CheckFeeStatus = -3 //	Force delete tx
 	SKIP    models.CheckFeeStatus = -2 // Skip since not our tx
 	NOTPASS models.CheckFeeStatus = -1 // Paid too low
 	MISSING models.CheckFeeStatus = 0  // Tx not received yet and Not paid
