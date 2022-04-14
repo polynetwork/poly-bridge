@@ -62,7 +62,7 @@ func (c *FeeController) NewCheckFee() {
 		if v.SrcTransaction != nil {
 			exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsPaidPrefix + v.SrcTransaction.Hash)
 			if exists {
-				logs.Info("check fee poly_hash %s marked as paid", k)
+				logs.Info("check fee poly_hash %s marked as FREE", k)
 				v.Status = FREE
 				continue
 			}
@@ -80,14 +80,14 @@ func (c *FeeController) NewCheckFee() {
 				}
 
 				v.Status = MISSING
-				logs.Info("check fee poly_hash %s NOT_PAID,src_transaction but not wrapper_transaction", k)
+				logs.Info("check fee poly_hash %s MISSING,src_transaction but not wrapper_transaction", k)
 				continue
 			}
 		} else {
 			chainFee, ok := chain2Fees[v.WrapperTransactionWithToken.DstChainId]
 			if !ok {
 				v.Status = MISSING
-				logs.Info("check fee poly_hash %s NOT_PAID,chainFee hasn't DstChainId's fee", k)
+				logs.Info("check fee poly_hash %s MISSING,chainFee hasn't DstChainId's fee", k)
 				continue
 			}
 			x := new(big.Int).Mul(&v.WrapperTransactionWithToken.FeeAmount.Int, big.NewInt(v.WrapperTransactionWithToken.FeeToken.TokenBasic.Price))
@@ -100,21 +100,21 @@ func (c *FeeController) NewCheckFee() {
 			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
 			gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
-			gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetUint64(chainFee.TokenBasic.Precision))
+			gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
 			// get optimistic L1 fee on ethereum
 			if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
 				ethChainFee, ok := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
 				if !ok {
 					v.Status = MISSING
-					logs.Info("check fee poly_hash %s NOT_PAID,chainFee hasn't ethereum fee", k)
+					logs.Info("check fee poly_hash %s MISSING,chainFee hasn't ethereum fee", k)
 					continue
 				}
 
 				L1MinFee, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
 				if err != nil {
 					v.Status = MISSING
-					logs.Info("check fee poly_hash %s NOT_PAID, get L1 fee failed. err=%v", k, err)
+					logs.Info("check fee poly_hash %s MISSING, get L1 fee failed. err=%v", k, err)
 					continue
 				}
 				feeMin = new(big.Float).Add(feeMin, L1MinFee)
