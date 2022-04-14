@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	SKIP    models.CheckFeeStatus = -2 // Skip since not our tx
-	NOTPASS models.CheckFeeStatus = -1 // Paid too low
-	MISSING models.CheckFeeStatus = 0  // Tx not received yet and Not paid
-	PAID    models.CheckFeeStatus = 1  // Paid and enough pass
-	FREE    models.CheckFeeStatus = 2  // Force paid tx
+	SKIP     models.CheckFeeStatus = -2 // Skip since not our tx
+	ONLYPAID models.CheckFeeStatus = -1 // Paid too low
+	MISSING  models.CheckFeeStatus = 0  // Tx not received yet and Not paid
+	FULLPAID models.CheckFeeStatus = 1  // Paid and enough pass
+	FREE     models.CheckFeeStatus = 2  // Force paid tx
 )
 
 func (c *FeeController) NewCheckFee() {
@@ -128,6 +128,7 @@ func (c *FeeController) NewCheckFee() {
 			if res.Error == nil {
 				if _, ok := excludeChainIds[polyTx.DstChainId]; !ok {
 					FluctuatingFeeMin = new(big.Float).Mul(FluctuatingFeeMin, new(big.Float).SetFloat64(0.9))
+					gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetFloat64(1.1))
 				}
 			}
 
@@ -135,14 +136,14 @@ func (c *FeeController) NewCheckFee() {
 			v.Min, _ = FluctuatingFeeMin.Float64()
 			v.PaidGas, _ = gasPay.Float64()
 			if feePay.Cmp(feeMin) >= 0 {
-				v.Status = PAID
-				logs.Info("check fee poly_hash %s PAID,feePay %v >= feeMin %v", k, v.Paid, v.Min)
+				v.Status = FULLPAID
+				logs.Info("check fee poly_hash %s FULLPAID,feePay %v >= feeMin %v", k, v.Paid, v.Min)
 			} else if feePay.Cmp(FluctuatingFeeMin) >= 0 {
-				v.Status = PAID
-				logs.Info("check fee poly_hash %s PAID,feePay %v >= FluctuatingFeeMin %v", k, v.Paid, v.Min)
+				v.Status = FULLPAID
+				logs.Info("check fee poly_hash %s FULLPAID,feePay %v >= FluctuatingFeeMin %v", k, v.Paid, v.Min)
 			} else {
-				v.Status = NOTPASS
-				logs.Info("check fee poly_hash %s NOTPASS,feePay %v < FluctuatingFeeMin %v", k, v.Paid, v.Min)
+				v.Status = ONLYPAID
+				logs.Info("check fee poly_hash %s ONLYPAID,feePay %v < FluctuatingFeeMin %v", k, v.Paid, v.Min)
 			}
 		}
 	}
