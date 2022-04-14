@@ -64,6 +64,10 @@ func (c *FeeController) NewCheckFee() {
 			if exists {
 				logs.Info("check fee poly_hash %s marked as FREE", k)
 				v.Status = FREE
+				if v.SrcTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || v.SrcTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID || v.SrcTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID {
+					//ont neo neo3 needn`t estimate gas
+					v.Status = FULLPAID
+				}
 				continue
 			}
 		}
