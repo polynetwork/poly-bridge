@@ -1,12 +1,10 @@
 package zilliqamonitor
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"math"
 	"poly-bridge/basedef"
-	"poly-bridge/cacheRedis"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"time"
@@ -63,12 +61,12 @@ func (z *ZilliqaMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		}
 		nodeStatuses = append(nodeStatuses, status)
 	}
-	data, _ := json.Marshal(nodeStatuses)
-	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+z.monitorConfig.ChainName, data, time.Hour*24)
-	if err != nil {
-		logs.Error("set %s node status error: %s", z.GetChainName(), err)
-	}
-	return nodeStatuses, err
+	//data, _ := json.Marshal(nodeStatuses)
+	//_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+z.monitorConfig.ChainName, data, time.Hour*24)
+	//if err != nil {
+	//	logs.Error("set %s node status error: %s", z.GetChainName(), err)
+	//}
+	return nodeStatuses, nil
 }
 
 func (z *ZilliqaMonitor) GetCurrentHeight(sdk *chainsdk.ZilliqaSdk) (uint64, error) {
