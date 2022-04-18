@@ -1,13 +1,11 @@
 package polymonitor
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/polynetwork/poly-go-sdk"
 	"math"
 	"poly-bridge/basedef"
-	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"time"
 )
@@ -16,7 +14,6 @@ type PolyHealthMonitor struct {
 	monitorConfig *conf.HealthMonitorConfig
 	sdks          map[string]*poly_go_sdk.PolySdk
 	nodeHeight    map[string]uint64
-	nodeStatus    map[string]string
 }
 
 func NewPolyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *PolyHealthMonitor {
@@ -30,12 +27,15 @@ func NewPolyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *PolyHealthMo
 	}
 	polyMonitor.sdks = sdks
 	polyMonitor.nodeHeight = make(map[string]uint64, len(sdks))
-	polyMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return polyMonitor
 }
 
 func (p *PolyHealthMonitor) GetChainName() string {
 	return p.monitorConfig.ChainName
+}
+
+func (p *PolyHealthMonitor) GetChainId() uint64 {
+	return p.monitorConfig.ChainId
 }
 
 func (p *PolyHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
@@ -59,27 +59,24 @@ func (p *PolyHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 			err = p.CheckAbiCall(sdk, url)
 		}
 		if err != nil {
-			p.nodeStatus[url] = err.Error()
-		} else {
-			p.nodeStatus[url] = basedef.StatusOk
+			status.Status = append(status.Status, err.Error())
 		}
-		status.Status = append(status.Status, p.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
-	data, _ := json.Marshal(nodeStatuses)
-	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+p.monitorConfig.ChainName, data, time.Hour*24)
-	if err != nil {
-		logs.Error("set %s node status error: %s", p.GetChainName(), err)
-	}
-	return nodeStatuses, err
+	//data, _ := json.Marshal(nodeStatuses)
+	//_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+p.monitorConfig.ChainName, data, time.Hour*24)
+	//if err != nil {
+	//	logs.Error("set %s node status error: %s", p.GetChainName(), err)
+	//}
+	return nodeStatuses, nil
 }
 
 func (p *PolyHealthMonitor) GetCurrentHeight(sdk *poly_go_sdk.PolySdk, url string) (uint64, error) {
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint32 {
-		err := fmt.Errorf("get current block height err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", p.GetChainName(), url, err))
-		return 0, err
+		e := fmt.Errorf("get current block height err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", p.GetChainName(), url, e))
+		return 0, e
 	}
 	logs.Info("%s node: %s, latest height: %d", p.GetChainName(), url, height)
 	return uint64(height), nil
@@ -88,9 +85,9 @@ func (p *PolyHealthMonitor) GetCurrentHeight(sdk *poly_go_sdk.PolySdk, url strin
 func (p *PolyHealthMonitor) CheckAbiCall(sdk *poly_go_sdk.PolySdk, url string) error {
 	_, err := sdk.GetSmartContractEventByBlock(uint32(p.nodeHeight[url]) - 1)
 	if err != nil {
-		err := fmt.Errorf("call GetSmartContractEventByBlock err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", p.GetChainName(), url, err))
-		return err
+		e := fmt.Errorf("call GetSmartContractEventByBlock err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", p.GetChainName(), url, e))
+		return e
 	}
 	return nil
 }

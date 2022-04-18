@@ -1261,3 +1261,11 @@ type ManualTxDataResp struct {
 	Data   string `json:"data"`
 	DstCCM string `json:"dst_ccm"`
 }
+
+type ChainHealthReq struct {
+	ChainIds []uint64
+}
+
+type ChainHealthRsp struct {
+	Result map[uint64]bool
+}

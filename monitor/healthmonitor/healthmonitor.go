@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
@@ -13,15 +16,32 @@ import (
 	"poly-bridge/monitor/healthmonitor/neomonitor"
 	"poly-bridge/monitor/healthmonitor/ontologymonitor"
 	"poly-bridge/monitor/healthmonitor/polymonitor"
-	"poly-bridge/monitor/healthmonitor/switcheomonitor"
 	"poly-bridge/monitor/healthmonitor/zilliqamonitor"
+	"poly-bridge/utils/transactions"
 	"runtime/debug"
+	"strconv"
 	"time"
 )
 
+var db *gorm.DB
 var healthMonitorConfigMap = make(map[uint64]*conf.HealthMonitorConfig, 0)
 
+func Init() {
+	Logger := logger.Default
+	if conf.GlobalConfig.RunMode == "dev" {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	dbConfig := conf.GlobalConfig.DBConfig
+	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", dbConfig.User, dbConfig.Password, dbConfig.URL, dbConfig.Scheme)
+	var err error
+	db, err = gorm.Open(mysql.Open(dbConn), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(err)
+	}
+}
+
 func StartHealthMonitor(config *conf.Config, relayerConfig *conf.RelayerConfig) {
+	Init()
 	for _, cfg := range config.ChainNodes {
 		monitorConfig := &conf.HealthMonitorConfig{ChainId: cfg.ChainId, ChainName: cfg.ChainName, ChainNodes: cfg}
 		healthMonitorConfigMap[cfg.ChainId] = monitorConfig
@@ -35,7 +55,7 @@ func StartHealthMonitor(config *conf.Config, relayerConfig *conf.RelayerConfig) 
 	for _, monitorConfig := range healthMonitorConfigMap {
 		healthMonitorHandle := NewHealthMonitorHandle(monitorConfig)
 		if healthMonitorHandle == nil {
-			logs.Error("chain %s handler is invalid", monitorConfig.ChainName)
+			logs.Error("chain %s handler is nil", monitorConfig.ChainName)
 			continue
 		}
 		monitor := &HealthMonitor{healthMonitorHandle}
@@ -47,6 +67,7 @@ type MonitorHandle interface {
 	NodeMonitor() ([]basedef.NodeStatus, error)
 	RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error)
 	GetChainName() string
+	GetChainId() uint64
 }
 
 type HealthMonitor struct {
@@ -67,56 +88,169 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 
 	logs.Info("start %s NodeMonitor", h.handle.GetChainName())
 	nodeMonitorTicker := time.NewTicker(time.Second * time.Duration(config.BotConfig.ChainNodeStatusCheckInterval))
+
 	for {
 		select {
 		case <-nodeMonitorTicker.C:
-			oldNodeStatusMap := make(map[string]*basedef.NodeStatus)
-			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + h.handle.GetChainName()); err == nil {
-				var oldNodeStatuses []basedef.NodeStatus
-				if err := json.Unmarshal([]byte(dataStr), &oldNodeStatuses); err != nil {
+			lastHighestNodeStatus := new(basedef.NodeStatus)
+			lastNodeStatusMap := make(map[string]*basedef.NodeStatus)
+
+			if dataStr, err := cacheRedis.Redis.Get(cacheRedis.NodeStatusPrefix + strconv.FormatUint(h.handle.GetChainId(), 10)); err == nil {
+				var lastNodeStatuses []basedef.NodeStatus
+				if err = json.Unmarshal([]byte(dataStr), &lastNodeStatuses); err != nil {
 					logs.Error("chain %s node status data Unmarshal error: ", h.handle.GetChainName(), err)
 				} else {
-					for _, oldNodeStatus := range oldNodeStatuses {
-						oldNodeStatusMap[oldNodeStatus.Url] = &oldNodeStatus
+					logs.Info("%s lastNodeStatuses:%+v", h.handle.GetChainName(), lastNodeStatuses)
+					for i, _ := range lastNodeStatuses {
+						status := lastNodeStatuses[i]
+						lastNodeStatusMap[status.Url] = &status
+						if lastHighestNodeStatus.Height < status.Height {
+							lastHighestNodeStatus = &status
+						}
 					}
 				}
 			}
+			logs.Info("%s lastHighestNodeStatus:%+v", h.handle.GetChainName(), *lastHighestNodeStatus)
+
 			if nodeStatuses, err := h.handle.NodeMonitor(); err == nil {
-				data, _ := json.Marshal(nodeStatuses)
-				_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+h.handle.GetChainName(), data, time.Hour*24)
-				if err != nil {
-					logs.Error("set %s node status error: %s", h.handle.GetChainName(), err)
+				logs.Info("%s nodeStatuses:%+v", h.handle.GetChainName(), nodeStatuses)
+				if e := h.dealChainAlarm(nodeStatuses, lastHighestNodeStatus); e != nil {
+					logs.Error("chain %s dealChainAlarm error: ", h.handle.GetChainName(), e)
 				}
 
-				for _, nodeStatus := range nodeStatuses {
-					oldNodeStatus := oldNodeStatusMap[nodeStatus.Url]
-					var nodeHeightNoGrowthTime uint64
-					if oldNodeStatus != nil && nodeStatus.Height == oldNodeStatus.Height {
-						nodeHeightNoGrowthTime = nodeStatus.Height - oldNodeStatus.Height
+				for i, _ := range nodeStatuses {
+					nodeStatus := &nodeStatuses[i]
+					lastNodeStatus := lastNodeStatusMap[nodeStatus.Url]
+					var nodeHeightNoGrowthTime int64
+					if lastNodeStatus != nil && nodeStatus.Height == lastNodeStatus.Height {
+						nodeHeightNoGrowthTime = nodeStatus.Time - lastNodeStatus.Time
 						if nodeHeightNoGrowthTime > 180 {
 							nodeStatus.Status = append(nodeStatus.Status, fmt.Sprintf("node height no growth more than %d s", nodeHeightNoGrowthTime))
 						}
 					}
-					sendAlarm, recoverAlarm := needSendNodeStatusAlarm(&nodeStatus)
+					sendAlarm, recoverAlarm := needSendNodeStatusAlarm(nodeStatus)
 					if sendAlarm {
-						if err := sendNodeStatusDingAlarm(nodeStatus, recoverAlarm); err != nil {
+						if err = sendNodeStatusDingAlarm(nodeStatus, recoverAlarm); err != nil {
 							logs.Error("%s node: %s sendNodeStatusDingAlarm err:", h.handle.GetChainName(), nodeStatus.Url, err)
 							continue
 						}
 						if recoverAlarm {
-							if _, err := cacheRedis.Redis.Del(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url); err != nil {
+							if _, err = cacheRedis.Redis.Del(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url); err != nil {
 								logs.Error("clear %s node: %s alarm err: %s", h.handle.GetChainName(), nodeStatus.Url, err)
 							}
 						} else {
-							if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Second*time.Duration(config.BotConfig.ChainNodeStatusAlarmInterval)); err != nil {
+							if _, err = cacheRedis.Redis.Set(cacheRedis.NodeStatusAlarmPrefix+nodeStatus.Url, "alarm has been sent", time.Second*time.Duration(config.BotConfig.ChainNodeStatusAlarmInterval)); err != nil {
 								logs.Error("mark %s node: %s alarm has been sent error: %s", h.handle.GetChainName(), nodeStatus.Url, err)
 							}
 						}
 					}
 				}
+				nodeData, _ := json.Marshal(nodeStatuses)
+				_, err = cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+strconv.FormatUint(h.handle.GetChainId(), 10), nodeData, time.Hour*24)
+				if err != nil {
+					logs.Error("set %s node status error: %s", h.handle.GetChainName(), err)
+				}
+
 			}
 		}
 	}
+}
+
+func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHighestNodeStatus *basedef.NodeStatus) error {
+	if len(nodeStatuses) == 0 {
+		return nil
+	}
+
+	var lastChainStatus basedef.ChainStatus
+	dataStr, err := cacheRedis.Redis.Get(cacheRedis.ChainStatusPrefix + strconv.FormatUint(h.handle.GetChainId(), 10))
+	if err == nil {
+		err = json.Unmarshal([]byte(dataStr), &lastChainStatus)
+		logs.Info("%s lastChainStatus:%+v", h.handle.GetChainName(), lastChainStatus)
+	}
+	if err != nil {
+		logs.Error("%s get last chain status error: %s", h.handle.GetChainName(), err)
+	}
+
+	stuckCount := 0
+	allNodesUnavailable, allNodesNoGrowth, manyTxStuck, sendAlarm := true, true, false, false
+	chainStatus := basedef.ChainStatus{
+		ChainId:       h.handle.GetChainId(),
+		ChainName:     h.handle.GetChainName(),
+		StatusTimeMap: make(map[string]int64, 0),
+		Height:        lastHighestNodeStatus.Height,
+		Health:        true,
+		Time:          time.Now().Unix(),
+	}
+	for i, _ := range nodeStatuses {
+		status := &nodeStatuses[i]
+		if allNodesUnavailable && len(status.Status) == 0 {
+			allNodesUnavailable = false
+		}
+		if allNodesNoGrowth && lastHighestNodeStatus.Height < status.Height {
+			allNodesNoGrowth = false
+			chainStatus.Height = status.Height
+		}
+	}
+
+	txs, _, err := transactions.GetStuckTxs(db, cacheRedis.Redis, 1000, 0, 0)
+	for _, tx := range txs {
+		if tx.SrcChainId == h.handle.GetChainId() {
+			relation, e := transactions.GetSrcPolyDstRelation(db, tx)
+			if e != nil {
+				logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, e)
+				continue
+			}
+			if w := relation.WrapperTransaction; w != nil {
+				if w.Status < basedef.STATE_SOURCE_CONFIRMED {
+					stuckCount++
+				}
+			}
+		}
+		if stuckCount >= conf.GlobalConfig.BotConfig.TxStuckCountMarkChainUnhealthy {
+			manyTxStuck = true
+			break
+		}
+	}
+
+	if allNodesUnavailable {
+		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = time.Now().Unix()
+		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable]; ok {
+			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = lastTime
+			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesUnavailableTimeMarkChainUnhealthy {
+				chainStatus.Health = false
+				sendAlarm = true
+			}
+		}
+	}
+	if allNodesNoGrowth {
+		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = time.Now().Unix()
+		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth]; ok {
+			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = lastTime
+			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesNoGrowthTimeMarkChainUnhealthy {
+				chainStatus.Health = false
+				sendAlarm = true
+			}
+		}
+	}
+
+	if manyTxStuck {
+		chainStatus.StatusTimeMap[basedef.Chain_Status_Too_Many_TXs_Stuck] = time.Now().Unix()
+		chainStatus.Health = false
+	}
+
+	logs.Info("%s chain health=%t, status: %+v", h.handle.GetChainName(), chainStatus.Health, chainStatus.StatusTimeMap)
+
+	if sendAlarm {
+		if e := sendChainStatusDingAlarm(chainStatus); e != nil {
+			logs.Error("%s send sendChainStatusDingAlarm err:", h.handle.GetChainName(), e)
+		}
+	}
+
+	chainData, _ := json.Marshal(chainStatus)
+	if _, e := cacheRedis.Redis.Set(cacheRedis.ChainStatusPrefix+strconv.FormatUint(h.handle.GetChainId(), 10), chainData, time.Hour*24); e != nil {
+		err = fmt.Errorf("set %s status error: %s", h.handle.GetChainName(), e)
+	}
+	return err
 }
 
 func (h *HealthMonitor) RelayerAccountMonitor(config *conf.Config) {
@@ -144,25 +278,25 @@ func (h *HealthMonitor) RelayerAccountMonitor(config *conf.Config) {
 					}
 				}
 				data, _ := json.Marshal(relayerAccountStatuses)
-				_, err := cacheRedis.Redis.Set(cacheRedis.RelayerAccountStatusPrefix+h.handle.GetChainName(), data, time.Hour*24)
+				_, err = cacheRedis.Redis.Set(cacheRedis.RelayerAccountStatusPrefix+h.handle.GetChainName(), data, time.Hour*24)
 				if err != nil {
 					logs.Error("set %s node status error: %s", h.handle.GetChainName(), err)
 				}
 				for _, accountStatus := range relayerAccountStatuses {
 					sendAlarm, recoverAlarm := needSendRelayerAccountStatusAlarm(accountStatus)
 					if sendAlarm {
-						if err := sendRelayerAccountStatusDingAlarm(accountStatus, recoverAlarm); err != nil {
+						if err = sendRelayerAccountStatusDingAlarm(accountStatus, recoverAlarm); err != nil {
 							logs.Error("%s relayer address: %s sendRelayerAccountStatusDingAlarm err:", h.handle.GetChainName(), accountStatus.Address, err)
 							continue
 						}
 						alarmKey := fmt.Sprintf("%s%s-%s", cacheRedis.RelayerAccountStatusAlarmPrefix, accountStatus.ChainName, accountStatus.Address)
 						if recoverAlarm {
-							if _, err := cacheRedis.Redis.Del(alarmKey); err != nil {
+							if _, err = cacheRedis.Redis.Del(alarmKey); err != nil {
 								logs.Error("clear %s relayer address: %s alarm err: %s", h.handle.GetChainName(), accountStatus.Address, err)
 							}
 							logs.Info("clear %s relayer address: %s alarm", h.handle.GetChainName(), accountStatus.Address)
 						} else {
-							if _, err := cacheRedis.Redis.Set(alarmKey, "alarm has been sent", time.Hour*12); err != nil {
+							if _, err = cacheRedis.Redis.Set(alarmKey, "alarm has been sent", time.Hour*12); err != nil {
 								logs.Error("mark %s relayer address: %s alarm has been sent error: %s", h.handle.GetChainName(), accountStatus.Address, err)
 							}
 							logs.Info("mark %s relayer address: %s alarm has been sent", h.handle.GetChainName(), accountStatus.Address)
@@ -178,12 +312,13 @@ func needSendNodeStatusAlarm(nodeStatus *basedef.NodeStatus) (send, recover bool
 	exist, err := cacheRedis.Redis.Exists(cacheRedis.NodeStatusAlarmPrefix + nodeStatus.Url)
 	if err == nil {
 		if exist {
-			if len(nodeStatus.Status) == 1 && nodeStatus.Status[0] == basedef.StatusOk {
+			if len(nodeStatus.Status) == 0 {
+				nodeStatus.Status = append(nodeStatus.Status, basedef.StatusOk)
 				send = true
 				recover = true
 			}
 		} else {
-			if len(nodeStatus.Status) >= 1 && nodeStatus.Status[0] != basedef.StatusOk {
+			if len(nodeStatus.Status) >= 1 {
 				send = true
 				recover = false
 			}
@@ -196,6 +331,10 @@ func needSendNodeStatusAlarm(nodeStatus *basedef.NodeStatus) (send, recover bool
 			send = false
 			logs.Info("ignore %s node: %s alarm", nodeStatus.ChainName, nodeStatus.Url)
 		}
+	}
+
+	if len(nodeStatus.Status) == 0 {
+		nodeStatus.Status = append(nodeStatus.Status, basedef.StatusOk)
 	}
 	return
 }
@@ -222,17 +361,22 @@ func needSendRelayerAccountStatusAlarm(relayerStatus *basedef.RelayerAccountStat
 	return
 }
 
-func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) error {
+func sendNodeStatusDingAlarm(nodeStatus *basedef.NodeStatus, isRecover bool) error {
 	title := ""
 	status := ""
 	if isRecover {
 		title = fmt.Sprintf("%s Node Recover", nodeStatus.ChainName)
-		status = "OK"
+		status = basedef.StatusOk
 	} else {
 		title = fmt.Sprintf("%s Node Alarm", nodeStatus.ChainName)
-		for _, info := range nodeStatus.Status {
-			status = fmt.Sprintf("%s\n%s", status, info)
+		if len(nodeStatus.Status) == 0 {
+			status = basedef.StatusOk
+		} else {
+			for _, info := range nodeStatus.Status {
+				status = fmt.Sprintf("%s\n%s", status, info)
+			}
 		}
+
 	}
 	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n- Time: %s\n",
 		title,
@@ -259,6 +403,30 @@ func sendNodeStatusDingAlarm(nodeStatus basedef.NodeStatus, isRecover bool) erro
 			},
 		}...)
 	}
+	buttons = append(buttons, map[string]string{
+		"title":     "List All",
+		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+	})
+
+	logs.Info(body)
+	logs.Info(buttons)
+	return common.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
+}
+
+func sendChainStatusDingAlarm(chainStatus basedef.ChainStatus) error {
+	status := ""
+	for k, v := range chainStatus.StatusTimeMap {
+		status = fmt.Sprintf("%s\n%s %s", status, k, time.Unix(v, 0).Format("2006-01-02 15:04:05"))
+	}
+	title := fmt.Sprintf("%s Alarm!!!", chainStatus.ChainName)
+	body := fmt.Sprintf("## %s\n- Height: %d\n- Status: %s\n- Time: %s\n",
+		title,
+		chainStatus.Height,
+		status,
+		time.Unix(chainStatus.Time, 0).Format("2006-01-02 15:04:05"),
+	)
+
+	buttons := make([]map[string]string, 0)
 	buttons = append(buttons, map[string]string{
 		"title":     "List All",
 		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
@@ -309,8 +477,8 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHand
 		return neomonitor.NewNeoHealthMonitor(monitorConfig)
 	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologymonitor.NewOntologyHealthMonitor(monitorConfig)
-	case basedef.SWITCHEO_CROSSCHAIN_ID:
-		return switcheomonitor.NewSwitcheoHealthMonitor(monitorConfig)
+	//case basedef.SWITCHEO_CROSSCHAIN_ID:
+	//	return switcheomonitor.NewSwitcheoHealthMonitor(monitorConfig)
 	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3monitor.NewNeo3HealthMonitor(monitorConfig)
 	case basedef.ZILLIQA_CROSSCHAIN_ID:

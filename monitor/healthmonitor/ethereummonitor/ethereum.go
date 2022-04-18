@@ -2,7 +2,6 @@ package ethereummonitor
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -21,7 +20,6 @@ type EthereumHealthMonitor struct {
 	monitorConfig *conf.HealthMonitorConfig
 	sdks          map[string]*chainsdk.EthereumSdk
 	nodeHeight    map[string]uint64
-	nodeStatus    map[string]string
 }
 
 func NewEthereumHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *EthereumHealthMonitor {
@@ -31,8 +29,8 @@ func NewEthereumHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Ethereum
 	for _, node := range monitorConfig.ChainNodes.Nodes {
 		sdk, err := chainsdk.NewEthereumSdk(node.Url)
 		if err != nil || sdk == nil || sdk.GetClient() == nil {
-			if _, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+node.Url, fmt.Sprintf("initial sdk error:%s", err), time.Hour*24); err != nil {
-				logs.Error("set %s node[%s] status error: %s", monitorConfig.ChainName, node.Url, err)
+			if _, e := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+node.Url, fmt.Sprintf("initial sdk error:%s", err), time.Hour*24); e != nil {
+				logs.Error("set %s node[%s] status error: %s", monitorConfig.ChainName, node.Url, e)
 			}
 			logs.Error("%s node: %s, NewEthereumSdk error: %s", monitorConfig.ChainName, node.Url, err)
 			continue
@@ -41,12 +39,15 @@ func NewEthereumHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Ethereum
 	}
 	ethMonitor.sdks = sdks
 	ethMonitor.nodeHeight = make(map[string]uint64, len(sdks))
-	ethMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return ethMonitor
 }
 
 func (e *EthereumHealthMonitor) GetChainName() string {
 	return e.monitorConfig.ChainName
+}
+
+func (e *EthereumHealthMonitor) GetChainId() uint64 {
+	return e.monitorConfig.ChainId
 }
 
 func (e *EthereumHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
@@ -136,28 +137,25 @@ func (e *EthereumHealthMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 			err = e.CheckAbiCall(sdk)
 		}
 		if err != nil {
-			e.nodeStatus[url] = err.Error()
-		} else {
-			e.nodeStatus[url] = basedef.StatusOk
+			status.Status = append(status.Status, err.Error())
 		}
-		status.Status = append(status.Status, e.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
-	data, _ := json.Marshal(nodeStatuses)
-	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+e.GetChainName(), data, time.Hour*24)
-	if err != nil {
-		logs.Error("set %s node status error: %s", e.GetChainName(), err)
-	}
-	return nodeStatuses, err
+	//data, _ := json.Marshal(nodeStatuses)
+	//_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+e.GetChainName(), data, time.Hour*24)
+	//if err != nil {
+	//	logs.Error("set %s node status error: %s", e.GetChainName(), err)
+	//}
+	return nodeStatuses, nil
 }
 
 func (e *EthereumHealthMonitor) GetCurrentHeight(sdk *chainsdk.EthereumSdk, chainName string) (uint64, error) {
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint64 {
 		logs.Info("%s height=%d", chainName, height)
-		err := fmt.Errorf("get current block height err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", chainName, sdk.GetUrl(), err))
-		return 0, err
+		err2 := fmt.Errorf("get current block height err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", chainName, sdk.GetUrl(), err2))
+		return 0, err2
 	}
 	logs.Info("%s node: %s, latest height: %d", chainName, sdk.GetUrl(), height)
 	return height, nil
@@ -168,10 +166,9 @@ func (e *EthereumHealthMonitor) CheckAbiCall(sdk *chainsdk.EthereumSdk) error {
 	client := sdk.GetClient()
 	ethCrossChainManager, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
 	if err != nil {
-		err := fmt.Errorf("call NewEthCrossChainManager error: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err))
-		e.nodeStatus[sdk.GetUrl()] = err.Error()
-		return err
+		err2 := fmt.Errorf("call NewEthCrossChainManager error: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err2))
+		return err2
 	}
 	height := e.nodeHeight[sdk.GetUrl()] - 1
 	opt := &bind.FilterOpts{
@@ -182,18 +179,16 @@ func (e *EthereumHealthMonitor) CheckAbiCall(sdk *chainsdk.EthereumSdk) error {
 	// get lock events from given block
 	_, err = ethCrossChainManager.FilterCrossChainEvent(opt, nil)
 	if err != nil {
-		err := fmt.Errorf("call FilterCrossChainEvent get lock events err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err))
-		e.nodeStatus[sdk.GetUrl()] = err.Error()
-		return err
+		err2 := fmt.Errorf("call FilterCrossChainEvent get lock events err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err2))
+		return err2
 	}
 	// get unlock events from given block
 	_, err = ethCrossChainManager.FilterVerifyHeaderAndExecuteTxEvent(opt)
 	if err != nil {
-		err := fmt.Errorf("call FilterVerifyHeaderAndExecuteTxEvent get unlock events err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err))
-		e.nodeStatus[sdk.GetUrl()] = err.Error()
-		return err
+		err2 := fmt.Errorf("call FilterVerifyHeaderAndExecuteTxEvent get unlock events err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", e.GetChainName(), sdk.GetUrl(), err2))
+		return err2
 	}
 	return nil
 }

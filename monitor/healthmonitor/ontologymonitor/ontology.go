@@ -1,14 +1,12 @@
 package ontologymonitor
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ontio/ontology-go-sdk"
 	"github.com/ontio/ontology/common"
 	"math"
 	"poly-bridge/basedef"
-	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"time"
 )
@@ -17,7 +15,6 @@ type OntologyMonitor struct {
 	monitorConfig *conf.HealthMonitorConfig
 	sdks          map[string]*ontology_go_sdk.OntologySdk
 	nodeHeight    map[string]uint64
-	nodeStatus    map[string]string
 }
 
 func NewOntologyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *OntologyMonitor {
@@ -31,12 +28,15 @@ func NewOntologyHealthMonitor(monitorConfig *conf.HealthMonitorConfig) *Ontology
 	}
 	ontologyMonitor.sdks = sdks
 	ontologyMonitor.nodeHeight = make(map[string]uint64, len(sdks))
-	ontologyMonitor.nodeStatus = make(map[string]string, len(sdks))
 	return ontologyMonitor
 }
 
 func (o *OntologyMonitor) GetChainName() string {
 	return o.monitorConfig.ChainName
+}
+
+func (o *OntologyMonitor) GetChainId() uint64 {
+	return o.monitorConfig.ChainId
 }
 
 func (o *OntologyMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
@@ -126,27 +126,24 @@ func (o *OntologyMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 			err = o.CheckAbiCall(sdk, url)
 		}
 		if err != nil {
-			o.nodeStatus[url] = err.Error()
-		} else {
-			o.nodeStatus[url] = basedef.StatusOk
+			status.Status = append(status.Status, err.Error())
 		}
-		status.Status = append(status.Status, o.nodeStatus[url])
 		nodeStatuses = append(nodeStatuses, status)
 	}
-	data, _ := json.Marshal(nodeStatuses)
-	_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+o.monitorConfig.ChainName, data, time.Hour*24)
-	if err != nil {
-		logs.Error("set %s node status error: %s", o.GetChainName(), err)
-	}
-	return nodeStatuses, err
+	//data, _ := json.Marshal(nodeStatuses)
+	//_, err := cacheRedis.Redis.Set(cacheRedis.NodeStatusPrefix+o.monitorConfig.ChainName, data, time.Hour*24)
+	//if err != nil {
+	//	logs.Error("set %s node status error: %s", o.GetChainName(), err)
+	//}
+	return nodeStatuses, nil
 }
 
 func (o *OntologyMonitor) GetCurrentHeight(sdk *ontology_go_sdk.OntologySdk, url string) (uint64, error) {
 	height, err := sdk.GetCurrentBlockHeight()
 	if err != nil || height == 0 || height == math.MaxUint32 {
-		err := fmt.Errorf("%s node: %s, get current block height err: %s", o.GetChainName(), url, err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, err))
-		return 0, err
+		e := fmt.Errorf("%s node: %s, get current block height err: %s", o.GetChainName(), url, err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, e))
+		return 0, e
 	}
 	logs.Info("%s node: %s, latest height: %d", o.GetChainName(), url, height)
 	return uint64(height), nil
@@ -156,14 +153,14 @@ func (o *OntologyMonitor) CheckAbiCall(sdk *ontology_go_sdk.OntologySdk, url str
 	height := uint32(o.nodeHeight[url]) - 1
 	_, err := sdk.GetBlockByHeight(height)
 	if err != nil {
-		err := fmt.Errorf("GetBlockByHeight err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, err))
+		e := fmt.Errorf("GetBlockByHeight err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, e))
 		return err
 	}
 	_, err = sdk.GetSmartContractEventByBlock(height)
 	if err != nil {
-		err := fmt.Errorf("call GetSmartContractEventByBlock err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, err))
+		e := fmt.Errorf("call GetSmartContractEventByBlock err: %s", err)
+		logs.Error(fmt.Sprintf("%s node: %s, %s ", o.GetChainName(), url, e))
 		return err
 	}
 	return nil

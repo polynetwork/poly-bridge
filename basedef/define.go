@@ -56,6 +56,13 @@ const (
 	StatusOk = "OK"
 )
 
+const (
+	Chain_Status_All_Nodes_No_Growth        = "All Nodes No Growth"
+	Chain_Status_All_Nodes_Unavaiable       = "All Nodes Unavailable"
+	Chain_Status_Too_Many_TXs_Stuck         = "Too Many TXs Stuck"
+	Chain_Status_All_Relayer_Out_Of_Balance = "All Relayer Out Of Balance"
+)
+
 type LargeTx struct {
 	Asset     string
 	Type      string
@@ -75,6 +82,15 @@ type NodeStatus struct {
 	Height    uint64
 	Status    []string
 	Time      int64
+}
+
+type ChainStatus struct {
+	ChainId       uint64
+	ChainName     string
+	Height        uint64
+	StatusTimeMap map[string]int64
+	Health        bool
+	Time          int64
 }
 
 type RelayerAccountStatus struct {
