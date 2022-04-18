@@ -59,6 +59,7 @@ const (
 const (
 	Chain_Status_All_Nodes_No_Growth        = "All Nodes No Growth"
 	Chain_Status_All_Nodes_Unavaiable       = "All Nodes Unavailable"
+	Chain_Status_Too_Many_TXs_Stuck         = "Too Many TXs Stuck"
 	Chain_Status_All_Relayer_Out_Of_Balance = "All Relayer Out Of Balance"
 )
 
