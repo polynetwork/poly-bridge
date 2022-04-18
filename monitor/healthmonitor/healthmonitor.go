@@ -216,7 +216,7 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = time.Now().Unix()
 		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable]; ok {
 			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = lastTime
-			if time.Now().Unix()-lastTime > 1800 {
+			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesUnavailableTimeMarkChainUnhealthy {
 				chainStatus.Health = false
 				sendAlarm = true
 			}
@@ -226,7 +226,7 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = time.Now().Unix()
 		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth]; ok {
 			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = lastTime
-			if time.Now().Unix()-lastTime > 600 {
+			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesNoGrowthTimeMarkChainUnhealthy {
 				chainStatus.Health = false
 				sendAlarm = true
 			}
@@ -238,7 +238,7 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 		chainStatus.Health = false
 	}
 
-	logs.Info("%s chain health=%s, status: %+v", h.handle.GetChainName(), chainStatus.Health, chainStatus.StatusTimeMap)
+	logs.Info("%s chain health=%t, status: %+v", h.handle.GetChainName(), chainStatus.Health, chainStatus.StatusTimeMap)
 
 	if sendAlarm {
 		if e := sendChainStatusDingAlarm(chainStatus); e != nil {
