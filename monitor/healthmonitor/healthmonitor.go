@@ -124,7 +124,13 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 					var nodeHeightNoGrowthTime int64
 					if lastNodeStatus != nil && nodeStatus.Height == lastNodeStatus.Height {
 						nodeHeightNoGrowthTime = nodeStatus.Time - lastNodeStatus.Time
-						if nodeHeightNoGrowthTime > 180 {
+						var abnormalBlockTime int64
+						if h.handle.GetChainId() == basedef.ARBITRUM_CROSSCHAIN_ID {
+							abnormalBlockTime = 900
+						} else {
+							abnormalBlockTime = 300
+						}
+						if nodeHeightNoGrowthTime > abnormalBlockTime {
 							nodeStatus.Status = append(nodeStatus.Status, fmt.Sprintf("node height no growth more than %d s", nodeHeightNoGrowthTime))
 						}
 					}
