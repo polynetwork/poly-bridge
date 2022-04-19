@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
@@ -14,14 +17,31 @@ import (
 	"poly-bridge/monitor/healthmonitor/ontologymonitor"
 	"poly-bridge/monitor/healthmonitor/polymonitor"
 	"poly-bridge/monitor/healthmonitor/zilliqamonitor"
+	"poly-bridge/utils/transactions"
 	"runtime/debug"
 	"strconv"
 	"time"
 )
 
+var db *gorm.DB
 var healthMonitorConfigMap = make(map[uint64]*conf.HealthMonitorConfig, 0)
 
+func Init() {
+	Logger := logger.Default
+	if conf.GlobalConfig.RunMode == "dev" {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	dbConfig := conf.GlobalConfig.DBConfig
+	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", dbConfig.User, dbConfig.Password, dbConfig.URL, dbConfig.Scheme)
+	var err error
+	db, err = gorm.Open(mysql.Open(dbConn), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(err)
+	}
+}
+
 func StartHealthMonitor(config *conf.Config, relayerConfig *conf.RelayerConfig) {
+	Init()
 	for _, cfg := range config.ChainNodes {
 		monitorConfig := &conf.HealthMonitorConfig{ChainId: cfg.ChainId, ChainName: cfg.ChainName, ChainNodes: cfg}
 		healthMonitorConfigMap[cfg.ChainId] = monitorConfig
@@ -104,7 +124,13 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 					var nodeHeightNoGrowthTime int64
 					if lastNodeStatus != nil && nodeStatus.Height == lastNodeStatus.Height {
 						nodeHeightNoGrowthTime = nodeStatus.Time - lastNodeStatus.Time
-						if nodeHeightNoGrowthTime > 180 {
+						var abnormalBlockTime int64
+						if h.handle.GetChainId() == basedef.ARBITRUM_CROSSCHAIN_ID {
+							abnormalBlockTime = 900
+						} else {
+							abnormalBlockTime = 300
+						}
+						if nodeHeightNoGrowthTime > abnormalBlockTime {
 							nodeStatus.Status = append(nodeStatus.Status, fmt.Sprintf("node height no growth more than %d s", nodeHeightNoGrowthTime))
 						}
 					}
@@ -137,6 +163,10 @@ func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 }
 
 func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHighestNodeStatus *basedef.NodeStatus) error {
+	if len(nodeStatuses) == 0 {
+		return nil
+	}
+
 	var lastChainStatus basedef.ChainStatus
 	dataStr, err := cacheRedis.Redis.Get(cacheRedis.ChainStatusPrefix + strconv.FormatUint(h.handle.GetChainId(), 10))
 	if err == nil {
@@ -147,7 +177,8 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 		logs.Error("%s get last chain status error: %s", h.handle.GetChainName(), err)
 	}
 
-	allNodesUnavailable, allNodesNoGrowth, sendAlarm := true, true, false
+	stuckCount := 0
+	allNodesUnavailable, allNodesNoGrowth, manyTxStuck, sendAlarm := true, true, false, false
 	chainStatus := basedef.ChainStatus{
 		ChainId:       h.handle.GetChainId(),
 		ChainName:     h.handle.GetChainName(),
@@ -167,11 +198,31 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 		}
 	}
 
+	txs, _, err := transactions.GetStuckTxs(db, cacheRedis.Redis, 1000, 0, 0)
+	for _, tx := range txs {
+		if tx.SrcChainId == h.handle.GetChainId() {
+			relation, e := transactions.GetSrcPolyDstRelation(db, tx)
+			if e != nil {
+				logs.Error("getSrcPolyDstRelation of hash: %s err: %s", tx.SrcHash, e)
+				continue
+			}
+			if w := relation.WrapperTransaction; w != nil {
+				if w.Status < basedef.STATE_SOURCE_CONFIRMED {
+					stuckCount++
+				}
+			}
+		}
+		if stuckCount >= conf.GlobalConfig.BotConfig.TxStuckCountMarkChainUnhealthy {
+			manyTxStuck = true
+			break
+		}
+	}
+
 	if allNodesUnavailable {
 		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = time.Now().Unix()
 		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable]; ok {
 			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = lastTime
-			if time.Now().Unix()-lastTime > 1800 {
+			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesUnavailableTimeMarkChainUnhealthy {
 				chainStatus.Health = false
 				sendAlarm = true
 			}
@@ -181,12 +232,20 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = time.Now().Unix()
 		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth]; ok {
 			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = lastTime
-			if time.Now().Unix()-lastTime > 600 {
+			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesNoGrowthTimeMarkChainUnhealthy {
 				chainStatus.Health = false
 				sendAlarm = true
 			}
 		}
 	}
+
+	if manyTxStuck {
+		chainStatus.StatusTimeMap[basedef.Chain_Status_Too_Many_TXs_Stuck] = time.Now().Unix()
+		chainStatus.Health = false
+	}
+
+	logs.Info("%s chain health=%t, status: %+v", h.handle.GetChainName(), chainStatus.Health, chainStatus.StatusTimeMap)
+
 	if sendAlarm {
 		if e := sendChainStatusDingAlarm(chainStatus); e != nil {
 			logs.Error("%s send sendChainStatusDingAlarm err:", h.handle.GetChainName(), e)
