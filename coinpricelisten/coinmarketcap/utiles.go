@@ -194,14 +194,23 @@ func (sdk *CoinMarketCapSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[s
 		return nil, err
 	}
 	//
-	coinName2Price := make(map[string]float64)
+	coinId2Price := make(map[int]float64)
 	for _, v := range quotes {
 		name := v.Name
 		if v.Quote == nil || v.Quote["USD"] == nil {
 			logs.Warn(" There is no price for coin %s in CoinMarketCap!", name)
 			continue
 		}
-		coinName2Price[name] = v.Quote["USD"].Price
+		coinId2Price[v.ID] = v.Quote["USD"].Price
+	}
+	coinName2Price := make(map[string]float64)
+	for _, coin := range coins {
+		if coin.CoinMarketId <= 0 {
+			continue
+		}
+		if price, ok := coinId2Price[coin.CoinMarketId]; ok {
+			coinName2Price[coin.PriceMarketName] = price
+		}
 	}
 	return coinName2Price, nil
 }
