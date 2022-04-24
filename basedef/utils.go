@@ -71,6 +71,9 @@ func Hash2Address(chainId uint64, value string) string {
 		value = HexStringReverse(value)
 		addr, _ := ontcommon.AddressFromHexString(value)
 		return addr.ToBase58()
+	} else if chainId == ONTEVM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	} else if chainId == OK_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
@@ -196,6 +199,9 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		}
 		addrHex := addr.ToHexString()
 		return HexStringReverse(addrHex), nil
+	} else if chainId == ONTEVM_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
 		//cosmos_types.
 		addr, err := cosmos_types.AccAddressFromBech32(value)
@@ -367,7 +373,8 @@ func GetChainName(id uint64) string {
 		return "CloudTx"
 	case XINFIN_CROSSCHAIN_ID:
 		return "XinFin"
-
+	case ONTEVM_CROSSCHAIN_ID:
+		return "Ontology evm"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}

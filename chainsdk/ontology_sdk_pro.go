@@ -217,3 +217,11 @@ func (pro *OntologySdkPro) Oep4TotalSupply(hash string, addr string) (*big.Int, 
 		return totalSupply, nil
 	}
 }
+
+func (pro *OntologySdkPro) GetTransaction(txHash string) (*types.Transaction, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	return info.sdk.GetTransaction(txHash)
+}
