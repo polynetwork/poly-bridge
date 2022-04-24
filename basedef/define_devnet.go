@@ -42,6 +42,7 @@ const (
 	BOBA_CROSSCHAIN_ID       = uint64(400)
 	RINKEBY_CROSSCHAIN_ID    = uint64(402)
 	OASIS_CROSSCHAIN_ID      = uint64(500)
+	ONTEVM_CROSSCHAIN_ID     = uint64(333)
 
 	ENV = "devnet"
 )

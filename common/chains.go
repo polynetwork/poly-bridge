@@ -34,6 +34,7 @@ var (
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	oasisSdk      *chainsdk.EthereumSdkPro
+	ontevmSdk     *chainsdk.OntologySdkPro
 	config        *conf.Config
 )
 
@@ -229,6 +230,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		oasisSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.OASIS_CROSSCHAIN_ID] = oasisSdk
+	}
+	{
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ont evm is invalid")
+		}
+		urls := ontevmConfig.GetNodesUrl()
+		ontevmSdk = chainsdk.NewOntologySdkPro(urls, ontevmConfig.ListenSlot, ontevmConfig.ChainId)
+		sdkMap[basedef.ONTEVM_CROSSCHAIN_ID] = ontevmSdk
 	}
 }
 
@@ -492,6 +502,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.ONTEVM_CROSSCHAIN_ID {
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ontevm is invalid")
+		}
+		for _, v := range ontevmConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := ontevmSdk.Oep4Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -560,6 +584,17 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 			}
 		}
 
+	}
+	if chainId == basedef.ONTEVM_CROSSCHAIN_ID {
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ontevm is invalid")
+		}
+		for _, v := range ontevmConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) != 0 {
+				return ontevmSdk.Oep4TotalSupply(hash, v)
+			}
+		}
 	}
 	if chainId == basedef.MATIC_CROSSCHAIN_ID {
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
@@ -658,6 +693,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return neo3Sdk.Nep17Balance(hash, proxy)
 	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologySdk.Oep4Balance(hash, proxy)
+	case basedef.ONTEVM_CROSSCHAIN_ID:
+		return ontevmSdk.Oep4Balance(hash, proxy)
 	case basedef.ARBITRUM_CROSSCHAIN_ID:
 		return arbitrumSdk.Erc20Balance(hash, proxy)
 	case basedef.XDAI_CROSSCHAIN_ID:
@@ -683,7 +720,7 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	}
 }
 
-func GetNftOwner(chainId uint64,asset string, tokenId int) (owner common.Address, err error) {
+func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Address, err error) {
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		return ethereumSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
@@ -700,7 +737,7 @@ func GetNftOwner(chainId uint64,asset string, tokenId int) (owner common.Address
 	case basedef.XDAI_CROSSCHAIN_ID:
 		return xdaiSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	default:
-		return common.Address{}, fmt.Errorf("has nat func with chain:%v",chainId)
+		return common.Address{}, fmt.Errorf("has nat func with chain:%v", chainId)
 	}
 }
 

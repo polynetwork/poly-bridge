@@ -100,6 +100,10 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == OASIS_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == ONTEVM_CROSSCHAIN_ID {
+		value = HexStringReverse(value)
+		addr, _ := ontcommon.AddressFromHexString(value)
+		return addr.ToBase58()
 	}
 	return value
 }
@@ -180,13 +184,20 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == OASIS_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == ONTEVM_CROSSCHAIN_ID {
+		addr, err := ontcommon.AddressFromBase58(value)
+		if err != nil {
+			return value, err
+		}
+		addrHex := addr.ToHexString()
+		return HexStringReverse(addrHex), nil
 	}
 	return value, nil
 }
 
 //lock item_proxy use
 func Proxy2Address(chainId uint64, proxy string) string {
-	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID {
+	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID || chainId == ONTEVM_CROSSCHAIN_ID {
 		proxy = HexStringReverse(proxy)
 	}
 	return Hash2Address(chainId, proxy)
@@ -242,6 +253,8 @@ func GetChainName(id uint64) string {
 		return "BOBA"
 	case OASIS_CROSSCHAIN_ID:
 		return "OASIS"
+	case ONTEVM_CROSSCHAIN_ID:
+		return "Ontology evm"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
