@@ -51,6 +51,8 @@ const (
 	BCSPALETTE_CROSSCHAIN_ID = uint64(1001)
 	BYTOM_CROSSCHAIN_ID      = uint64(701)
 	KCC_CROSSCHAIN_ID        = uint64(900)
+	ONTEVM_CROSSCHAIN_ID     = uint64(333)
+
 	ENV = "testnet"
 )
 

@@ -84,7 +84,7 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		return neofee.NewNeoFee(cfg, feeUpdateSlot)
 	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3fee.NewNeo3Fee(cfg, feeUpdateSlot)
-	case basedef.ONT_CROSSCHAIN_ID:
+	case basedef.ONT_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID:
 		return ontologyfee.NewOntologyFee(cfg, feeUpdateSlot)
 	case basedef.SWITCHEO_CROSSCHAIN_ID:
 		return switcheofee.NewSwitcheoFee(cfg, feeUpdateSlot)

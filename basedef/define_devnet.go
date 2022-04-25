@@ -48,6 +48,7 @@ const (
 	HSC_CROSSCHAIN_ID        = uint64(603)
 	BCSPALETTE_CROSSCHAIN_ID = uint64(1001)
 	KCC_CROSSCHAIN_ID        = uint64(900)
+	ONTEVM_CROSSCHAIN_ID     = uint64(333)
 
 	ENV = "devnet"
 )

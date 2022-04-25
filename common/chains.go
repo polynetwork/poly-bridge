@@ -40,6 +40,7 @@ var (
 	bcspaletteSdk *chainsdk.EthereumSdkPro
 	bytomSdk      *chainsdk.EthereumSdkPro
 	kccSdk        *chainsdk.EthereumSdkPro
+	ontevmSdk     *chainsdk.OntologySdkPro
 	config        *conf.Config
 	sdkMap        map[uint64]interface{}
 )
@@ -299,6 +300,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		kccSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.KCC_CROSSCHAIN_ID] = kccSdk
+	}
+	{
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ont evm is invalid")
+		}
+		urls := ontevmConfig.GetNodesUrl()
+		ontevmSdk = chainsdk.NewOntologySdkPro(urls, ontevmConfig.ListenSlot, ontevmConfig.ChainId)
+		sdkMap[basedef.ONTEVM_CROSSCHAIN_ID] = ontevmSdk
 	}
 }
 
@@ -646,6 +656,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.ONTEVM_CROSSCHAIN_ID {
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ontevm is invalid")
+		}
+		for _, v := range ontevmConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := ontevmSdk.Oep4Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -711,6 +735,18 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		for _, v := range ontConfig.ProxyContract {
 			if len(strings.TrimSpace(v)) != 0 {
 				return ontologySdk.Oep4TotalSupply(hash, v)
+			}
+		}
+
+	}
+	if chainId == basedef.ONTEVM_CROSSCHAIN_ID {
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ontevm is invalid")
+		}
+		for _, v := range ontevmConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) != 0 {
+				return ontevmSdk.Oep4TotalSupply(hash, v)
 			}
 		}
 	}
@@ -839,6 +875,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return neo3Sdk.Nep17Balance(hash, proxy)
 	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologySdk.Oep4Balance(hash, proxy)
+	case basedef.ONTEVM_CROSSCHAIN_ID:
+		return ontevmSdk.Oep4Balance(hash, proxy)
 	case basedef.ARBITRUM_CROSSCHAIN_ID:
 		return arbitrumSdk.Erc20Balance(hash, proxy)
 	case basedef.XDAI_CROSSCHAIN_ID:
