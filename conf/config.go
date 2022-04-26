@@ -255,6 +255,8 @@ type BotConfig struct {
 	TxStuckCountMarkChainUnhealthy            int
 	AllNodesUnavailableTimeMarkChainUnhealthy int64
 	AllNodesNoGrowthTimeMarkChainUnhealthy    int64
+	AllNodesUnavailableAlarmTime              int64
+	AllNodesNoGrowthAlarmTime                 int64
 }
 
 type HttpConfig struct {

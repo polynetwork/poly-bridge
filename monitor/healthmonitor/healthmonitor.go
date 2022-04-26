@@ -218,29 +218,35 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 		}
 	}
 
+	now := time.Now().Unix()
 	if allNodesUnavailable {
-		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = time.Now().Unix()
+		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = now
 		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable]; ok {
 			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_Unavaiable] = lastTime
-			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesUnavailableTimeMarkChainUnhealthy {
-				chainStatus.Health = false
+			if now-lastTime > conf.GlobalConfig.BotConfig.AllNodesUnavailableAlarmTime {
 				sendAlarm = true
+			}
+
+			if now-lastTime > conf.GlobalConfig.BotConfig.AllNodesUnavailableTimeMarkChainUnhealthy {
+				chainStatus.Health = false
 			}
 		}
 	}
 	if allNodesNoGrowth {
-		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = time.Now().Unix()
+		chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = now
 		if lastTime, ok := lastChainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth]; ok {
 			chainStatus.StatusTimeMap[basedef.Chain_Status_All_Nodes_No_Growth] = lastTime
-			if time.Now().Unix()-lastTime > conf.GlobalConfig.BotConfig.AllNodesNoGrowthTimeMarkChainUnhealthy {
-				chainStatus.Health = false
+			if now-lastTime > conf.GlobalConfig.BotConfig.AllNodesNoGrowthAlarmTime {
 				sendAlarm = true
+			}
+			if now-lastTime > conf.GlobalConfig.BotConfig.AllNodesNoGrowthTimeMarkChainUnhealthy {
+				chainStatus.Health = false
 			}
 		}
 	}
 
 	if manyTxStuck {
-		chainStatus.StatusTimeMap[basedef.Chain_Status_Too_Many_TXs_Stuck] = time.Now().Unix()
+		chainStatus.StatusTimeMap[basedef.Chain_Status_Too_Many_TXs_Stuck] = now
 		chainStatus.Health = false
 	}
 
