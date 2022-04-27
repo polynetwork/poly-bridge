@@ -242,6 +242,10 @@ func GetChainName(id uint64) string {
 		return "BOBA"
 	case OASIS_CROSSCHAIN_ID:
 		return "OASIS"
+	case HARMONY_CROSSCHAIN_ID:
+		return "Harmony"
+	case KCC_CROSSCHAIN_ID:
+		return "KCC"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
