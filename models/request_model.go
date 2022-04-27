@@ -345,8 +345,8 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 	{
 		precision := decimal.NewFromInt(basedef.PRICE_PRECISION)
 		aaa := new(big.Float).Mul(tokenAmount, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
-		bbb, _ := aaa.Int64()
-		ccc := decimal.NewFromInt(bbb)
+		bbb, _ := aaa.Float64()
+		ccc := decimal.NewFromFloat(bbb)
 		tokenAmount := ccc.Div(precision)
 		getFeeRsp.TokenAmount = tokenAmount.String()
 	}
