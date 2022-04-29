@@ -142,7 +142,8 @@ func startServer(ctx *cli.Context) {
 		configserverFile := ctx.GlobalString(getFlagName(configServerPathFlag))
 		serverconfig := serverconf.NewConfig(configserverFile)
 		startUpdate(config, serverconfig)
-		dumpStatus(config.DBConfig)
+		dumpAffectedRows(config, config.DBConfig)
+		//dumpStatus(config.DBConfig)
 	} else if cmd == 5 {
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
 		config := conf.NewTransactionsConfig(configFile)
