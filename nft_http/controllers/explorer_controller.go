@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"poly-bridge/basedef"
 	"poly-bridge/models"
 	"time"
 
@@ -65,20 +66,37 @@ func (c *ExplorerController) TransactionsOfAddress() {
 	relations := make([]*TransactionBriefRelation, 0)
 	limit := req.PageSize
 	offset := req.PageSize * req.PageNo
-	db.Raw("select wp.*, tr.amount as token_id, tr.asset as src_asset "+
-		"from wrapper_transactions wp "+
-		"left join src_transfers as tr on wp.hash=tr.tx_hash "+
-		"where wp.standard=? and (wp.user in ? or wp.dst_user in ?) "+
-		"order by wp.time desc "+
-		"limit ? offset ?",
-		models.TokenTypeErc721, req.Addresses, req.Addresses, limit, offset).
-		Find(&relations)
-
 	var transactionNum int64
-	db.Model(&models.SrcTransfer{}).
-		Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
-		Where("src_transfers.standard = ? and (`from` in ? or src_transfers.dst_user in ?)", models.TokenTypeErc721, req.Addresses, req.Addresses).
-		Count(&transactionNum)
+
+	if req.ChainId == basedef.POLY_CROSSCHAIN_ID {
+		db.Raw("select wp.*, tr.amount as token_id, tr.asset as src_asset "+
+			"from wrapper_transactions wp "+
+			"left join src_transfers as tr on wp.hash=tr.tx_hash "+
+			"where wp.standard=? and (wp.user in ? or wp.dst_user in ?) "+
+			"order by wp.time desc "+
+			"limit ? offset ?",
+			models.TokenTypeErc721, req.Addresses, req.Addresses, limit, offset).
+			Find(&relations)
+		db.Model(&models.SrcTransfer{}).
+			Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+			Where("src_transfers.standard = ? and (`from` in ? or src_transfers.dst_user in ?)", models.TokenTypeErc721, req.Addresses, req.Addresses).
+			Count(&transactionNum)
+	} else {
+		db.Raw("select wp.*, tr.amount as token_id, tr.asset as src_asset "+
+			"from wrapper_transactions wp "+
+			"left join src_transfers as tr on wp.hash=tr.tx_hash "+
+			"where wp.standard=? and (wp.user in ? or wp.dst_user in ?) and (wp.chain_id = ?)"+
+			"order by wp.time desc "+
+			"limit ? offset ?",
+			models.TokenTypeErc721, req.Addresses, req.Addresses, req.ChainId, limit, offset).
+			Find(&relations)
+		db.Model(&models.SrcTransfer{}).
+			Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+			Where("src_transfers.standard = ? and (`from` in ? or src_transfers.dst_user in ?) and (wrapper_transactions.chain_id = ?) and (src_transfers.chain_id = ?)",
+				models.TokenTypeErc721, req.Addresses, req.Addresses, req.ChainId, req.ChainId).
+			Count(&transactionNum)
+	}
+
 	totalPage := (int(transactionNum) + req.PageSize - 1) / req.PageSize
 	totalCnt := int(transactionNum)
 
