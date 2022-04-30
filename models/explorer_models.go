@@ -141,7 +141,7 @@ func MakeChainTokenResp(token *Token) *ChainTokenResp {
 		Hash:      token.Hash,
 		Token:     token.TokenBasicName,
 		Name:      token.Name,
-		Type:      token.TokenType,
+		Type:      basedef.GetTokenType(token.ChainId, token.Standard),
 		Precision: token.Precision,
 	}
 	return chainTokenResp
@@ -227,7 +227,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		if token.TokenBasic != nil {
 			fChainTxResp.Transfer.TokenLogo = token.TokenBasic.Meta
 		}
-		fChainTxResp.Transfer.TokenType = token.TokenType
+		fChainTxResp.Transfer.TokenType = basedef.GetTokenType(token.ChainId, token.Standard)
 		fChainTxResp.Transfer.Amount = FormatAmount(token.Precision, fChainTx.SrcTransfer.Amount)
 	} else {
 		fChainTxResp.Transfer.TokenName = fChainTx.SrcTransfer.Asset
@@ -240,7 +240,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		if toToken.TokenBasic != nil {
 			fChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
 		}
-		fChainTxResp.Transfer.ToTokenType = toToken.TokenType
+		fChainTxResp.Transfer.ToTokenType = basedef.GetTokenType(toToken.ChainId, toToken.Standard)
 	} else {
 		fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
 	}
@@ -359,7 +359,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 	if toToken != nil {
 		tChainTxResp.Transfer.TokenHash = toToken.Hash
 		tChainTxResp.Transfer.TokenName = toToken.Name
-		tChainTxResp.Transfer.TokenType = toToken.TokenType
+		tChainTxResp.Transfer.TokenType = basedef.GetTokenType(toToken.ChainId, toToken.Standard)
 		if toToken.TokenBasic != nil {
 			tChainTxResp.Transfer.TokenLogo = toToken.TokenBasic.Meta
 		}
@@ -424,7 +424,7 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
-		crossTransfer.TokenType = token.TokenType
+		crossTransfer.TokenType = basedef.GetTokenType(token.ChainId, token.Standard)
 		crossTransfer.Amount = FormatAmount(token.Precision, transfer.Amount)
 	} else {
 		crossTransfer.TokenName = transfer.Asset
@@ -619,7 +619,7 @@ func MakeAddressTxList(transactoins []*TransactionOnAddress, counter int64) *Add
 			Direct:    transactoin.Direct,
 			TokenHash: transactoin.TokenHash,
 			TokenName: transactoin.TokenName,
-			TokenType: transactoin.TokenType,
+			TokenType: basedef.GetTokenType(transactoin.ChainId, transactoin.TokenStandard),
 			TokenLogo: transactoin.Meta,
 		})
 	}
