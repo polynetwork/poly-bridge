@@ -23,7 +23,6 @@ import (
 	"github.com/Zilliqa/gozilliqa-sdk/bech32"
 	"io/ioutil"
 	"os"
-	"poly-bridge/models"
 	"strconv"
 	"strings"
 
@@ -265,54 +264,5 @@ func GetChainName(id uint64) string {
 		return "HSC"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
-	}
-}
-
-func GetTokenType(chainId uint64, standard uint8) string {
-	tokenType := ""
-	switch standard {
-	case models.TokenTypeErc20:
-		tokenType = "20"
-	case models.TokenTypeErc721:
-		tokenType = "721"
-	default:
-		tokenType = "20"
-	}
-	switch chainId {
-	case ETHEREUM_CROSSCHAIN_ID, SWITCHEO_CROSSCHAIN_ID, PLT_CROSSCHAIN_ID, ZILLIQA_CROSSCHAIN_ID,
-		MATIC_CROSSCHAIN_ID, ARBITRUM_CROSSCHAIN_ID, XDAI_CROSSCHAIN_ID, AVAX_CROSSCHAIN_ID, FANTOM_CROSSCHAIN_ID,
-		OPTIMISTIC_CROSSCHAIN_ID, METIS_CROSSCHAIN_ID, BOBA_CROSSCHAIN_ID, RINKEBY_CROSSCHAIN_ID, OASIS_CROSSCHAIN_ID:
-		return "ERC" + "-" + tokenType
-	case ONT_CROSSCHAIN_ID:
-		if standard == models.TokenTypeErc721 {
-			return "NFT"
-		}
-		return "OEP-4"
-	case NEO_CROSSCHAIN_ID:
-		if standard == models.TokenTypeErc721 {
-			return "NFT"
-		}
-		return "NEP-4"
-	case BSC_CROSSCHAIN_ID:
-		return "BEP" + "-" + tokenType
-	case HECO_CROSSCHAIN_ID:
-		return "HRC" + "-" + tokenType
-	case OK_CROSSCHAIN_ID:
-		return "KIP" + "-" + tokenType
-	case NEO3_CROSSCHAIN_ID:
-		if standard == models.TokenTypeErc721 {
-			return "NFT"
-		}
-		return "NEP-17"
-	case HARMONY_CROSSCHAIN_ID:
-		return "HRC" + "-" + tokenType
-	case KCC_CROSSCHAIN_ID:
-		return "KRC" + "-" + tokenType
-	case BYTOM_CROSSCHAIN_ID:
-		return "BAP" + "-" + tokenType
-	case HSC_CROSSCHAIN_ID:
-		return "ORC" + "-" + tokenType
-	default:
-		return "ERC" + "-" + tokenType
 	}
 }

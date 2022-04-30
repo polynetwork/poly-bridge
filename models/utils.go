@@ -313,3 +313,52 @@ func FormatString(data string) string {
 	}
 	return data
 }
+
+func GetTokenType(chainId uint64, standard uint8) string {
+	tokenType := ""
+	switch standard {
+	case TokenTypeErc20:
+		tokenType = "20"
+	case TokenTypeErc721:
+		tokenType = "721"
+	default:
+		tokenType = "20"
+	}
+	switch chainId {
+	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.SWITCHEO_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.ZILLIQA_CROSSCHAIN_ID,
+		basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID,
+		basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID:
+		return "ERC" + "-" + tokenType
+	case basedef.ONT_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "NFT"
+		}
+		return "OEP-4"
+	case basedef.NEO_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "NFT"
+		}
+		return "NEP-4"
+	case basedef.BSC_CROSSCHAIN_ID:
+		return "BEP" + "-" + tokenType
+	case basedef.HECO_CROSSCHAIN_ID:
+		return "HRC" + "-" + tokenType
+	case basedef.OK_CROSSCHAIN_ID:
+		return "KIP" + "-" + tokenType
+	case basedef.NEO3_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "NFT"
+		}
+		return "NEP-17"
+	case basedef.HARMONY_CROSSCHAIN_ID:
+		return "HRC" + "-" + tokenType
+	case basedef.KCC_CROSSCHAIN_ID:
+		return "KRC" + "-" + tokenType
+	case basedef.BYTOM_CROSSCHAIN_ID:
+		return "BAP" + "-" + tokenType
+	case basedef.HSC_CROSSCHAIN_ID:
+		return "ORC" + "-" + tokenType
+	default:
+		return "ERC" + "-" + tokenType
+	}
+}

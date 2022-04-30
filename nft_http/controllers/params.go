@@ -393,7 +393,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			s.SrcTransaction.To = r.SrcTransaction.SrcTransfer.To
 			s.SrcTransaction.Asset = token.TokenBasicName
 			s.SrcTransaction.AssetHash = token.Hash
-			s.SrcTransaction.TokenType = basedef.GetTokenType(r.SrcTransaction.ChainId, token.Standard)
+			s.SrcTransaction.TokenType = models.GetTokenType(r.SrcTransaction.ChainId, token.Standard)
 
 			s.Transaction.AssetName = token.TokenBasicName
 			s.Transaction.NftImage = token.TokenBasic.Meta
@@ -422,7 +422,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			s.DstTransaction.To = r.DstTransaction.DstTransfer.To
 			s.DstTransaction.Asset = token.TokenBasicName
 			s.DstTransaction.AssetHash = token.Hash
-			s.DstTransaction.TokenType = basedef.GetTokenType(r.DstTransaction.ChainId, token.Standard)
+			s.DstTransaction.TokenType = models.GetTokenType(r.DstTransaction.ChainId, token.Standard)
 
 			s.Transaction.AssetName = token.TokenBasicName
 			s.Transaction.NftImage = token.TokenBasic.Meta
