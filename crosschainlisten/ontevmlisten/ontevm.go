@@ -7,8 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	ontcommon "github.com/ontio/ontology-go-sdk/common"
 	polycommon "github.com/polynetwork/poly/common"
-	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -79,19 +79,12 @@ func (this *OntevmChainListen) GetBatchSize() uint64 {
 	return this.ontevmCfg.BatchSize
 }
 
-func (this *OntevmChainListen) isListeningContract(contract string, contracts []string) bool {
+func (this *OntevmChainListen) isListeningContract(contract string, contracts ...string) bool {
 	reverseContract := basedef.HexStringReverse(contract)
 	for _, item := range contracts {
 		if strings.EqualFold(reverseContract, item) {
 			return true
 		}
-	}
-	return false
-}
-func (this *OntevmChainListen) isListeningContract1(contract0 string, contract1 string) bool {
-	reverseContract := basedef.HexStringReverse(contract0)
-	if strings.EqualFold(reverseContract, contract1) {
-		return true
 	}
 	return false
 }
@@ -108,16 +101,14 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 	}
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
+	srcTransfers := make([]*models.SrcTransfer, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
+	dstTransfers := make([]*models.DstTransfer, 0)
 	for _, event := range events {
 		for _, notify := range event.Notify {
-			if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.WrapperContract) {
-				states, ok := notify.States.(string)
-				if !ok {
-					continue
-				}
-
-				if len(storageLog.Topics) == 0 {
+			if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.WrapperContract...) {
+				storageLog, err := deserializeStorageLog(notify)
+				if err != nil {
 					continue
 				}
 				for _, topic := range storageLog.Topics {
@@ -144,129 +135,115 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						})
 					}
 				}
-			} else if this.isListeningContract1(notify.ContractAddress, this.ontevmCfg.CCMContract) {
-				states, ok := notify.States.(string)
-				if !ok {
-					continue
-				}
-				var data []byte
-				data, err = hexutil.Decode(states)
+			} else if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.CCMContract) {
+				storageLog, err := deserializeStorageLog(notify)
 				if err != nil {
-					continue
-				}
-				source := polycommon.NewZeroCopySource(data)
-				var storageLog StorageLog
-				err = storageLog.Deserialization(source)
-				if err != nil {
-					continue
-				}
-				if len(storageLog.Topics) == 0 {
 					continue
 				}
 				for _, topic := range storageLog.Topics {
 					switch topic {
-					case this.wrapperAbiParsed.Events["CrossChainEvent"].ID:
-						logs.Info("(lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
-						srcTransfer := &models.SrcTransfer{}
-						for _, notifyNew := range event.Notify {
-							statesNew := notifyNew.States.([]interface{})
-							method, ok := statesNew[0].(string)
-							if !ok {
-								continue
-							}
-							method = this.parseOntolofyMethod(method)
-							if method == _ont_lock {
-								if len(statesNew) < 7 {
-									continue
-								}
-								srcTransfer.ChainId = this.GetChainId()
-								srcTransfer.TxHash = event.TxHash
-								srcTransfer.Time = tt
-								srcTransfer.From = statesNew[2].(string)
-								srcTransfer.To = states[5].(string)
-								srcTransfer.Asset = basedef.HexStringReverse(statesNew[1].(string))
-								if len(srcTransfer.Asset) < 20 {
-									continue
-								}
-								amount, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[6].(string)), 16)
-								srcTransfer.Amount = models.NewBigInt(amount)
-								toChain, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].(string)), 16)
-								srcTransfer.DstChainId = toChain.Uint64()
-								srcTransfer.DstAsset = statesNew[4].(string)
-								srcTransfer.DstUser = statesNew[5].(string)
-								if len(srcTransfer.From) > basedef.ADDRESS_LENGTH {
-									srcTransfer.From = ""
-								}
-								if len(srcTransfer.To) > basedef.ADDRESS_LENGTH {
-									srcTransfer.To = ""
-								}
-								if len(srcTransfer.DstUser) > basedef.ADDRESS_LENGTH {
-									srcTransfer.DstUser = ""
-								}
-								break
-							}
-						}
-						srcTransaction := &models.SrcTransaction{}
-						srcTransaction.ChainId = this.GetChainId()
-						srcTransaction.Hash = event.TxHash
-						srcTransaction.State = uint64(event.State)
-						srcTransaction.Fee = models.NewBigIntFromInt(int64(event.GasConsumed))
-						srcTransaction.Time = tt
-						srcTransaction.Height = height
-						srcTransaction.User = srcTransfer.From
-						srcTransaction.DstChainId = uint64(states[2].(float64))
-						srcTransaction.Contract = basedef.HexStringReverse(states[5].(string))
-						srcTransaction.Key = states[4].(string)
-						srcTransaction.Param = states[6].(string)
-						srcTransaction.SrcTransfer = srcTransfer
-						srcTransactions = append(srcTransactions, srcTransaction)
-					case _ont_crosschainunlock:
-						logs.Info("(unlock) to chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
-						if len(states) < 6 {
+					case this.ccmAbiParsed.Events["CrossChainEvent"].ID:
+						logs.Info("(ccm lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						var evt eccm_abi.EthCrossChainManagerCrossChainEvent
+						err = this.ccmAbiParsed.UnpackIntoInterface(&event, "CrossChainEvent", storageLog.Data)
+						if err != nil {
 							continue
 						}
-						dstTransfer := &models.DstTransfer{}
-						for _, notifyNew := range event.Notify {
-							statesNew := notifyNew.States.([]interface{})
-							method, ok := statesNew[0].(string)
-							if !ok {
-								continue
-							}
-							method = this.parseOntolofyMethod(method)
-							if method == _ont_unlock {
-								if len(statesNew) < 4 {
-									continue
-								}
-								dstTransfer.ChainId = this.GetChainId()
-								dstTransfer.TxHash = event.TxHash
-								dstTransfer.Time = tt
-								dstTransfer.From = states[5].(string)
-								dstTransfer.To = statesNew[2].(string)
-								dstTransfer.Asset = basedef.HexStringReverse(statesNew[1].(string))
-								if len(dstTransfer.Asset) < 20 {
-									continue
-								}
-								amount, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].(string)), 16)
-								dstTransfer.Amount = models.NewBigInt(amount)
-								break
-							}
+						srcTransactions = append(srcTransactions, &models.SrcTransaction{
+							Hash:       evt.Raw.TxHash.String()[2:],
+							ChainId:    this.GetChainId(),
+							State:      1,
+							Time:       tt,
+							Fee:        models.NewBigIntFromInt(int64(event.GasConsumed)),
+							Height:     height,
+							User:       models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
+							DstChainId: evt.ToChainId,
+							Contract:   models.FormatString(basedef.HexStringReverse(evt.ProxyOrAssetContract.String())),
+							Key:        hex.EncodeToString(evt.TxId),
+							Param:      hex.EncodeToString(evt.Rawdata),
+						})
+					case this.ccmAbiParsed.Events["VerifyHeaderAndExecuteTxEvent"].ID:
+						logs.Info("(ccm unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						var evt eccm_abi.EthCrossChainManagerVerifyHeaderAndExecuteTxEvent
+						err = this.ccmAbiParsed.UnpackIntoInterface(&event, "VerifyHeaderAndExecuteTxEvent", storageLog.Data)
+						if err != nil {
+							continue
 						}
-						dstTransaction := &models.DstTransaction{}
-						dstTransaction.ChainId = this.GetChainId()
-						dstTransaction.Hash = event.TxHash
-						dstTransaction.State = uint64(event.State)
-						dstTransaction.Fee = models.NewBigIntFromInt(int64(event.GasConsumed))
-						dstTransaction.Time = tt
-						dstTransaction.Height = height
-						dstTransaction.SrcChainId = uint64(states[3].(float64))
-						dstTransaction.Contract = basedef.HexStringReverse(states[5].(string))
-						dstTransaction.PolyHash = basedef.HexStringReverse(states[1].(string))
-						dstTransaction.DstTransfer = dstTransfer
-						dstTransactions = append(dstTransactions, dstTransaction)
-					default:
-						logs.Warn("ignore method: %s", contractMethod)
+						dstTransactions = append(dstTransactions, &models.DstTransaction{
+							Hash:       evt.Raw.TxHash.String()[2:],
+							ChainId:    this.GetChainId(),
+							State:      1,
+							Time:       tt,
+							Fee:        models.NewBigIntFromInt(int64(event.GasConsumed)),
+							Height:     height,
+							SrcChainId: evt.FromChainID,
+							Contract:   models.FormatString(basedef.HexStringReverse(hex.EncodeToString(evt.ToContract))),
+							PolyHash:   basedef.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
+						})
 					}
 				}
+			} else if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.ProxyContract...) {
+				storageLog, err := deserializeStorageLog(notify)
+				if err != nil {
+					continue
+				}
+				for _, topic := range storageLog.Topics {
+					switch topic {
+					case this.ccmAbiParsed.Events["LockEvent"].ID:
+						logs.Info("(lockproxy lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						var evt lock_proxy_abi.LockProxyLockEvent
+						err = this.lockproxyAbiParsed.UnpackIntoInterface(&event, "LockEvent", storageLog.Data)
+						if err != nil {
+							continue
+						}
+						srcTransfers = append(srcTransfers, &models.SrcTransfer{
+							TxHash:     evt.Raw.TxHash.String()[2:],
+							ChainId:    this.GetChainId(),
+							Standard:   models.TokenTypeErc20,
+							Time:       tt,
+							Asset:      models.FormatString(strings.ToLower(evt.FromAssetHash.String()[2:])),
+							Amount:     models.NewBigInt(evt.Amount),
+							DstChainId: evt.ToChainId,
+							DstAsset:   models.FormatString(hex.EncodeToString(evt.ToAssetHash)),
+							DstUser:    models.FormatString(hex.EncodeToString(evt.ToAddress)),
+						})
+					case this.ccmAbiParsed.Events["UnlockEvent"].ID:
+						logs.Info("(lockproxy unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						var evt lock_proxy_abi.LockProxyUnlockEvent
+						err = this.lockproxyAbiParsed.UnpackIntoInterface(&event, "UnlockEvent", storageLog.Data)
+						if err != nil {
+							continue
+						}
+						dstTransfers = append(dstTransfers, &models.DstTransfer{
+							TxHash:   evt.Raw.TxHash.String()[2:],
+							ChainId:  this.GetChainId(),
+							Standard: models.TokenTypeErc20,
+							Time:     tt,
+							Asset:    models.FormatString(strings.ToLower(evt.ToAssetHash.String()[2:])),
+							To:       models.FormatString(strings.ToLower(evt.ToAddress.String()[2:])),
+							Amount:   models.NewBigInt(evt.Amount),
+						})
+					}
+				}
+			}
+		}
+	}
+	for _, srcTransaction := range srcTransactions {
+		for _, srcTransfer := range srcTransfers {
+			if srcTransaction.Hash == srcTransfer.TxHash {
+				srcTransfer.From = models.FormatString(srcTransaction.User)
+				srcTransfer.To = models.FormatString(srcTransaction.Contract)
+				srcTransaction.Standard = srcTransfer.Standard
+				srcTransaction.SrcTransfer = srcTransfer
+			}
+		}
+	}
+	for _, dstTransaction := range dstTransactions {
+		for _, dstTransfer := range dstTransfers {
+			if dstTransaction.Hash == dstTransfer.TxHash {
+				dstTransfer.From = dstTransaction.Contract
+				dstTransaction.Standard = dstTransfer.Standard
+				dstTransaction.DstTransfer = dstTransfer
 			}
 		}
 	}
@@ -312,17 +289,25 @@ func (self *StorageLog) Deserialization(source *polycommon.ZeroCopySource) error
 	return nil
 }
 
-func deserializeStorageLog(states string) {
-
+func deserializeStorageLog(notify *ontcommon.NotifyEventInfo) (storageLog StorageLog, err error) {
+	states, ok := notify.States.(string)
+	if !ok {
+		err = fmt.Errorf("err States.(string)")
+		return
+	}
 	var data []byte
 	data, err = hexutil.Decode(states)
 	if err != nil {
-		continue
+		return
 	}
 	source := polycommon.NewZeroCopySource(data)
-	var storageLog StorageLog
 	err = storageLog.Deserialization(source)
 	if err != nil {
-		continue
+		return
 	}
+	if len(storageLog.Topics) == 0 {
+		err = fmt.Errorf("err storageLog.Topics is 0")
+		return
+	}
+	return
 }
