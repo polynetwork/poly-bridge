@@ -328,6 +328,7 @@ type SideChainRsp struct {
 	ChainExplorerUrl string `json:"chainexplorerurl"`
 	Asset            string
 	AssetHash        string
+	TokenType        string
 	BlockHeight      uint64
 	Time             uint64
 	Fee              string
@@ -392,6 +393,8 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			s.SrcTransaction.To = r.SrcTransaction.SrcTransfer.To
 			s.SrcTransaction.Asset = token.TokenBasicName
 			s.SrcTransaction.AssetHash = token.Hash
+			s.SrcTransaction.TokenType = models.GetTokenType(r.SrcTransaction.ChainId, token.Standard)
+
 			s.Transaction.AssetName = token.TokenBasicName
 			s.Transaction.NftImage = token.TokenBasic.Meta
 			s.Transaction.TokenId = r.SrcTransaction.SrcTransfer.Amount.String()
@@ -408,13 +411,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.SrcTransaction.FeeName = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainFeeName
 		s.SrcTransaction.FeeLogo = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainFeeLogo
 
-		feeToken := feeTokens[s.SrcTransaction.ChainId]
-		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.Precision)))
-		{
-			bbb := decimal.NewFromBigInt(&r.SrcTransaction.Fee.Int, 0)
-			feeAmount := bbb.Div(precision)
-			s.SrcTransaction.Fee = feeAmount.String()
-		}
+		s.SrcTransaction.Fee = models.FormatFee(r.SrcTransaction.ChainId, r.SrcTransaction.Fee)
 	}
 
 	if r.DstTransaction != nil {
@@ -425,6 +422,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			s.DstTransaction.To = r.DstTransaction.DstTransfer.To
 			s.DstTransaction.Asset = token.TokenBasicName
 			s.DstTransaction.AssetHash = token.Hash
+			s.DstTransaction.TokenType = models.GetTokenType(r.DstTransaction.ChainId, token.Standard)
 
 			s.Transaction.AssetName = token.TokenBasicName
 			s.Transaction.NftImage = token.TokenBasic.Meta
@@ -441,13 +439,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.DstTransaction.FeeName = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainFeeName
 		s.DstTransaction.FeeLogo = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainFeeLogo
 
-		feeToken := feeTokens[s.DstTransaction.ChainId]
-		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(feeToken.Precision)))
-		{
-			bbb := decimal.NewFromBigInt(&r.DstTransaction.Fee.Int, 0)
-			feeAmount := bbb.Div(precision)
-			s.DstTransaction.Fee = feeAmount.String()
-		}
+		s.DstTransaction.Fee = models.FormatFee(r.DstTransaction.ChainId, r.DstTransaction.Fee)
 	}
 
 	if r.PolyTransaction != nil {

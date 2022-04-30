@@ -251,19 +251,19 @@ type TransactionOnToken struct {
 }
 
 type TransactionOnAddress struct {
-	Hash      string
-	ChainId   uint64
-	Time      uint64
-	Height    uint64
-	From      string
-	To        string
-	Amount    *BigInt
-	TokenHash string
-	TokenName string
-	TokenType string
-	Direct    uint32
-	Precision uint64
-	Meta      string
+	Hash          string
+	ChainId       uint64
+	Time          uint64
+	Height        uint64
+	From          string
+	To            string
+	Amount        *BigInt
+	TokenHash     string
+	TokenName     string
+	TokenStandard uint8
+	Direct        uint32
+	Precision     uint64
+	Meta          string
 }
 
 type NftUser struct {
