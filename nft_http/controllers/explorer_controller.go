@@ -85,14 +85,14 @@ func (c *ExplorerController) TransactionsOfAddress() {
 		db.Raw("select wp.*, tr.amount as token_id, tr.asset as src_asset "+
 			"from wrapper_transactions wp "+
 			"left join src_transfers as tr on wp.hash=tr.tx_hash "+
-			"where wp.standard=? and (wp.user in ? or wp.dst_user in ?) and (wp.chain_id = ?)"+
+			"where wp.standard=? and (wp.user in ? or wp.dst_user in ?) and (wp.src_chain_id = ? or wp.dst_chain_id = ?)"+
 			"order by wp.time desc "+
 			"limit ? offset ?",
-			models.TokenTypeErc721, req.Addresses, req.Addresses, req.ChainId, limit, offset).
+			models.TokenTypeErc721, req.Addresses, req.Addresses, req.ChainId, req.ChainId, limit, offset).
 			Find(&relations)
 		db.Model(&models.SrcTransfer{}).
 			Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
-			Where("src_transfers.standard = ? and (`from` in ? or src_transfers.dst_user in ?) and (wrapper_transactions.chain_id = ?) and (src_transfers.chain_id = ?)",
+			Where("src_transfers.standard = ? and (`from` in ? or src_transfers.dst_user in ?) and (wrapper_transactions.src_chain_id = ? or wrapper_transactions.dst_chain_id = ?)",
 				models.TokenTypeErc721, req.Addresses, req.Addresses, req.ChainId, req.ChainId).
 			Count(&transactionNum)
 	}
