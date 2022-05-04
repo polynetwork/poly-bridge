@@ -245,6 +245,7 @@ type TransactionBriefsOfAddressReq struct {
 	PageSize  int
 	PageNo    int
 	Addresses []string
+	ChainId   uint64
 }
 
 type TransactionBriefRelation struct {
