@@ -485,11 +485,11 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHand
 		basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
 		basedef.METIS_CROSSCHAIN_ID, basedef.PIXIE_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID,
 		basedef.OASIS_CROSSCHAIN_ID, basedef.HARMONY_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID, basedef.BCSPALETTE_CROSSCHAIN_ID,
-		basedef.BYTOM_CROSSCHAIN_ID, basedef.KCC_CROSSCHAIN_ID:
+		basedef.BYTOM_CROSSCHAIN_ID, basedef.KCC_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID:
 		return ethereummonitor.NewEthereumHealthMonitor(monitorConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neomonitor.NewNeoHealthMonitor(monitorConfig)
-	case basedef.ONTEVM_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologymonitor.NewOntologyHealthMonitor(monitorConfig)
 	//case basedef.SWITCHEO_CROSSCHAIN_ID:
 	//	return switcheomonitor.NewSwitcheoHealthMonitor(monitorConfig)

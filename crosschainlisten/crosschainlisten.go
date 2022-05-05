@@ -23,6 +23,7 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/crosschainlisten/starcoinlisten"
+	"poly-bridge/crosschainlisten/ontevmlisten"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"poly-bridge/utils/decimal"
 	"runtime/debug"
@@ -98,8 +99,10 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
-	case basedef.ONT_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID:
+	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologylisten.NewOntologyChainListen(chainListenConfig)
+	case basedef.ONTEVM_CROSSCHAIN_ID:
+		return ontevmlisten.NewOntevmChainListen(chainListenConfig)
 	case basedef.O3_CROSSCHAIN_ID:
 		return o3listen.NewO3ChainListen(chainListenConfig)
 	case basedef.SWITCHEO_CROSSCHAIN_ID:
