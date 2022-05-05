@@ -75,13 +75,13 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.OK_CROSSCHAIN_ID,
 		basedef.MATIC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID,
 		basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID,
-		basedef.BOBA_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID:
+		basedef.BOBA_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID:
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neofee.NewNeoFee(cfg, feeUpdateSlot)
 	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3fee.NewNeo3Fee(cfg, feeUpdateSlot)
-	case basedef.ONT_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID:
+	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologyfee.NewOntologyFee(cfg, feeUpdateSlot)
 	case basedef.SWITCHEO_CROSSCHAIN_ID:
 		return switcheofee.NewSwitcheoFee(cfg, feeUpdateSlot)

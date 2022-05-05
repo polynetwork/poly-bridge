@@ -34,7 +34,7 @@ var (
 	rinkebySdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	oasisSdk      *chainsdk.EthereumSdkPro
-	ontevmSdk     *chainsdk.OntologySdkPro
+	ontevmSdk     *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -119,6 +119,15 @@ func newChainSdks(config *conf.Config) {
 		urls := ontConfig.GetNodesUrl()
 		ontologySdk = chainsdk.NewOntologySdkPro(urls, ontConfig.ListenSlot, ontConfig.ChainId)
 		sdkMap[basedef.ONT_CROSSCHAIN_ID] = ontologySdk
+	}
+	{
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ont evm is invalid")
+		}
+		urls := ontevmConfig.GetNodesUrl()
+		ontevmSdk = chainsdk.NewEthereumSdkPro(urls, ontevmConfig.ListenSlot, ontevmConfig.ChainId)
+		sdkMap[basedef.ONTEVM_CROSSCHAIN_ID] = ontevmSdk
 	}
 	if basedef.ENV == basedef.MAINNET {
 		swthConfig := config.GetChainListenConfig(basedef.SWITCHEO_CROSSCHAIN_ID)
@@ -230,15 +239,6 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		oasisSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.OASIS_CROSSCHAIN_ID] = oasisSdk
-	}
-	{
-		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
-		if ontevmConfig == nil {
-			panic("ont evm is invalid")
-		}
-		urls := ontevmConfig.GetNodesUrl()
-		ontevmSdk = chainsdk.NewOntologySdkPro(urls, ontevmConfig.ListenSlot, ontevmConfig.ChainId)
-		sdkMap[basedef.ONTEVM_CROSSCHAIN_ID] = ontevmSdk
 	}
 }
 
@@ -358,6 +358,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 				continue
 			}
 			balance, err := ontologySdk.Oep4Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
+	if chainId == basedef.ONTEVM_CROSSCHAIN_ID {
+		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
+		if ontevmConfig == nil {
+			panic("ontevm is invalid")
+		}
+		for _, v := range ontevmConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := ontevmSdk.Erc20Balance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
 		}
@@ -502,20 +516,6 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
-	if chainId == basedef.ONTEVM_CROSSCHAIN_ID {
-		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
-		if ontevmConfig == nil {
-			panic("ontevm is invalid")
-		}
-		for _, v := range ontevmConfig.ProxyContract {
-			if len(strings.TrimSpace(v)) == 0 {
-				continue
-			}
-			balance, err := ontevmSdk.Oep4Balance(hash, v)
-			maxFun(balance)
-			errMap[err] = true
-		}
-	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -590,11 +590,7 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		if ontevmConfig == nil {
 			panic("ontevm is invalid")
 		}
-		for _, v := range ontevmConfig.ProxyContract {
-			if len(strings.TrimSpace(v)) != 0 {
-				return ontevmSdk.Oep4TotalSupply(hash, v)
-			}
-		}
+		return ontevmSdk.Erc20TotalSupply(hash)
 	}
 	if chainId == basedef.MATIC_CROSSCHAIN_ID {
 		maticConfig := config.GetChainListenConfig(basedef.MATIC_CROSSCHAIN_ID)
@@ -694,7 +690,7 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologySdk.Oep4Balance(hash, proxy)
 	case basedef.ONTEVM_CROSSCHAIN_ID:
-		return ontevmSdk.Oep4Balance(hash, proxy)
+		return ontevmSdk.Erc20Balance(hash, proxy)
 	case basedef.ARBITRUM_CROSSCHAIN_ID:
 		return arbitrumSdk.Erc20Balance(hash, proxy)
 	case basedef.XDAI_CROSSCHAIN_ID:

@@ -29,18 +29,21 @@ const (
 
 type OntevmChainListen struct {
 	ontevmCfg          *conf.ChainListenConfig
-	ontevmSdk          *chainsdk.OntologySdkPro
+	ontSdk             *chainsdk.OntologySdkPro
 	ccmAbiParsed       abi.ABI
 	lockproxyAbiParsed abi.ABI
 	wrapperAbiParsed   abi.ABI
 }
 
-func NewOntevmyChainListen(cfg *conf.ChainListenConfig) *OntevmChainListen {
+func NewOntevmChainListen(cfg *conf.ChainListenConfig) *OntevmChainListen {
 	ontevmListen := &OntevmChainListen{}
 	ontevmListen.ontevmCfg = cfg
-	urls := cfg.GetNodesUrl()
+	//urls use ont url,listen ontevm must use ontsdk because filterlog
+	//use ExtendNodes only here,others use GetNodesUrl
+	urls := cfg.GetExtendNodesUrl()
+
 	sdk := chainsdk.NewOntologySdkPro(urls, cfg.ListenSlot, cfg.ChainId)
-	ontevmListen.ontevmSdk = sdk
+	ontevmListen.ontSdk = sdk
 	ccmAbiParsed, _ := abi.JSON(strings.NewReader(eccm_abi.EthCrossChainManagerABI))
 	ontevmListen.ccmAbiParsed = ccmAbiParsed
 	lockproxyAbiParsed, _ := abi.JSON(strings.NewReader(lock_proxy_abi.LockProxyABI))
@@ -51,7 +54,7 @@ func NewOntevmyChainListen(cfg *conf.ChainListenConfig) *OntevmChainListen {
 }
 
 func (this *OntevmChainListen) GetLatestHeight() (uint64, error) {
-	return this.ontevmSdk.GetCurrentBlockHeight()
+	return this.ontSdk.GetCurrentBlockHeight()
 }
 
 func (this *OntevmChainListen) GetChainListenSlot() uint64 {
@@ -90,12 +93,12 @@ func (this *OntevmChainListen) isListeningContract(contract string, contracts ..
 }
 
 func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
-	block, err := this.ontevmSdk.GetBlockByHeight(uint32(height))
+	block, err := this.ontSdk.GetBlockByHeight(uint32(height))
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
 	tt := uint64(block.Header.Timestamp)
-	events, err := this.ontevmSdk.GetSmartContractEventByBlock(uint32(height))
+	events, err := this.ontSdk.GetSmartContractEventByBlock(uint32(height))
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
@@ -116,12 +119,12 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 					case this.wrapperAbiParsed.Events["PolyWrapperLock"].ID:
 						logs.Info("(wrapper) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 						var evt wrapper_abi.PolyWrapperPolyWrapperLock
-						err = this.wrapperAbiParsed.UnpackIntoInterface(&event, "PolyWrapperLock", storageLog.Data)
+						err = this.wrapperAbiParsed.UnpackIntoInterface(&evt, "PolyWrapperLock", storageLog.Data)
 						if err != nil {
 							continue
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
-							Hash:         evt.Raw.TxHash.String()[2:],
+							Hash:         basedef.HexStringReverse(event.TxHash),
 							User:         models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
 							DstChainId:   evt.ToChainId,
 							DstUser:      models.FormatString(hex.EncodeToString(evt.ToAddress)),
@@ -145,32 +148,31 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 					case this.ccmAbiParsed.Events["CrossChainEvent"].ID:
 						logs.Info("(ccm lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 						var evt eccm_abi.EthCrossChainManagerCrossChainEvent
-						err = this.ccmAbiParsed.UnpackIntoInterface(&event, "CrossChainEvent", storageLog.Data)
+						err = this.ccmAbiParsed.UnpackIntoInterface(&evt, "CrossChainEvent", storageLog.Data)
 						if err != nil {
 							continue
 						}
 						srcTransactions = append(srcTransactions, &models.SrcTransaction{
-							Hash:       evt.Raw.TxHash.String()[2:],
+							Hash:       basedef.HexStringReverse(event.TxHash),
 							ChainId:    this.GetChainId(),
 							State:      1,
 							Time:       tt,
 							Fee:        models.NewBigIntFromInt(int64(event.GasConsumed)),
 							Height:     height,
-							User:       models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
 							DstChainId: evt.ToChainId,
-							Contract:   models.FormatString(basedef.HexStringReverse(evt.ProxyOrAssetContract.String())),
+							Contract:   models.FormatString(evt.ProxyOrAssetContract.String()[2:]),
 							Key:        hex.EncodeToString(evt.TxId),
 							Param:      hex.EncodeToString(evt.Rawdata),
 						})
 					case this.ccmAbiParsed.Events["VerifyHeaderAndExecuteTxEvent"].ID:
 						logs.Info("(ccm unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 						var evt eccm_abi.EthCrossChainManagerVerifyHeaderAndExecuteTxEvent
-						err = this.ccmAbiParsed.UnpackIntoInterface(&event, "VerifyHeaderAndExecuteTxEvent", storageLog.Data)
+						err = this.ccmAbiParsed.UnpackIntoInterface(&evt, "VerifyHeaderAndExecuteTxEvent", storageLog.Data)
 						if err != nil {
 							continue
 						}
 						dstTransactions = append(dstTransactions, &models.DstTransaction{
-							Hash:       evt.Raw.TxHash.String()[2:],
+							Hash:       basedef.HexStringReverse(event.TxHash),
 							ChainId:    this.GetChainId(),
 							State:      1,
 							Time:       tt,
@@ -189,15 +191,15 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				}
 				for _, topic := range storageLog.Topics {
 					switch topic {
-					case this.ccmAbiParsed.Events["LockEvent"].ID:
+					case this.lockproxyAbiParsed.Events["LockEvent"].ID:
 						logs.Info("(lockproxy lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 						var evt lock_proxy_abi.LockProxyLockEvent
-						err = this.lockproxyAbiParsed.UnpackIntoInterface(&event, "LockEvent", storageLog.Data)
+						err = this.lockproxyAbiParsed.UnpackIntoInterface(&evt, "LockEvent", storageLog.Data)
 						if err != nil {
 							continue
 						}
 						srcTransfers = append(srcTransfers, &models.SrcTransfer{
-							TxHash:     evt.Raw.TxHash.String()[2:],
+							TxHash:     basedef.HexStringReverse(event.TxHash),
 							ChainId:    this.GetChainId(),
 							Standard:   models.TokenTypeErc20,
 							Time:       tt,
@@ -206,16 +208,17 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							DstChainId: evt.ToChainId,
 							DstAsset:   models.FormatString(hex.EncodeToString(evt.ToAssetHash)),
 							DstUser:    models.FormatString(hex.EncodeToString(evt.ToAddress)),
+							From:       models.FormatString(evt.FromAddress.String()[2:]),
 						})
-					case this.ccmAbiParsed.Events["UnlockEvent"].ID:
+					case this.lockproxyAbiParsed.Events["UnlockEvent"].ID:
 						logs.Info("(lockproxy unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
 						var evt lock_proxy_abi.LockProxyUnlockEvent
-						err = this.lockproxyAbiParsed.UnpackIntoInterface(&event, "UnlockEvent", storageLog.Data)
+						err = this.lockproxyAbiParsed.UnpackIntoInterface(&evt, "UnlockEvent", storageLog.Data)
 						if err != nil {
 							continue
 						}
 						dstTransfers = append(dstTransfers, &models.DstTransfer{
-							TxHash:   evt.Raw.TxHash.String()[2:],
+							TxHash:   basedef.HexStringReverse(event.TxHash),
 							ChainId:  this.GetChainId(),
 							Standard: models.TokenTypeErc20,
 							Time:     tt,
