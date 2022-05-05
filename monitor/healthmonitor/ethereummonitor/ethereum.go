@@ -141,6 +141,10 @@ func (e *EthereumHealthMonitor) GetCurrentHeight(sdk *chainsdk.EthereumSdk, chai
 }
 
 func (e *EthereumHealthMonitor) CheckAbiCall(sdk *chainsdk.EthereumSdk) error {
+	if e.GetChainId() == basedef.ONTEVM_CROSSCHAIN_ID {
+		//ontevm have not filterlog
+		return nil
+	}
 	eccmContractAddress := common.HexToAddress(e.monitorConfig.CCMContract)
 	client := sdk.GetClient()
 	ethCrossChainManager, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
