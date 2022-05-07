@@ -48,6 +48,7 @@ func Init() {
 		panic("relayUrl is null")
 	}
 
+	wrapperContract = make(map[uint64]([]string), 0)
 	for _, chainListen := range conf.GlobalConfig.ChainListenConfig {
 		if len(chainListen.WrapperContract) > 0 {
 			wrapper := make([]string, 0)
