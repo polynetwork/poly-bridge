@@ -95,7 +95,7 @@ func (pro *EthereumSdkPro) selection() {
 	for url, info := range pro.infos {
 		height, err := info.sdk.GetCurrentBlockHeight()
 		if err != nil || height == math.MaxUint64 || height == 0 {
-			logs.Error("nodeselection get current block height err: %v, url: %s", err, url)
+			logs.Error("nodeselection get current block height err, chain: %v, url: %s", pro.id, url)
 			height = 1
 		}
 		/*
@@ -440,7 +440,7 @@ func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (balance *big
 }
 
 func (pro *EthereumSdkPro) GetNFTOwner(asset string, tokenId *big.Int) (owner common.Address, err error) {
-	assetAddr:=common.HexToAddress(asset)
+	assetAddr := common.HexToAddress(asset)
 	info := pro.GetLatest()
 	if info == nil {
 		return EmptyAddress, fmt.Errorf("all node is not working")
