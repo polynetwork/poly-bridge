@@ -50,14 +50,21 @@ func Init() {
 
 	wrapperContract = make(map[uint64]([]string), 0)
 	for _, chainListen := range conf.GlobalConfig.ChainListenConfig {
+		wrapper := make([]string, 0)
 		if len(chainListen.WrapperContract) > 0 {
-			wrapper := make([]string, 0)
 			for _, v := range chainListen.WrapperContract {
 				if v != "" {
 					wrapper = append(wrapper, v)
 				}
 			}
-			wrapperContract[chainListen.ChainId] = wrapper
 		}
+		if len(chainListen.NFTWrapperContract) > 0 {
+			for _, v := range chainListen.NFTWrapperContract {
+				if v != "" {
+					wrapper = append(wrapper, v)
+				}
+			}
+		}
+		wrapperContract[chainListen.ChainId] = wrapper
 	}
 }
