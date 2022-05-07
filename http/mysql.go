@@ -27,6 +27,7 @@ import (
 
 var db *gorm.DB
 var relayUrl string
+var wrapperContract map[uint64]([]string)
 
 func Init() {
 	config := conf.GlobalConfig.DBConfig
@@ -42,8 +43,20 @@ func Init() {
 		panic(err)
 	}
 
-	relayUrl=conf.GlobalConfig.RelayUrl
-	if relayUrl==""{
+	relayUrl = conf.GlobalConfig.RelayUrl
+	if relayUrl == "" {
 		panic("relayUrl is null")
+	}
+
+	for _, chainListen := range conf.GlobalConfig.ChainListenConfig {
+		if len(chainListen.WrapperContract) > 0 {
+			wrapper := make([]string, 0)
+			for _, v := range chainListen.WrapperContract {
+				if v != "" {
+					wrapper = append(wrapper, v)
+				}
+			}
+			wrapperContract[chainListen.ChainId] = wrapper
+		}
 	}
 }
