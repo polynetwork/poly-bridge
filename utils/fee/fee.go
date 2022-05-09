@@ -9,7 +9,7 @@ import (
 	"poly-bridge/models"
 )
 
-func GetL1Fee(ethChainFee *models.ChainFee, chainId uint64) (l1MinFee, l1ProxyFee *big.Float, err error) {
+func GetL1Fee(ethChainFee *models.ChainFee, chainId uint64) (l1MinFee, l1ProxyFee, l1FeeAmount *big.Float, err error) {
 	var targetFeeListenConfig, ethFeeListenConfig *conf.FeeListenConfig
 	for _, fl := range conf.GlobalConfig.FeeListenConfig {
 		if fl.ChainId == chainId {
@@ -29,7 +29,7 @@ func GetL1Fee(ethChainFee *models.ChainFee, chainId uint64) (l1MinFee, l1ProxyFe
 	if targetFeeListenConfig == nil || ethFeeListenConfig == nil {
 		err := fmt.Errorf("chain listen config is missing")
 		logs.Error("getOptimisticL1FeeMin error: %v", err)
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	gasLimitScale := new(big.Float).Quo(new(big.Float).SetInt64(targetFeeListenConfig.EthL1GasLimit), new(big.Float).SetInt64(ethFeeListenConfig.GasLimit))
@@ -42,6 +42,10 @@ func GetL1Fee(ethChainFee *models.ChainFee, chainId uint64) (l1MinFee, l1ProxyFe
 
 	l1MinFee = new(big.Float).Mul(new(big.Float).SetInt(&ethChainFee.MinFee.Int), feeFactor)
 	l1ProxyFee = new(big.Float).Mul(new(big.Float).SetInt(&ethChainFee.ProxyFee.Int), feeFactor)
-	logs.Info("chain:%d l1MinFee=%s, l1ProxyFee=%s", chainId, l1MinFee.String(), l1ProxyFee.String())
+
+	l1FeeAmount = new(big.Float).Mul(new(big.Float).SetInt(&ethChainFee.ProxyFee.Int), gasLimitScale)
+	l1FeeAmount = l1FeeAmount.Quo(l1FeeAmount, new(big.Float).SetInt64(basedef.FEE_PRECISION))
+	l1FeeAmount = l1FeeAmount.Quo(l1FeeAmount, new(big.Float).SetInt64(basedef.Int64FromFigure(int(ethChainFee.TokenBasic.Precision))))
+	logs.Info("chain:%d l1MinFee=%s, l1ProxyFee=%s, l1FeeAmount=%s", chainId, l1MinFee.String(), l1ProxyFee.String(), l1FeeAmount.String())
 	return
 }

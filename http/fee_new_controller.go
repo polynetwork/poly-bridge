@@ -115,7 +115,7 @@ func (c *FeeController) NewCheckFee() {
 					continue
 				}
 
-				L1MinFee, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
+				L1MinFee, _, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
 				if err != nil {
 					v.Status = MISSING
 					logs.Info("check fee poly_hash %s MISSING, get L1 fee failed. err=%v", k, err)
