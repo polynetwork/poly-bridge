@@ -240,10 +240,12 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.T
 								priceMarket.Price = tokenBasic.Price
 								priceMarket.Time = time.Now().Unix()
 								priceMarket.Ind = 1
+								fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price%v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
 							} else if priceMarket.Price > 0 {
 								priceMarket.Time = time.Now().Unix()
 								priceMarket.Ind = 1
 								tokenBasic.Price = priceMarket.Price
+								fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price%v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
 							} else {
 								if priceMarket.CoinMarketId > 0 {
 									priceTicker, ok := coinId2Price[priceMarket.CoinMarketId]
@@ -259,12 +261,12 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.T
 										priceMarket.Time = time.Now().Unix()
 										priceMarket.Ind = 1
 										tokenBasic.Price = price
+										fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price%v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
 										break
 									}
 								}
 							}
 						}
-						fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price%v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
 					}
 				}
 			}
