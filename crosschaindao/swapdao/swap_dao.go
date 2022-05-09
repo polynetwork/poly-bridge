@@ -18,7 +18,9 @@
 package swapdao
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -201,37 +203,69 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.T
 					break
 				}
 			}
+
+			coinIds := make([]string, 0)
 			for _, tokenBasic := range tokens {
 				if tokenBasic != nil && tokenBasic.PriceMarkets != nil && len(tokenBasic.PriceMarkets) > 0 && tokenBasic.Standard == models.TokenTypeErc20 {
 					for _, priceMarket := range tokenBasic.PriceMarkets {
 						if priceMarket.MarketName == basedef.MARKET_COINMARKETCAP && priceMarket.CoinMarketId > 0 {
 							fmt.Printf("start update token:%v CoinMarketId:%v coinmarketcap price\n", tokenBasic.Name, priceMarket.CoinMarketId)
-							coinIds := make([]string, 0)
 							coinIds = append(coinIds, fmt.Sprintf("%d", priceMarket.CoinMarketId))
-							requestCoinIds := strings.Join(coinIds, ",")
-							quotes, err := coinmarketsdk.QuotesLatest(requestCoinIds)
-							coinName2Price := make(map[string]float64)
-							if err != nil {
-								for _, v := range quotes {
-									name := v.Name
-									if v.Quote == nil || v.Quote["USD"] == nil {
-										fmt.Printf(" There is no price for coin %s in CoinMarketCap!\n", name)
-										continue
+						}
+					}
+				}
+			}
+			requestCoinIds := strings.Join(coinIds, ",")
+			quotes, err := coinmarketsdk.QuotesLatest(requestCoinIds)
+			if err != nil {
+				time.Sleep(time.Second * 3)
+				quotes, err = coinmarketsdk.QuotesLatest(requestCoinIds)
+			}
+			if err != nil {
+				logs.Error("coinmarketsdk.QuotesLatest err:", err)
+			}
+			coinId2Price := make(map[int]*coinmarketcap.Ticker)
+			if err == nil {
+				for _, v := range quotes {
+					coinId2Price[v.ID] = v
+				}
+				jsonQuotes, _ := json.MarshalIndent(quotes, "", "	")
+				fmt.Println(string(jsonQuotes))
+			}
+			for _, tokenBasic := range tokens {
+				if tokenBasic != nil && tokenBasic.Standard == models.TokenTypeErc20 && tokenBasic.PriceMarkets != nil {
+					for _, priceMarket := range tokenBasic.PriceMarkets {
+						if priceMarket.MarketName == basedef.MARKET_COINMARKETCAP {
+							if tokenBasic.Price > 0 {
+								priceMarket.Price = tokenBasic.Price
+								priceMarket.Time = time.Now().Unix()
+								priceMarket.Ind = 1
+								fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price%v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
+							} else if priceMarket.Price > 0 {
+								priceMarket.Time = time.Now().Unix()
+								priceMarket.Ind = 1
+								tokenBasic.Price = priceMarket.Price
+								fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price%v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
+							} else {
+								if priceMarket.CoinMarketId > 0 {
+									priceTicker, ok := coinId2Price[priceMarket.CoinMarketId]
+									if ok {
+										priceMarket.Name = priceTicker.Name
+										if priceTicker.Quote == nil || priceTicker.Quote["USD"] == nil {
+											fmt.Printf(" There is no price for coin %s in CoinMarketCap!\n", tokenBasic.Name)
+											continue
+										}
+										price, _ := new(big.Float).Mul(big.NewFloat(priceTicker.Quote["USD"].Price), big.NewFloat(float64(basedef.PRICE_PRECISION))).Int64()
+
+										priceMarket.Price = price
+										priceMarket.Time = time.Now().Unix()
+										priceMarket.Ind = 1
+										tokenBasic.Price = price
+										fmt.Printf("end update token: %v CoinMarketId: %v coinmarketcap price: %v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
+										break
 									}
-									coinName2Price[name] = v.Quote["USD"].Price
 								}
 							}
-							for name, price := range coinName2Price {
-								price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(basedef.PRICE_PRECISION))).Int64()
-								if priceMarket.Name == name {
-									priceMarket.Price = price
-									priceMarket.Time = time.Now().Unix()
-									priceMarket.Ind = 1
-									tokenBasic.Price = price
-									break
-								}
-							}
-							fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price\n", tokenBasic.Name, priceMarket.CoinMarketId)
 						}
 					}
 				}

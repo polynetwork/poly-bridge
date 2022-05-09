@@ -327,10 +327,12 @@ type GetFeeRsp struct {
 	SwapTokenHash            string
 	Balance                  string
 	BalanceWithPrecision     string
+	IsNative                 bool
+	NativeTokenAmount        string
 }
 
 func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float,
-	swapTokenHash string, balance *big.Float, balanceWithoutPrecision *big.Float) *GetFeeRsp {
+	swapTokenHash string, balance *big.Float, balanceWithoutPrecision *big.Float, isNative bool, nativeTokenAmount *big.Float) *GetFeeRsp {
 	getFeeRsp := &GetFeeRsp{
 		SrcChainId:               srcChainId,
 		Hash:                     hash,
@@ -341,6 +343,8 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		SwapTokenHash:            swapTokenHash,
 		Balance:                  fmt.Sprintf("%v", balanceWithoutPrecision),
 		BalanceWithPrecision:     fmt.Sprintf("%v", balance),
+		IsNative:                 isNative,
+		NativeTokenAmount:        fmt.Sprintf("%v", nativeTokenAmount),
 	}
 	{
 		precision := decimal.NewFromInt(basedef.PRICE_PRECISION)

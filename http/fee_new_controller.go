@@ -106,7 +106,7 @@ func (c *FeeController) NewCheckFee() {
 					continue
 				}
 
-				L1MinFee, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
+				L1MinFee, _, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
 				if err != nil {
 					v.Status = NOT_PAID
 					logs.Info("check fee poly_hash %s NOT_PAID, get L1 fee failed. err=%v", k, err)
