@@ -261,7 +261,7 @@ func (dao *SwapDao) AddTokens(tokens []*models.TokenBasic, tokenMaps []*models.T
 										priceMarket.Time = time.Now().Unix()
 										priceMarket.Ind = 1
 										tokenBasic.Price = price
-										fmt.Printf("end update token:%v CoinMarketId:%v coinmarketcap price%v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
+										fmt.Printf("end update token: %v CoinMarketId: %v coinmarketcap price: %v \n", tokenBasic.Name, priceMarket.CoinMarketId, tokenBasic.Price)
 										break
 									}
 								}
