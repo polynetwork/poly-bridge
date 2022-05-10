@@ -244,7 +244,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 	} else {
 		fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
 	}
-	if fChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID || fChainTx.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID || fChainTx.ChainId == basedef.ONTEVM_CROSSCHAIN_ID {
+	if fChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID || fChainTx.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
 		fChainTxResp.TxHash = "0x" + fChainTxResp.TxHash
 	} else if fChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
 		fChainTxResp.TxHash = strings.ToUpper(fChainTxResp.TxHash)
@@ -369,7 +369,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTxResp.Transfer.Amount = tChainTx.DstTransfer.Amount.String()
 	}
 
-	if tChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID || tChainTx.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID || tChainTx.ChainId == basedef.ONTEVM_CROSSCHAIN_ID {
+	if tChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID || tChainTx.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
 		tChainTxResp.TxHash = "0x" + tChainTxResp.TxHash
 	} else if tChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
 		tChainTxResp.TxHash = strings.ToUpper(tChainTxResp.TxHash)

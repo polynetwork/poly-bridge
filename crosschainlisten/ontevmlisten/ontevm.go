@@ -107,6 +107,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 	srcTransfers := make([]*models.SrcTransfer, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
 	dstTransfers := make([]*models.DstTransfer, 0)
+	txHash2User := make(map[string]string)
 	for _, event := range events {
 		for _, notify := range event.Notify {
 			if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.WrapperContract...) {
@@ -125,17 +126,18 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 							Hash:         basedef.HexStringReverse(event.TxHash),
-							User:         models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
 							DstChainId:   evt.ToChainId,
 							DstUser:      models.FormatString(hex.EncodeToString(evt.ToAddress)),
 							FeeTokenHash: models.FormatString(strings.ToLower(evt.FromAsset.String()[2:])),
 							FeeAmount:    models.NewBigInt(evt.Fee),
 							ServerId:     evt.Id.Uint64(),
-							BlockHeight:  evt.Raw.BlockNumber,
+							BlockHeight:  height,
 							Status:       basedef.STATE_SOURCE_DONE,
 							Time:         tt,
 							SrcChainId:   this.GetChainId(),
+							Standard:     models.TokenTypeErc20,
 						})
+						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					}
 				}
 			} else if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.CCMContract) {
@@ -164,6 +166,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							Key:        hex.EncodeToString(evt.TxId),
 							Param:      hex.EncodeToString(evt.Rawdata),
 						})
+						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					case this.ccmAbiParsed.Events["VerifyHeaderAndExecuteTxEvent"].ID:
 						logs.Info("(ccm unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
 						var evt eccm_abi.EthCrossChainManagerVerifyHeaderAndExecuteTxEvent
@@ -182,6 +185,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							Contract:   models.FormatString(basedef.HexStringReverse(hex.EncodeToString(evt.ToContract))),
 							PolyHash:   basedef.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
 						})
+						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					}
 				}
 			} else if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.ProxyContract...) {
@@ -210,6 +214,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							DstUser:    models.FormatString(hex.EncodeToString(evt.ToAddress)),
 							From:       models.FormatString(evt.FromAddress.String()[2:]),
 						})
+						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					case this.lockproxyAbiParsed.Events["UnlockEvent"].ID:
 						logs.Info("(lockproxy unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
 						var evt lock_proxy_abi.LockProxyUnlockEvent
@@ -226,15 +231,27 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							To:       models.FormatString(strings.ToLower(evt.ToAddress.String()[2:])),
 							Amount:   models.NewBigInt(evt.Amount),
 						})
+						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					}
 				}
 			}
 		}
 	}
+	for hash, _ := range txHash2User {
+		ontTx, err := this.ontSdk.GetTransaction(basedef.HexStringReverse(hash))
+		if err != nil {
+			logs.Error("ontevm GetTransaction txhash: %v err:", basedef.HexStringReverse(hash), err)
+		}
+		txHash2User[hash] = basedef.HexStringReverse(ontTx.Payer.ToHexString())
+	}
+	for _, wrapperTransaction := range wrapperTransactions {
+		wrapperTransaction.User = txHash2User[wrapperTransaction.Hash]
+	}
 	for _, srcTransaction := range srcTransactions {
 		for _, srcTransfer := range srcTransfers {
 			if srcTransaction.Hash == srcTransfer.TxHash {
-				srcTransaction.User = srcTransfer.From
+				srcTransaction.User = txHash2User[srcTransaction.Hash]
+				srcTransfer.From = txHash2User[srcTransaction.Hash]
 				srcTransfer.To = models.FormatString(srcTransaction.Contract)
 				srcTransaction.Standard = srcTransfer.Standard
 				srcTransaction.SrcTransfer = srcTransfer
