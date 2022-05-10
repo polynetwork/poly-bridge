@@ -154,8 +154,8 @@ func (c *FeeController) GetFee() {
 							return
 						}
 						nativeFeeAmount = new(big.Float).Add(nativeFeeAmount, l1FeeAmount)
-						nativeTokenAmount = nativeFeeAmount
 					}
+					nativeTokenAmount = nativeFeeAmount
 					break
 				}
 			}
