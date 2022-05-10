@@ -117,7 +117,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				for _, topic := range storageLog.Topics {
 					switch topic {
 					case this.wrapperAbiParsed.Events["PolyWrapperLock"].ID:
-						logs.Info("(wrapper) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						logs.Info("(wrapper) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
 						var evt wrapper_abi.PolyWrapperPolyWrapperLock
 						err = this.wrapperAbiParsed.UnpackIntoInterface(&evt, "PolyWrapperLock", storageLog.Data)
 						if err != nil {
@@ -146,7 +146,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				for _, topic := range storageLog.Topics {
 					switch topic {
 					case this.ccmAbiParsed.Events["CrossChainEvent"].ID:
-						logs.Info("(ccm lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						logs.Info("(ccm lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
 						var evt eccm_abi.EthCrossChainManagerCrossChainEvent
 						err = this.ccmAbiParsed.UnpackIntoInterface(&evt, "CrossChainEvent", storageLog.Data)
 						if err != nil {
@@ -165,7 +165,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							Param:      hex.EncodeToString(evt.Rawdata),
 						})
 					case this.ccmAbiParsed.Events["VerifyHeaderAndExecuteTxEvent"].ID:
-						logs.Info("(ccm unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						logs.Info("(ccm unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
 						var evt eccm_abi.EthCrossChainManagerVerifyHeaderAndExecuteTxEvent
 						err = this.ccmAbiParsed.UnpackIntoInterface(&evt, "VerifyHeaderAndExecuteTxEvent", storageLog.Data)
 						if err != nil {
@@ -192,7 +192,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				for _, topic := range storageLog.Topics {
 					switch topic {
 					case this.lockproxyAbiParsed.Events["LockEvent"].ID:
-						logs.Info("(lockproxy lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						logs.Info("(lockproxy lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
 						var evt lock_proxy_abi.LockProxyLockEvent
 						err = this.lockproxyAbiParsed.UnpackIntoInterface(&evt, "LockEvent", storageLog.Data)
 						if err != nil {
@@ -211,7 +211,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							From:       models.FormatString(evt.FromAddress.String()[2:]),
 						})
 					case this.lockproxyAbiParsed.Events["UnlockEvent"].ID:
-						logs.Info("(lockproxy unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
+						logs.Info("(lockproxy unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
 						var evt lock_proxy_abi.LockProxyUnlockEvent
 						err = this.lockproxyAbiParsed.UnpackIntoInterface(&evt, "UnlockEvent", storageLog.Data)
 						if err != nil {
