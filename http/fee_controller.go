@@ -128,7 +128,7 @@ func (c *FeeController) GetFee() {
 		}
 		preloadTokens := make([]*models.Token, 0)
 		res = db.Where("token_basic_name = ?", nativeChainFee.TokenBasicName).
-			Find(preloadTokens)
+			Find(&preloadTokens)
 		nativeChainFee.TokenBasic.Tokens = preloadTokens
 		if nativeChainFee.TokenBasic != nil && nativeChainFee.TokenBasic.Tokens != nil {
 			for _, v := range nativeChainFee.TokenBasic.Tokens {
