@@ -118,14 +118,18 @@ func (c *FeeController) GetFee() {
 	if getFeeReq.SwapTokenHash != "" {
 		//check cross native token
 		nativeChainFee := new(models.ChainFee)
-		res = db.Where("chain_id = ?", getFeeReq.SrcChainId).Preload("TokenBasic").Preload("TokenBasic.Tokens").
-			First(chainFee)
+		res = db.Where("chain_id = ?", getFeeReq.SrcChainId).Preload("TokenBasic").
+			First(nativeChainFee)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.SrcChainId))
 			c.Ctx.ResponseWriter.WriteHeader(400)
 			c.ServeJSON()
 			return
 		}
+		preloadTokens := make([]*models.Token, 0)
+		res = db.Where("token_basic_name = ?", nativeChainFee.TokenBasicName).
+			Find(preloadTokens)
+		nativeChainFee.TokenBasic.Tokens = preloadTokens
 		if nativeChainFee.TokenBasic != nil && nativeChainFee.TokenBasic.Tokens != nil {
 			for _, v := range nativeChainFee.TokenBasic.Tokens {
 				if v.ChainId == getFeeReq.SrcChainId && strings.EqualFold(v.Hash, getFeeReq.SwapTokenHash) {
