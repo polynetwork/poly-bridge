@@ -135,14 +135,13 @@ func dumpAffectedRows(cfg *conf.UpdateConfig, dbCfg *serverconf.DBConfig) {
 				tokenBasic.Time)
 		}
 	}
-
-	tokenHashes := make([]string, 0)
-	for _, basic := range cfg.TokenBasics {
-		for _, token := range basic.Tokens {
-			tokenHashes = append(tokenHashes, token.Hash)
-		}
-	}
 	{
+		tokenHashes := make([]string, 0)
+		for _, basic := range cfg.TokenBasics {
+			for _, token := range basic.Tokens {
+				tokenHashes = append(tokenHashes, token.Hash)
+			}
+		}
 		tokens := make([]*models.Token, 0)
 		db.Where("hash in ?", tokenHashes).Find(&tokens)
 		fmt.Printf("token info:\nChainId\t\t\t\tHash\t\t\t\tName\t\t\t\tTokenBasicName\t\t\t\t\n")
@@ -152,11 +151,19 @@ func dumpAffectedRows(cfg *conf.UpdateConfig, dbCfg *serverconf.DBConfig) {
 		}
 	}
 	{
-		TokenMaps := make([]*models.TokenMap, 0)
-		db.Where("src_token_hash in ? or dst_token_hash in ?", tokenHashes, tokenHashes).Find(&TokenMaps)
 		fmt.Printf("token map info:\nSrcChain\t\t\t\tSrcTokenHash\t\t\t\tDstChain\t\t\t\tDstTokenHash\t\t\t\t\n")
-		for _, TokenMap := range TokenMaps {
-			fmt.Printf("%d\t\t\t\t%s\t\t\t\t%d\t\t\t\t%s\t\t\t\t\n", TokenMap.SrcChainId, TokenMap.SrcTokenHash, TokenMap.DstChainId, TokenMap.DstTokenHash)
+		for _, basic := range cfg.TokenBasics {
+			tokenChainIds := make([]uint64, 0)
+			tokenHashes := make([]string, 0)
+			for _, token := range basic.Tokens {
+				tokenHashes = append(tokenHashes, token.Hash)
+				tokenChainIds = append(tokenChainIds, token.ChainId)
+			}
+			TokenMaps := make([]*models.TokenMap, 0)
+			db.Where("(src_token_hash in ? and src_chain_id in ?) or (dst_token_hash in ? and dst_chain_id in ?)", tokenHashes, tokenChainIds, tokenHashes, tokenChainIds).Find(&TokenMaps)
+			for _, TokenMap := range TokenMaps {
+				fmt.Printf("%d\t\t\t\t%s\t\t\t\t%d\t\t\t\t%s\t\t\t\t\n", TokenMap.SrcChainId, TokenMap.SrcTokenHash, TokenMap.DstChainId, TokenMap.DstTokenHash)
+			}
 		}
 	}
 
