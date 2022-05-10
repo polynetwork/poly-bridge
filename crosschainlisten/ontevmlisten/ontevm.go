@@ -234,7 +234,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 	for _, srcTransaction := range srcTransactions {
 		for _, srcTransfer := range srcTransfers {
 			if srcTransaction.Hash == srcTransfer.TxHash {
-				srcTransfer.From = models.FormatString(srcTransaction.User)
+				srcTransaction.User = srcTransfer.From
 				srcTransfer.To = models.FormatString(srcTransaction.Contract)
 				srcTransaction.Standard = srcTransfer.Standard
 				srcTransaction.SrcTransfer = srcTransfer
