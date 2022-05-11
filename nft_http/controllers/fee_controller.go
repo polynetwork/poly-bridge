@@ -53,10 +53,19 @@ func (c *FeeController) GetFee() {
 		c.ServeJSON()
 		return
 	}
+	chainFeeToken := new(models.Token)
+	res = db.Where("chain_id = ? and token_basic_name = ?", chainFee.ChainId, chainFee.TokenBasicName).
+		First(chainFeeToken)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", req.DstChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
 	fzero := new(big.Float).SetUint64(0)
 	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
 	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
-	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFeeToken.Precision))))
 	usdtFee := new(big.Float).Mul(proxyFee, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
 	usdtFee = new(big.Float).Quo(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
