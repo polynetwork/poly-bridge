@@ -94,7 +94,7 @@ func (pro *EthereumSdkPro) selection() {
 	for url, info := range pro.infos {
 		height, err := info.sdk.GetCurrentBlockHeight()
 		if err != nil || height == math.MaxUint64 || height == 0 {
-			logs.Error("nodeselection get current block height err: %v, url: %s", err, url)
+			logs.Error("nodeselection get current block height err, chain %v, url: %s", pro.id, url)
 			height = 1
 		}
 		/*
@@ -174,7 +174,7 @@ func (pro *EthereumSdkPro) GetHeaderByNumber(number uint64) (*types.Header, erro
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("GetHeaderByNumber_chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("GetHeaderByNumber_chain:%v,node:%v,GetHeaderByNumber err", pro.id, info.sdk.url)
 				flag = 0
 				time.Sleep(time.Second)
 			}
@@ -199,7 +199,7 @@ func (pro *EthereumSdkPro) GetTransactionByHash(hash common.Hash) (*types.Transa
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("chain:%v,node:%v,GetTransactionByHash err", pro.id, info.sdk.url)
 				flag = 0
 				time.Sleep(time.Second)
 			}
@@ -224,7 +224,7 @@ func (pro *EthereumSdkPro) GetTransactionReceipt(hash common.Hash) (*types.Recei
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("chain:%v,node:%v,GetTransactionReceipt err", pro.id, info.sdk.url)
 				flag = 0
 				time.Sleep(time.Second)
 			}
@@ -438,7 +438,7 @@ func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (balance *big
 }
 
 func (pro *EthereumSdkPro) GetNFTOwner(asset string, tokenId *big.Int) (owner common.Address, err error) {
-	assetAddr:=common.HexToAddress(asset)
+	assetAddr := common.HexToAddress(asset)
 	info := pro.GetLatest()
 	if info == nil {
 		return EmptyAddress, fmt.Errorf("all node is not working")

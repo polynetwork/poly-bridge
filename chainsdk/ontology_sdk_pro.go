@@ -88,7 +88,7 @@ func (pro *OntologySdkPro) selection() {
 	for url, info := range pro.infos {
 		height, err := info.sdk.GetCurrentBlockHeight()
 		if err != nil {
-			logs.Error("get current block height err: %v, url: %s", err, url)
+			logs.Error("get current block height err,chain : %v, url: %s", pro.id, url)
 		}
 		pro.mutex.Lock()
 		info.latestHeight = uint64(height)
