@@ -1269,3 +1269,12 @@ type ChainHealthReq struct {
 type ChainHealthRsp struct {
 	Result map[uint64]bool
 }
+
+type WrapperCheckReq struct {
+	ChainId uint64
+}
+
+type WrapperCheckRsp struct {
+	ChainId uint64
+	Wrapper []string
+}

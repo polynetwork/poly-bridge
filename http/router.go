@@ -47,6 +47,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/gettokenasset/", &TokenAssetController{}, "post:Gettokenasset"),
 		web.NSRouter("/getmanualtxdata/", &TransactionController{}, "post:GetManualTxData"),
 		web.NSRouter("/chainhealth/", &ChainHealthController{}, "post:Health"),
+		web.NSRouter("/wrappercheck/", &WrapperController{}, "post:WrapperCheck"),
 	)
 	return ns
 }
