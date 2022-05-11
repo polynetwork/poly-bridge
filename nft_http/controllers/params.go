@@ -255,21 +255,23 @@ type TransactionBriefRelation struct {
 }
 
 type TransactionBriefRsp struct {
-	Hash         string
-	Status       uint64
-	BlockHeight  uint64
-	SrcChainId   uint64
-	SrcChainName string `json:"srcchainname"`
-	SrcChainLogo string `json:"srcchainlogo"`
-	DstChainId   uint64
-	DstChainName string `json:"dstchainname"`
-	DstChainLogo string `json:"dstchainlogo"`
-	Time         uint64
-	TokenId      string
-	AssetName    string
-	From         string
-	To           string
-	NftImage     string `json:"image"`
+	Hash             string
+	Status           uint64
+	BlockHeight      uint64
+	SrcChainId       uint64
+	SrcChainName     string `json:"srcchainname"`
+	SrcChainExplorer string `json:"srcchainexplorer"`
+	SrcChainLogo     string `json:"srcchainlogo"`
+	DstChainId       uint64
+	DstChainName     string `json:"dstchainname"`
+	DstChainExplorer string `json:"dstchainexplorer"`
+	DstChainLogo     string `json:"dstchainlogo"`
+	Time             uint64
+	TokenId          string
+	AssetName        string
+	From             string
+	To               string
+	NftImage         string `json:"image"`
 }
 
 func (s *TransactionBriefRsp) instance(assetName string, r *TransactionBriefRelation) *TransactionBriefRsp {
@@ -375,11 +377,13 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	s.Transaction.Status = r.WrapperTransaction.Status
 	s.Transaction.BlockHeight = r.WrapperTransaction.BlockHeight
 	s.Transaction.SrcChainId = r.WrapperTransaction.SrcChainId
+	s.Transaction.SrcChainExplorer = models.ChainId2ChainCache(r.WrapperTransaction.SrcChainId).ChainExplorerUrl
 	s.Transaction.SrcChainName = models.ChainId2Name(r.WrapperTransaction.SrcChainId)
 	s.Transaction.SrcChainLogo = models.ChainId2ChainCache(r.WrapperTransaction.SrcChainId).ChainLogo
 
 	s.Transaction.DstChainId = r.WrapperTransaction.DstChainId
 	s.Transaction.DstChainName = models.ChainId2Name(r.WrapperTransaction.DstChainId)
+	s.Transaction.DstChainExplorer = models.ChainId2ChainCache(r.WrapperTransaction.DstChainId).ChainExplorerUrl
 	s.Transaction.DstChainLogo = models.ChainId2ChainCache(r.WrapperTransaction.DstChainId).ChainLogo
 	s.Transaction.Time = r.WrapperTransaction.Time
 	s.Transaction.From = r.WrapperTransaction.User

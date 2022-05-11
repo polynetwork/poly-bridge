@@ -388,20 +388,22 @@ type TChainTransferResp struct {
 }
 
 type CrossTransferResp struct {
-	CrossTxType   uint32 `json:"crosstxtype"`
-	CrossTxName   string `json:"crosstxname"`
-	FromChainId   uint32 `json:"fromchainid"`
-	FromChain     string `json:"fromchainname"`
-	FromChainLogo string `json:"fromchainlogo"`
-	FromAddress   string `json:"fromaddress"`
-	ToChainId     uint32 `json:"tochainid"`
-	ToChain       string `json:"tochainname"`
-	ToChainLogo   string `json:"tochainlogo"`
-	ToAddress     string `json:"toaddress"`
-	TokenHash     string `json:"tokenhash"`
-	TokenName     string `json:"tokenname"`
-	TokenType     string `json:"tokentype"`
-	Amount        string `json:"amount"`
+	CrossTxType       uint32 `json:"crosstxtype"`
+	CrossTxName       string `json:"crosstxname"`
+	FromChainId       uint32 `json:"fromchainid"`
+	FromChain         string `json:"fromchainname"`
+	FromChainExplorer string `json:"fromchainexplorer"`
+	FromChainLogo     string `json:"fromchainlogo"`
+	FromAddress       string `json:"fromaddress"`
+	ToChainId         uint32 `json:"tochainid"`
+	ToChain           string `json:"tochainname"`
+	ToChainExplorer   string `json:"tochainexplorer"`
+	ToChainLogo       string `json:"tochainlogo"`
+	ToAddress         string `json:"toaddress"`
+	TokenHash         string `json:"tokenhash"`
+	TokenName         string `json:"tokenname"`
+	TokenType         string `json:"tokentype"`
+	Amount            string `json:"amount"`
 }
 
 func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token *Token) *CrossTransferResp {
@@ -413,10 +415,12 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.CrossTxName = TxType2Name(crossTransfer.CrossTxType)
 	crossTransfer.FromChainId = uint32(chainid)
 	crossTransfer.FromChain = ChainId2Name(uint64(crossTransfer.FromChainId))
+	crossTransfer.FromChainExplorer = ChainId2ChainCache(uint64(crossTransfer.FromChainId)).ChainExplorerUrl
 	crossTransfer.FromChainLogo = ChainId2ChainCache(uint64(crossTransfer.FromChainId)).ChainLogo
 	crossTransfer.FromAddress = basedef.Hash2Address(chainid, user)
 	crossTransfer.ToChainId = uint32(transfer.DstChainId)
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
+	crossTransfer.ToChainExplorer = ChainId2ChainCache(uint64(crossTransfer.ToChainId)).ChainExplorerUrl
 	crossTransfer.ToChainLogo = ChainId2ChainCache(uint64(crossTransfer.ToChainId)).ChainLogo
 	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
 	jsonToken, _ := json.Marshal(token)
