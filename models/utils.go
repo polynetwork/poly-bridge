@@ -166,7 +166,7 @@ func FormatFee(chain uint64, fee *BigInt) string {
 		precision_new := decimal.New(1, 8)
 		return fee_new.Div(precision_new).String() + " BTC"
 	case basedef.ONT_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID:
-		precision_new := decimal.New(1, 9)
+		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ONG"
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)

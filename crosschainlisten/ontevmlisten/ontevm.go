@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ontcommon "github.com/ontio/ontology-go-sdk/common"
 	polycommon "github.com/polynetwork/poly/common"
+	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -109,6 +110,8 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 	dstTransfers := make([]*models.DstTransfer, 0)
 	txHash2User := make(map[string]string)
 	for _, event := range events {
+		//ont` ong precision=9 ontevm` ong precison=18
+		fee := new(big.Int).Mul(big.NewInt(int64(event.GasConsumed)), big.NewInt(1000000000))
 		for _, notify := range event.Notify {
 			if this.isListeningContract(notify.ContractAddress, this.ontevmCfg.WrapperContract...) {
 				storageLog, err := deserializeStorageLog(notify)
@@ -159,7 +162,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							ChainId:    this.GetChainId(),
 							State:      1,
 							Time:       tt,
-							Fee:        models.NewBigIntFromInt(int64(event.GasConsumed)),
+							Fee:        models.NewBigInt(fee),
 							Height:     height,
 							DstChainId: evt.ToChainId,
 							Contract:   models.FormatString(evt.ProxyOrAssetContract.String()[2:]),
@@ -179,7 +182,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							ChainId:    this.GetChainId(),
 							State:      1,
 							Time:       tt,
-							Fee:        models.NewBigIntFromInt(int64(event.GasConsumed)),
+							Fee:        models.NewBigInt(fee),
 							Height:     height,
 							SrcChainId: evt.FromChainID,
 							Contract:   models.FormatString(basedef.HexStringReverse(hex.EncodeToString(evt.ToContract))),
