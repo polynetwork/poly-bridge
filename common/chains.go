@@ -318,7 +318,7 @@ func newChainSdks(config *conf.Config) {
 		}
 		urls := chainConfig.GetNodesUrl()
 		milkomedaSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
-		sdkMap[basedef.MILKOMEDA_CROSSCHAIN_ID] = hscSdk
+		sdkMap[basedef.MILKOMEDA_CROSSCHAIN_ID] = milkomedaSdk
 	}
 }
 
