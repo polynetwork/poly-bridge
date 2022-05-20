@@ -52,7 +52,7 @@ func (e *EthereumHealthMonitor) GetChainId() uint64 {
 
 func (e *EthereumHealthMonitor) RelayerBalanceMonitor() ([]*basedef.RelayerAccountStatus, error) {
 	switch e.monitorConfig.ChainId {
-	case basedef.PLT_CROSSCHAIN_ID, basedef.BCSPALETTE_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID:
+	case basedef.PLT_CROSSCHAIN_ID, basedef.BCSPALETTE_CROSSCHAIN_ID, basedef.BCSPALETTE2_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID:
 		return nil, nil
 	}
 	balanceSuccessMap := make(map[string]*big.Int, 0)

@@ -216,6 +216,12 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == MILKOMEDA_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == BCSPALETTE_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == BCSPALETTE2_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
@@ -282,6 +288,8 @@ func GetChainName(id uint64) string {
 		return "OASIS"
 	case BCSPALETTE_CROSSCHAIN_ID:
 		return "BCS Palette"
+	case BCSPALETTE2_CROSSCHAIN_ID:
+		return "BCS Palette2"
 	case RINKEBY_CROSSCHAIN_ID:
 		return "RINKEBY"
 	case HARMONY_CROSSCHAIN_ID:

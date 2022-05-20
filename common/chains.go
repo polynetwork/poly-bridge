@@ -13,37 +13,38 @@ import (
 )
 
 var (
-	ethereumSdk   *chainsdk.EthereumSdkPro
-	pltSdk        *chainsdk.EthereumSdkPro
-	bscSdk        *chainsdk.EthereumSdkPro
-	hecoSdk       *chainsdk.EthereumSdkPro
-	okSdk         *chainsdk.EthereumSdkPro
-	neoSdk        *chainsdk.NeoSdkPro
-	neo3Sdk       *chainsdk.Neo3SdkPro
-	ontologySdk   *chainsdk.OntologySdkPro
-	maticSdk      *chainsdk.EthereumSdkPro
-	swthSdk       *chainsdk.SwitcheoSdkPro
-	arbitrumSdk   *chainsdk.EthereumSdkPro
-	zilliqaSdk    *chainsdk.ZilliqaSdkPro
-	xdaiSdk       *chainsdk.EthereumSdkPro
-	fantomSdk     *chainsdk.EthereumSdkPro
-	avaxSdk       *chainsdk.EthereumSdkPro
-	optimisticSdk *chainsdk.EthereumSdkPro
-	metisSdk      *chainsdk.EthereumSdkPro
-	bobaSdk       *chainsdk.EthereumSdkPro
-	rinkebySdk    *chainsdk.EthereumSdkPro
-	pixieSdk      *chainsdk.EthereumSdkPro
-	oasisSdk      *chainsdk.EthereumSdkPro
-	starcoinSdk   *chainsdk.StarcoinSdkPro
-	harmonySdk    *chainsdk.EthereumSdkPro
-	hscSdk        *chainsdk.EthereumSdkPro
-	bcspaletteSdk *chainsdk.EthereumSdkPro
-	bytomSdk      *chainsdk.EthereumSdkPro
-	kccSdk        *chainsdk.EthereumSdkPro
-	ontevmSdk     *chainsdk.EthereumSdkPro
-	milkomedaSdk  *chainsdk.EthereumSdkPro
-	config        *conf.Config
-	sdkMap        map[uint64]interface{}
+	ethereumSdk    *chainsdk.EthereumSdkPro
+	pltSdk         *chainsdk.EthereumSdkPro
+	bscSdk         *chainsdk.EthereumSdkPro
+	hecoSdk        *chainsdk.EthereumSdkPro
+	okSdk          *chainsdk.EthereumSdkPro
+	neoSdk         *chainsdk.NeoSdkPro
+	neo3Sdk        *chainsdk.Neo3SdkPro
+	ontologySdk    *chainsdk.OntologySdkPro
+	maticSdk       *chainsdk.EthereumSdkPro
+	swthSdk        *chainsdk.SwitcheoSdkPro
+	arbitrumSdk    *chainsdk.EthereumSdkPro
+	zilliqaSdk     *chainsdk.ZilliqaSdkPro
+	xdaiSdk        *chainsdk.EthereumSdkPro
+	fantomSdk      *chainsdk.EthereumSdkPro
+	avaxSdk        *chainsdk.EthereumSdkPro
+	optimisticSdk  *chainsdk.EthereumSdkPro
+	metisSdk       *chainsdk.EthereumSdkPro
+	bobaSdk        *chainsdk.EthereumSdkPro
+	rinkebySdk     *chainsdk.EthereumSdkPro
+	pixieSdk       *chainsdk.EthereumSdkPro
+	oasisSdk       *chainsdk.EthereumSdkPro
+	starcoinSdk    *chainsdk.StarcoinSdkPro
+	harmonySdk     *chainsdk.EthereumSdkPro
+	hscSdk         *chainsdk.EthereumSdkPro
+	bcspaletteSdk  *chainsdk.EthereumSdkPro
+	bcspalette2Sdk *chainsdk.EthereumSdkPro
+	bytomSdk       *chainsdk.EthereumSdkPro
+	kccSdk         *chainsdk.EthereumSdkPro
+	ontevmSdk      *chainsdk.EthereumSdkPro
+	milkomedaSdk   *chainsdk.EthereumSdkPro
+	config         *conf.Config
+	sdkMap         map[uint64]interface{}
 )
 
 func SetupChainsSDK(cfg *conf.Config) {
@@ -292,6 +293,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		bcspaletteSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.BCSPALETTE_CROSSCHAIN_ID] = bcspaletteSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.BCSPALETTE2_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("bcspalette2 chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		bcspalette2Sdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.BCSPALETTE2_CROSSCHAIN_ID] = bcspalette2Sdk
 	}
 	{
 		bytomConfig := config.GetChainListenConfig(basedef.BYTOM_CROSSCHAIN_ID)
