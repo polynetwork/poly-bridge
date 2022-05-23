@@ -34,6 +34,7 @@ const (
 	_GetManualTxData                = "GetManualTxData_"
 	RelayerAccountStatusPrefix      = "RelayerAccountStatusPrefix_"
 	RelayerAccountStatusAlarmPrefix = "RelayerAccountStatusAlarmPrefix_"
+	_ChainTVLAmount                 = "ChainTVLAmount_"
 )
 
 type RedisCache struct {
@@ -278,4 +279,23 @@ func (r *RedisCache) LRange(key string, start, stop int64) ([]string, error) {
 	} else {
 		return vals, nil
 	}
+}
+
+func (r *RedisCache) SetChainTvl(chain uint64, amount string) (err error) {
+	key := _ChainTVLAmount + fmt.Sprintf("%v", chain)
+	value := amount
+	if _, err = r.c.Set(key, value, time.Second*10).Result(); err != nil {
+		err = errors.New(err.Error() + "cache SetChainTvl")
+	}
+	return
+}
+
+func (r *RedisCache) GetChainTvl(chain uint64) (amount string, err error) {
+	key := _ChainTVLAmount + fmt.Sprintf("%v", chain)
+	resp, err := r.c.Get(key).Result()
+	if err != nil {
+		err = errors.New(err.Error() + "cache GetChainTvl")
+		return "0", err
+	}
+	return resp, nil
 }
