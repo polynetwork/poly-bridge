@@ -38,6 +38,8 @@ var (
 	harmonySdk    *chainsdk.EthereumSdkPro
 	kccSdk        *chainsdk.EthereumSdkPro
 	hscSdk        *chainsdk.EthereumSdkPro
+	kavaSdk       *chainsdk.EthereumSdkPro
+	cubeSdk       *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -269,6 +271,24 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		hscSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.HSC_CROSSCHAIN_ID] = hscSdk
+	}
+	{
+		kavaConfig := config.GetChainListenConfig(basedef.KAVA_CROSSCHAIN_ID)
+		if kavaConfig == nil {
+			panic("kava chain is invalid")
+		}
+		urls := kavaConfig.GetNodesUrl()
+		kavaSdk = chainsdk.NewEthereumSdkPro(urls, kavaConfig.ListenSlot, kavaConfig.ChainId)
+		sdkMap[basedef.KAVA_CROSSCHAIN_ID] = kavaSdk
+	}
+	{
+		cubeConfig := config.GetChainListenConfig(basedef.CUBE_CROSSCHAIN_ID)
+		if cubeConfig == nil {
+			panic("cube chain is invalid")
+		}
+		urls := cubeConfig.GetNodesUrl()
+		cubeSdk = chainsdk.NewEthereumSdkPro(urls, cubeConfig.ListenSlot, cubeConfig.ChainId)
+		sdkMap[basedef.CUBE_CROSSCHAIN_ID] = cubeSdk
 	}
 }
 
@@ -588,6 +608,34 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.KAVA_CROSSCHAIN_ID {
+		kavaConfig := config.GetChainListenConfig(basedef.KAVA_CROSSCHAIN_ID)
+		if kavaConfig == nil {
+			panic("kava chain is invalid")
+		}
+		for _, v := range kavaConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := kavaSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
+	if chainId == basedef.CUBE_CROSSCHAIN_ID {
+		cubeConfig := config.GetChainListenConfig(basedef.CUBE_CROSSCHAIN_ID)
+		if cubeConfig == nil {
+			panic("cube chain is invalid")
+		}
+		for _, v := range cubeConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := cubeSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -747,6 +795,20 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return hscSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.KAVA_CROSSCHAIN_ID {
+		kavaConfig := config.GetChainListenConfig(basedef.KAVA_CROSSCHAIN_ID)
+		if kavaConfig == nil {
+			panic("kava chain GetTotalSupply invalid")
+		}
+		return kavaSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.CUBE_CROSSCHAIN_ID {
+		cubeConfig := config.GetChainListenConfig(basedef.CUBE_CROSSCHAIN_ID)
+		if cubeConfig == nil {
+			panic("cube chain GetTotalSupply invalid")
+		}
+		return cubeSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -802,6 +864,10 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return bytomSdk.Erc20Balance(hash, proxy)
 	case basedef.HSC_CROSSCHAIN_ID:
 		return hscSdk.Erc20Balance(hash, proxy)
+	case basedef.KAVA_CROSSCHAIN_ID:
+		return kavaSdk.Erc20Balance(hash, proxy)
+	case basedef.CUBE_CROSSCHAIN_ID:
+		return cubeSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
