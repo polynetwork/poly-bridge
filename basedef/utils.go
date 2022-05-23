@@ -112,6 +112,12 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == KCC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == KAVA_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
+	} else if chainId == CUBE_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -204,6 +210,12 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == KCC_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == KAVA_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == CUBE_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
@@ -276,6 +288,10 @@ func GetChainName(id uint64) string {
 		return "HSC"
 	case STARCOIN_CROSSCHAIN_ID:
 		return "Starcoin"
+	case KAVA_CROSSCHAIN_ID:
+		return "KAVA"
+	case CUBE_CROSSCHAIN_ID:
+		return "CUBE"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
