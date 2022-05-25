@@ -32,6 +32,12 @@ func (c *FeeController) NewCheckFee() {
 	}
 	srcHashs := make([]string, 0)
 	for k, v := range mapCheckFeesReq {
+		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
+			//switcheo || zilliqa
+			v.Status = SKIP
+			logs.Info("check fee poly_hash %s SKIP,is switcheo or zilliqa", k)
+			continue
+		}
 		srcTransaction, err := checkFeeSrcTransaction(v.ChainId, v.TxId)
 		if err != nil {
 			//has not listen src_transaction
