@@ -200,7 +200,7 @@ func FormatFee(chain uint64, fee *BigInt) string {
 		return fee_new.Div(precision_new).String() + " ETH"
 	case basedef.FANTOM_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
-		return fee_new.Div(precision_new).String() + " ETH"
+		return fee_new.Div(precision_new).String() + " FTM"
 	case basedef.XDAI_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		feeString := fee_new.Div(precision_new).String()
@@ -213,7 +213,7 @@ func FormatFee(chain uint64, fee *BigInt) string {
 		return fee_new.Div(precision_new).String() + " ZIL"
 	case basedef.AVAX_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
-		return fee_new.Div(precision_new).String() + " ETH"
+		return fee_new.Div(precision_new).String() + " AVAX"
 	case basedef.OPTIMISTIC_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
@@ -221,6 +221,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " METIS"
 	case basedef.RINKEBY_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " ETH"
+	case basedef.BOBA_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
 	case basedef.OASIS_CROSSCHAIN_ID:
