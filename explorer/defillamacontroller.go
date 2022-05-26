@@ -36,7 +36,7 @@ func getTVLAmount(chain uint64) (amount string, err error) {
 }
 
 func getTVLtotalAmount() (amount string, err error) {
-	totalChain := uint64(-1)
+	totalChain := uint64(0)
 	amount, err = cacheRedis.Redis.GetChainTvl(totalChain)
 	if err == nil {
 		logs.Info("getTVLtotalAmount chain with Redis,chain:", totalChain, "amount:", amount)
