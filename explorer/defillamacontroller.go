@@ -35,6 +35,39 @@ func getTVLAmount(chain uint64) (amount string, err error) {
 	return amount, nil
 }
 
+func getTVLtotalAmount() (amount string, err error) {
+	totalChain := uint64(-1)
+	amount, err = cacheRedis.Redis.GetChainTvl(totalChain)
+	if err == nil {
+		logs.Info("getTVLtotalAmount chain with Redis,chain:", totalChain, "amount:", amount)
+		return
+	}
+	lockTokens := make([]*models.LockTokenStatistic, 0)
+	db.Where("in_amount_usd <> '0'").
+		Find(&lockTokens)
+	tVLChain := big.NewInt(0)
+	for _, lockToken := range lockTokens {
+		if lockToken.InAmountUsd.Cmp(big.NewInt(0)) > 0 {
+			tVLChain.Add(tVLChain, &lockToken.InAmountUsd.Int)
+		}
+	}
+	amount = decimal.NewFromBigInt(tVLChain, -4).StringFixed(2)
+	err = cacheRedis.Redis.SetChainTvl(totalChain, amount)
+	if err != nil {
+		logs.Error("getTVLtotalAmount SetChainTvl err,chain:", totalChain, err)
+	}
+	return amount, nil
+}
+
+func (c *DefiLlamaController) GetTVLTotal() {
+	tvlAmount, err := getTVLtotalAmount()
+	if err != nil {
+		logs.Error("GetTVLTotal err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
+
 func (c *DefiLlamaController) GetTVLEthereum() {
 	tvlAmount, err := getTVLAmount(basedef.ETHEREUM_CROSSCHAIN_ID)
 	if err != nil {

@@ -29,6 +29,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/botlistnodestatus/", &BotController{}, "get:ListNodeStatusPage"),
 		web.NSRouter("/botignorenodestatusalarm/", &BotController{}, "get:IgnoreNodeStatusAlarm"),
 		web.NSRouter("/botlistrelayeraccountstatus/", &BotController{}, "get:ListRelayerAccountStatus"),
+		web.NSRouter("/getTVLTotal/", &DefiLlamaController{}, "get:GetTVLTotal"),
 		web.NSRouter("/getTVLEthereum/", &DefiLlamaController{}, "get:GetTVLEthereum"),
 		web.NSRouter("/getTVLOntology/", &DefiLlamaController{}, "get:GetTVLOntology"),
 		web.NSRouter("/getTVLNeo/", &DefiLlamaController{}, "get:GetTVLNeo"),
