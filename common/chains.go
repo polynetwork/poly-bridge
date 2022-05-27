@@ -281,15 +281,15 @@ func newChainSdks(config *conf.Config) {
 		kavaSdk = chainsdk.NewEthereumSdkPro(urls, kavaConfig.ListenSlot, kavaConfig.ChainId)
 		sdkMap[basedef.KAVA_CROSSCHAIN_ID] = kavaSdk
 	}
-	{
-		cubeConfig := config.GetChainListenConfig(basedef.CUBE_CROSSCHAIN_ID)
-		if cubeConfig == nil {
-			panic("cube chain is invalid")
-		}
-		urls := cubeConfig.GetNodesUrl()
-		cubeSdk = chainsdk.NewEthereumSdkPro(urls, cubeConfig.ListenSlot, cubeConfig.ChainId)
-		sdkMap[basedef.CUBE_CROSSCHAIN_ID] = cubeSdk
-	}
+	//{
+	//	cubeConfig := config.GetChainListenConfig(basedef.CUBE_CROSSCHAIN_ID)
+	//	if cubeConfig == nil {
+	//		panic("cube chain is invalid")
+	//	}
+	//	urls := cubeConfig.GetNodesUrl()
+	//	cubeSdk = chainsdk.NewEthereumSdkPro(urls, cubeConfig.ListenSlot, cubeConfig.ChainId)
+	//	sdkMap[basedef.CUBE_CROSSCHAIN_ID] = cubeSdk
+	//}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {

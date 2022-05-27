@@ -48,7 +48,7 @@ const (
 	HSC_CROSSCHAIN_ID        = uint64(28)
 	BYTOM_CROSSCHAIN_ID      = uint64(29)
 	KCC_CROSSCHAIN_ID        = uint64(30)
-	KAVA_CROSSCHAIN_ID       = uint64(1000002)
+	KAVA_CROSSCHAIN_ID       = uint64(32)
 	CUBE_CROSSCHAIN_ID       = uint64(1000003)
 
 	ENV = "mainnet"
