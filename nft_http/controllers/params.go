@@ -392,17 +392,19 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	if r.SrcTransaction != nil {
 
 		if r.SrcTransaction.SrcTransfer != nil {
-			token := selectNFTAsset(r.SrcTransaction.SrcTransfer.Asset)
-
 			s.SrcTransaction.From = basedef.FormatAddr(r.SrcTransaction.SrcTransfer.ChainId, basedef.Hash2Address(r.SrcTransaction.SrcTransfer.ChainId, r.SrcTransaction.SrcTransfer.From))
 			s.SrcTransaction.To = basedef.FormatAddr(r.SrcTransaction.SrcTransfer.ChainId, basedef.Hash2Address(r.SrcTransaction.SrcTransfer.ChainId, r.SrcTransaction.SrcTransfer.To))
-			s.SrcTransaction.Asset = token.TokenBasicName
-			s.SrcTransaction.AssetHash = token.Hash
-			s.SrcTransaction.TokenType = models.GetTokenType(r.SrcTransaction.ChainId, token.Standard)
 
-			s.Transaction.AssetName = token.TokenBasicName
-			s.Transaction.NftImage = token.TokenBasic.Meta
 			s.Transaction.TokenId = r.SrcTransaction.SrcTransfer.Amount.String()
+			token := selectNFTAsset(r.SrcTransaction.SrcTransfer.Asset)
+			if token != nil {
+				s.SrcTransaction.Asset = token.TokenBasicName
+				s.SrcTransaction.AssetHash = token.Hash
+				s.SrcTransaction.TokenType = models.GetTokenType(r.SrcTransaction.ChainId, token.Standard)
+
+				s.Transaction.AssetName = token.TokenBasicName
+				s.Transaction.NftImage = token.TokenBasic.Meta
+			}
 		}
 
 		s.SrcTransaction.Hash = basedef.FormatTxHash(r.SrcTransaction.ChainId, r.SrcTransaction.Hash)
@@ -421,16 +423,19 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 
 	if r.DstTransaction != nil {
 		if r.DstTransaction.DstTransfer != nil {
-			token := selectNFTAsset(r.DstTransaction.DstTransfer.Asset)
 
 			s.DstTransaction.From = basedef.FormatAddr(r.DstTransaction.DstTransfer.ChainId, basedef.Hash2Address(r.DstTransaction.DstTransfer.ChainId, r.DstTransaction.DstTransfer.From))
 			s.DstTransaction.To = basedef.FormatAddr(r.DstTransaction.DstTransfer.ChainId, basedef.Hash2Address(r.DstTransaction.DstTransfer.ChainId, r.DstTransaction.DstTransfer.To))
-			s.DstTransaction.Asset = token.TokenBasicName
-			s.DstTransaction.AssetHash = token.Hash
-			s.DstTransaction.TokenType = models.GetTokenType(r.DstTransaction.ChainId, token.Standard)
 
-			s.Transaction.AssetName = token.TokenBasicName
-			s.Transaction.NftImage = token.TokenBasic.Meta
+			token := selectNFTAsset(r.DstTransaction.DstTransfer.Asset)
+			if token != nil {
+				s.DstTransaction.Asset = token.TokenBasicName
+				s.DstTransaction.AssetHash = token.Hash
+				s.DstTransaction.TokenType = models.GetTokenType(r.DstTransaction.ChainId, token.Standard)
+
+				s.Transaction.AssetName = token.TokenBasicName
+				s.Transaction.NftImage = token.TokenBasic.Meta
+			}
 		}
 
 		s.DstTransaction.Hash = basedef.FormatTxHash(r.DstTransaction.ChainId, r.DstTransaction.Hash)

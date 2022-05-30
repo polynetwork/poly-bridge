@@ -47,7 +47,7 @@ func (c *ExplorerController) Transactions() {
 	for _, v := range relations {
 		tk := selectNFTAsset(v.SrcAsset)
 		var tokenBasicName string
-		if tk == nil{
+		if tk == nil {
 			tokenBasicName = v.SrcAsset
 		} else {
 			tokenBasicName = tk.TokenBasicName
@@ -180,16 +180,17 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 		return
 	}
 
-	asset := selectNFTAsset(data.SrcTransaction.AssetHash)
 	tokenId, ok := string2Big(data.Transaction.TokenId)
 	if !ok {
 		return
 	}
-	item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
-	if err != nil {
-		logs.Error("fillMetaInfo err: %v", err)
-		return
+	asset := selectNFTAsset(data.SrcTransaction.AssetHash)
+	if asset != nil {
+		item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
+		if err != nil {
+			logs.Error("fillMetaInfo err: %v", err)
+			return
+		}
+		data.Meta = item
 	}
-
-	data.Meta = item
 }
