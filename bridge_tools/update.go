@@ -19,6 +19,7 @@ package main
 
 import (
 	"gorm.io/gorm/logger"
+	"poly-bridge/basedef"
 	"poly-bridge/bridge_tools/conf"
 	serverconf "poly-bridge/conf"
 	"poly-bridge/crosschaindao"
@@ -51,7 +52,9 @@ func startUpdate(cfg *conf.UpdateConfig, servercfg *serverconf.Config) {
 	//
 	for _, tokenBasic := range cfg.TokenBasics {
 		for _, token := range tokenBasic.Tokens {
-			token.Hash = strings.ToLower(token.Hash)
+			if token.ChainId != basedef.STARCOIN_CROSSCHAIN_ID {
+				token.Hash = strings.ToLower(token.Hash)
+			}
 		}
 	}
 	dao.RemoveTokens(cfg.RemoveTokens)

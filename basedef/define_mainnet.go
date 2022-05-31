@@ -48,6 +48,7 @@ const (
 	HSC_CROSSCHAIN_ID        = uint64(28)
 	BYTOM_CROSSCHAIN_ID      = uint64(29)
 	KCC_CROSSCHAIN_ID        = uint64(30)
+	STARCOIN_CROSSCHAIN_ID   = uint64(31)
 
 	ENV = "mainnet"
 )

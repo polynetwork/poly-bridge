@@ -274,6 +274,8 @@ func GetChainName(id uint64) string {
 		return "BYTOM"
 	case HSC_CROSSCHAIN_ID:
 		return "HSC"
+	case STARCOIN_CROSSCHAIN_ID:
+		return "Starcoin"
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
