@@ -242,8 +242,14 @@ func FormatFee(chain uint64, fee *BigInt) string {
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " HOO"
 	case basedef.STARCOIN_CROSSCHAIN_ID:
-		precision_new := decimal.New(1, 9)
+		precision_new := decimal.New(1, 9)		
 		return fee_new.Div(precision_new).String() + " STC"
+	case basedef.KAVA_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " KAVA"
+	case basedef.CUBE_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " CUBE"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()
@@ -364,6 +370,10 @@ func GetTokenType(chainId uint64, standard uint8) string {
 		return "BAP" + "-" + tokenType
 	case basedef.HSC_CROSSCHAIN_ID:
 		return "ORC" + "-" + tokenType
+	case basedef.KAVA_CROSSCHAIN_ID:
+		return "ERC" + "-" + tokenType
+	case basedef.CUBE_CROSSCHAIN_ID:
+		return "CRC" + "-" + tokenType
 	default:
 		return "ERC" + "-" + tokenType
 	}
