@@ -18,6 +18,7 @@
 package main
 
 import (
+	"github.com/beego/beego/v2/core/logs"
 	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/bridge_tools/conf"
@@ -57,10 +58,23 @@ func startUpdate(cfg *conf.UpdateConfig, servercfg *serverconf.Config) {
 			}
 		}
 	}
-	dao.RemoveTokens(cfg.RemoveTokens)
-	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps, servercfg)
-	dao.AddChains(cfg.Chains, cfg.ChainFees)
-	dao.RemoveTokenMaps(cfg.RemoveTokenMaps)
+	if err := dao.RemoveTokens(cfg.RemoveTokens); err != nil {
+		logs.Error("RemoveTokens error: %s", err)
+		return
+	}
+	if err := dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps, servercfg); err != nil {
+		logs.Error("AddTokens error: %s", err)
+		return
+	}
+
+	if err := dao.AddChains(cfg.Chains, cfg.ChainFees); err != nil {
+		logs.Error("AddChains error: %s", err)
+		return
+	}
+	if err := dao.RemoveTokenMaps(cfg.RemoveTokenMaps); err != nil {
+		logs.Error("RemoveTokenMaps error: %s", err)
+		return
+	}
 
 	if len(cfg.RemoveTokens) > 0 && len(cfg.RemoveTokens) == len(cfg.TokenBasics) {
 		spdao, ok := dao.(*swapdao.SwapDao)
