@@ -262,3 +262,30 @@ func (c *DefiLlamaController) GetTVLKCC() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+
+func (c *DefiLlamaController) GetTVLStarcoin() {
+	tvlAmount, err := getTVLAmount(basedef.STARCOIN_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLStarcoin err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
+
+func (c *DefiLlamaController) GetTVLKava() {
+	tvlAmount, err := getTVLAmount(basedef.KAVA_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLKava err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
+
+func (c *DefiLlamaController) GetTVLCube() {
+	tvlAmount, err := getTVLAmount(basedef.CUBE_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLCube err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
