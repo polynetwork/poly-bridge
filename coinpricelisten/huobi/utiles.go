@@ -3,7 +3,6 @@ package huobi
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/polynetwork/bridge-common/base"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -78,7 +77,7 @@ func (this *HuobiSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]f
 			total += d.Data[0].Price
 		}
 		avgPrice := total / float64(len(resp.Data))
-		coinPrice[coin.PriceMarketName] = avgPrice * float64(base.PRICE_PRECISION)
+		coinPrice[coin.PriceMarketName] = avgPrice
 	}
 	return coinPrice, nil
 }
