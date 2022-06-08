@@ -26,6 +26,7 @@ import (
 	"poly-bridge/coinpricelisten/coincheck"
 	"poly-bridge/coinpricelisten/coinmarketcap"
 	"poly-bridge/coinpricelisten/gateio"
+	"poly-bridge/coinpricelisten/huobi"
 	"poly-bridge/coinpricelisten/self"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -76,6 +77,8 @@ func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket {
 		return gateio.NewGateioSdk()
 	case basedef.MARKET_SELF:
 		return self.NewSelfSdk(cfg)
+	case basedef.MARKET_HUOBI:
+		return huobi.NewHuobiSdk()
 	default:
 		return nil
 	}
