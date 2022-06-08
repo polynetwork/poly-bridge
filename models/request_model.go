@@ -513,8 +513,11 @@ type TransactionRsp struct {
 }
 
 func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
-	if transaction.WrapperTransaction == nil || transaction.SrcTransaction == nil {
+	if transaction.SrcTransaction == nil {
 		return nil
+	}
+	if transaction.WrapperTransaction == nil {
+		return MakeTransactionRspWithoutWrapper(transaction, chainsMap)
 	}
 
 	feeAmount := ""
@@ -660,6 +663,144 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 			srcTransactionState.Blocks = srcTransactionState.NeedBlocks
 		}
 
+	}
+	return transactionRsp
+}
+
+func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap map[uint64]*Chain) *TransactionRsp {
+	transferAmount := ""
+	dstUser := ""
+	if transaction.SrcTransaction.SrcTransfer != nil {
+		aaa := new(big.Int).Set(&transaction.SrcTransaction.SrcTransfer.Amount.Int)
+		transferAmount = aaa.String()
+		dstUser = transaction.SrcTransaction.SrcTransfer.DstUser
+	}
+	transactionRsp := &TransactionRsp{
+		Hash:           transaction.SrcHash,
+		User:           transaction.SrcTransaction.User,
+		SrcChainId:     transaction.SrcTransaction.ChainId,
+		BlockHeight:    transaction.SrcTransaction.Height,
+		Time:           transaction.SrcTransaction.Time,
+		DstChainId:     transaction.SrcTransaction.DstChainId,
+		TransferAmount: transferAmount,
+		DstUser:        dstUser,
+	}
+	switch {
+	case transaction.PolyTransaction == nil && transaction.DstTransaction == nil:
+		transactionRsp.State = basedef.STATE_SOURCE_CONFIRMED
+	case transaction.DstTransaction == nil:
+		transactionRsp.State = basedef.STATE_POLY_CONFIRMED
+	default:
+		transactionRsp.State = basedef.STATE_FINISHED
+	}
+	if transaction.Token != nil {
+		transactionRsp.Token = MakeTokenRsp(transaction.Token)
+		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.Precision)))
+		if transaction.SrcTransaction.SrcTransfer != nil {
+			bbb := decimal.NewFromBigInt(&transaction.SrcTransaction.SrcTransfer.Amount.Int, 0)
+			transferAmount := bbb.Div(precision)
+			transactionRsp.TransferAmount = transferAmount.String()
+		}
+	}
+
+	srcTransactionState := &TransactionStateRsp{
+		Hash:    "",
+		ChainId: transaction.SrcTransaction.ChainId,
+		Blocks:  0,
+		Time:    0,
+	}
+	polyTransactionState := &TransactionStateRsp{
+		Hash:    "",
+		ChainId: 0,
+		Blocks:  0,
+		Time:    0,
+	}
+	dstTransactionState := &TransactionStateRsp{
+		Hash:    "",
+		ChainId: transaction.SrcTransaction.DstChainId,
+		Blocks:  0,
+		Time:    0,
+	}
+	transactionRsp.TransactionState = append(transactionRsp.TransactionState, srcTransactionState)
+	transactionRsp.TransactionState = append(transactionRsp.TransactionState, polyTransactionState)
+	transactionRsp.TransactionState = append(transactionRsp.TransactionState, dstTransactionState)
+
+	if transaction.SrcTransaction != nil {
+		height := transaction.SrcTransaction.Height
+		srcTransactionState.Hash = transaction.SrcTransaction.Hash
+		srcTransactionState.ChainId = transaction.SrcTransaction.ChainId
+		srcTransactionState.Time = transaction.SrcTransaction.Time
+
+		srcChain, ok := chainsMap[srcTransactionState.ChainId]
+		if ok {
+			srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
+			srcTransactionState.Blocks = srcChain.Height - height
+			if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
+				srcTransactionState.Blocks = srcTransactionState.NeedBlocks
+			}
+		}
+		if transaction.ChainId == basedef.ARBITRUM_CROSSCHAIN_ID {
+			if l1BlockNumber, err := GetL1BlockNumberOfArbitrumTx(transaction.SrcTransaction.Hash); err == nil {
+				height = l1BlockNumber
+				ethChain, ok := chainsMap[basedef.ETHEREUM_CROSSCHAIN_ID]
+				if ok {
+					srcTransactionState.NeedBlocks = ethChain.BackwardBlockNumber
+					srcTransactionState.Blocks = ethChain.Height - height
+					if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
+						srcTransactionState.Blocks = srcTransactionState.NeedBlocks
+					}
+				}
+			} else {
+				logs.Error("GetL1BlockNumberOfArbitrumTx failed. hash=%s, err:", transaction.SrcTransaction.Hash, err)
+			}
+		}
+	}
+	if transaction.PolyTransaction != nil {
+		polyTransactionState.Hash = transaction.PolyTransaction.Hash
+		polyTransactionState.ChainId = transaction.PolyTransaction.ChainId
+		polyTransactionState.Time = transaction.PolyTransaction.Time
+
+		polyChain, ok := chainsMap[polyTransactionState.ChainId]
+		if ok {
+			polyTransactionState.NeedBlocks = polyChain.BackwardBlockNumber
+			polyTransactionState.Blocks = polyChain.Height - transaction.PolyTransaction.Height
+			if polyTransactionState.Blocks > polyTransactionState.NeedBlocks {
+				polyTransactionState.Blocks = polyTransactionState.NeedBlocks
+			}
+		}
+
+		srcChain, ok := chainsMap[srcTransactionState.ChainId]
+		if ok {
+			srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
+			srcTransactionState.Blocks = srcTransactionState.NeedBlocks
+		}
+	}
+	if transaction.DstTransaction != nil {
+		dstTransactionState.Hash = transaction.DstTransaction.Hash
+		dstTransactionState.ChainId = transaction.DstTransaction.ChainId
+		dstTransactionState.Time = transaction.DstTransaction.Time
+		dstTransactionState.NeedBlocks = 1
+
+		dstTransactionState.Blocks = transaction.DstTransaction.Height
+		dstChain, ok := chainsMap[dstTransactionState.ChainId]
+		if ok {
+			dstTransactionState.Blocks = dstChain.Height - transaction.DstTransaction.Height
+		}
+		if dstTransactionState.Blocks > dstTransactionState.NeedBlocks {
+			dstTransactionState.Blocks = dstTransactionState.NeedBlocks
+		}
+
+		polyChain, ok := chainsMap[polyTransactionState.ChainId]
+		if ok {
+			polyTransactionState.NeedBlocks = polyChain.BackwardBlockNumber
+			polyTransactionState.Blocks = polyTransactionState.NeedBlocks
+		}
+
+		srcChain, ok := chainsMap[srcTransactionState.ChainId]
+		if ok {
+			srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
+			srcTransactionState.Blocks = srcTransactionState.NeedBlocks
+		}
 	}
 	return transactionRsp
 }
