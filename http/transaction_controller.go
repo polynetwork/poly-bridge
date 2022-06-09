@@ -105,7 +105,7 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	query := func(tx *gorm.DB) *gorm.DB {
-		u := db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+		u := db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
 			Where("`from` in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses).
 			Where("src_transfers.asset in ?", req.Assets)
 
