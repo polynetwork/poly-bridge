@@ -115,7 +115,7 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 		if req.DstChainId > 0 {
 			u = u.Where("src_transfers.dst_chain_id = ?", req.DstChainId)
 		}
-		return tx.Table("(?) as u", u).
+		return tx.Debug().Table("(?) as u", u).
 			Where("src_transactions.standard = ?", 0).
 			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
 			Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
