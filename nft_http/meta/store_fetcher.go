@@ -88,7 +88,7 @@ func (s *StoreFetcher) Fetch(chainId uint64, asset string, req *FetchRequestPara
 
 	profile = new(models.NFTProfile)
 	res := s.db.Model(&models.NFTProfile{}).
-		Where("token_basic_name = ? and nft_token_id = ?", asset, req.TokenId).
+		Where("token_basic_name = ? and nft_token_id = ? and name <> ''", asset, req.TokenId).
 		Find(profile)
 	if res.RowsAffected > 0 {
 		return profile, nil

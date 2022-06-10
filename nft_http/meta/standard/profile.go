@@ -21,11 +21,11 @@ func (p *Profile) Unmarshal(raw []byte) error {
 	return json.Unmarshal(raw, p)
 }
 
-func (p *Profile) Convert(assetName string, tokenId string) (*models.NFTProfile, error) {
+func (p *Profile) Convert(assetName string, tokenId string, url string) (*models.NFTProfile, error) {
 	np := new(models.NFTProfile)
 	np.TokenBasicName = assetName
 	np.Name = p.Name
-	np.Url = p.ExternalUrl
+	np.Url = url
 	np.Image = p.Image
 	np.Description = p.Description
 	np.NftTokenId = tokenId

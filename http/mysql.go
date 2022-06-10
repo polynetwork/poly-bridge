@@ -23,6 +23,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"poly-bridge/conf"
+	"poly-bridge/models"
 )
 
 var db *gorm.DB
@@ -67,4 +68,8 @@ func Init() {
 		}
 		wrapperContract[chainListen.ChainId] = wrapper
 	}
+
+	db.AutoMigrate(
+		&models.NFTProfile{},
+	)
 }
