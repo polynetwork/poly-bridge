@@ -29,7 +29,7 @@ func (f *StandardFetcher) Fetch(req *FetchRequestParams) (*models.NFTProfile, er
 		return nil, err
 	}
 
-	return origin.Convert(f.Asset, req.TokenId)
+	return origin.Convert(f.Asset, req.TokenId, req.Url)
 }
 
 func (f *StandardFetcher) BatchFetch(reqs []*FetchRequestParams) ([]*models.NFTProfile, error) {

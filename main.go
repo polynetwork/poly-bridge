@@ -21,9 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"poly-bridge/cacheRedis"
-
 	"poly-bridge/basedef"
+	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/explorer"

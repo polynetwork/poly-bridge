@@ -3,6 +3,7 @@ package meta
 import (
 	"errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"poly-bridge/models"
 	. "poly-bridge/nft_http/meta/common"
 	"poly-bridge/nft_http/meta/standard"
@@ -88,7 +89,7 @@ func (s *StoreFetcher) Fetch(chainId uint64, asset string, req *FetchRequestPara
 
 	profile = new(models.NFTProfile)
 	res := s.db.Model(&models.NFTProfile{}).
-		Where("token_basic_name = ? and nft_token_id = ?", asset, req.TokenId).
+		Where("token_basic_name = ? and nft_token_id = ? and name <> ''", asset, req.TokenId).
 		Find(profile)
 	if res.RowsAffected > 0 {
 		return profile, nil
@@ -98,7 +99,7 @@ func (s *StoreFetcher) Fetch(chainId uint64, asset string, req *FetchRequestPara
 		return nil, err
 	}
 
-	s.db.Save(profile)
+	s.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&profile)
 	return
 }
 
