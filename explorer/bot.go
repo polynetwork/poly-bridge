@@ -97,7 +97,7 @@ func (c *BotController) BotPage() {
 				}
 				botTx := models.ParseBotTx(entry, fees)
 				rows[i] = fmt.Sprintf(
-					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 13)),
+					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 14)),
 					botTx.Asset,
 					botTx.Amount,
 					botTx.SrcChainName,
