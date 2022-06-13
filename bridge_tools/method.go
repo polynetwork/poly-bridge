@@ -132,7 +132,7 @@ func fetchBlock(config *conf.Config) {
 		panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
 	}
 
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDaoWithCheckFeeConfig(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig, config.ChainListenConfig, config.FeeListenConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}

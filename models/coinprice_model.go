@@ -145,6 +145,8 @@ type WrapperTransactionWithToken struct {
 	FeeToken     *Token  `gorm:"foreignKey:FeeTokenHash,SrcChainId;references:Hash,ChainId"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
+	IsPaid       bool    `gorm:"type:tinyint(1);not null"`
+	PaidGas      *BigInt `gorm:"type:varchar(64);not null"`
 }
 
 type CheckFee struct {

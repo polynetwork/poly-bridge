@@ -12,7 +12,7 @@ import (
 var handlerMap = make(map[uint64]ChainHandle, 0)
 
 func StartCrossChainListenPatch(config *conf.Config) {
-	dao := bridgedao.NewBridgeDao(config.DBConfig, config.Backup)
+	dao := bridgedao.NewBridgeDaoCheckFee(config.DBConfig, config.ChainListenConfig, config.FeeListenConfig, config.Backup)
 	if dao == nil {
 		panic("NewBridgeDao err")
 	}
