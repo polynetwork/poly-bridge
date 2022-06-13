@@ -111,6 +111,7 @@ func (c *BotController) BotPage() {
 					botTx.Time,
 					botTx.Duration,
 					botTx.PolyHash,
+					botTx.ProxyProject,
 				)
 
 			}
@@ -138,6 +139,7 @@ func (c *BotController) BotPage() {
 							<th>Time</th>
 							<th>Duration</th>
 							<th>PolyHash</th>
+							<th>ProxyProject</th>
 						</tr>
 						%s
 						</table>
