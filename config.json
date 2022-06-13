@@ -1,0 +1,1149 @@
+{
+  "Server": "polybridge",
+  "Backup": false,
+  "Env": "testnet",
+  "LogFile": "logs/bridge.log",
+  "RunMode": "prod",
+  "DBConfig": {
+    "Debug": true,
+    "URL": "127.0.0.1:3306",
+    "User": "root",
+    "Password": "",
+    "Scheme": "poly"
+  },
+  "HttpConfig": {
+    "Address": "0.0.0.0",
+    "Port": 8084
+  },
+  "IPPortConfig": {
+    "DingIP": "https://oapi.dingtalk.com/robot/send",
+    "USDTIP": "http://124.156.209.180:9999/balance/0xa6157DaBDda80F8c956962AB7739f17F54BAAB7F/0x061a87Aac7695b9cf9482043175fd3bE3374AB66",
+    "WBTCIP": "http://124.156.209.180:9999/balance/0x6c27318a0923369de04df7Edb818744641FD9602/0x7648bDF3B4f26623570bE4DD387Ed034F2E95aad",
+    "LargeTxAmountAlarmDingIP": "https://oapi.dingtalk.com/robot/send?access_token=4aa227135c250a1b495d1abe2fbf9e3d3deef9554faa5fbd8cfe134aa1f2b6d8"
+  },
+  "RedisConfig": {
+    "addr": "10.203.0.49:6379",
+    "password": "nfrojxpZnKyAB3ZOnGAhISYrvV0=",
+    "proto": "tcp",
+    "pool_size": 50,
+    "min_idle_conns": 10,
+    "dial_timeout": 2,
+    "read_timeout": 2,
+    "write_timeout": 2,
+    "idle_timeout": 10,
+    "expiration": 36000
+  },
+  "ChainNodes": [
+    {
+      "ChainName": "Poly",
+      "ChainId": 0,
+      "Nodes": [
+        {
+          "Url": "http://124.156.226.204:20336"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Ethereum",
+      "ChainId": 2,
+      "Nodes": [
+        {
+          "Url": "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+        },
+        {
+          "Url": "https://speedy-nodes-nyc.moralis.io/33b0a1303eb9513e9ff70815/eth/ropsten"
+        }
+      ],
+      "ExtendNodes": [
+        {
+          "Url": "https://api-ropsten.etherscan.io/api",
+          "Key": "66ID1RRDQMCKNCWEXK889F7C478TS9GX5H"
+        }
+      ]
+    },
+    {
+      "ChainName": "NEO",
+      "ChainId": 5,
+      "Nodes": [
+        {
+          "Url": "http://seed8.ngd.network:20332"
+        },
+        {
+          "Url": "http://seed9.ngd.network:20332"
+        },
+        {
+          "Url": "http://seed1.ngd.network:20332"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "BSC",
+      "ChainId": 79,
+      "Nodes": [
+        {
+          "Url": "https://data-seed-prebsc-1-s1.binance.org:8545/"
+        },
+        {
+          "Url": "https://data-seed-prebsc-2-s1.binance.org:8545/"
+        },
+        {
+          "Url": "https://data-seed-prebsc-1-s2.binance.org:8545/"
+        },
+        {
+          "Url": "https://data-seed-prebsc-2-s2.binance.org:8545/"
+        },
+        {
+          "Url": "https://data-seed-prebsc-1-s3.binance.org:8545/"
+        },
+        {
+          "Url": "https://data-seed-prebsc-2-s3.binance.org:8545/"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "HECO",
+      "ChainId": 7,
+      "Nodes": [
+        {
+          "Url": "https://http-testnet.hecochain.com"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Ontology",
+      "ChainId": 3,
+      "ListenSlot": 1,
+      "Nodes": [
+        {
+          "Url": "http://polaris2.ont.io:20336"
+        }
+      ],
+      "ExtendNodes": [
+      ]
+    },
+    {
+      "ChainName": "Ontevm",
+      "ChainId": 333,
+      "ListenSlot": 1,
+      "Nodes": [
+        {
+          "Url": "http://polaris2.ont.io:20339"
+        }
+      ],
+      "ExtendNodes": [
+        {
+          "Ont": "http://polaris2.ont.io:20336"
+        }
+      ]
+    },
+    {
+      "ChainName": "Ok",
+      "ChainId": 200,
+      "Nodes": [
+        {
+          "Url": "http://10.203.0.33:8545"
+        },
+        {
+          "Url": "https://exchaintestrpc.okex.org/"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "NEO3",
+      "ChainId": 88,
+      "Nodes": [
+        {
+          "Url": "https://n3seed1.ngd.network:20332"
+        }
+      ],
+      "ExtendNodes": [
+      ]
+    },
+    {
+      "ChainName": "MATIC",
+      "ChainId": 202,
+      "Nodes": [
+        {
+          "Url": "https://speedy-nodes-nyc.moralis.io/0fe5538d05b02688848fcb69/polygon/mumbai"
+        },
+        {
+          "Url": "http://10.203.0.22:8545"
+        },
+        {
+          "Url": "https://rpc-mumbai.maticvigil.com"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "O3",
+      "ChainId": 82,
+      "ExtendNodes": [],
+      "Nodes": [
+        {
+          "Url": "http://40.115.136.96:8546"
+        }
+      ]
+    },
+    {
+      "ChainName": "PLT",
+      "ChainId": 107,
+      "Nodes": [
+        {
+          "Url": "http://106.75.246.130:22000"
+        },
+        {
+          "Url": "http://106.75.250.160:22000"
+        }
+      ],
+      "ExtendNodes": [
+      ]
+    },
+    {
+      "ChainName": "Arbitrum",
+      "ChainId": 205,
+      "Nodes": [
+        {
+          "Url": "https://rinkeby.arbitrum.io/rpc"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "XDai",
+      "ChainId": 206,
+      "Nodes": [
+        {
+          "Url": "https://sokol.poa.network"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "ZILLIQA",
+      "ChainId": 111,
+      "Nodes": [
+        {
+          "Url": "https://dev-api.zilliqa.com/"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Optimistic",
+      "ChainId": 210,
+      "Nodes": [
+        {
+          "Url": "https://kovan.optimism.io"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Fantom",
+      "ChainId": 208,
+      "Nodes": [
+        {
+          "Url": "https://rpc.testnet.fantom.network"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Avax",
+      "ChainId": 209,
+      "Nodes": [
+        {
+          "Url": "https://api.avax-test.network/ext/bc/C/rpc"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Metis",
+      "ChainId": 300,
+      "Nodes": [
+        {
+          "Url": "https://stardust.metis.io/?owner=588"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "Rinkeby",
+      "ChainId": 402,
+      "Nodes": [
+        {
+          "Url": "https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+        }
+      ]
+    },
+    {
+      "ChainName": "Pixie",
+      "ChainId": 316,
+      "Nodes": [
+        {
+          "Url": "https://http-testnet.chain.pixie.xyz"
+        }
+      ]
+    },
+    {
+      "ChainName": "Boba",
+      "ChainId": 400,
+      "Nodes": [
+        {
+          "Url": "https://rinkeby.boba.network/"
+        }
+      ]
+    },
+    {
+      "ChainName": "Oasis",
+      "ChainId": 500,
+      "Nodes": [
+        {
+          "Url": "https://testnet.emerald.oasis.dev/"
+        }
+      ]
+    },
+    {
+      "ChainName": "Starcoin",
+      "ChainId": 318,
+      "Nodes": [
+        {
+          "Url": "https://barnard-seed.starcoin.org"
+        }
+      ]
+    },
+    {
+      "ChainName": "Harmony",
+      "ChainId": 800,
+      "Nodes": [
+        {
+          "Url": "https://api.s0.b.hmny.io"
+        }
+      ]
+    },
+    {
+      "ChainName": "HSC",
+      "ChainId": 603,
+      "Nodes": [
+        {
+          "Url": "https://http-mainnet.hoosmartchain.com"
+        }
+      ]
+    },
+    {
+      "ChainName": "BCS Palette",
+      "ChainId": 1001,
+      "Nodes": [
+        {
+          "Url": "http://18.220.17.201:22004"
+        }
+      ]
+    },
+    {
+      "ChainName": "Bytom",
+      "ChainId": 701,
+      "Nodes": [
+        {
+          "Url": "https://testnet.bmcchain.com"
+        }
+      ],
+      "ExtendNodes": []
+    },
+    {
+      "ChainName": "KCC",
+      "ChainId": 900,
+      "Nodes": [
+        {
+          "Url": "https://rpc-testnet.kcc.network"
+        }
+      ]
+    }
+  ],
+  "ChainListenConfig": [
+    {
+      "ChainName": "Poly",
+      "ChainId": 0,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "CCMContract": "0300000000000000000000000000000000000000"
+    },
+    {
+      "ChainName": "Ethereum",
+      "ChainId": 2,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "e498fb7D00468a67A79dE5D4Ca264d3350165280",
+        "Dc37471Af6a8aB7f45F444c5a3Ef4758281bE32C",
+        "c58ef4f49bbbd6bdffeea8159481c1afafbcfd0e",
+        "faACa57E382Df0728D26751C3e068aa2f34E69Fb"
+      ],
+      "CCMContract": "f989E80AAd477cB6059f366C0170a498909C4a55",
+      "ProxyContract": [
+        "D8aE73e06552E270340b63A8bcAbf9277a1aac99",
+        "ED035c39a7e4Ee13b8ab48f70c7936ecCc6f4B0D",
+        "fd40451429251A6dD535c4BB86A7D894409e900F"
+      ],
+      "OtherProxyContract": [
+        {"ItemName": "ERATO","ItemProxy": "d5e724C9817E15c084B2b326f38Abd4DfC1967eB"}
+      ],
+      "SwapContract": "1E7A3e54494F300dC66181621E23eE657E22D725",
+      "NFTWrapperContract": [
+        "940300dc3Fc26e3A330a300be766184C0b5Fe019"
+      ],
+      "NFTProxyContract": [
+        "9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
+      ],
+      "NFTQueryContract": "500674D603331C43ed2288834BAb284BF65fc076"
+    },
+    {
+      "ChainName": "NEO",
+      "ChainId": 5,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "cd074cd290acc3d73c030784101afbcf40fd86a1",
+        "0f4fad9ae3830585a9264e6ec0b1eff3e89c6558",
+        "7997ac991b66ca3810602639a2f2c1bd985e8b5a"
+      ],
+      "CCMContract": "e1695b1314a1331e3935481620417ed835669407",
+      "ProxyContract": [
+        "edd2862dceb90b945210372d229f453f2b705f4f"
+      ]
+    },
+    {
+      "ChainName": "BSC",
+      "ChainId": 79,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "Ced7997C3e807Fcdc5ac18fFC0B8af93a15a9eE5",
+        "9f9F15CC407F7b26f55D71D43f993580a9107007",
+        "fb717F8d478156fE7428369075bB2FaB4Ea659B5",
+        "CDE343463b14C6E91Df25676D0852c818613eB19"
+      ],
+      "CCMContract": "0x906bC93FF690d6D3D2C4E7A7dfA4dEbdEF2cD7CA",
+      "ProxyContract": [
+        "097Ae585BfEf78DDC8E266ABCb840dAF7265130c",
+        "B4004B93f1ce1E63131413cA201D35D1F3f40e5D",
+        "1930cA2566FA8bFf858e35A5Ab8B4b5617702E3A"
+      ],
+      "OtherProxyContract": [
+        {"ItemName": "ERATO","ItemProxy": "79B27ebCa93d5AAACD614537eaa078F0C2f50520"}
+      ],
+      "SwapContract": "6407673152fc40B648C3348BeE66D162d39923c6",
+      "NFTWrapperContract": [
+        "61E289D43C1FEA7598786557A2F309979ad144D3"
+      ],
+      "NFTProxyContract": [
+        "9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
+      ],
+      "NFTQueryContract": "AB3e1F13127bE931A71Fdc8940bd31506EFC6A70"
+    },
+    {
+      "ChainName": "HECO",
+      "ChainId": 7,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "3c92F1E31aACA43Eb4fF8aE498C7E85618680F45",
+        "CC8407Ee04AaC2AdC0E6A55E7E97176C701146cd"
+      ],
+      "CCMContract": "4772274FE26130339563974F0229e71017230288",
+      "ProxyContract": [
+        "4a76E52600C6285029c8f7c52183cf86282cA5b8"
+      ],
+      "SwapContract": "5B18542A4cD54C7c1641bdF63541F19072b79260",
+      "NFTWrapperContract": [
+        "baBaAF5CF7f63437755aAAFE7a4106463c5cD540"
+      ],
+      "NFTProxyContract": [
+        "25BB8E9C0Cc03B30d09769735208a47d389Ff36c"
+      ],
+      "NFTQueryContract": "E1488842b15E0f084b254588f46e4C570065d6A0"
+    },
+    {
+      "ChainName": "Ontology",
+      "ChainId": 3,
+      "ListenSlot": 5,
+      "WrapperContract": [
+        "a5c101afa9e04e9dd2c912983795005a49e02efa"
+      ],
+      "CCMContract": "0900000000000000000000000000000000000000",
+      "ProxyContract": [
+        "33c439c502cb4b6ac5a1e8057a65fe1fa7c300e2"
+      ]
+    },
+    {
+      "ChainName": "Ontevm",
+      "ChainId": 333,
+      "ListenSlot": 5,
+      "WrapperContract": [
+        "","66f1Ad12a2C7A6370CbD20ECD79D17a405061Efe"
+      ],
+      "CCMContract": "74b77cbF04442BBf194380a7e4d99c923e0e56cc",
+      "ProxyContract": [
+        "C08f23D707b739bb5Ca76A2a1bE300A5aB9B4301"
+      ]
+    },
+    {
+      "ChainName": "Ok",
+      "ChainId": 200,
+      "ListenSlot": 5,
+      "Defer": 2,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "5598226aD2E8991deEFD03203739C87BdF6e6D03",
+        "bAa40bBd7888f79614057d82bdcE88dF2D23bf55"
+      ],
+      "CCMContract": "60Ab3e4a841c8a2E4148aAfc74C0E63c4B54d109",
+      "ProxyContract": [
+        "74cE7D56cd1b5AEe9A3345A490b5Ed768134C7D4"
+      ]
+    },
+    {
+      "ChainName": "NEO3",
+      "ChainId": 88,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "d63810ca692b43e0ed35bfa40e653d05b2cb3585"
+      ],
+      "CCMContract": "618d44dc3af16c6120dbf65402024f40a04f772a",
+      "ProxyContract": [
+        "4487494dac2f7eb68bdae009cacd6de88243e542"
+      ]
+    },
+    {
+      "ChainName": "MATIC",
+      "ChainId": 202,
+      "ListenSlot": 5,
+      "Defer": 10,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "D5d63Dce45E0275Ca76a8b2e9BD8C11679A57D0D",
+        "",
+        "8436c725511Bc80285Df3A4D560e5befFCb8f13f"
+      ],
+      "SwapContract": "1B0C55be400e2a7D924032B257Fbc75Bbfd256E7",
+      "CCMContract": "DC1045aD8956e14eC51B7824AB26b1360567ab51",
+      "ProxyContract": [
+        "4e5eF0CA5A94b169Fb010fb40DBFD57c4830f446",
+        "d7fCb6544E447cAD3592D8c8091dAd0Af95A7875"
+      ],
+      "NFTWrapperContract": [
+        "ea5b2a0cf4ca9bd5c72ea1fbee1ffe420e57f692"
+      ],
+      "NFTProxyContract": [
+        "761fb099d021cf55ffe65f9bedd3e2bab52abccc"
+      ],
+      "NFTQueryContract": "13227576c94119755bbad5bf01d8ac332f80e8ad"
+    },
+    {
+      "CCMContract": "0E916fc31F67A59318743ca0A3a33ff8B1279854",
+      "ChainId": 82,
+      "ChainName": "curve",
+      "Defer": 1,
+      "BatchSize": 5,
+      "ListenSlot": 5,
+      "ProxyContract": [
+        "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"
+      ],
+      "SwapContract": "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E",
+      "WrapperContract": [
+        "A67EC5d2D92b2E2aFE2EBaC1Be73B7087550622E"
+      ]
+    },
+    {
+      "ChainName": "PLT",
+      "ChainId": 107,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "3b855e095b32fcd2811663cba56bbfa6b1781821",
+        ""
+      ],
+      "NFTWrapperContract": [
+        "0806e6925e6960E06cD4781e22A636bA233B53De"
+      ],
+      "NFTProxyContract": [
+        "6e5fB68D6B705A567d75135169cF69574225eBe6"
+      ],
+      "NFTQueryContract": "34B5B0cC2b57d96d3930Ddc66084029170fE6BFD",
+      "CCMContract": "691835c5a5F7452ad2820235D48817E27239F0C2",
+      "ProxyContract": [
+        "0000000000000000000000000000000000000103"
+      ]
+    },
+    {
+      "ChainName": "Arbitrum",
+      "ChainId": 205,
+      "ListenSlot": 10,
+      "Defer": 5,
+      "BatchSize": 5,
+      "ExtendNodes": [],
+      "WrapperContract": [
+        "",
+        "27eb74B4Db37517F1dC6dE67364e19782624402F",
+        "",
+        "67901cb4b2b88D7Fb680653c82ddcd70c63b44e6"
+      ],
+      "CCMContract": "3A77dB10eAa7436e608a99643Ab2bEB2E901C72C",
+      "ProxyContract": [
+        "97f72bA888A26A0F98C67cf15d781dDBFE64B990",
+        "66265a0D04a70f737887fCa3e35bc634729d4439"
+      ]
+    },
+    {
+      "ChainName": "XDai",
+      "ChainId": 206,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "a7eDA65F94A2a334a0de42d479585b65D27b2249",
+        "",
+        "26e52b21Dd5aD9ee8fEFf9931EA75396657d9276"
+      ],
+      "CCMContract": "F87527a74215777391fE4AfD082FeeED3E5A0ca5",
+      "ProxyContract": [
+        "52B3048eeF2E53bAF430B0bA4752999F244d1709",
+        "8CAA3eA180456b5dFa16Aa0deBAef12C86Dd3eaD"
+      ]
+    },
+    {
+      "ChainName": "ZILLIQA",
+      "ChainId": 111,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "CCMContract": "720a3fb587b670de99d94925b6f99c9a63d462c1",
+      "OtherProxyContract": [
+        {
+          "ItemName": "ZIL",
+          "ItemProxy": "a5a43eecd29534edf80792a9889f52c77455245d"
+        }
+      ]
+    },
+    {
+      "ChainName": "Optimistic",
+      "ChainId": 210,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "E324EF8cd52833DD117e8ca87b483E78b30C3696"
+      ],
+      "CCMContract": "C8042579D6b60E0e35161F228827E3Fa0F51d5B6",
+      "ProxyContract": [
+        "8a85143cA6ec1e181C3A5Ae4042ca999bFbF571B"
+      ]
+    },
+    {
+      "ChainName": "Fantom",
+      "ChainId": 208,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "FAddf0cfb08F92779560db57BE6b2C7303aaD266",
+        "",
+        "1930cA2566FA8bFf858e35A5Ab8B4b5617702E3A"
+      ],
+      "CCMContract": "1C84D74084c3C3301BE4777A568D78211189c871",
+      "ProxyContract": [
+        "4a76E52600C6285029c8f7c52183cf86282cA5b8",
+        "F714DE1d5e32D40DF1566619BE3F98Bb1C505d89"
+      ]
+    },
+    {
+      "ChainName": "Avax",
+      "ChainId": 209,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "ac0a6759696569B3729177ba6844D41FF6D57844"
+      ],
+      "CCMContract": "f37D8C2d072b74d6532541B70319ef08f9F6a4a8",
+      "ProxyContract": [
+        "80a53FD352597AbA3dD52c722119865a8ed82632"
+      ]
+    },
+    {
+      "ChainName": "Metis",
+      "ChainId": 300,
+      "ListenSlot": 5,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "b0354F5383839e163438Aa53dd58E5e70a548F2F",
+        "A09E4d0406123d14CFB1d60D78C6Dc386b7de7F9"
+      ],
+      "CCMContract": "d6fc5374649cea121395a4860FdB33F21783c4Af",
+      "ProxyContract": [
+        "0AF53d318De279C8e67FcC6914acF387CFaA8B7E",
+        "e6E89cde11B89D940D25c35eaec7aCB489D29820"
+      ]
+    },
+    {
+      "ChainName": "Pixie",
+      "ChainId": 316,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "E7Db150e4095Cbb35914b5dC980906C77B5990d2"
+      ],
+      "CCMContract": "2E830E0cf3dc8643B497F88C07c8A72EFE24B11f",
+      "ProxyContract": [
+        "46Fc99509c4Aab0c958B8b2175edAa9C4963Ac09"
+      ],
+      "NFTWrapperContract": [
+        "06e3d8Eeb9DC4732e474c26674e08213c6e11921"
+      ],
+      "NFTProxyContract": [
+        "D54a267B2c983d883D39248Dd7002dc7405559E0"
+      ],
+      "NFTQueryContract": "baBaAF5CF7f63437755aAAFE7a4106463c5cD540"
+    },
+    {
+      "ChainName": "Rinkeby",
+      "ChainId": 402,
+      "ListenSlot": 5,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "E324EF8cd52833DD117e8ca87b483E78b30C3696",
+        "D5a240f7F755bCa2aE992E807b06d24eB6DF7C12"
+      ],
+      "CCMContract": "C8042579D6b60E0e35161F228827E3Fa0F51d5B6",
+      "ProxyContract": [
+        "8a85143cA6ec1e181C3A5Ae4042ca999bFbF571B",
+        "30e6ec356ceF1cfe3c7e14392EA08448382327bD"
+      ],
+      "NFTWrapperContract": [
+        "25BB8E9C0Cc03B30d09769735208a47d389Ff36c"
+      ],
+      "NFTProxyContract": [
+        "9bEF1AE7304D3d2F344ea00e796ADa18cE1beb03"
+      ],
+      "NFTQueryContract": "6fd13dd4181dDb0f7463e19caC659FD3e9FB8a82"
+    },
+    {
+      "ChainName": "Boba",
+      "ChainId": 400,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "F87527a74215777391fE4AfD082FeeED3E5A0ca5"
+      ],
+      "CCMContract": "a65bD4431C38A4dD9c92ebE60dE3cb8C252c04E5",
+      "ProxyContract": [
+        "4087E556EFd21172668C90905AE3fd1AC7c3ACf8"
+      ]
+    },
+    {
+      "ChainName": "Oasis",
+      "ChainId": 500,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "",
+        "c2d365475EEf3ec83e59D1BcDF3A291D7B23Ba99"
+      ],
+      "CCMContract": "d6fc5374649cea121395a4860FdB33F21783c4Af",
+      "ProxyContract": [
+        "0AF53d318De279C8e67FcC6914acF387CFaA8B7E"
+      ]
+    },
+    {
+      "ChainName": "Starcoin",
+      "ChainId": 318,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+      ],
+      "CCMContract": "",
+      "ProxyContract": [
+        "0x416b32009fe49fcab1d5f2ba0153838f"
+      ]
+    },
+    {
+      "ChainName": "Harmony",
+      "ChainId": 800,
+      "ListenSlot": 5,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "c927f0EF4f25E19a40F0Cb34da841B45c13649fd"
+      ],
+      "CCMContract": "55a59c57a133d1c999b3Eaf5B16ad5c1F2e365c8",
+      "ProxyContract": [
+        "0AF53d318De279C8e67FcC6914acF387CFaA8B7E"
+      ]
+    },
+    {
+      "ChainName": "HSC",
+      "ChainId": 603,
+      "ListenSlot": 5,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "",
+        "5906777d34257a2b479c291871C9BFdFB922D67D"
+      ],
+      "CCMContract": "0744b1802B9D879AdB2C4ea3b7A9bE38073f3a43",
+      "ProxyContract": [
+        "f6378141BC900020a438F3914e4C3ceA29907b27"
+      ]
+    },
+    {
+      "ChainName": "BCS Palette",
+      "ChainId": 1001,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "0c5c0b03e897e7b1828f2bc923ea4498ec891060",
+        ""
+      ],
+      "NFTWrapperContract": [
+        "0000000000000000000000000000000000000000"
+      ],
+      "NFTProxyContract": [
+        "0000000000000000000000000000000000000000"
+      ],
+      "NFTQueryContract": "0000000000000000000000000000000000000000",
+      "CCMContract": "f2cae31596433ada66393bde525f80aee97b3112",
+      "ProxyContract": [
+        "0000000000000000000000000000000000000103"
+      ]
+    },
+    {
+      "ChainName": "Bytom",
+      "ChainId": 701,
+      "ListenSlot": 5,
+      "Defer": 1,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "",
+        "c4ef39a0Dc3838Db46AdA832e46e3cf4B3d495E4",
+        ""
+      ],
+      "CCMContract": "7877Ad76Dd6069035B56137707368C945D2aD452",
+      "ProxyContract": [
+        "720aF2de5eA84b78AAC7BDFA812B47e41516D59c"
+      ],
+      "SwapContract": "",
+      "NFTWrapperContract": [
+        "6fd13dd4181dDb0f7463e19caC659FD3e9FB8a82"
+      ],
+      "NFTProxyContract": [
+        "88aD4fD94a05602E595101a3e3171f91289C8f6b"
+      ],
+      "NFTQueryContract": "25BB8E9C0Cc03B30d09769735208a47d389Ff36c"
+    },
+    {
+      "ChainName": "KCC",
+      "ChainId": 900,
+      "ListenSlot": 5,
+      "Defer": 0,
+      "BatchSize": 5,
+      "WrapperContract": [
+        "",
+        "c2d365475EEf3ec83e59D1BcDF3A291D7B23Ba99"
+      ],
+      "CCMContract": "d6fc5374649cea121395a4860FdB33F21783c4Af",
+      "ProxyContract": [
+        "0AF53d318De279C8e67FcC6914acF387CFaA8B7E"
+      ]
+    }
+  ],
+  "StatsConfig": {
+    "AssetAdressInterval": 1200,
+    "AssetStatisticInterval": 600,
+    "ChainAddressCheckInterval": 1200,
+    "ChainStatisticInterval": 600,
+    "TokenAmountCheckInterval": 300,
+    "TokenBasicStatsInterval": 600,
+    "TokenStatisticInterval": 600,
+    "LockTokenStatisticInterval": 600
+  },
+  "EventEffectConfig": {
+    "HowOld": 300,
+    "HowOld2": 300,
+    "ChainListening": 300,
+    "EffectSlot": 1,
+    "TimeStatisticSlot": 3600
+  },
+  "CoinPriceUpdateSlot": 5,
+  "CoinPriceListenConfig": [
+    {
+      "MarketName": "coinmarketcap",
+      "Nodes": [
+        {
+          "Url": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/",
+          "Key": "8efe5156-8b37-4c77-8e1d-a140c97bf466"
+        }
+      ]
+    },
+    {
+      "MarketName": "binance",
+      "Nodes": [
+        {
+          "Url": "https://api1.binance.com/"
+        }
+      ]
+    },
+    {
+      "MarketName": "coincheck",
+      "Nodes": [
+        {
+          "Url": "https://coincheck.com/"
+        }
+      ]
+    },
+    {
+      "MarketName": "gateio"
+    }
+  ],
+  "FeeUpdateSlot": 5,
+  "FeeListenConfig": [
+    {
+      "ChainId": 2,
+      "ChainName": "Ethereum",
+      "GasLimit": 270000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 3,
+      "ChainName": "Ontology",
+      "GasLimit": 200000000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 333,
+      "ChainName": "Ontevm",
+      "GasLimit": 200000000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 5,
+      "ChainName": "NEO",
+      "GasLimit": 5000000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 79,
+      "ChainName": "BSC",
+      "GasLimit": 270000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 7,
+      "ChainName": "HECO",
+      "GasLimit": 270000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 200,
+      "ChainName": "OK",
+      "GasLimit": 270000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 88,
+      "ChainName": "NEO3",
+      "GasLimit": 5000000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 202,
+      "ChainName": "MATIC",
+      "GasLimit": 300000,
+      "ProxyFee": 120,
+      "MinFee": 10
+    },
+    {
+      "ChainId": 205,
+      "ChainName": "Arbitrum",
+      "GasLimit": 300000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 206,
+      "ChainName": "XDai",
+      "GasLimit": 270000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 210,
+      "ChainName": "Optimistic",
+      "GasLimit": 300000,
+      "EthL1GasLimit": 33000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 208,
+      "ChainName": "Fantom",
+      "GasLimit": 120000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 209,
+      "ChainName": "Avax",
+      "GasLimit": 60000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 300,
+      "ChainName": "Metis",
+      "GasLimit": 2500000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 316,
+      "ChainName": "Pixie",
+      "GasLimit": 100000,
+      "ProxyFee": 140,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 402,
+      "ChainName": "Rinkeby",
+      "GasLimit": 250000,
+      "ProxyFee": 140,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 400,
+      "ChainName": "Boba",
+      "GasLimit": 300000,
+      "ProxyFee": 140,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 500,
+      "ChainName": "Oasis",
+      "GasLimit": 200000,
+      "ProxyFee": 140,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 318,
+      "ChainName": "Starcoin",
+      "GasLimit": 18000000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 800,
+      "ChainName": "Harmony",
+      "GasLimit": 200000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 603,
+      "ChainName": "HSC",
+      "GasLimit": 270000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 701,
+      "ChainName": "Bytom",
+      "GasLimit": 120000,
+      "ProxyFee": 120,
+      "MinFee": 80
+    },
+    {
+      "ChainId": 900,
+      "ChainName": "KCC",
+      "GasLimit":30000,
+      "ProxyFee":120,
+      "MinFee": 80
+    }
+  ],
+  "LargeTxAmount": 1,
+  "BotConfig": {
+    "DingUrl": "https://oapi.dingtalk.com/robot/send?access_token=0dc57b9126a52dc4e4f9ec9de9420c0a2873eb99b7a201984e59f301c05d907c",
+    "LargeTxDingUrl": "https://oapi.dingtalk.com/robot/send?access_token=4aa227135c250a1b495d1abe2fbf9e3d3deef9554faa5fbd8cfe134aa1f2b6d8",
+    "NodeStatusDingUrl": "https://oapi.dingtalk.com/robot/send?access_token=f2c905ba6b583d9bb41d934231de715aef3fa246bb6d9e8ce1f6650f54bfd9f9",
+    "RelayerAccountStatusDingUrl": "https://oapi.dingtalk.com/robot/send?access_token=05344345c6d567b387893f84086ea31c73d7d31c808bba4af05281f76eaabfb4",
+    "Interval": 20,
+    "ChainNodeStatusCheckInterval": 300,
+    "ChainNodeStatusAlarmInterval": 86400,
+    "TxStuckCountMarkChainUnhealthy": 10,
+    "AllNodesUnavailableAlarmTime": 1800,
+    "AllNodesNoGrowthAlarmTime": 1800,
+    "AllNodesUnavailableTimeMarkChainUnhealthy": 3600,
+    "AllNodesNoGrowthTimeMarkChainUnhealthy": 3600,
+    "BaseUrl": "https://explorer.poly.network/testnet/",
+    "DetailUrl": "api/v1/bot?page_size=100",
+    "FinishUrl": "api/v1/botfinishtx?",
+    "MarkAsPaidUrl": "api/v1/botmarkunmarktxaspaid?",
+    "TxUrl": "tx/",
+    "ListLargeTxUrl": "api/v1/botlistlargetx?",
+    "ListNodeStatusUrl": "api/v1/botlistnodestatus?",
+    "IgnoreNodeStatusAlarmUrl": "api/v1/botignorenodestatusalarm?",
+    "ApiToken": "njnfsd7fswf75fsfbw6f7w",
+    "CheckFrom": 3,
+    "ListRelayerAccountStatusUrl": "api/v1/botlistrelayeraccountstatus?"
+  },
+  "RelayUrl": "http://10.203.0.28:6501",
+  "NftConfig": {
+    "Description": "Description",
+    "ExternalUrl": "ExternalUrl",
+    "Image": "Image",
+    "Name0": "City_of_Lights",
+    "Name1": "Data_Frigate",
+    "IpfsUrl": "ipfs://QmbqZCQyR98LshWAPVysyStwUopP17fBfwYbTnErGSDGUN/",
+    "Pwd": "0xd3c0196b81dba3c2811c0a39536e4dc47d640e3099a9331821d40fd1d6ab66fb"
+  }
+}

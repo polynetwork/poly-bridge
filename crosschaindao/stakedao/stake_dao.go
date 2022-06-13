@@ -126,3 +126,7 @@ func (dao *StakeDao) RemoveTokens(tokens []string) error {
 func (dao *StakeDao) Name() string {
 	return basedef.SERVER_STAKE
 }
+
+func (dao *StakeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error {
+	return nil
+}

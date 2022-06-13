@@ -40,15 +40,16 @@ type CrossChainDao interface {
 	RemoveTokens(tokens []string) error
 	RemoveTokenMaps(tokenMaps []*models.TokenMap) error
 	Name() string
+	WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error
 }
 
-func NewCrossChainDao(server string, backup bool, dbCfg *conf.DBConfig) CrossChainDao {
+func NewCrossChainDao(server string, backup bool, Cfg *conf.Config) CrossChainDao {
 	if server == basedef.SERVER_POLY_SWAP {
-		return swapdao.NewSwapDao(dbCfg, backup)
+		return swapdao.NewSwapDao(Cfg.DBConfig, backup)
 	} else if server == basedef.SERVER_POLY_BRIDGE {
-		return bridgedao.NewBridgeDao(dbCfg, backup)
+		return bridgedao.NewBridgeDao(Cfg, backup)
 	} else if server == basedef.SERVER_EXPLORER {
-		return explorerdao.NewExplorerDao(dbCfg, backup)
+		return explorerdao.NewExplorerDao(Cfg.DBConfig, backup)
 	} else if server == basedef.SERVER_STAKE {
 		return stakedao.NewStakeDao()
 	} else {
