@@ -40,15 +40,30 @@ type CrossChainDao interface {
 	RemoveTokens(tokens []string) error
 	RemoveTokenMaps(tokenMaps []*models.TokenMap) error
 	Name() string
+	WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error
 }
 
-func NewCrossChainDao(server string, backup bool, dbCfg *conf.DBConfig) CrossChainDao {
+func NewCrossChainDao(server string, backup bool, dbConfig *conf.DBConfig) CrossChainDao {
 	if server == basedef.SERVER_POLY_SWAP {
-		return swapdao.NewSwapDao(dbCfg, backup)
+		return swapdao.NewSwapDao(dbConfig, backup)
 	} else if server == basedef.SERVER_POLY_BRIDGE {
-		return bridgedao.NewBridgeDao(dbCfg, backup)
+		return bridgedao.NewBridgeDao(dbConfig, backup)
 	} else if server == basedef.SERVER_EXPLORER {
-		return explorerdao.NewExplorerDao(dbCfg, backup)
+		return explorerdao.NewExplorerDao(dbConfig, backup)
+	} else if server == basedef.SERVER_STAKE {
+		return stakedao.NewStakeDao()
+	} else {
+		return nil
+	}
+}
+
+func NewCrossChainDaoWithCheckFeeConfig(server string, backup bool, dbConfig *conf.DBConfig, chainListenConfig []*conf.ChainListenConfig, feeListenConfig []*conf.FeeListenConfig) CrossChainDao {
+	if server == basedef.SERVER_POLY_SWAP {
+		return swapdao.NewSwapDao(dbConfig, backup)
+	} else if server == basedef.SERVER_POLY_BRIDGE {
+		return bridgedao.NewBridgeDaoCheckFee(dbConfig, chainListenConfig, feeListenConfig, backup)
+	} else if server == basedef.SERVER_EXPLORER {
+		return explorerdao.NewExplorerDao(dbConfig, backup)
 	} else if server == basedef.SERVER_STAKE {
 		return stakedao.NewStakeDao()
 	} else {
