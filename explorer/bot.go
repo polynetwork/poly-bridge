@@ -97,7 +97,7 @@ func (c *BotController) BotPage() {
 				}
 				botTx := models.ParseBotTx(entry, fees)
 				rows[i] = fmt.Sprintf(
-					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 13)),
+					fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%v</td>", 14)),
 					botTx.Asset,
 					botTx.Amount,
 					botTx.SrcChainName,
@@ -111,6 +111,7 @@ func (c *BotController) BotPage() {
 					botTx.Time,
 					botTx.Duration,
 					botTx.PolyHash,
+					botTx.ProxyProject,
 				)
 
 			}
@@ -138,6 +139,7 @@ func (c *BotController) BotPage() {
 							<th>Time</th>
 							<th>Duration</th>
 							<th>PolyHash</th>
+							<th>ProxyProject</th>
 						</tr>
 						%s
 						</table>
@@ -495,7 +497,7 @@ func (c *BotController) checkTxs() (err error) {
 
 		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
 		body := fmt.Sprintf(
-			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v\n- Poly %v\n",
+			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v\n- Poly %v\n- ProxyProject %v\n",
 			title,
 			entry.Amount,
 			entry.Time,
@@ -505,6 +507,7 @@ func (c *BotController) checkTxs() (err error) {
 			entry.FeeMin,
 			entry.Hash,
 			entry.PolyHash,
+			entry.ProxyProject,
 		)
 
 		baseUrl := conf.GlobalConfig.BotConfig.BaseUrl

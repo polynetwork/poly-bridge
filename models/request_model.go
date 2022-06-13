@@ -22,7 +22,9 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/conf"
 	"poly-bridge/utils/decimal"
+	"strings"
 	"time"
 )
 
@@ -1326,6 +1328,7 @@ type BotTx struct {
 	FeePaid      float64
 	FeeMin       float64
 	FeePass      string
+	ProxyProject string
 }
 
 func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
@@ -1353,6 +1356,12 @@ func ParseBotTx(tx *SrcPolyDstRelation, fees map[string]CheckFeeResult) BotTx {
 		tsp := time.Unix(int64(s.Time), 0)
 		v.Time = tsp.Format(time.RFC3339)
 		v.Duration = time.Now().Sub(tsp).String()
+	}
+	v.ProxyProject = "POLY"
+	if s := tx.SrcTransaction; s != nil {
+		if _, in := conf.EstimateProxy[strings.ToUpper(s.Contract)]; in {
+			v.ProxyProject = "O3V2"
+		}
 	}
 	if fee, ok := fees[v.Hash]; ok {
 		v.FeePaid = fee.Paid
