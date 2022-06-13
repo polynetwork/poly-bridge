@@ -96,9 +96,13 @@ func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandl
 		return err
 	}
 	if save {
+		err = dao.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
+		if err != nil {
+			return err
+		}
 		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 		if err != nil {
-			return nil
+			return err
 		}
 	}
 	fmt.Printf(
@@ -132,7 +136,7 @@ func fetchBlock(config *conf.Config) {
 		panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
 	}
 
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDaoWithCheckFeeConfig(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig, config.ChainListenConfig, config.FeeListenConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}

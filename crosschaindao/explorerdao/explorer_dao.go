@@ -404,6 +404,9 @@ func (dao *ExplorerDao) GetTokenBasicByHash(chainId uint64, hash string) (*model
 func (dao *ExplorerDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
 	return nil, nil
 }
+func (dao *ExplorerDao) WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error {
+	return nil
+}
 
 func (dao *ExplorerDao) Name() string {
 	return basedef.SERVER_EXPLORER
@@ -420,7 +423,7 @@ type AssetStatistic struct {
 	TokenBasicName string
 }
 type ChainInfo struct {
-	Id    uint64 `gorm:"column:id"`
-	Txin  int64  `gorm:"column:txin"`
+	Id   uint64 `gorm:"column:id"`
+	Txin int64  `gorm:"column:txin"`
 	Txout int64  `gorm:"column:txout"`
 }
