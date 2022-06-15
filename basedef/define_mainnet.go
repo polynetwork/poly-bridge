@@ -50,7 +50,7 @@ const (
 	KCC_CROSSCHAIN_ID        = uint64(30)
 	STARCOIN_CROSSCHAIN_ID   = uint64(31)
 	KAVA_CROSSCHAIN_ID       = uint64(32)
-	CUBE_CROSSCHAIN_ID       = uint64(1000003)
+	CUBE_CROSSCHAIN_ID       = uint64(35)
 
 	ENV = "mainnet"
 )
