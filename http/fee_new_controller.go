@@ -67,12 +67,6 @@ func (c *FeeController) NewCheckFee() {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	for k, v := range mapCheckFeesReq {
-		//check db
-		if v.WrapperTransactionWithToken.IsPaid == true {
-			logs.Info("check fee poly_hash %s marked as paid in db", k)
-			v.Status = PAID
-			continue
-		}
 		//check fee from cache（special case）
 		if v.SrcTransaction != nil {
 			exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsPaidPrefix + v.SrcTransaction.Hash)
@@ -98,6 +92,13 @@ func (c *FeeController) NewCheckFee() {
 				continue
 			}
 		} else {
+			//check db
+			logs.Info("check if fee poly_hash %s marked paid in db", k)
+			if v.WrapperTransactionWithToken.IsPaid == true {
+				logs.Info("check fee poly_hash %s marked as paid in db", k)
+				v.Status = PAID
+				continue
+			}
 			chainFee, ok := chain2Fees[v.WrapperTransactionWithToken.DstChainId]
 			if !ok {
 				v.Status = NOT_PAID
@@ -148,7 +149,10 @@ func (c *FeeController) NewCheckFee() {
 					PaidGasFloat64, _ := PaidGasDecimal.Float64()
 					PaidGasDb := big.NewFloat(PaidGasFloat64)
 					if PaidGasDb.Cmp(gasPay) > 0 {
+						logs.Info("paid gas in db larger", "gasdb", PaidGasDb, "gascal", gasPay)
 						v.PaidGas = PaidGasFloat64
+					} else {
+						logs.Info("paid gas in db smaller", "gasdb", PaidGasDb, "gascal", gasPay)
 					}
 				}
 				logs.Info("check fee poly_hash %s is EstimateProxy,PaidGas %v", k, v.PaidGas)
@@ -209,11 +213,12 @@ func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction
 //checkFeewrapperTransaction fetch wrapper transaction record from db
 func checkFeewrapperTransaction(srcHashs []string, mapCheckFeesReq map[string]*models.CheckFeeRequest) {
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Table("wrapper_transactions").Where("hash in ?", srcHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Debug().Table("wrapper_transactions").Where("hash in ?", srcHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	for _, v := range mapCheckFeesReq {
 		for _, wrapper := range wrapperTransactionWithTokens {
 			if v.SrcTransaction != nil && v.SrcTransaction.Hash == wrapper.Hash {
 				v.WrapperTransactionWithToken = wrapper
+				fmt.Println(wrapper)
 				break
 			}
 		}

@@ -670,6 +670,11 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 	var curSrcTransaction *models.SrcTransaction
 	var feePayFloat64, feeMinFloat64, PaidGasFloat64 float64
 	for k, v := range wrapperTransactions {
+		wrapperTx := new(models.WrapperTransaction)
+		res := dao.db.Where("hash = ?").First(wrapperTx)
+		if res.RowsAffected != 0 {
+			continue
+		}
 		for _, srcTransaction := range srcTransactions {
 			if srcTransaction.Hash == v.Hash {
 				curSrcTransaction = srcTransaction
@@ -687,7 +692,6 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 		}
 		//money paid in wrapper
 		feePay, feeMin, gasPay := fee.CheckFeeCal(chainFee, token, v.FeeAmount)
-		fmt.Println("cd ..", feePay, feeMin)
 		// get optimistic L1 fee on ethereum
 		if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
 			ethChainFee, ok := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
