@@ -169,7 +169,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 		c.ServeJSON()
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
 		Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses)).
 		Where("src_transactions.standard = ?", 0).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
@@ -190,7 +190,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations)
 	var transactionNum int64
-	db.Model(&models.SrcTransfer{}).Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).Count(&transactionNum)
+	db.Model(&models.SrcTransfer{}).Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).Count(&transactionNum)
 	chains := make([]*models.Chain, 0)
 	db.Model(&models.Chain{}).Find(&chains)
 	chainsMap := make(map[uint64]*models.Chain)
