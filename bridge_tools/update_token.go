@@ -18,14 +18,17 @@
 package main
 
 import (
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"poly-bridge/bridge_tools/conf"
+	"poly-bridge/cacheRedis"
 	serverconf "poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
 	"strings"
+	"time"
 )
 
 func startUpdateToken(cfg *conf.DeployConfig, servercfg *serverconf.Config) {
@@ -63,4 +66,20 @@ func startUpdateToken(cfg *conf.DeployConfig, servercfg *serverconf.Config) {
 	}
 	dao.AddTokens(cfg.TokenBasics, cfg.TokenMaps, servercfg)
 	dao.AddChains(cfg.Chains, cfg.ChainFees)
+}
+
+func SetDyingToken(tokenBasicName string, proxyFee int) {
+	if ok, err := cacheRedis.Redis.Set(cacheRedis.MarkTokenAsDying+tokenBasicName, proxyFee, 24*time.Hour); err == nil && ok {
+		fmt.Printf("set dying token successfully, %v : %v", tokenBasicName, proxyFee)
+	} else {
+		panic(err)
+	}
+}
+
+func RemoveDyingToken(tokenBasicName string) {
+	if _, err := cacheRedis.Redis.Del(cacheRedis.MarkTokenAsDying + tokenBasicName); err == nil {
+		fmt.Printf("remove dying token successfully, %v ", tokenBasicName)
+	} else {
+		panic(err)
+	}
 }

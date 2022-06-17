@@ -37,6 +37,11 @@ type FeeController struct {
 	web.Controller
 }
 
+var (
+	riskyCoinRankThreshold int
+	riskyCoinRisingRate    *big.Float
+)
+
 var dstLockProxyMap = make(map[string]string, 0)
 
 func (c *FeeController) GetFee() {
@@ -70,7 +75,24 @@ func (c *FeeController) GetFee() {
 		c.ServeJSON()
 		return
 	}
+	//check if rank of src token is risky, if so, change the proxyFee value
 	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
+	//check if any coin marked as dying in redis
+	if exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTokenAsDying + token.TokenBasicName); exists {
+		logs.Info("this token is dying", token.TokenBasicName)
+		if val, err := cacheRedis.Redis.Get(cacheRedis.MarkTokenAsDying + token.TokenBasicName); err == nil {
+			manualRatio, ok := big.NewFloat(0.0).SetString(val)
+			if ok {
+				proxyFee.Mul(proxyFee, manualRatio)
+			} else {
+				logs.Error("get dying token manualRatio fail, tokenbasicname: %s", token.TokenBasicName)
+			}
+		}
+	} else {
+		if token.TokenBasic.Rank > riskyCoinRankThreshold {
+			proxyFee.Mul(proxyFee, riskyCoinRisingRate)
+		}
+	}
 	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 	usdtFee := new(big.Float).Mul(proxyFee, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
@@ -656,4 +678,14 @@ func (c *FeeController) CheckSwapFee(Checks []*models.CheckFeeReq) []*models.Che
 		checkFees = append(checkFees, checkFee)
 	}
 	return checkFees
+}
+
+func SetCoinRankFilterInfo(RiskyCoinHandleConfig *conf.RiskyCoinHandleConfig) {
+	if RiskyCoinHandleConfig == nil {
+		riskyCoinRisingRate = big.NewFloat(1)
+		riskyCoinRankThreshold = 100
+	} else {
+		riskyCoinRankThreshold = RiskyCoinHandleConfig.RiskyCoinRankThreshold
+		riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate) / 100)
+	}
 }

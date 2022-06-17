@@ -61,7 +61,7 @@ func StopCoinPriceListen() {
 }
 
 type PriceMarket interface {
-	GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error)
+	GetCoinPriceAndRank(coins []models.NameAndmarketId) (map[string]float64, map[string]int, error)
 	GetMarketName() string
 }
 
@@ -218,7 +218,7 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 			logs.Error("there is no coins of market: %s", market)
 			continue
 		}
-		coinPrices, err := query.GetCoinPrice(coins)
+		coinPrices, coinRanks, err := query.GetCoinPriceAndRank(coins)
 		if err != nil {
 			logs.Error("get coin price of market: %s err: %v", market, err)
 			continue
@@ -231,25 +231,32 @@ func (cpl *CoinPriceListen) updateCoinPrice(tokenBasics []*models.TokenBasic) er
 				continue
 			}
 			price, _ := new(big.Float).Mul(big.NewFloat(price), big.NewFloat(float64(basedef.PRICE_PRECISION))).Int64()
+			rank := coinRanks[name]
 			for _, tokenPrice := range tokenPrices {
 				tokenPrice.Price = price
 				tokenPrice.Time = time.Now().Unix()
 				tokenPrice.Ind = 1
+				tokenPrice.Rank = rank
 			}
 		}
 	}
 	for _, tokenBasic := range tokenBasics {
 		price := int64(0)
+		rank := 0
 		counter := int64(0)
 		for _, tokenPrice := range tokenBasic.PriceMarkets {
 			if tokenPrice.Ind == 1 {
 				price += tokenPrice.Price
 				counter++
 			}
+			if tokenPrice.Rank != 0 {
+				rank = tokenPrice.Rank
+			}
 		}
 		if counter > 0 {
 			price = price / counter
 			tokenBasic.Price = price
+			tokenBasic.Rank = rank
 			tokenBasic.Ind = 1
 			tokenBasic.Time = time.Now().Unix()
 		}

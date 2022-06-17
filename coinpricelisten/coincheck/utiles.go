@@ -86,15 +86,16 @@ func (c *CoincheckSdk) GetMarketName() string {
 	return basedef.MARKET_COINCHECK
 }
 
-func (c *CoincheckSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
+func (c *CoincheckSdk) GetCoinPriceAndRank(coins []models.NameAndmarketId) (map[string]float64, map[string]int, error) {
 	rates, err := c.QuotesLatest()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var (
 		supportedCoinsMap = make(map[string]struct{}, 0)
 		coinPrice         = make(map[string]float64, 0)
+		coinRink          = make(map[string]int, 0)
 		typeOfRates       = reflect.TypeOf(rates.Jpy)
 		valueOfRate       = reflect.ValueOf(rates.Jpy)
 		usdJpyRate        = big.NewFloat(rates.Jpy.USD)
@@ -111,6 +112,7 @@ func (c *CoincheckSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]
 		}
 		coinJpyRate := valueOfRate.FieldByName(coin.PriceMarketName).Float()
 		coinPrice[coin.PriceMarketName], _ = new(big.Float).Quo(big.NewFloat(coinJpyRate), usdJpyRate).Float64()
+		coinRink[coin.PriceMarketName] = 0
 	}
-	return coinPrice, nil
+	return coinPrice, coinRink, nil
 }

@@ -19,9 +19,11 @@ package http
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"poly-bridge/conf"
 )
 
-func GetRouter() web.LinkNamespace {
+func GetRouter(config *conf.Config) web.LinkNamespace {
+	SetCoinRankFilterInfo(config.RiskyCoinHandleConfig)
 	ns := web.NSNamespace("/bridge",
 		web.NSRouter("/", &InfoController{}, "*:Get"),
 		web.NSRouter("/token/", &TokenController{}, "post:Token"),
