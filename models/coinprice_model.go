@@ -45,6 +45,7 @@ type TokenBasic struct {
 	SocialWebsite   string         `gorm:"type:varchar(256)"`
 	SocialOther     string         `gorm:"type:varchar(256)"`
 	MetaFetcherType int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: unknown 0, opensea: 1, standard: 2,
+	Rank            int            `gorm:"type:int(8);not null"`
 	PriceMarkets    []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
 	Tokens          []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
@@ -58,6 +59,7 @@ type PriceMarket struct {
 	Price          int64       `gorm:"type:bigint(20);not null"`
 	Ind            uint64      `gorm:"type:bigint(20);not null"`
 	Time           int64       `gorm:"type:bigint(20);not null"`
+	Rank           int         `gorm:"type:int(8);not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 

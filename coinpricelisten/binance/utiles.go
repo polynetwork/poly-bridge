@@ -98,16 +98,17 @@ func (sdk *BinanceSdk) GetMarketName() string {
 	return basedef.MARKET_BINANCE
 }
 
-func (this *BinanceSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
+func (this *BinanceSdk) GetCoinPriceAndRank(coins []models.NameAndmarketId) (map[string]float64, map[string]int, error) {
 	quotes, err := this.QuotesLatest()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	coinSymbol2Price := make(map[string]float64, 0)
 	for _, v := range quotes {
 		coinSymbol2Price[v.Symbol] = v.Price
 	}
 	coinPrice := make(map[string]float64, 0)
+	coinRank := make(map[string]int, 0)
 	for _, coin := range coins {
 		price, ok := coinSymbol2Price[coin.PriceMarketName]
 		if !ok {
@@ -115,6 +116,7 @@ func (this *BinanceSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string
 			continue
 		}
 		coinPrice[coin.PriceMarketName] = price
+		coinRank[coin.PriceMarketName] = 0
 	}
-	return coinPrice, nil
+	return coinPrice, coinRank, nil
 }
