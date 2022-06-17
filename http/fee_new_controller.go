@@ -9,6 +9,7 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/utils/decimal"
 	"poly-bridge/utils/fee"
 	"strings"
 )
@@ -58,6 +59,7 @@ func (c *FeeController) NewCheckFee() {
 		srcHashs = append(srcHashs, srcTransaction.Hash)
 	}
 	checkFeewrapperTransaction(srcHashs, mapCheckFeesReq)
+	//get chain fee
 	chainFees := make([]*models.ChainFee, 0)
 	db.Preload("TokenBasic").Find(&chainFees)
 	chain2Fees := make(map[uint64]*models.ChainFee, 0)
@@ -65,6 +67,7 @@ func (c *FeeController) NewCheckFee() {
 		chain2Fees[chainFee.ChainId] = chainFee
 	}
 	for k, v := range mapCheckFeesReq {
+		//check fee from cache（special case）
 		if v.SrcTransaction != nil {
 			exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTxAsPaidPrefix + v.SrcTransaction.Hash)
 			if exists {
@@ -73,7 +76,6 @@ func (c *FeeController) NewCheckFee() {
 				continue
 			}
 		}
-
 		if v.WrapperTransactionWithToken == nil {
 			if v.SrcTransaction != nil {
 				//has src_transaction but not wrapper_transaction
@@ -90,23 +92,20 @@ func (c *FeeController) NewCheckFee() {
 				continue
 			}
 		} else {
+			//check db
+			if v.WrapperTransactionWithToken.IsPaid == true {
+				logs.Info("check fee poly_hash %s marked as paid in db", k)
+				v.Status = PAID
+				continue
+			}
 			chainFee, ok := chain2Fees[v.WrapperTransactionWithToken.DstChainId]
 			if !ok {
 				v.Status = NOT_PAID
 				logs.Info("check fee poly_hash %s NOT_PAID,chainFee hasn't DstChainId's fee", k)
 				continue
 			}
-			x := new(big.Int).Mul(&v.WrapperTransactionWithToken.FeeAmount.Int, big.NewInt(v.WrapperTransactionWithToken.FeeToken.TokenBasic.Price))
-			feePay := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(v.WrapperTransactionWithToken.FeeToken.Precision))))
-			gasPay := feePay
-			feePay = new(big.Float).Quo(feePay, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
-			x = new(big.Int).Mul(&chainFee.MinFee.Int, big.NewInt(chainFee.TokenBasic.Price))
-			feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
-			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
-			feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
-
-			gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
-			gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+			//money paid in wrapper
+			feePay, feeMin, gasPay := fee.CheckFeeCal(chainFee, v.WrapperTransactionWithToken.FeeToken, v.WrapperTransactionWithToken.FeeAmount)
 
 			// get optimistic L1 fee on ethereum
 			if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
@@ -126,20 +125,8 @@ func (c *FeeController) NewCheckFee() {
 				feeMin = new(big.Float).Add(feeMin, L1MinFee)
 			}
 
-			FluctuatingFeeMin := feeMin
-			excludeChainIds := map[uint64]interface{}{basedef.BSC_CROSSCHAIN_ID: nil, basedef.ARBITRUM_CROSSCHAIN_ID: nil, basedef.ETHEREUM_CROSSCHAIN_ID: nil, basedef.OPTIMISTIC_CROSSCHAIN_ID: nil}
-			polyTx := new(models.PolyTransaction)
-			res := db.Model(&models.PolyTransaction{}).
-				Where("hash =?", v.PolyHash).First(polyTx)
-			if res.Error == nil {
-				if _, ok := excludeChainIds[polyTx.DstChainId]; !ok {
-					FluctuatingFeeMin = new(big.Float).Mul(FluctuatingFeeMin, new(big.Float).SetFloat64(0.9))
-					gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetFloat64(0.9))
-				}
-			}
-
 			v.Paid, _ = feePay.Float64()
-			v.Min, _ = FluctuatingFeeMin.Float64()
+			v.Min, _ = feeMin.Float64()
 
 			if _, in := conf.EstimateProxy[strings.ToUpper(v.SrcTransaction.Contract)]; in {
 				//is estimateGas proxy
@@ -154,7 +141,19 @@ func (c *FeeController) NewCheckFee() {
 						gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(minFee))
 					}
 				}
+				//compare current result with gasPay in db
 				v.PaidGas, _ = gasPay.Float64()
+				if v.WrapperTransactionWithToken.PaidGas != nil {
+					PaidGasDecimal := decimal.NewFromBigInt(&v.WrapperTransactionWithToken.PaidGas.Int, 0).Div(decimal.NewFromInt(100))
+					PaidGasFloat64, _ := PaidGasDecimal.Float64()
+					PaidGasDb := big.NewFloat(PaidGasFloat64)
+					if PaidGasDb.Cmp(gasPay) > 0 {
+						logs.Info("paid gas in db larger", "gasdb", PaidGasDb, "gascal", gasPay)
+						v.PaidGas = PaidGasFloat64
+					} else {
+						logs.Info("paid gas in db smaller", "gasdb", PaidGasDb, "gascal", gasPay)
+					}
+				}
 				logs.Info("check fee poly_hash %s is EstimateProxy,PaidGas %v", k, v.PaidGas)
 				continue
 			}
@@ -162,9 +161,6 @@ func (c *FeeController) NewCheckFee() {
 			if feePay.Cmp(feeMin) >= 0 {
 				v.Status = PAID
 				logs.Info("check fee poly_hash %s PAID,feePay %v >= feeMin %v", k, v.Paid, v.Min)
-			} else if feePay.Cmp(FluctuatingFeeMin) >= 0 {
-				v.Status = PAID
-				logs.Info("check fee poly_hash %s PAID,feePay %v >= FluctuatingFeeMin %v", k, v.Paid, v.Min)
 			} else {
 				v.Status = NOT_PAID
 				logs.Info("check fee poly_hash %s NOT_PAID,feePay %v < FluctuatingFeeMin %v", k, v.Paid, v.Min)
@@ -176,6 +172,7 @@ func (c *FeeController) NewCheckFee() {
 	return
 }
 
+//checkFeeSrcTransaction fetch src transaction record from db by chain ID and txId
 func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction, error) {
 	transaction := new(models.SrcTransaction)
 	if strings.Contains(txId, "00000000") {
@@ -200,7 +197,6 @@ func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction
 	if chainId != basedef.O3_CROSSCHAIN_ID {
 		return transaction, nil
 	}
-
 	srcTransaction := new(models.SrcTransaction)
 	res := db.Debug().Table("src_transactions").
 		Joins("inner join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
@@ -213,13 +209,15 @@ func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction
 	return srcTransaction, nil
 }
 
+//checkFeewrapperTransaction fetch wrapper transaction record from db
 func checkFeewrapperTransaction(srcHashs []string, mapCheckFeesReq map[string]*models.CheckFeeRequest) {
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Table("wrapper_transactions").Where("hash in ?", srcHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Debug().Table("wrapper_transactions").Where("hash in ?", srcHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	for _, v := range mapCheckFeesReq {
 		for _, wrapper := range wrapperTransactionWithTokens {
 			if v.SrcTransaction != nil && v.SrcTransaction.Hash == wrapper.Hash {
 				v.WrapperTransactionWithToken = wrapper
+				fmt.Println(wrapper)
 				break
 			}
 		}
