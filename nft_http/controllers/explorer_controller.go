@@ -46,7 +46,13 @@ func (c *ExplorerController) Transactions() {
 	list := make([]*TransactionBriefRsp, 0)
 	for _, v := range relations {
 		tk := selectNFTAsset(v.SrcAsset)
-		data := new(TransactionBriefRsp).instance(tk.TokenBasicName, v)
+		var tokenBasicName string
+		if tk == nil{
+			tokenBasicName = v.SrcAsset
+		} else {
+			tokenBasicName = tk.TokenBasicName
+		}
+		data := new(TransactionBriefRsp).instance(tokenBasicName, v)
 		list = append(list, data)
 	}
 
