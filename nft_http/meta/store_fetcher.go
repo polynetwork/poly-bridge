@@ -119,7 +119,7 @@ func (s *StoreFetcher) BatchFetch(chainId uint64, asset string, reqs []*FetchReq
 	}
 
 	persisted := make([]*models.NFTProfile, 0)
-	s.db.Where("token_basic_name = ? and nft_token_id in (?)", asset, unCacheList).Find(&persisted)
+	s.db.Where("token_basic_name = ? and nft_token_id in (?) and name <> ''", asset, unCacheList).Find(&persisted)
 	for _, v := range persisted {
 		finalList = append(finalList, v)
 		delete(needFetchMap, v.NftTokenId)
@@ -137,7 +137,7 @@ func (s *StoreFetcher) BatchFetch(chainId uint64, asset string, reqs []*FetchReq
 	if err != nil {
 		return nil, err
 	}
-	s.db.Save(profiles)
+	s.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&profiles)
 
 	for _, v := range profiles {
 		finalList = append(finalList, v)
