@@ -103,6 +103,7 @@ type ChainListenConfig struct {
 	CCMContract        string
 	ProxyContract      []string
 	OtherProxyContract []*OtherItemProxy
+	OtherTVLContract   []*OtherItemProxy
 	NFTWrapperContract []string
 	NFTProxyContract   []string
 	NFTQueryContract   string
