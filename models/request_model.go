@@ -334,27 +334,22 @@ type GetFeeRsp struct {
 }
 
 func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float,
-	swapTokenHash string, balance *big.Float, balanceWithoutPrecision *big.Float, isNative bool, nativeTokenAmount *big.Float) *GetFeeRsp {
+	swapTokenHash string, balance *big.Float, balanceWithoutPrecision *big.Float, isNative bool, nativeTokenAmount *big.Float, feeTokenPricison uint64) *GetFeeRsp {
 	getFeeRsp := &GetFeeRsp{
 		SrcChainId:               srcChainId,
 		Hash:                     hash,
 		DstChainId:               dstChainId,
 		UsdtAmount:               fmt.Sprintf("%v", usdtAmount),
 		TokenAmount:              tokenAmount.String(),
-		TokenAmountWithPrecision: fmt.Sprintf("%v", tokenAmountWithPrecision),
+		TokenAmountWithPrecision: fmt.Sprintf("%.*f", 0, tokenAmountWithPrecision),
 		SwapTokenHash:            swapTokenHash,
 		Balance:                  fmt.Sprintf("%v", balanceWithoutPrecision),
 		BalanceWithPrecision:     fmt.Sprintf("%v", balance),
 		IsNative:                 isNative,
 		NativeTokenAmount:        fmt.Sprintf("%v", nativeTokenAmount),
 	}
-	{
-		precision := decimal.NewFromInt(basedef.PRICE_PRECISION)
-		aaa := new(big.Float).Mul(tokenAmount, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
-		bbb, _ := aaa.Float64()
-		ccc := decimal.NewFromFloat(bbb)
-		tokenAmount := ccc.Div(precision)
-		getFeeRsp.TokenAmount = tokenAmount.String()
+	if feeTokenPricison > 0 {
+		getFeeRsp.TokenAmount = fmt.Sprintf("%.*f", feeTokenPricison, tokenAmount)
 	}
 	if getFeeRsp.DstChainId == basedef.BSC_CROSSCHAIN_ID {
 		logs.Info("tobscgetfee srcChain:%v swapTokenHash:%v feeAmount:%v", srcChainId, swapTokenHash, getFeeRsp.TokenAmount)
