@@ -45,6 +45,7 @@ func (c *FeeController) GetFee() {
 		c.ServeJSON()
 		return
 	}
+	feeTokenPricison := token.Precision
 	chainFee := new(models.ChainFee)
 	res = db.Where("chain_id = ?", req.DstChainId).Preload("TokenBasic").First(chainFee)
 	if res.RowsAffected == 0 {
@@ -71,6 +72,6 @@ func (c *FeeController) GetFee() {
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
-	c.Data["json"] = models.MakeGetFeeRsp(req.SrcChainId, req.Hash, req.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision, "", fzero, fzero, false, fzero)
+	c.Data["json"] = models.MakeGetFeeRsp(req.SrcChainId, req.Hash, req.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision, "", fzero, fzero, false, fzero, feeTokenPricison)
 	c.ServeJSON()
 }
