@@ -256,6 +256,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.CUBE_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " CUBE"
+	case basedef.ZKSYNC_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " ETH"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()
