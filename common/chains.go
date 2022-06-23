@@ -45,7 +45,8 @@ var (
 	milkomedaSdk   *chainsdk.EthereumSdkPro
 	kavaSdk        *chainsdk.EthereumSdkPro
 	cubeSdk        *chainsdk.EthereumSdkPro
-	zkSyncSdk     *chainsdk.EthereumSdkPro
+	zkSyncSdk      *chainsdk.EthereumSdkPro
+	celoSdk        *chainsdk.EthereumSdkPro
 	config         *conf.Config
 	sdkMap         map[uint64]interface{}
 )
@@ -359,6 +360,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		zkSyncSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.ZKSYNC_CROSSCHAIN_ID] = zkSyncSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.CELO_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("celo chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		celoSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.CELO_CROSSCHAIN_ID] = celoSdk
 	}
 }
 
@@ -776,6 +786,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.CELO_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CELO_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("celo chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := celoSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -978,6 +1002,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return zkSyncSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.CELO_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CELO_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("celo chain GetTotalSupply invalid")
+		}
+		return celoSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -1047,6 +1078,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return cubeSdk.Erc20Balance(hash, proxy)
 	case basedef.ZKSYNC_CROSSCHAIN_ID:
 		return zkSyncSdk.Erc20Balance(hash, proxy)
+	case basedef.CELO_CROSSCHAIN_ID:
+		return celoSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
