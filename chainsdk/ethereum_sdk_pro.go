@@ -189,6 +189,31 @@ func (pro *EthereumSdkPro) GetHeaderByNumber(number uint64) (*types.Header, erro
 	return nil, fmt.Errorf("all node is not working")
 }
 
+func (pro *EthereumSdkPro) GetBlockTimeByNumber(number uint64) (uint64, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return 0, fmt.Errorf("all node is not working")
+	}
+	flag := 0
+	for info != nil {
+		timestamp, err := info.sdk.GetBlockTimeByNumber(pro.id, number)
+		if err != nil {
+			flag++
+			if flag > 3 {
+				logs.Error("GetBlockTimeByNumber_chain:%v,node:%v,eth_getBlockByNumber err %v", pro.id, info.sdk.url, err)
+				flag = 0
+				time.Sleep(time.Second)
+			}
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			flag = 0
+			return timestamp, nil
+		}
+	}
+	return 0, fmt.Errorf("all node is not working")
+}
+
 func (pro *EthereumSdkPro) GetTransactionByHash(hash common.Hash) (*types.Transaction, error) {
 	info := pro.GetLatest()
 	if info == nil {
