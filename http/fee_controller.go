@@ -144,7 +144,7 @@ func (c *FeeController) GetFee() {
 			for _, v := range nativeChainFee.TokenBasic.Tokens {
 				if v.ChainId == getFeeReq.SrcChainId && strings.EqualFold(v.Hash, getFeeReq.SwapTokenHash) {
 					isNative = true
-					nativeFeeAmount := new(big.Float).SetInt(&nativeChainFee.ProxyFee.Int)
+					nativeFeeAmount := new(big.Float).SetInt(&nativeChainFee.MaxFee.Int)
 					nativeFeeAmount = new(big.Float).Quo(nativeFeeAmount, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 					nativeFeeAmount = new(big.Float).Quo(nativeFeeAmount, new(big.Float).SetInt64(basedef.Int64FromFigure(int(nativeChainFee.TokenBasic.Precision))))
 					if getFeeReq.SrcChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
