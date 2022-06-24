@@ -299,3 +299,12 @@ func (r *RedisCache) GetChainTvl(chain uint64) (amount string, err error) {
 	}
 	return resp, nil
 }
+
+func (r *RedisCache) Smember(key string) ([]string, error) {
+	res, err := r.c.SMembers(key).Result()
+	if err != nil {
+		logs.Error("Get key %s err: %s", key, err)
+		return nil, err
+	}
+	return res, nil
+}
