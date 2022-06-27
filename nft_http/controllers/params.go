@@ -373,7 +373,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	s.DstTransaction = new(SideChainRsp)
 	s.PolyTransaction = new(PolyChainRsp)
 
-	s.Transaction.Hash = r.WrapperTransaction.Hash
+	s.Transaction.Hash = basedef.FormatTxHash(r.WrapperTransaction.SrcChainId, r.WrapperTransaction.Hash)
 	s.Transaction.Status = r.WrapperTransaction.Status
 	s.Transaction.BlockHeight = r.WrapperTransaction.BlockHeight
 	s.Transaction.SrcChainId = r.WrapperTransaction.SrcChainId
@@ -386,14 +386,14 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	s.Transaction.DstChainExplorer = models.ChainId2ChainCache(r.WrapperTransaction.DstChainId).ChainExplorerUrl
 	s.Transaction.DstChainLogo = models.ChainId2ChainCache(r.WrapperTransaction.DstChainId).ChainLogo
 	s.Transaction.Time = r.WrapperTransaction.Time
-	s.Transaction.From = r.WrapperTransaction.User
-	s.Transaction.To = r.WrapperTransaction.DstUser
+	s.Transaction.From = basedef.FormatAddr(r.WrapperTransaction.SrcChainId, basedef.Hash2Address(r.WrapperTransaction.SrcChainId, r.WrapperTransaction.User))
+	s.Transaction.To = basedef.FormatAddr(r.WrapperTransaction.DstChainId, basedef.Hash2Address(r.WrapperTransaction.DstChainId, r.WrapperTransaction.DstUser))
 
 	if r.SrcTransaction != nil {
 
 		if r.SrcTransaction.SrcTransfer != nil {
-			s.SrcTransaction.From = r.SrcTransaction.SrcTransfer.From
-			s.SrcTransaction.To = r.SrcTransaction.SrcTransfer.To
+			s.SrcTransaction.From = basedef.FormatAddr(r.SrcTransaction.SrcTransfer.ChainId, basedef.Hash2Address(r.SrcTransaction.SrcTransfer.ChainId, r.SrcTransaction.SrcTransfer.From))
+			s.SrcTransaction.To = basedef.FormatAddr(r.SrcTransaction.SrcTransfer.ChainId, basedef.Hash2Address(r.SrcTransaction.SrcTransfer.ChainId, r.SrcTransaction.SrcTransfer.To))
 
 			s.Transaction.TokenId = r.SrcTransaction.SrcTransfer.Amount.String()
 			token := selectNFTAsset(r.SrcTransaction.SrcTransfer.Asset)
@@ -407,7 +407,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			}
 		}
 
-		s.SrcTransaction.Hash = r.SrcTransaction.Hash
+		s.SrcTransaction.Hash = basedef.FormatTxHash(r.SrcTransaction.ChainId, r.SrcTransaction.Hash)
 		s.SrcTransaction.BlockHeight = r.SrcTransaction.Height
 		s.SrcTransaction.Time = r.SrcTransaction.Time
 		s.SrcTransaction.Status = r.SrcTransaction.State
@@ -424,8 +424,8 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	if r.DstTransaction != nil {
 		if r.DstTransaction.DstTransfer != nil {
 
-			s.DstTransaction.From = r.DstTransaction.DstTransfer.From
-			s.DstTransaction.To = r.DstTransaction.DstTransfer.To
+			s.DstTransaction.From = basedef.FormatAddr(r.DstTransaction.DstTransfer.ChainId, basedef.Hash2Address(r.DstTransaction.DstTransfer.ChainId, r.DstTransaction.DstTransfer.From))
+			s.DstTransaction.To = basedef.FormatAddr(r.DstTransaction.DstTransfer.ChainId, basedef.Hash2Address(r.DstTransaction.DstTransfer.ChainId, r.DstTransaction.DstTransfer.To))
 
 			token := selectNFTAsset(r.DstTransaction.DstTransfer.Asset)
 			if token != nil {
@@ -438,7 +438,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 			}
 		}
 
-		s.DstTransaction.Hash = r.DstTransaction.Hash
+		s.DstTransaction.Hash = basedef.FormatTxHash(r.DstTransaction.ChainId, r.DstTransaction.Hash)
 		s.DstTransaction.BlockHeight = r.DstTransaction.Height
 		s.DstTransaction.Time = r.DstTransaction.Time
 		s.DstTransaction.Status = r.DstTransaction.State
