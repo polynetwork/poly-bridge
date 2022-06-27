@@ -298,3 +298,12 @@ func (c *DefiLlamaController) GetTVLZkSync() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+
+func (c *DefiLlamaController) GetTVLCelo() {
+	tvlAmount, err := getTVLAmount(basedef.CELO_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLCube err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
