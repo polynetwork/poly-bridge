@@ -56,8 +56,8 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/getTVLStarcoin/", &DefiLlamaController{}, "get:GetTVLStarcoin"),
 		web.NSRouter("/getTVLKava/", &DefiLlamaController{}, "get:GetTVLKava"),
 		web.NSRouter("/getRelayerWalletRefillTransactionRecord/", &RelayerWalletManagementController{}, "get:ListRelayerRefillTransactionRecord"),
-		//	web.NSRouter("/getTVLCube/", &DefiLlamaController{}, "get:GetTVLCube"),
-
+		web.NSRouter("/getTVLCube/", &DefiLlamaController{}, "get:GetTVLCube"),
+		web.NSRouter("/getTVLZkSync/", &DefiLlamaController{}, "get:GetTVLZkSync"),
 	)
 	return ns
 }
