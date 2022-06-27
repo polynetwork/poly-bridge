@@ -341,7 +341,7 @@ func FormatAddr(chain uint64, addr string) string {
 
 func FormatTxHash(chain uint64, hash string) string {
 	switch chain {
-	case ONT_CROSSCHAIN_ID, SWITCHEO_CROSSCHAIN_ID:
+	case ONT_CROSSCHAIN_ID:
 		return hash
 	case SWITCHEO_CROSSCHAIN_ID:
 		return strings.ToUpper(hash)
