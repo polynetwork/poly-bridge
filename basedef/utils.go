@@ -296,3 +296,33 @@ func GetChainName(id uint64) string {
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
 }
+
+func FormatAddr(chain uint64, addr string) string {
+	switch chain {
+	case ONT_CROSSCHAIN_ID, SWITCHEO_CROSSCHAIN_ID, ZILLIQA_CROSSCHAIN_ID, NEO_CROSSCHAIN_ID, NEO3_CROSSCHAIN_ID:
+		return addr
+	case STARCOIN_CROSSCHAIN_ID:
+		if Has0xPrefix(addr) {
+			addr = addr[2:]
+		}
+		return "0x" + addr
+	default:
+		return common.HexToAddress(addr).String()
+	}
+}
+
+func FormatTxHash(chain uint64, hash string) string {
+	switch chain {
+	case ONT_CROSSCHAIN_ID, SWITCHEO_CROSSCHAIN_ID:
+		return hash
+	case SWITCHEO_CROSSCHAIN_ID:
+		return strings.ToUpper(hash)
+	default:
+		return common.HexToHash(hash).String()
+	}
+}
+
+// Has0xPrefix validates str begins with '0x' or '0X'.
+func Has0xPrefix(str string) bool {
+	return len(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')
+}
