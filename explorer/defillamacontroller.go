@@ -307,3 +307,12 @@ func (c *DefiLlamaController) GetTVLCelo() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+
+func (c *DefiLlamaController) GetTVLClover() {
+	tvlAmount, err := getTVLAmount(basedef.CLOVER_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLCube err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
