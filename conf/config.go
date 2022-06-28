@@ -272,7 +272,10 @@ type IPPortConfig struct {
 	USDTIP string
 	DingIP string
 }
-
+type RiskyCoinHandleConfig struct {
+	RiskyCoinRankThreshold int
+	RiskyCoinRisingRate    int64
+}
 type Config struct {
 	Server                string
 	Env                   string
@@ -287,6 +290,7 @@ type Config struct {
 	CoinPriceUpdateSlot   int64
 	CoinPriceListenConfig []*CoinPriceListenConfig
 	FeeUpdateSlot         int64
+	RiskyCoinHandleConfig *RiskyCoinHandleConfig
 	FeeListenConfig       []*FeeListenConfig
 	EventEffectConfig     *EventEffectConfig
 	StatsConfig           *StatsConfig

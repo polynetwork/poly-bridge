@@ -22,6 +22,7 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"poly-bridge/bridge_tools/conf"
+	"poly-bridge/cacheRedis"
 	serverconf "poly-bridge/conf"
 	"runtime"
 	"strings"
@@ -62,6 +63,16 @@ var (
 		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:update bridge 5:update transactions",
 		Value: 2,
 	}
+	dyingTokensFlag = cli.StringFlag{
+		Name:  "tokenbasicname",
+		Usage: "marked a token as dying by tokenbasicname",
+		Value: "",
+	}
+	dyingTokensRisingRateFlag = cli.IntFlag{
+		Name:  "proxyfee",
+		Usage: "ratio for dying token",
+		Value: 500,
+	}
 )
 
 //getFlagName deal with short flag, and return the flag name whether flag name have short name
@@ -86,6 +97,8 @@ func setupApp() *cli.App {
 		logDirFlag,
 		cmdFlag,
 		methodFlag,
+		dyingTokensFlag,
+		dyingTokensRisingRateFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -154,6 +167,35 @@ func startServer(ctx *cli.Context) {
 		startTransactions(config)
 	} else if cmd == 6 {
 		merge()
+	} else if cmd == 7 {
+		configServerFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverConfig := serverconf.NewConfig(configServerFile)
+		if serverConfig == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		cacheRedis.Init()
+		tokenBasicName := ctx.GlobalString(getFlagName(dyingTokensFlag))
+		if tokenBasicName == "" {
+			fmt.Printf("please input token name")
+			return
+		}
+		dyingTokensRisingRate := ctx.GlobalInt(getFlagName(dyingTokensRisingRateFlag))
+		SetDyingToken(tokenBasicName, dyingTokensRisingRate)
+	} else if cmd == 8 {
+		configServerFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverConfig := serverconf.NewConfig(configServerFile)
+		if serverConfig == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		cacheRedis.Init()
+		tokenBasicName := ctx.GlobalString(getFlagName(dyingTokensFlag))
+		if tokenBasicName == "" {
+			fmt.Printf("please input token name")
+			return
+		}
+		RemoveDyingToken(tokenBasicName)
 	}
 }
 

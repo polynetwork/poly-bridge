@@ -65,12 +65,13 @@ func (sdk *HuobiSdk) GetMarketName() string {
 	return basedef.MARKET_HUOBI
 }
 
-func (this *HuobiSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
+func (this *HuobiSdk) GetCoinPriceAndRank(coins []models.NameAndmarketId) (map[string]float64, map[string]int, error) {
 	coinPrice := make(map[string]float64, 0)
+	coinRank := make(map[string]int, 0)
 	for _, coin := range coins {
 		resp, err := this.quotesLatest(coin.PriceMarketName, 0)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		var total float64
 		for _, d := range resp.Data {
@@ -78,8 +79,9 @@ func (this *HuobiSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]f
 		}
 		avgPrice := total / float64(len(resp.Data))
 		coinPrice[coin.PriceMarketName] = avgPrice
+		coinRank[coin.PriceMarketName] = 0
 	}
-	return coinPrice, nil
+	return coinPrice, coinRank, nil
 }
 
 func (sdk *HuobiSdk) quotesLatest(coins string, node int) (HuobiRecentTradeRecord, error) {

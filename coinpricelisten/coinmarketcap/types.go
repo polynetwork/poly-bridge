@@ -27,16 +27,12 @@ type Listing struct {
 
 // Ticker struct
 type Ticker struct {
-	ID                int                     `json:"id"`
-	Name              string                  `json:"name"`
-	Symbol            string                  `json:"symbol"`
-	Slug              string                  `json:"website_slug"`
-	Rank              int                     `json:"rank"`
-	CirculatingSupply float64                 `json:"circulating_supply"`
-	TotalSupply       float64                 `json:"total_supply"`
-	MaxSupply         float64                 `json:"max_supply"`
-	Quote             map[string]*TickerQuote `json:"quote"`
-	LastUpdated       string                  `json:"last_updated"`
+	ID          int                     `json:"id"`
+	Name        string                  `json:"name"`
+	Symbol      string                  `json:"symbol"`
+	Rank        int                     `json:"cmc_rank"`
+	Quote       map[string]*TickerQuote `json:"quote"`
+	LastUpdated string                  `json:"last_updated"`
 }
 
 // TickerQuote struct
