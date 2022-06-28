@@ -87,24 +87,24 @@ func (c *FeeController) GetFee() {
 		c.ServeJSON()
 		return
 	}
-	//check if rank of chainFee token is risky, if so, change the proxyFee value
+	//check if rank of src token is risky, if so, change the proxyFee value
 	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
-	if chainFee.TokenBasic.Rank > riskyCoinRankThreshold {
+	if token.TokenBasic.Rank > riskyCoinRankThreshold {
 		proxyFeeRatio := proxyFeeRatioMap[getFeeReq.SrcChainId]
 		proxyFee.Quo(proxyFee, big.NewFloat(float64(proxyFeeRatio)))
 		proxyFee.Mul(proxyFee, riskyCoinRisingRate)
 	}
 	//check if any coin marked as dying in redis
-	if exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTokenAsDying + chainFee.TokenBasicName); exists {
-		logs.Info("this token is dying", chainFee.TokenBasicName)
-		if val, err := cacheRedis.Redis.Get(cacheRedis.MarkTokenAsDying + chainFee.TokenBasicName); err == nil {
+	if exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTokenAsDying + token.TokenBasicName); exists {
+		logs.Info("this token is dying", token.TokenBasicName)
+		if val, err := cacheRedis.Redis.Get(cacheRedis.MarkTokenAsDying + token.TokenBasicName); err == nil {
 			proxyFeeRatio := proxyFeeRatioMap[getFeeReq.SrcChainId]
 			proxyFee.Quo(proxyFee, big.NewFloat(float64(proxyFeeRatio)))
 			manualRatio, ok := big.NewFloat(0.0).SetString(val)
 			if ok {
 				proxyFee.Mul(proxyFee, manualRatio)
 			} else {
-				logs.Error("get dying token manualRatio fail, tokenbasicname: %s", chainFee.TokenBasicName)
+				logs.Error("get dying token manualRatio fail, tokenbasicname: %s", token.TokenBasicName)
 			}
 		}
 	}
@@ -697,7 +697,8 @@ func (c *FeeController) CheckSwapFee(Checks []*models.CheckFeeReq) []*models.Che
 
 func SetCoinRankFilterInfo(RiskyCoinHandleConfig *conf.RiskyCoinHandleConfig) {
 	if RiskyCoinHandleConfig == nil {
-		panic("please check config, no RiskyCoinHandleConfig provided")
+		riskyCoinRisingRate = big.NewFloat(250)
+		riskyCoinRankThreshold = 100
 	}
 	riskyCoinRankThreshold = RiskyCoinHandleConfig.RiskyCoinRankThreshold
 	riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate))
