@@ -71,16 +71,17 @@ func (c *FeeController) GetFee() {
 	chainFee := new(models.ChainFee)
 	res = db.Debug().Where("chain_id = ?", getFeeReq.DstChainId).Preload("TokenBasic").First(chainFee)
 	if res.RowsAffected == 0 {
-		logs.Error("query chainfee failed")
+		logs.Error("1query chainfee failed")
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
 	chainFeeToken := new(models.Token)
-	res = db.Where("chain_id = ? and token_basic_name = ?", chainFee.ChainId, chainFee.TokenBasicName).
+	res = db.Debug().Where("chain_id = ? and token_basic_name = ?", chainFee.ChainId, chainFee.TokenBasicName).
 		First(chainFeeToken)
 	if res.RowsAffected == 0 {
+		logs.Error("2query chainfee failed")
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
