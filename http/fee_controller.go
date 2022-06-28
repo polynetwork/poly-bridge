@@ -69,8 +69,9 @@ func (c *FeeController) GetFee() {
 		return
 	}
 	chainFee := new(models.ChainFee)
-	res = db.Where("chain_id = ?", getFeeReq.DstChainId).Preload("TokenBasic").First(chainFee)
+	res = db.Debug().Where("chain_id = ?", getFeeReq.DstChainId).Preload("TokenBasic").First(chainFee)
 	if res.RowsAffected == 0 {
+		logs.Error("query chainfee failed")
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
