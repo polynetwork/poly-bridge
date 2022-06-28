@@ -377,7 +377,7 @@ func newChainSdks(config *conf.Config) {
 			panic("clover chain is invalid")
 		}
 		urls := chainConfig.GetNodesUrl()
-		celoSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		cloverSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.CLOVER_CROSSCHAIN_ID] = cloverSdk
 	}
 }
