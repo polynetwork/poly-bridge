@@ -186,6 +186,14 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		}
 		hash := fmt.Sprint(addr)
 		return hash, nil
+	} else if chainId == NEO3_CROSSCHAIN_ID {
+		scriptHash, err := crypto.AddressToScriptHash(value, neo3_helper.DefaultAddressVersion)
+		if err != nil {
+			return value, err
+		}
+		addrBytes := scriptHash.ToByteArray()
+		address := hex.EncodeToString(addrBytes)
+		return address, nil
 	} else if chainId == ARBITRUM_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
