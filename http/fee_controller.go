@@ -40,7 +40,6 @@ type FeeController struct {
 var (
 	riskyCoinRankThreshold int
 	riskyCoinRisingRate    *big.Float
-	proxyFeeRatioMap       map[uint64]int64
 )
 
 var dstLockProxyMap = make(map[string]string, 0)
@@ -87,23 +86,22 @@ func (c *FeeController) GetFee() {
 	}
 	//check if rank of src token is risky, if so, change the proxyFee value
 	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
-	if token.TokenBasic.Rank > riskyCoinRankThreshold {
-		proxyFeeRatio := proxyFeeRatioMap[getFeeReq.SrcChainId]
-		proxyFee.Quo(proxyFee, big.NewFloat(float64(proxyFeeRatio)))
-		proxyFee.Mul(proxyFee, riskyCoinRisingRate)
-	}
 	//check if any coin marked as dying in redis
 	if exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTokenAsDying + token.TokenBasicName); exists {
 		logs.Info("this token is dying", token.TokenBasicName)
 		if val, err := cacheRedis.Redis.Get(cacheRedis.MarkTokenAsDying + token.TokenBasicName); err == nil {
-			proxyFeeRatio := proxyFeeRatioMap[getFeeReq.SrcChainId]
-			proxyFee.Quo(proxyFee, big.NewFloat(float64(proxyFeeRatio)))
+			proxyFee = new(big.Float).SetInt(&chainFee.MaxFee.Int)
 			manualRatio, ok := big.NewFloat(0.0).SetString(val)
 			if ok {
 				proxyFee.Mul(proxyFee, manualRatio)
 			} else {
 				logs.Error("get dying token manualRatio fail, tokenbasicname: %s", token.TokenBasicName)
 			}
+		}
+	} else {
+		if token.TokenBasic.Rank > riskyCoinRankThreshold {
+			proxyFee = new(big.Float).SetInt(&chainFee.MaxFee.Int)
+			proxyFee.Mul(proxyFee, riskyCoinRisingRate)
 		}
 	}
 	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
@@ -700,10 +698,4 @@ func SetCoinRankFilterInfo(RiskyCoinHandleConfig *conf.RiskyCoinHandleConfig) {
 	}
 	riskyCoinRankThreshold = RiskyCoinHandleConfig.RiskyCoinRankThreshold
 	riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate))
-}
-func SetProxyFeeRatioMap(config *conf.Config) {
-	proxyFeeRatioMap = make(map[uint64]int64, 0)
-	for _, v := range config.FeeListenConfig {
-		proxyFeeRatioMap[v.ChainId] = v.ProxyFee
-	}
 }
