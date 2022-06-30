@@ -24,7 +24,6 @@ import (
 
 func GetRouter(config *conf.Config) web.LinkNamespace {
 	SetCoinRankFilterInfo(config.RiskyCoinHandleConfig)
-	SetProxyFeeRatioMap(config)
 	ns := web.NSNamespace("/bridge",
 		web.NSRouter("/", &InfoController{}, "*:Get"),
 		web.NSRouter("/token/", &TokenController{}, "post:Token"),
