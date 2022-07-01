@@ -397,12 +397,23 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 	}
 	for crossChainEvents.Next() {
 		evt := crossChainEvents.Event
+
+		user := evt.Sender
+		if evt.Sender.String() == "0x0000000000000000000000000000000000000000" {
+			sender, err := this.getTxSenderByTxHash(evt.Raw.TxHash)
+			if err != nil {
+				logs.Error("getTxSenderByTxHash error： vv")
+			} else {
+				user = sender
+			}
+		}
+
 		Fee := this.GetConsumeGas(evt.Raw.TxHash)
 		eccmLockEvents = append(eccmLockEvents, &models.ECCMLockEvent{
 			Method:   _eth_crosschainlock,
 			Txid:     hex.EncodeToString(evt.TxId),
 			TxHash:   evt.Raw.TxHash.String()[2:],
-			User:     strings.ToLower(evt.Sender.String()[2:]),
+			User:     strings.ToLower(user.String()[2:]),
 			Tchain:   uint32(evt.ToChainId),
 			Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
 			Value:    evt.Rawdata,
@@ -431,6 +442,26 @@ func (this *EthereumChainListen) getECCMEventByBlockNumber(contractAddr string, 
 		})
 	}
 	return eccmLockEvents, eccmUnlockEvents, nil
+}
+
+func (this *EthereumChainListen) getTxSenderByTxHash(txHash common.Hash) (common.Address, error) {
+	client := this.ethSdk.GetClient()
+	if client == nil {
+		return common.Address{}, fmt.Errorf("getTxSenderByTxHash GetClient error: nil")
+	}
+	receipt, err := client.TransactionReceipt(context.Background(), txHash)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("TransactionReceipt error: %v", err)
+	}
+	tx, _, err := client.TransactionByHash(context.Background(), txHash)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("TransactionByHash error: %v", err)
+	}
+	sender, err := client.TransactionSender(context.Background(), tx, receipt.BlockHash, receipt.TransactionIndex)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("TransactionSender error: %v", err)
+	}
+	return sender, nil
 }
 
 func (this *EthereumChainListen) getProxyEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, error) {
