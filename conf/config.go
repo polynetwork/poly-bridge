@@ -108,6 +108,8 @@ type ChainListenConfig struct {
 	NFTProxyContract   []string
 	NFTQueryContract   string
 	SwapContract       string
+	L1Url              string
+	L1Contract         string
 }
 
 type HealthMonitorConfig struct {

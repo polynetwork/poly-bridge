@@ -52,6 +52,10 @@ var (
 	sdkMap         map[uint64]interface{}
 )
 
+func GetSdk(chainId uint64) interface{} {
+	return sdkMap[chainId]
+}
+
 func SetupChainsSDK(cfg *conf.Config) {
 	if cfg == nil {
 		panic("Missing config")

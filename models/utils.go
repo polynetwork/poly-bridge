@@ -21,13 +21,21 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	log "github.com/beego/beego/v2/core/logs"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"poly-bridge/basedef"
+	"poly-bridge/chainsdk"
+	bcommon "poly-bridge/common"
 	"poly-bridge/conf"
+	"poly-bridge/go_abi/zk_abi"
 	"poly-bridge/utils/decimal"
+	"strconv"
 	"strings"
 )
 
@@ -334,6 +342,67 @@ func GetL1BlockNumberOfArbitrumTx(hash string) (uint64, error) {
 	l1BlockNumber := receipt.L1BlockNumber.ToInt().Uint64()
 	return l1BlockNumber, nil
 }
+
+func GetZkSyncL1Height(zkChain, l1Chain *Chain) (height uint64, err error) {
+	var zkChainlistenCfg *conf.ChainListenConfig
+	for _, cfg := range conf.GlobalConfig.ChainListenConfig {
+		if cfg.ChainId == basedef.ZKSYNC_CROSSCHAIN_ID {
+			zkChainlistenCfg = cfg
+		}
+	}
+
+	if len(zkChainlistenCfg.L1Contract) == 0 {
+		log.Info("GetZkSyncL1Height zkSync L1Contract not configured")
+		return
+	}
+
+	var l1Latest uint64
+	var l1Client *ethclient.Client
+
+	if basedef.ENV == basedef.TESTNET {
+		l1Latest, err = ethGetCurrentHeight(zkChainlistenCfg.L1Url)
+		if err != nil {
+			log.Info("GetZkSyncL1Height ethGetCurrentHeight failed", "l1Url", zkChainlistenCfg.L1Url, "error", err)
+			return
+		}
+		l1Client, err = ethclient.Dial(zkChainlistenCfg.L1Url)
+		if err != nil {
+			log.Info("GetZkSyncL1Height create l1 client failed", "l1Url", zkChainlistenCfg.L1Url, "error", err)
+			return
+		}
+	} else {
+		if l1Chain == nil {
+			log.Error("GetZkSyncL1Height l1Chain invalid")
+			return
+		}
+		l1Latest = l1Chain.Height
+
+		sdk := bcommon.GetSdk(basedef.ETHEREUM_CROSSCHAIN_ID)
+		if pro, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
+			l1Client = pro.GetClient()
+		} else {
+			log.Error("GetZkSyncL1Height get l1Chain sdk failed")
+			return
+		}
+	}
+
+	l1Getter, err := zk_abi.NewIGetters(common.HexToAddress(zkChainlistenCfg.L1Contract), l1Client)
+	if err != nil {
+		log.Error("GetZkSyncL1Height new zkSync l1 contract getter failed", "error", err)
+		return
+	}
+
+	h := l1Latest - zkChain.BackwardBlockNumber
+
+	n, err := l1Getter.GetTotalBlocksExecuted(&bind.CallOpts{BlockNumber: big.NewInt(int64(h))})
+	if err != nil {
+		log.Error("GetZkSyncL1Height GetTotalBlocksExecuted failed", "error", err)
+		return
+	}
+	height = uint64(n)
+	return
+}
+
 func FormatString(data string) string {
 	if len(data) > 64 {
 		return data[:64]
@@ -392,4 +461,56 @@ func GetTokenType(chainId uint64, standard uint8) string {
 	default:
 		return "ERC" + "-" + tokenType
 	}
+}
+
+type heightReq struct {
+	JSONRPC string   `json:"jsonrpc"`
+	Method  string   `json:"method"`
+	Params  []string `json:"params"`
+	ID      uint     `json:"id"`
+}
+
+type heightRep struct {
+	JSONRPC string `json:"jsonrpc"`
+	Result  string `json:"result"`
+	ID      uint   `json:"id"`
+}
+
+func ethGetCurrentHeight(url string) (height uint64, err error) {
+	req := &heightReq{
+		JSONRPC: "2.0",
+		Method:  "eth_blockNumber",
+		Params:  make([]string, 0),
+		ID:      1,
+	}
+	data, _ := json.Marshal(req)
+
+	body, err := jsonRequest(url, data)
+	if err != nil {
+		return
+	}
+
+	var resp heightRep
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		return
+	}
+
+	height, err = strconv.ParseUint(resp.Result, 0, 64)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func jsonRequest(url string, data []byte) (result []byte, err error) {
+	resp, err := http.Post(url, "application/json", strings.NewReader(string(data)))
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+
+	return ioutil.ReadAll(resp.Body)
 }
