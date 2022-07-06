@@ -385,14 +385,14 @@ func GetZkSyncL1Height(zkChain, l1Chain *Chain) (height uint64, err error) {
 			return
 		}
 	}
+	h := l1Latest - zkChain.BackwardBlockNumber
 
 	l1Getter, err := zk_abi.NewIGetters(common.HexToAddress(zkChainlistenCfg.L1Contract), l1Client)
 	if err != nil {
 		log.Error("GetZkSyncL1Height new zkSync l1 contract getter failed", "error", err)
 		return
 	}
-
-	n, err := l1Getter.GetTotalBlocksExecuted(&bind.CallOpts{BlockNumber: big.NewInt(int64(l1Latest))})
+	n, err := l1Getter.GetTotalBlocksExecuted(&bind.CallOpts{BlockNumber: big.NewInt(int64(h))})
 	if err != nil {
 		log.Error("GetZkSyncL1Height GetTotalBlocksExecuted failed", "error", err)
 		return
