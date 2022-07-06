@@ -242,6 +242,15 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == CUBE_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == ZKSYNC_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == CELO_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == CLOVER_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
@@ -328,6 +337,13 @@ func GetChainName(id uint64) string {
 		return "KAVA"
 	case CUBE_CROSSCHAIN_ID:
 		return "CUBE"
+	case ZKSYNC_CROSSCHAIN_ID:
+		return "zkSync"
+	case CELO_CROSSCHAIN_ID:
+		return "Celo"
+	case CLOVER_CROSSCHAIN_ID:
+		return "CLV P-Chain"
+
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
