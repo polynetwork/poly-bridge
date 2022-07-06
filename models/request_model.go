@@ -625,7 +625,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 				l1Chain, _ := chainsMap[l1ChainId]
 				if l1Height, err := GetZkSyncL1Height(zkChain, l1Chain); err != nil {
 					srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
-					srcTransactionState.Blocks = l1Height - srcChain.Height
+					srcTransactionState.Blocks = l1Height - height
 					if srcTransactionState.Blocks < 0 {
 						srcTransactionState.Blocks = 0
 					}
