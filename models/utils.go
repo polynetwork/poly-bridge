@@ -392,14 +392,13 @@ func GetZkSyncL1Height(zkChain, l1Chain *Chain) (height uint64, err error) {
 		return
 	}
 
-	h := l1Latest - zkChain.BackwardBlockNumber
-
-	n, err := l1Getter.GetTotalBlocksExecuted(&bind.CallOpts{BlockNumber: big.NewInt(int64(h))})
+	n, err := l1Getter.GetTotalBlocksExecuted(&bind.CallOpts{BlockNumber: big.NewInt(int64(l1Latest))})
 	if err != nil {
 		log.Error("GetZkSyncL1Height GetTotalBlocksExecuted failed", "error", err)
 		return
 	}
 	height = uint64(n)
+	log.Info("ZkSyncL1Height %d", height)
 	return
 }
 
