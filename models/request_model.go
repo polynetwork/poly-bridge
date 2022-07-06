@@ -605,9 +605,10 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 				ethChain, ok := chainsMap[basedef.ETHEREUM_CROSSCHAIN_ID]
 				if ok {
 					srcTransactionState.NeedBlocks = ethChain.BackwardBlockNumber
-					srcTransactionState.Blocks = ethChain.Height - height
-					if srcTransactionState.Blocks < 0 {
+					if ethChain.Height < height {
 						srcTransactionState.Blocks = 0
+					} else {
+						srcTransactionState.Blocks = ethChain.Height - height
 					}
 					if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
 						srcTransactionState.Blocks = srcTransactionState.NeedBlocks
@@ -625,9 +626,10 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 				l1Chain, _ := chainsMap[l1ChainId]
 				if l1Height, err := GetZkSyncL1Height(zkChain, l1Chain); err != nil {
 					srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
-					srcTransactionState.Blocks = l1Height - height
-					if srcTransactionState.Blocks < 0 {
+					if l1Height < height {
 						srcTransactionState.Blocks = 0
+					} else {
+						srcTransactionState.Blocks = l1Height - height
 					}
 					if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
 						srcTransactionState.Blocks = srcTransactionState.NeedBlocks
