@@ -160,7 +160,6 @@ func GetTransactionInfoSpecificType(chainName string) (infoArr []*TransactionInf
 }
 
 func PrintTransactionInfoAndCirculateDetailCirculateOnly(details []*AssetCirculateDetail, infoArr []*TransactionInfo, classifyRes map[int][]int, chainId []uint64) (htmlStr string) {
-
 	chainTables := make([]string, 0)
 	reportStr := PrintTransactionReportTableByChain(details, infoArr, chainId)
 	chainTables = append(chainTables, reportStr)
@@ -184,6 +183,9 @@ func PrintTransactionInfoAndCirculateDetailCirculateOnly(details []*AssetCircula
 		gasUsed := 0.0
 		for _, infoKey := range classifyRes[detailKey] {
 			info = infoArr[infoKey]
+			if info.GasUsed == "" {
+				info.GasUsed = "0"
+			}
 			gas, err := strconv.ParseFloat(info.GasUsed, 64)
 			if err != nil || info.FromChainName != detail.FromChainName {
 				log.Error("tx info gasUsed err, %v", "err", err)
@@ -208,7 +210,7 @@ func PrintTransactionInfoAndCirculateDetailCirculateOnly(details []*AssetCircula
 			))
 			detailTotalIncome = feeStrPrintHandle(info.IncomeAmount, info.ToTokenName)
 		}
-		if detail.FromChainName != basedef.GetChainName(detail.FromChainId) {
+		if detail.FromChainId != detail.FromChainId {
 			detailTotalExpenses = ""
 		} else {
 			detailTotalExpenses = feeStrPrintHandle(detail.PaymentAmount, detail.FromTokenName)
@@ -259,7 +261,7 @@ func PrintTransactionInfoAndCirculateDetailCirculateOnly(details []*AssetCircula
 						</tr>
 						%s
 					</table>`,
-			"No."+fmt.Sprintf("%d", count+1)+" l2 wallet transaction record on chain "+basedef.GetChainName(detail.FromChainId), strings.Join(detailRows, "\n"))
+			"No."+fmt.Sprintf("%d", count+1)+" l2 wallet transaction record on chain "+detail.FromChainName, strings.Join(detailRows, "\n"))
 		chainTables = append(chainTables, table)
 	}
 
@@ -364,7 +366,7 @@ func PrintTransactionReportTableByChain(details []*AssetCirculateDetail, infoArr
 					totalCbridgeConsumption = addTwoStrSubtractToFloat(totalCbridgeConsumption, info.PaymentAmount, infoArr[infoKey+1].IncomeAmount)
 				}
 			}
-			if detail.CirculateType == 0 {
+			if detail.CirculateType == 0 || detail.CirculateType == 5 {
 				totalAmountRelayers = addStrToFloat(totalAmountRelayers, detail.PaymentAmount)
 			}
 			if detail.CirculateType == 1 && detail.FromChainId == chainId {
@@ -430,7 +432,6 @@ func ClassifyTransactionInfoByCirculateDetailByRefillTurn(details []*AssetCircul
 				continue
 			}
 			if infoArr[i].Time >= timeNow && infoArr[i].Time < timeNext {
-				// for the cbridge crosschain from erc20 => erc20 on target chain
 				infoTmp = append(infoTmp, i)
 				cur = i + 1
 			}
