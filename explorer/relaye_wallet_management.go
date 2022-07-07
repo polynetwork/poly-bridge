@@ -66,6 +66,10 @@ var TransactionDetailDescription = []string{
 	"wrapper set fee collector",
 }
 
+var testChainId = []uint64{
+	17, 22, 6, 21, 24, 23, 19,
+}
+
 type RelayerAccountStatus struct {
 	ChainId   uint64
 	ChainName string
@@ -155,9 +159,12 @@ func GetTransactionInfoSpecificType(chainName string) (infoArr []*TransactionInf
 	return
 }
 
-func PrintTransactionInfoAndCirculateDetailCirculateOnly(details []*AssetCirculateDetail, infoArr []*TransactionInfo, classifyRes map[int][]int) (htmlStr string) {
+func PrintTransactionInfoAndCirculateDetailCirculateOnly(details []*AssetCirculateDetail, infoArr []*TransactionInfo, classifyRes map[int][]int, chainId []uint64) (htmlStr string) {
 
 	chainTables := make([]string, 0)
+	reportStr := PrintTransactionReportTableByChain(details, infoArr, chainId)
+	chainTables = append(chainTables, reportStr)
+
 	var detail *AssetCirculateDetail
 	var info *TransactionInfo
 	var detailTotalExpenses, detailTotalIncome, infoTotalExpenses, infoTotalIncome string
@@ -264,6 +271,136 @@ func PrintTransactionInfoAndCirculateDetailCirculateOnly(details []*AssetCircula
 	return
 }
 
+func ClassifyTransactionInfoByCirculateDetailByChain(details []*AssetCirculateDetail, infoArr []*TransactionInfo, chainIds []uint64) (classifyRes map[uint64]map[int][]int) {
+	classifyRes = make(map[uint64]map[int][]int)
+	var timeNow, timeNext int64
+	var cur = 0
+	sort.SliceStable(details, func(i, j int) bool {
+		return details[i].Time < details[j].Time
+	})
+	sort.SliceStable(infoArr, func(i, j int) bool {
+		return infoArr[i].Time < infoArr[j].Time
+	})
+
+	for _, chainId := range chainIds {
+		classifyRes[chainId] = make(map[int][]int)
+	}
+	for id, detail := range details {
+		if detail == nil {
+			continue
+		}
+		timeNow = detail.Time
+		if id < len(details)-1 {
+			timeNext = details[id+1].Time
+		} else {
+			timeNext = math.MaxInt64
+		}
+		if infoArr[cur] == nil || infoArr[cur].Time > timeNext {
+			continue
+		}
+		var infoTmp, infoSpecial []int
+		var cbridgeFundingChainId uint64
+		for i := cur; i < len(infoArr); i++ {
+			if infoArr[i] == nil {
+				continue
+			}
+			if infoArr[i].Time >= timeNow && infoArr[i].Time < timeNext {
+				// for the cbridge crosschain from erc20 => erc20 on target chain
+				if infoArr[i].FromChainId != detail.FromChainId {
+					infoSpecial = append(infoSpecial, i)
+					cbridgeFundingChainId = infoArr[i].FromChainId
+				} else {
+					infoTmp = append(infoTmp, i)
+				}
+				cur = i + 1
+			}
+		}
+		if infoSpecial != nil {
+			classifyRes[cbridgeFundingChainId][id] = infoSpecial
+		}
+		if infoTmp != nil {
+			classifyRes[detail.FromChainId][id] = infoTmp
+		}
+	}
+	return classifyRes
+}
+
+func PrintTransactionReportTableByChain(details []*AssetCirculateDetail, infoArr []*TransactionInfo, chainIds []uint64) (htmlStr string) {
+	classifyRes := ClassifyTransactionInfoByCirculateDetailByChain(details, infoArr, chainIds)
+	var detail *AssetCirculateDetail
+	var info *TransactionInfo
+	detailRows := make([]string, 0)
+	var totalIncomeFromWrapper, totalIncomeFromOtherChains, totalExpensesSupportingOtherChains, totalAmountRelayers, totalGasConsumption, totalCbridgeConsumption float64
+	for _, chainId := range chainIds {
+		totalGasConsumption = 0.0
+		totalIncomeFromWrapper = 0.0
+		totalIncomeFromOtherChains = 0.0
+		totalExpensesSupportingOtherChains = 0.0
+		totalAmountRelayers = 0.0
+		totalCbridgeConsumption = 0.0
+		m := classifyRes[chainId]
+		if len(m) == 0 {
+			continue
+		}
+		var detailKeys []int
+		for k := range m {
+			detailKeys = append(detailKeys, k)
+		}
+		sort.SliceStable(detailKeys, func(i, j int) bool {
+			return detailKeys[i] > detailKeys[j]
+		})
+		for _, detailKey := range detailKeys {
+			detail = details[detailKey]
+			for _, infoKey := range m[detailKey] {
+				info = infoArr[infoKey]
+				totalGasConsumption = addStrToFloat(totalGasConsumption, info.GasUsed)
+				if info.TransactionType == 6 {
+					totalIncomeFromWrapper = addStrToFloat(totalIncomeFromWrapper, info.IncomeAmount)
+				}
+				if info.TransactionType == 8 {
+					totalIncomeFromOtherChains = addStrToFloat(totalIncomeFromOtherChains, info.IncomeAmount)
+				}
+				if info.TransactionType == 2 {
+					totalCbridgeConsumption = addTwoStrSubtractToFloat(totalCbridgeConsumption, info.PaymentAmount, infoArr[infoKey+1].IncomeAmount)
+				}
+			}
+			if detail.CirculateType == 0 {
+				totalAmountRelayers = addStrToFloat(totalAmountRelayers, detail.PaymentAmount)
+			}
+			if detail.CirculateType == 1 && detail.FromChainId == chainId {
+				totalExpensesSupportingOtherChains = addStrToFloat(totalExpensesSupportingOtherChains, detail.PaymentAmount)
+			}
+		}
+		detailRows = append(detailRows, fmt.Sprintf(
+			fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>\n", 8)),
+			details[detailKeys[0]].FromChainName,
+			details[detailKeys[0]].FromAddress,
+			fmt.Sprintf("%f", totalIncomeFromWrapper)+" "+details[detailKeys[0]].FromTokenName,
+			fmt.Sprintf("%f", totalIncomeFromOtherChains)+" USDT",
+			fmt.Sprintf("%f", totalAmountRelayers)+" "+details[detailKeys[0]].FromTokenName,
+			fmt.Sprintf("%f", totalGasConsumption)+" "+details[detailKeys[0]].FromTokenName,
+			fmt.Sprintf("%f", totalCbridgeConsumption)+" USDT",
+			fmt.Sprintf("%f", totalExpensesSupportingOtherChains)+" "+details[detailKeys[0]].FromTokenName,
+		))
+	}
+	return fmt.Sprintf(
+		`<h3> %s </h3>
+					<table style="width:100%%" border = "2">
+						<tr>
+            <th>Chains</th>
+                   <th>l2 wallet address</th>
+            <th>Total Income From Wrapper</th>
+     <th>Total Income From Other Chains</th>
+            <th>Total Amount For Relayers</th>
+       <th>Total Gas Consumption</th>
+    <th>Total Cbridge Consumption</th>
+         <th>Total Amount For Helping Other Chains</th>
+						</tr>
+						%s
+					</table>`,
+		"Transaction Report", strings.Join(detailRows, "\n"))
+}
+
 func ClassifyTransactionInfoByCirculateDetailByRefillTurn(details []*AssetCirculateDetail, infoArr []*TransactionInfo) (classifyRes map[int][]int) {
 	classifyRes = make(map[int][]int)
 	var timeNow, timeNext int64
@@ -315,7 +452,7 @@ func (c *RelayerWalletManagementController) ListRelayerRefillTransactionRecord()
 			infoArr = append(infoArr, GetTransactionInfoSpecificType(basedef.GetChainName(nodes.ChainId))...)
 		}
 		classifyRes := ClassifyTransactionInfoByCirculateDetailByRefillTurn(details, infoArr)
-		htmlBytes := []byte(PrintTransactionInfoAndCirculateDetailCirculateOnly(details, infoArr, classifyRes))
+		htmlBytes := []byte(PrintTransactionInfoAndCirculateDetailCirculateOnly(details, infoArr, classifyRes, testChainId))
 		if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
 			c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")
 		}
@@ -335,4 +472,28 @@ func feeStrPrintHandle(amt, tokenName string) string {
 	} else {
 		return amt + " " + tokenName
 	}
+}
+
+func addStrToFloat(f float64, str string) float64 {
+	tmp, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		log.Error("tx info f err, %v", "err", err)
+		return f
+	} else {
+		return f + tmp
+	}
+}
+
+func addTwoStrSubtractToFloat(f float64, str1, str2 string) float64 {
+	tmp1, err := strconv.ParseFloat(str1, 64)
+	if err != nil {
+		log.Error("str1 info f err, %v", "err", err)
+		return f
+	}
+	tmp2, err := strconv.ParseFloat(str2, 64)
+	if err != nil {
+		log.Error("str2 info f err, %v", "err", err)
+		return f
+	}
+	return f + tmp1 - tmp2
 }
