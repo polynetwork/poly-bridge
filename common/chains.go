@@ -307,15 +307,15 @@ func newChainSdks(config *conf.Config) {
 		cubeSdk = chainsdk.NewEthereumSdkPro(urls, cubeConfig.ListenSlot, cubeConfig.ChainId)
 		sdkMap[basedef.CUBE_CROSSCHAIN_ID] = cubeSdk
 	}
-	{
-		chainConfig := config.GetChainListenConfig(basedef.ZKSYNC_CROSSCHAIN_ID)
-		if chainConfig == nil {
-			panic("zkSync chain is invalid")
-		}
-		urls := chainConfig.GetNodesUrl()
-		zkSyncSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
-		sdkMap[basedef.ZKSYNC_CROSSCHAIN_ID] = zkSyncSdk
-	}
+	//{
+	//	chainConfig := config.GetChainListenConfig(basedef.ZKSYNC_CROSSCHAIN_ID)
+	//	if chainConfig == nil {
+	//		panic("zkSync chain is invalid")
+	//	}
+	//	urls := chainConfig.GetNodesUrl()
+	//	zkSyncSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+	//	sdkMap[basedef.ZKSYNC_CROSSCHAIN_ID] = zkSyncSdk
+	//}
 	{
 		chainConfig := config.GetChainListenConfig(basedef.CELO_CROSSCHAIN_ID)
 		if chainConfig == nil {
