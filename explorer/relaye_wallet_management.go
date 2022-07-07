@@ -333,7 +333,9 @@ func PrintTransactionReportTableByChain(details []*AssetCirculateDetail, infoArr
 	var info *TransactionInfo
 	detailRows := make([]string, 0)
 	var totalIncomeFromWrapper, totalIncomeFromOtherChains, totalExpensesSupportingOtherChains, totalAmountRelayers, totalGasConsumption, totalCbridgeConsumption float64
+	var relayerRefillCount int = 0
 	for _, chainId := range chainIds {
+		relayerRefillCount = 0
 		totalGasConsumption = 0.0
 		totalIncomeFromWrapper = 0.0
 		totalIncomeFromOtherChains = 0.0
@@ -367,6 +369,7 @@ func PrintTransactionReportTableByChain(details []*AssetCirculateDetail, infoArr
 				}
 			}
 			if detail.CirculateType == 0 || detail.CirculateType == 5 {
+				relayerRefillCount++
 				totalAmountRelayers = addStrToFloat(totalAmountRelayers, detail.PaymentAmount)
 			}
 			if detail.CirculateType == 1 && detail.FromChainId == chainId {
@@ -374,12 +377,13 @@ func PrintTransactionReportTableByChain(details []*AssetCirculateDetail, infoArr
 			}
 		}
 		detailRows = append(detailRows, fmt.Sprintf(
-			fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>\n", 8)),
+			fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td>%s</td>\n", 9)),
 			details[detailKeys[0]].FromChainName,
 			details[detailKeys[0]].FromAddress,
 			fmt.Sprintf("%f", totalIncomeFromWrapper)+" "+details[detailKeys[0]].FromTokenName,
 			fmt.Sprintf("%f", totalIncomeFromOtherChains)+" USDT",
 			fmt.Sprintf("%f", totalAmountRelayers)+" "+details[detailKeys[0]].FromTokenName,
+			fmt.Sprintf("%d", relayerRefillCount)+" times",
 			fmt.Sprintf("%f", totalGasConsumption)+" "+details[detailKeys[0]].FromTokenName,
 			fmt.Sprintf("%f", totalCbridgeConsumption)+" USDT",
 			fmt.Sprintf("%f", totalExpensesSupportingOtherChains)+" "+details[detailKeys[0]].FromTokenName,
@@ -394,6 +398,7 @@ func PrintTransactionReportTableByChain(details []*AssetCirculateDetail, infoArr
             <th>Total Income From Wrapper</th>
      <th>Total Income From Other Chains</th>
             <th>Total Amount For Relayers</th>
+    <th>Total Times Refill Relayers</th>
        <th>Total Gas Consumption</th>
     <th>Total Cbridge Consumption</th>
          <th>Total Amount For Helping Other Chains</th>
