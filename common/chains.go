@@ -40,9 +40,16 @@ var (
 	starcoinSdk   *chainsdk.StarcoinSdkPro
 	kavaSdk       *chainsdk.EthereumSdkPro
 	cubeSdk       *chainsdk.EthereumSdkPro
+	zkSyncSdk     *chainsdk.EthereumSdkPro
+	celoSdk       *chainsdk.EthereumSdkPro
+	cloverSdk     *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	config        *conf.Config
 )
+
+func GetSdk(chainId uint64) interface{} {
+	return sdkMap[chainId]
+}
 
 func SetupChainsSDK(cfg *conf.Config) {
 	if cfg == nil {
@@ -300,6 +307,33 @@ func newChainSdks(config *conf.Config) {
 		cubeSdk = chainsdk.NewEthereumSdkPro(urls, cubeConfig.ListenSlot, cubeConfig.ChainId)
 		sdkMap[basedef.CUBE_CROSSCHAIN_ID] = cubeSdk
 	}
+	//{
+	//	chainConfig := config.GetChainListenConfig(basedef.ZKSYNC_CROSSCHAIN_ID)
+	//	if chainConfig == nil {
+	//		panic("zkSync chain is invalid")
+	//	}
+	//	urls := chainConfig.GetNodesUrl()
+	//	zkSyncSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+	//	sdkMap[basedef.ZKSYNC_CROSSCHAIN_ID] = zkSyncSdk
+	//}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.CELO_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("celo chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		celoSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.CELO_CROSSCHAIN_ID] = celoSdk
+	}
+	//{
+	//	chainConfig := config.GetChainListenConfig(basedef.CLOVER_CROSSCHAIN_ID)
+	//	if chainConfig == nil {
+	//		panic("clover chain is invalid")
+	//	}
+	//	urls := chainConfig.GetNodesUrl()
+	//	cloverSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+	//	sdkMap[basedef.CLOVER_CROSSCHAIN_ID] = cloverSdk
+	//}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -660,6 +694,48 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.ZKSYNC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.ZKSYNC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("zkSync chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := zkSyncSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
+	if chainId == basedef.CELO_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CELO_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("celo chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := celoSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
+	if chainId == basedef.CLOVER_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CLOVER_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("clover chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := cloverSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -833,6 +909,27 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return cubeSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.ZKSYNC_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.ZKSYNC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("zkSync chain GetTotalSupply invalid")
+		}
+		return zkSyncSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.CELO_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CELO_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("celo chain GetTotalSupply invalid")
+		}
+		return celoSdk.Erc20TotalSupply(hash)
+	}
+	if chainId == basedef.CLOVER_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CLOVER_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("clover chain GetTotalSupply invalid")
+		}
+		return cloverSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -894,6 +991,12 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return kavaSdk.Erc20Balance(hash, proxy)
 	case basedef.CUBE_CROSSCHAIN_ID:
 		return cubeSdk.Erc20Balance(hash, proxy)
+	case basedef.ZKSYNC_CROSSCHAIN_ID:
+		return zkSyncSdk.Erc20Balance(hash, proxy)
+	case basedef.CELO_CROSSCHAIN_ID:
+		return celoSdk.Erc20Balance(hash, proxy)
+	case basedef.CLOVER_CROSSCHAIN_ID:
+		return cloverSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
