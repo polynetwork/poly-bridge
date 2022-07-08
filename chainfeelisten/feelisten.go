@@ -19,6 +19,7 @@ package chainfeelisten
 
 import (
 	"math/big"
+	"poly-bridge/chainfeelisten/ripplefee"
 	"poly-bridge/chainfeelisten/starcoinfee"
 	"runtime/debug"
 	"strings"
@@ -78,7 +79,7 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID,
 		basedef.PIXIE_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID,
 		basedef.HARMONY_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID, basedef.BCSPALETTE_CROSSCHAIN_ID, basedef.BYTOM_CROSSCHAIN_ID,
-		basedef.KCC_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID, basedef.MILKOMEDA_CROSSCHAIN_ID, basedef.BCSPALETTE2_CROSSCHAIN_ID, 
+		basedef.KCC_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID, basedef.MILKOMEDA_CROSSCHAIN_ID, basedef.BCSPALETTE2_CROSSCHAIN_ID,
 		basedef.KAVA_CROSSCHAIN_ID, basedef.CUBE_CROSSCHAIN_ID, basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID, basedef.CLOVER_CROSSCHAIN_ID:
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	case basedef.NEO_CROSSCHAIN_ID:
@@ -93,6 +94,8 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		return zilliqafee.NewZilliqaFee(cfg, feeUpdateSlot)
 	case basedef.STARCOIN_CROSSCHAIN_ID:
 		return starcoinfee.NewStarcoinFee(cfg, feeUpdateSlot)
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		return ripplefee.NewRippleFee(cfg, feeUpdateSlot)
 	default:
 		return nil
 	}

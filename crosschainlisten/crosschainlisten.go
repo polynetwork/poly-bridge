@@ -23,6 +23,7 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/crosschainlisten/ontevmlisten"
+	"poly-bridge/crosschainlisten/ripplelisten"
 	"poly-bridge/crosschainlisten/starcoinlisten"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"poly-bridge/utils/decimal"
@@ -114,6 +115,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return zilliqalisten.NewZilliqaChainListen(chainListenConfig)
 	case basedef.STARCOIN_CROSSCHAIN_ID:
 		return starcoinlisten.NewStarcoinChainListen(chainListenConfig)
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		return ripplelisten.NewRippleChainListen(chainListenConfig)
 
 	default:
 		return nil

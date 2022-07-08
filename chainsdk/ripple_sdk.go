@@ -39,6 +39,17 @@ func (rs *RippleSdk) GetLedger(height uint64) (*websockets.LedgerResult, error) 
 
 }
 
-func (rs *RippleSdk) GetTokenBalance(tokenhash, addrhash string) (*big.Int, error) {
-	return big.NewInt(0), nil
+func (rs *RippleSdk) GetXRPBalance(addrhash string) (*big.Int, error) {
+	acc, err := rs.client.GetAccountInfo(addrhash)
+	if err != nil {
+		logs.Error("RippleSdk GetTokenBalance err: %s\n", err.Error())
+		return big.NewInt(0), err
+	}
+	amount, err := acc.AccountData.Balance.NonNative()
+	if err != nil {
+		logs.Error("RippleSdk GetTokenBalance err: %s\n", err.Error())
+		return big.NewInt(0), err
+	}
+	balance, _ := new(big.Int).SetString(amount.String(), 10)
+	return balance, nil
 }

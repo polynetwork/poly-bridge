@@ -48,6 +48,7 @@ var (
 	zkSyncSdk      *chainsdk.EthereumSdkPro
 	celoSdk        *chainsdk.EthereumSdkPro
 	cloverSdk      *chainsdk.EthereumSdkPro
+	rippleSdk      *chainsdk.RippleSdkPro
 	config         *conf.Config
 	sdkMap         map[uint64]interface{}
 )
@@ -383,6 +384,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		cloverSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.CLOVER_CROSSCHAIN_ID] = cloverSdk
+	}
+	{
+		cfg := config.GetChainListenConfig(basedef.RIPPLE_CROSSCHAIN_ID)
+		if cfg == nil {
+			panic("ripple chain is invalid")
+		}
+		urls := cfg.GetNodesUrl()
+		rippleSdk = chainsdk.NewRippleSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
+		sdkMap[basedef.RIPPLE_CROSSCHAIN_ID] = rippleSdk
 	}
 }
 
@@ -753,7 +763,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			if len(strings.TrimSpace(v)) == 0 {
 				continue
 			}
-			balance, err := hscSdk.Erc20Balance(hash, v)
+			balance, err := milkomedaSdk.Erc20Balance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
 		}
@@ -828,6 +838,21 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.RIPPLE_CROSSCHAIN_ID {
+		cfg := config.GetChainListenConfig(basedef.RIPPLE_CROSSCHAIN_ID)
+		if cfg == nil {
+			panic("ripple chain is invalid")
+		}
+		for _, v := range cfg.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := rippleSdk.XRPBalance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
+
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -1117,6 +1142,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return celoSdk.Erc20Balance(hash, proxy)
 	case basedef.CLOVER_CROSSCHAIN_ID:
 		return cloverSdk.Erc20Balance(hash, proxy)
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		return rippleSdk.XRPBalance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}

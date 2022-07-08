@@ -127,9 +127,12 @@ func (pro *RippleSdkPro) XRPBalance(tokenhash, addrhash string) (*big.Int, error
 		return nil, fmt.Errorf("all node is not working")
 	}
 	var err error
+	if tokenhash != "0000000000000000000000000000000000000000" {
+		return nil, fmt.Errorf("is not XRP hash")
+	}
 	for i := 0; i < 3; i++ {
 		if info != nil {
-			balance, err := info.sdk.GetTokenBalance(tokenhash, addrhash)
+			balance, err := info.sdk.GetXRPBalance(addrhash)
 			if err != nil {
 				info.latestHeight = 0
 				info = pro.GetLatest()
