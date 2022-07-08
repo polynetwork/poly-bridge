@@ -86,6 +86,10 @@ func (c *FeeController) NewCheckFee() {
 					v.Status = SKIP
 					logs.Info("check fee poly_hash %s SKIP, because it is a NEO/NEO3 tx with no wrapper_transactions", k)
 					continue
+				} else if v.SrcTransaction.ChainId == basedef.RIPPLE_CROSSCHAIN_ID {
+					v.Status = MISSING
+					logs.Info("check fee poly_hash %s MISSING, chain is ripple, src_transaction but not wrapper_transaction", k)
+					continue
 				} else {
 					v.Status = NOT_PAID
 					logs.Info("check fee poly_hash %s NOT_PAID,src_transaction but not wrapper_transaction", k)

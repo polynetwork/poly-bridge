@@ -66,7 +66,7 @@ func NewStakeDao() *StakeDao {
 	return stakeDao
 }
 
-func (dao *StakeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *StakeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polySignDetails []*models.PolyDetail) error {
 	{
 		json, _ := json.Marshal(wrapperTransactions)
 		fmt.Printf("wrapperTransactions: %s\n", json)
@@ -129,4 +129,8 @@ func (dao *StakeDao) Name() string {
 
 func (dao *StakeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error {
 	return nil
+}
+
+func (dao *StakeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
+	return
 }

@@ -89,17 +89,33 @@ type SrcSwap struct {
 }
 
 type PolyTransaction struct {
-	Id         int64   `gorm:"primaryKey;autoIncrement"`
-	Hash       string  `gorm:"uniqueIndex;size:66;not null"`
-	ChainId    uint64  `gorm:"type:bigint(20);not null"`
-	State      uint64  `gorm:"type:bigint(20);not null"`
-	Time       uint64  `gorm:"type:bigint(20);not null"`
-	Fee        *BigInt `gorm:"type:varchar(64);not null"`
-	Height     uint64  `gorm:"type:bigint(20);not null"`
-	SrcChainId uint64  `gorm:"type:bigint(20);not null"`
-	SrcHash    string  `gorm:"index;size:66;not null"`
-	DstChainId uint64  `gorm:"type:bigint(20);not null"`
-	Key        string  `gorm:"type:varchar(8192);not null"`
+	Id          int64   `gorm:"primaryKey;autoIncrement"`
+	Hash        string  `gorm:"uniqueIndex;size:66;not null"`
+	ChainId     uint64  `gorm:"type:bigint(20);not null"`
+	State       uint64  `gorm:"type:bigint(20);not null"`
+	Time        uint64  `gorm:"type:bigint(20);not null"`
+	Fee         *BigInt `gorm:"type:varchar(64);not null"`
+	Height      uint64  `gorm:"type:bigint(20);not null"`
+	SrcChainId  uint64  `gorm:"type:bigint(20);not null"`
+	SrcHash     string  `gorm:"index;size:66;not null"`
+	DstChainId  uint64  `gorm:"type:bigint(20);not null"`
+	Key         string  `gorm:"type:varchar(8192);not null"`
+	DstSequence uint64  `gorm:"type:bigint(20);not null"`
+}
+
+type PolyDetail struct {
+	Id          int64   `gorm:"primaryKey;autoIncrement"`
+	Hash        string  `gorm:"uniqueIndex;size:66;not null"`
+	ChainId     uint64  `gorm:"type:bigint(20);not null"`
+	State       uint64  `gorm:"type:bigint(20);not null"`
+	Time        uint64  `gorm:"type:bigint(20);not null"`
+	Fee         *BigInt `gorm:"type:varchar(64);not null"`
+	Height      uint64  `gorm:"type:bigint(20);not null"`
+	SrcChainId  uint64  `gorm:"type:bigint(20);not null"`
+	SrcHash     string  `gorm:"index;size:66;not null"`
+	DstChainId  uint64  `gorm:"type:bigint(20);not null"`
+	Key         string  `gorm:"type:varchar(8192);not null"`
+	DstSequence uint64  `gorm:"type:bigint(20);not null"`
 }
 
 type PolySrcRelation struct {
@@ -107,6 +123,13 @@ type PolySrcRelation struct {
 	SrcTransaction  *SrcTransaction `gorm:"foreignKey:SrcHash;references:Hash"`
 	PolyHash        string
 	PolyTransaction *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
+}
+
+type DstPolyRelation struct {
+	PolyHash        string
+	PolyTransaction *PolyTransaction `gorm:"foreignKey:PolyHash;references:Hash"`
+	DstHash         string
+	DstTransaction  *DstTransaction `gorm:"foreignKey:DstHash;references:Hash"`
 }
 
 type DstTransaction struct {
@@ -121,6 +144,7 @@ type DstTransaction struct {
 	SrcChainId  uint64       `gorm:"type:bigint(20);not null"`
 	Contract    string       `gorm:"type:varchar(66);not null"`
 	PolyHash    string       `gorm:"index;size:66;not null"`
+	Sequence    uint64       `gorm:"type:bigint(20);not null"`
 	DstTransfer *DstTransfer `gorm:"foreignKey:TxHash;references:Hash"`
 	DstSwap     *DstSwap     `gorm:"foreignKey:TxHash;references:Hash"`
 }
@@ -151,6 +175,23 @@ type DstSwap struct {
 	DstAsset   string  `gorm:"type:varchar(120);not null"`
 	DstUser    string  `gorm:"type:varchar(66);not null"`
 	Type       uint64  `gorm:"type:bigint(20);not null"`
+}
+
+type WrapperDetail struct {
+	Id           int64   `gorm:"primaryKey;autoIncrement"`
+	WrapperHash  string  `gorm:"index:wrapper_details_wrapper_hash;size:66;not null"`
+	Hash         string  `gorm:"uniqueIndex;size:66;not null"`
+	User         string  `gorm:"type:varchar(66);not null"`
+	SrcChainId   uint64  `gorm:"type:bigint(20);not null"`
+	Standard     uint8   `gorm:"type:int(8);not null"`
+	BlockHeight  uint64  `gorm:"type:bigint(20);not null"`
+	Time         uint64  `gorm:"type:bigint(20);not null"`
+	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
+	DstUser      string  `gorm:"type:varchar(66);not null"`
+	ServerId     uint64  `gorm:"type:bigint(20);not null"`
+	FeeTokenHash string  `gorm:"size:66;not null"`
+	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
+	Status       uint64  `gorm:"type:bigint(20);not null"`
 }
 
 type WrapperTransaction struct {

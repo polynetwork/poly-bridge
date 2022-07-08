@@ -83,6 +83,10 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("update hash- err: %s", err)
 	}
+	err = eff.updateDstHash()
+	if err != nil {
+		logs.Error("update dsthash- err: %s", err)
+	}
 	/*
 		err = eff.checkStatus()
 		if err != nil {
@@ -160,6 +164,41 @@ func (eff *BridgeEffect) updateHash() error {
 		}
 	}
 	logs.Info("Update hash finished with at most %d * 500 checked", index+1)
+	return nil
+}
+
+func (eff *BridgeEffect) updateDstHash() error {
+	batch := 500
+	index := 0
+
+	for {
+		dstPolyRelations := make([]*models.DstPolyRelation, 0)
+		eff.db.Table("dst_transactions").
+			Where("dst_transactions.poly_hash = '' and dst_transactions.chain_id = ? and dst_transactions.sequence > 0", basedef.RIPPLE_CROSSCHAIN_ID).
+			Select("dst_transactions.hash as dst_hash, poly_transactions.hash as poly_hash").
+			Joins("inner join poly_transactions on dst_transactions.sequence = poly_transactions.dst_sequence and poly_transactions.dst_chain_id = dst_transactions.chain_id").
+			Preload("PolyTransaction").
+			Preload("DstTransaction").
+			Limit(batch).
+			Offset(batch * index).
+			Order("poly_transactions.id").
+			Find(&dstPolyRelations)
+		updateDstTransactions := make([]*models.DstTransaction, 0)
+		for _, dstPolyRelation := range dstPolyRelations {
+			if dstPolyRelation.PolyTransaction != nil && dstPolyRelation.DstTransaction != nil {
+				dstPolyRelation.DstTransaction.PolyHash = dstPolyRelation.PolyTransaction.Hash
+				updateDstTransactions = append(updateDstTransactions, dstPolyRelation.DstTransaction)
+			}
+		}
+		if len(updateDstTransactions) > 0 {
+			logs.Info("updateHash now min DstTransaction.id", updateDstTransactions[0].Id)
+			eff.db.Save(updateDstTransactions)
+			index++
+		} else {
+			break
+		}
+	}
+	logs.Info("Update DstHash finished with at most %d * 500 checked", index+1)
 	return nil
 }
 

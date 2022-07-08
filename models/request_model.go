@@ -708,7 +708,7 @@ func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap
 		DstChainId:     transaction.SrcTransaction.DstChainId,
 		TransferAmount: transferAmount,
 		DstUser:        dstUser,
-		TokenHash: transaction.TokenHash,
+		TokenHash:      transaction.TokenHash,
 	}
 	switch {
 	case transaction.PolyTransaction == nil && transaction.DstTransaction == nil:
@@ -717,6 +717,10 @@ func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap
 		transactionRsp.State = basedef.STATE_POLY_CONFIRMED
 	default:
 		transactionRsp.State = basedef.STATE_FINISHED
+	}
+	switch transaction.SrcTransaction.ChainId {
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		transactionRsp.State = basedef.STATE_WITHOUT_WRAPPER
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
@@ -1455,4 +1459,56 @@ type WrapperCheckReq struct {
 type WrapperCheckRsp struct {
 	ChainId uint64
 	Wrapper []string
+}
+
+type TxWithoutWrapperReq struct {
+	ChainId  uint64
+	User     string
+	PageSize int
+	PageNo   int
+}
+
+type TxWithoutWrapperRes struct {
+	Total    int64
+	PageSize int
+	PageNo   int
+	Txs      []*TxWithoutWrappertx
+}
+
+type TxWithoutWrappertx struct {
+	TxHash     string
+	ChainId    uint64
+	Time       uint64
+	From       string
+	Amount     string
+	DstChainId uint64
+	DstUser    string
+	TokenName  string
+}
+
+func MakeTxWithoutWrapperRsp(pageSize int, pageNo int, srcTransfers []*SrcTransfer, count int64) *TxWithoutWrapperRes {
+	txWithoutWrapperRes := new(TxWithoutWrapperRes)
+	txWithoutWrapperRes.Total = count
+	txWithoutWrapperRes.PageSize = pageSize
+	txWithoutWrapperRes.PageNo = pageNo
+	txWithoutWrapperRes.Txs = make([]*TxWithoutWrappertx, 0)
+	for _, v := range srcTransfers {
+		txWithoutWrappertx := &TxWithoutWrappertx{
+			v.TxHash,
+			v.ChainId,
+			v.Time,
+			v.From,
+			v.Amount.String(),
+			v.DstChainId,
+			v.DstUser,
+			v.Asset,
+		}
+
+		if v.Token != nil {
+			txWithoutWrappertx.Amount = FormatAmount(v.Token.Precision, v.Amount)
+			txWithoutWrappertx.TokenName = v.Token.TokenBasicName
+		}
+		txWithoutWrapperRes.Txs = append(txWithoutWrapperRes.Txs, txWithoutWrappertx)
+	}
+	return txWithoutWrapperRes
 }

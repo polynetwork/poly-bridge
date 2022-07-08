@@ -283,6 +283,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.CONFLUX_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " CFX"
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 6)
+		return fee_new.Div(precision_new).String() + " XRP"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()
@@ -419,6 +422,13 @@ func FormatString(data string) string {
 	return data
 }
 
+func Format8190(data string) string {
+	if len(data) > 8190 {
+		return data[:8190]
+	}
+	return data
+}
+
 func GetTokenType(chainId uint64, standard uint8) string {
 	tokenType := ""
 	switch standard {
@@ -472,6 +482,12 @@ func GetTokenType(chainId uint64, standard uint8) string {
 			return "Starcoin NFT"
 		}
 		return "Starcoin Token"
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "Ripple NFT"
+		}
+		return "XRP"
+
 	default:
 		return "ERC" + "-" + tokenType
 	}

@@ -22,6 +22,7 @@ import (
 	"math"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
+	"poly-bridge/crosschainlisten/ripplelisten"
 	"poly-bridge/crosschainlisten/starcoinlisten"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"poly-bridge/utils/decimal"
@@ -77,7 +78,7 @@ func StopCrossChainListen() {
 type ChainHandle interface {
 	GetExtendLatestHeight() (uint64, error)
 	GetLatestHeight() (uint64, error)
-	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error)
+	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error)
 	GetChainListenSlot() uint64
 	GetChainId() uint64
 	GetChainName() string
@@ -111,6 +112,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return zilliqalisten.NewZilliqaChainListen(chainListenConfig)
 	case basedef.STARCOIN_CROSSCHAIN_ID:
 		return starcoinlisten.NewStarcoinChainListen(chainListenConfig)
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		return ripplelisten.NewRippleChainListen(chainListenConfig)
 
 	default:
 		return nil
@@ -164,10 +167,10 @@ func (ccl *CrossChainListen) ListenChain() {
 	}
 }
 
-func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, err error) {
+func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, wd []*models.WrapperDetail, pd []*models.PolyDetail, err error) {
 	// chain := ccl.handle.GetChainId()
 	// var locks, unlocks int
-	w, s, p, d, _, _, err = ccl.handle.HandleNewBlock(height)
+	w, s, p, d, wd, pd, _, _, err = ccl.handle.HandleNewBlock(height)
 	if err != nil {
 		return
 	}
@@ -246,22 +249,28 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				ch := make(chan bool, batchSize)
 				for i := uint64(1); i <= batchSize; i++ {
 					go func(height uint64) {
-						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.HandleNewBlock(height)
+						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails, err := ccl.HandleNewBlock(height)
 						if err != nil {
 							logs.Error("HandleNewBlock chain：%s, height: %d err: %v", ccl.handle.GetChainName(), height, err)
 							ch <- false
 							return
 						}
 						logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
-							"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
-							chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
+							"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d, len(wrapperDetails)=%d, len(polyDetails)=%d",
+							chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), len(wrapperDetails), len(polyDetails))
+						detailWrapperTxs, err := ccl.db.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
+						if err != nil {
+							logs.Error("FillTxSpecialChain on block %d err: %v", height, err)
+							ch <- false
+						}
+						wrapperTransactions = append(wrapperTransactions, detailWrapperTxs...)
 
 						err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 						if err != nil {
 							logs.Error("check fee on block %d err: %v", height, err)
 							ch <- false
 						}
-						err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+						err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 						if err != nil {
 							logs.Error("UpdateEvents on block %d err: %v", height, err)
 							ch <- false

@@ -56,6 +56,7 @@ const (
 	CELO_CROSSCHAIN_ID       = uint64(36)
 	CLOVER_CROSSCHAIN_ID     = uint64(37)
 	CONFLUX_CROSSCHAIN_ID    = uint64(38)
+	RIPPLE_CROSSCHAIN_ID     = uint64(39)
 
 	ENV = "mainnet"
 )

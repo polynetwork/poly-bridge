@@ -56,14 +56,14 @@ func executeMethod(method string, ctx *cli.Context) {
 	switch method {
 	case FETCH_BLOCK:
 		fetchBlock(config)
-	case "bingfaSWTH":
-		bingfaSWTH(config)
 	case "initcoinmarketid":
 		initcoinmarketid(config)
 	case "migrateLockTokenStatisticTable":
 		migrateLockTokenStatisticTable(config)
 	case "updateZilliqaPolyOldData":
 		updateZilliqaPolyOldData(config)
+	case "updateRippleTables":
+		updateRippleTables(config)
 	case "airdrop":
 		toolsmethod.AirDropNft(config)
 	case "createaccount":
@@ -97,19 +97,24 @@ func retry(f func() error, count int, duration time.Duration) func(context.Conte
 }
 
 func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandle, dao crosschaindao.CrossChainDao, save bool) error {
-	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handle.HandleNewBlock(height)
+	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails, locks, unlocks, err := handle.HandleNewBlock(height)
 	if err != nil {
 		logs.Error(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
 		return err
 	}
+	detailWrapperTxs, err := dao.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
+	if err != nil {
+		return fmt.Errorf("FillTxSpecialChain err", err)
+	}
+	wrapperTransactions = append(wrapperTransactions, detailWrapperTxs...)
 	if save {
 		err = dao.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 		if err != nil {
 			return err
 		}
-		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 		if err != nil {
-			return err
+			return fmt.Errorf("UpdateEvents err", err)
 		}
 	}
 	fmt.Printf(
@@ -168,62 +173,6 @@ func fetchBlock(config *conf.Config) {
 		}, 0, 2*time.Second))
 	}
 	g.Wait()
-}
-
-func bingfaSWTH(config *conf.Config) {
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
-	if dao == nil {
-		panic("server is not valid")
-	}
-	var handle crosschainlisten.ChainHandle
-	for _, cfg := range config.ChainListenConfig {
-		if cfg.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
-			handle = crosschainlisten.NewChainHandle(cfg)
-			break
-		}
-	}
-	if handle == nil {
-		panic(fmt.Sprintf("chain %d handler is invalid", basedef.SWITCHEO_CROSSCHAIN_ID))
-	}
-	Logger := logger.Default
-	dbCfg := config.DBConfig
-	if dbCfg.Debug == true {
-		Logger = Logger.LogMode(logger.Info)
-	}
-	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
-	srcHeights := make([]int, 0)
-	dstHeights := make([]int, 0)
-	err = db.Table("src_transactions").
-		Select("height").
-		Where("chain_id = ?", basedef.SWITCHEO_CROSSCHAIN_ID).
-		Find(&srcHeights).Error
-	if err != nil {
-		panic(fmt.Sprintf("bingfaSWTH db Find(&inHeights) err:%v", err))
-	}
-	fmt.Println("bingfaSWTH Find(&srcHeights)", srcHeights[:3])
-	err = db.Table("dst_transactions").
-		Select("height").
-		Where("chain_id = ?", basedef.SWITCHEO_CROSSCHAIN_ID).
-		Find(&dstHeights).Error
-	if err != nil {
-		panic(fmt.Sprintf("bingfaSWTH db Find(&dstHeights) err:%v", err))
-	}
-	fmt.Println("bingfaSWTH Find(&dstHeights)", dstHeights[:3])
-	heights := srcHeights
-	heights = append(heights, dstHeights...)
-
-	for _, height := range heights {
-		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := handle.HandleNewBlock(uint64(height))
-		if err != nil {
-			panic(fmt.Sprintf("bingfaSWTH HandleNewBlock %d err: %v", height, err))
-		}
-		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
-		if err != nil {
-			panic(fmt.Sprintf("bingfaSWTH bingfaSWTH panic panicHeight:%v,flagerr is:%v", height, err))
-		}
-		fmt.Printf("bingfaSWTH ing.....nowHeight:%v /n", height)
-	}
 }
 
 func initcoinmarketid(config *conf.Config) {
@@ -344,6 +293,68 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 		if flag >= 2 {
 			logs.Info("flag >=2")
 			break
+		}
+	}
+}
+
+func updateRippleTables(config *conf.Config) {
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		logs.Error("updateRippleTables: Open mysql err", err)
+		return
+	}
+	{ //PolyTransaction dst_sequence
+		var num int
+		db.Raw("select count(*) from information_schema.columns where table_name = ? and column_name = ?", "poly_transactions", "dst_sequence").Scan(&num)
+		fmt.Println("num", num)
+
+		err = db.Debug().Migrator().AddColumn(&models.PolyTransaction{}, "dst_sequence")
+		if err != nil {
+			logs.Error("table PolyTransaction AddColumn dst_sequence err", err)
+			panic("table PolyTransaction AddColumn dst_sequence err")
+		}
+	}
+	{ //DstTransaction sequence
+		var num int
+		res := db.Debug().Raw("select count(*) from information_schema.columns where table_name = ? and column_name = ?", "dst_transactions", "sequence").Scan(&num)
+		if res.Error != nil {
+			panic("dst_transactions Raw num err")
+		}
+		if num == 0 {
+			logs.Info("dst_transactions not exist sequence")
+			err = db.Debug().Migrator().AddColumn(&models.DstTransaction{}, "sequence")
+			if err != nil {
+				logs.Error("table DstTransaction AddColumn sequence err", err)
+				panic("table DstTransaction AddColumn sequence err")
+			}
+		}
+	}
+	{ //wrapper_details
+		res := db.Debug().Migrator().HasTable(&models.WrapperDetail{})
+		if !res {
+			logs.Info("wrapper_details not exist")
+			err := db.Debug().AutoMigrate(&models.WrapperDetail{})
+			if err != nil {
+				logs.Error("table WrapperDetail AutoMigrate err", err)
+				panic("table WrapperDetail AutoMigrate err")
+			}
+		}
+	}
+	{ //poly_details
+		res := db.Debug().Migrator().HasTable(&models.PolyDetail{})
+		if !res {
+			logs.Info("poly_details not exist")
+			err := db.Debug().AutoMigrate(&models.PolyDetail{})
+			if err != nil {
+				logs.Error("table PolyDetail AutoMigrate err", err)
+				panic("table PolyDetail AutoMigrate err")
+			}
 		}
 	}
 }

@@ -19,6 +19,7 @@ package chainfeelisten
 
 import (
 	"math/big"
+	"poly-bridge/chainfeelisten/ripplefee"
 	"poly-bridge/chainfeelisten/starcoinfee"
 	"runtime/debug"
 	"strings"
@@ -93,6 +94,8 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		return zilliqafee.NewZilliqaFee(cfg, feeUpdateSlot)
 	case basedef.STARCOIN_CROSSCHAIN_ID:
 		return starcoinfee.NewStarcoinFee(cfg, feeUpdateSlot)
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		return ripplefee.NewRippleFee(cfg, feeUpdateSlot)
 	default:
 		return nil
 	}

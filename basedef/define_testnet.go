@@ -56,6 +56,7 @@ const (
 	CLOVER_CROSSCHAIN_ID     = uint64(970)
 	GOERLI_CROSSCHAIN_ID     = uint64(1000002)
 	CONFLUX_CROSSCHAIN_ID    = uint64(980)
+	RIPPLE_CROSSCHAIN_ID     = uint64(223)
 	ENV                      = "testnet"
 )
 

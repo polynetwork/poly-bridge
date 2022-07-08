@@ -65,27 +65,28 @@ func (this *PolyChainListen) GetBatchSize() uint64 {
 	return this.polyCfg.BatchSize
 }
 
-func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.polySdk.GetBlockByHeight(height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no poly block!")
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no poly block!")
 	}
 	tt := block.Header.Timestamp
 	events, err := this.polySdk.GetSmartContractEventByBlock(height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	polyTransactions := make([]*models.PolyTransaction, 0)
+	polyDetails := make([]*models.PolyDetail, 0)
 	for _, event := range events {
 		for _, notify := range event.Notify {
 			if notify.ContractAddress == this.polyCfg.CCMContract {
 				states := notify.States.([]interface{})
 				contractMethod, _ := states[0].(string)
 				logs.Info("chain: %s, height: %d, tx hash: %s", this.GetChainName(), height, event.TxHash)
-				if contractMethod != "makeProof" && contractMethod != "btcTxToRelay" {
+				if contractMethod != "makeProof" && contractMethod != "btcTxToRelay" && contractMethod != "multisignedTxJson" && contractMethod != "rippleTxJson" {
 					continue
 				}
 				if len(states) < 4 {
@@ -93,27 +94,59 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 				}
 				fchainid := uint32(states[1].(float64))
 				tchainid := uint32(states[2].(float64))
-				mctx := &models.PolyTransaction{}
-				mctx.ChainId = this.GetChainId()
-				mctx.Hash = event.TxHash
-				mctx.State = uint64(event.State)
-				mctx.Fee = &models.BigInt{*big.NewInt(0)}
-				mctx.Time = uint64(tt)
-				mctx.Height = height
-				mctx.SrcChainId = uint64(fchainid)
-				mctx.DstChainId = uint64(tchainid)
-				switch uint64(fchainid) {
-				case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
-					mctx.SrcHash = basedef.HexStringReverse(states[3].(string))
-				default:
-					mctx.SrcHash = states[3].(string)
-				}
 
-				polyTransactions = append(polyTransactions, mctx)
+				switch contractMethod {
+				case "rippleTxJson":
+					polyDetail := &models.PolyDetail{}
+					polyDetail.ChainId = this.GetChainId()
+					polyDetail.Hash = event.TxHash
+					polyDetail.State = uint64(event.State)
+					polyDetail.Fee = &models.BigInt{*big.NewInt(0)}
+					polyDetail.Time = uint64(tt)
+					polyDetail.Height = height
+					polyDetail.SrcChainId = uint64(fchainid)
+					polyDetail.DstChainId = uint64(tchainid)
+					switch uint64(fchainid) {
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+						polyDetail.SrcHash = basedef.HexStringReverse(states[3].(string))
+					default:
+						polyDetail.SrcHash = states[3].(string)
+					}
+					switch uint64(tchainid) {
+					case basedef.RIPPLE_CROSSCHAIN_ID:
+						sequence := states[5].(float64)
+						polyDetail.DstSequence = uint64(sequence)
+					}
+
+					polyDetails = append(polyDetails, polyDetail)
+				default:
+					mctx := &models.PolyTransaction{}
+					mctx.ChainId = this.GetChainId()
+					mctx.Hash = event.TxHash
+					mctx.State = uint64(event.State)
+					mctx.Fee = &models.BigInt{*big.NewInt(0)}
+					mctx.Time = uint64(tt)
+					mctx.Height = height
+					mctx.SrcChainId = uint64(fchainid)
+					mctx.DstChainId = uint64(tchainid)
+					switch uint64(fchainid) {
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+						mctx.SrcHash = basedef.HexStringReverse(states[3].(string))
+					default:
+						mctx.SrcHash = states[3].(string)
+					}
+					switch uint64(tchainid) {
+					case basedef.RIPPLE_CROSSCHAIN_ID:
+						sequence := states[5].(float64)
+						mctx.DstSequence = uint64(sequence)
+					}
+
+					polyTransactions = append(polyTransactions, mctx)
+				}
 			}
 		}
 	}
-	return nil, nil, polyTransactions, nil, 0, 0, nil
+	return nil, nil, polyTransactions, nil, nil, polyDetails, 0, 0, nil
 }
 
 func (this *PolyChainListen) GetExtendLatestHeight() (uint64, error) {
