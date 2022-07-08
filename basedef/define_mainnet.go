@@ -52,6 +52,8 @@ const (
 	KAVA_CROSSCHAIN_ID       = uint64(32)
 	CUBE_CROSSCHAIN_ID       = uint64(35)
 
+	RIPPLE_CROSSCHAIN_ID = uint64(1000223)
+
 	ENV = "mainnet"
 )
 

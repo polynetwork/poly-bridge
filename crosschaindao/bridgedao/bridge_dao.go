@@ -57,7 +57,7 @@ func NewBridgeDao(dbCfg *conf.DBConfig, backup bool) *BridgeDao {
 	return swapDao
 }
 
-func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) error {
 	if !dao.backup {
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
 			res := dao.db.Save(wrapperTransactions)
@@ -104,6 +104,18 @@ func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransact
 				}
 			}
 		}
+		if wrapperDetails != nil && len(wrapperDetails) > 0 {
+			res := dao.db.Save(wrapperDetails)
+			if res.Error != nil {
+				return res.Error
+			}
+		}
+		if polyDetails != nil && len(polyDetails) > 0 {
+			res := dao.db.Save(polyDetails)
+			if res.Error != nil {
+				return res.Error
+			}
+		}
 		return nil
 	} else {
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
@@ -135,6 +147,14 @@ func (dao *BridgeDao) UpdateEvents(wrapperTransactions []*models.WrapperTransact
 			res := dao.db.Save(dstTransactions)
 			if res.Error != nil {
 				return res.Error
+			}
+		}
+		if wrapperDetails != nil && len(wrapperDetails) > 0 {
+			for _, wrapperDetail := range wrapperDetails {
+				res := dao.db.Save(wrapperDetail)
+				if res.RowsAffected > 0 {
+					logs.Info("backup wrapperDetail hash:%v", wrapperDetail.Hash)
+				}
 			}
 		}
 		return nil
@@ -603,4 +623,99 @@ func (dao *BridgeDao) FilterMissingWrapperTransactions() ([]*models.SrcTransacti
 	}
 
 	return srcTransactions, res.Error
+}
+
+func (dao *BridgeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
+	if len(wrapperDetails) == 0 && len(dstTransactions) == 0 {
+		return
+	}
+	rippleWDs := make([]*models.WrapperDetail, 0)
+	rippleDsttxs := make([]*models.DstTransaction, 0)
+	for _, v := range wrapperDetails {
+		switch v.SrcChainId {
+		case basedef.RIPPLE_CROSSCHAIN_ID:
+			rippleWDs = append(rippleWDs, v)
+		}
+	}
+	for _, v := range dstTransactions {
+		switch v.ChainId {
+		case basedef.RIPPLE_CROSSCHAIN_ID:
+			rippleDsttxs = append(rippleDsttxs, v)
+		}
+	}
+	return dao.fillTxRipple(dstTransactions, rippleWDs, rippleDsttxs)
+}
+
+func (dao *BridgeDao) fillTxRipple(dstTransactions []*models.DstTransaction, rippleWDs []*models.WrapperDetail, rippleDsttxs []*models.DstTransaction) (detailWrapperTxs []*models.WrapperTransaction, err error) {
+	if len(rippleWDs) > 0 {
+		detailWrapperTxs = make([]*models.WrapperTransaction, 0)
+		hashWdMap := make(map[string]*models.WrapperDetail)
+		wrapperHashWdMap := make(map[string]([]*models.WrapperDetail))
+		wdHashs := make([]string, 0)
+		wrapperHashs := make([]string, 0)
+		for _, v := range rippleWDs {
+			wdHashs = append(wdHashs, v.WrapperHash)
+			hashWdMap[v.Hash] = v
+		}
+
+		dbWrapperDetails := make([]*models.WrapperDetail, 0)
+		dao.db.Where("wrapper_hash in ?", wdHashs).Find(&dbWrapperDetails)
+		for _, dbWrapperDetail := range dbWrapperDetails {
+			if _, ok := hashWdMap[dbWrapperDetail.Hash]; !ok {
+				hashWdMap[dbWrapperDetail.Hash] = dbWrapperDetail
+			}
+		}
+
+		for _, v := range hashWdMap {
+			if _, ok := wrapperHashWdMap[v.WrapperHash]; !ok {
+				wrapperHashWdMap[v.WrapperHash] = make([]*models.WrapperDetail, 0)
+			}
+			wrapperHashWdMap[v.WrapperHash] = append(wrapperHashWdMap[v.WrapperHash], v)
+			wrapperHashs = append(wrapperHashs, v.WrapperHash)
+		}
+
+		for k, v := range wrapperHashWdMap {
+			feeAmount := big.NewInt(0)
+			wrapperDetail := v[0]
+			for _, v1 := range v {
+				feeAmount.Add(feeAmount, &v1.FeeAmount.Int)
+			}
+			if wrapperDetail != nil {
+				detailWrapperTxs = append(detailWrapperTxs, &models.WrapperTransaction{
+					Hash:         k,
+					User:         wrapperDetail.User,
+					DstChainId:   wrapperDetail.DstChainId,
+					DstUser:      wrapperDetail.DstUser,
+					FeeTokenHash: wrapperDetail.FeeTokenHash,
+					FeeAmount:    models.NewBigInt(feeAmount),
+					ServerId:     wrapperDetail.ServerId,
+					Status:       wrapperDetail.Status,
+					Time:         wrapperDetail.Time,
+					BlockHeight:  wrapperDetail.BlockHeight,
+					SrcChainId:   wrapperDetail.SrcChainId,
+				})
+			}
+		}
+	}
+
+	if len(rippleDsttxs) > 0 {
+		sequences := make([]uint64, 0)
+		for _, v := range rippleDsttxs {
+			sequences = append(sequences, v.Sequence)
+		}
+		polyTxs := make([]*models.PolyTransaction, 0)
+		dao.db.Where("dst_chain_id = ? and dst_sequence in ? ", basedef.RIPPLE_CROSSCHAIN_ID, sequences).Find(&polyTxs)
+		sequencePolyHash := make(map[uint64]*models.PolyTransaction, 0)
+		for _, v := range polyTxs {
+			sequencePolyHash[v.DstSequence] = v
+		}
+		for _, v := range dstTransactions {
+			if v.ChainId == basedef.RIPPLE_CROSSCHAIN_ID && sequencePolyHash[v.Sequence] != nil {
+				v.PolyHash = sequencePolyHash[v.Sequence].Hash
+				v.SrcChainId = sequencePolyHash[v.Sequence].SrcChainId
+			}
+		}
+
+	}
+	return
 }

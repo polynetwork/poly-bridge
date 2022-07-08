@@ -28,7 +28,7 @@ func startTransactions(cfg *conf.TransactionsConfig) {
 		panic("server is invalid")
 	}
 	//
-	err := dao.UpdateEvents(cfg.WrapperTransactions, cfg.SrcTransactions, cfg.PolyTransactions, cfg.DstTransactions)
+	err := dao.UpdateEvents(cfg.WrapperTransactions, cfg.SrcTransactions, cfg.PolyTransactions, cfg.DstTransactions, nil, nil)
 	if err != nil {
 		panic(err)
 	}

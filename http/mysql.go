@@ -22,13 +22,13 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
-	"poly-bridge/models"
 )
 
 var db *gorm.DB
 var relayUrl string
-var wrapperContract map[uint64]([]string)
+var contractCheck map[uint64]([]string)
 
 func Init() {
 	config := conf.GlobalConfig.DBConfig
@@ -49,27 +49,30 @@ func Init() {
 		panic("relayUrl is null")
 	}
 
-	wrapperContract = make(map[uint64]([]string), 0)
+	contractCheck = make(map[uint64]([]string), 0)
 	for _, chainListen := range conf.GlobalConfig.ChainListenConfig {
-		wrapper := make([]string, 0)
+		contract := make([]string, 0)
 		if len(chainListen.WrapperContract) > 0 {
 			for _, v := range chainListen.WrapperContract {
 				if v != "" {
-					wrapper = append(wrapper, v)
+					contract = append(contract, v)
 				}
 			}
 		}
 		if len(chainListen.NFTWrapperContract) > 0 {
 			for _, v := range chainListen.NFTWrapperContract {
 				if v != "" {
-					wrapper = append(wrapper, v)
+					contract = append(contract, v)
 				}
 			}
 		}
-		wrapperContract[chainListen.ChainId] = wrapper
+		if chainListen.ChainId == basedef.RIPPLE_CROSSCHAIN_ID && len(chainListen.ProxyContract) > 0 {
+			for _, v := range chainListen.ProxyContract {
+				if v != "" {
+					contract = append(contract, v)
+				}
+			}
+		}
+		contractCheck[chainListen.ChainId] = contract
 	}
-
-	db.AutoMigrate(
-		&models.NFTProfile{},
-	)
 }

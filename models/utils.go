@@ -250,6 +250,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.CUBE_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " CUBE"
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 6)
+		return fee_new.Div(precision_new).String() + " XRP"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()
@@ -322,6 +325,13 @@ func GetL1BlockNumberOfArbitrumTx(hash string) (uint64, error) {
 func FormatString(data string) string {
 	if len(data) > 64 {
 		return data[:64]
+	}
+	return data
+}
+
+func Format8190(data string) string {
+	if len(data) > 8190 {
+		return data[:8190]
 	}
 	return data
 }

@@ -179,7 +179,7 @@ func NewExplorerDao(dbCfg *conf.DBConfig, backup bool) *ExplorerDao {
 	return explorerDao
 }
 
-func (dao *ExplorerDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *ExplorerDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polySignDetails []*models.PolyDetail) error {
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		srcTransactionsJson, err := json.Marshal(srcTransactions)
 		if err != nil {
@@ -423,4 +423,8 @@ type ChainInfo struct {
 	Id    uint64 `gorm:"column:id"`
 	Txin  int64  `gorm:"column:txin"`
 	Txout int64  `gorm:"column:txout"`
+}
+
+func (dao *ExplorerDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
+	return
 }

@@ -51,6 +51,7 @@ const (
 	STARCOIN_CROSSCHAIN_ID   = uint64(318)
 	KAVA_CROSSCHAIN_ID       = uint64(920)
 	CUBE_CROSSCHAIN_ID       = uint64(930)
+	RIPPLE_CROSSCHAIN_ID     = uint64(223)
 	ENV                      = "testnet"
 )
 

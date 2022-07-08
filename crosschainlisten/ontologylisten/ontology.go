@@ -87,15 +87,15 @@ func (this *OntologyChainListen) isListeningContract(contract string, contracts 
 	return false
 }
 
-func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.ontSdk.GetBlockByHeight(uint32(height))
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	tt := uint64(block.Header.Timestamp)
 	events, err := this.ontSdk.GetSmartContractEventByBlock(uint32(height))
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
@@ -248,7 +248,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 func (this *OntologyChainListen) GetExtendLatestHeight() (uint64, error) {

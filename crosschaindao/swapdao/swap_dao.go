@@ -58,7 +58,7 @@ func NewSwapDao(dbCfg *conf.DBConfig, backup bool) *SwapDao {
 	return swapDao
 }
 
-func (dao *SwapDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *SwapDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polySignDetails []*models.PolyDetail) error {
 	if !dao.backup {
 		if wrapperTransactions != nil && len(wrapperTransactions) > 0 {
 			res := dao.db.Save(wrapperTransactions)
@@ -379,4 +379,8 @@ func (dao *SwapDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.To
 
 func (dao *SwapDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
 	return nil, nil
+}
+
+func (dao *SwapDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
+	return
 }

@@ -43,6 +43,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/transactionsofstate/", &TransactionController{}, "post:TransactionsOfState"),
 		web.NSRouter("/transactionsofunfinished/", &TransactionController{}, "post:TransactionsOfUnfinished"),
 		web.NSRouter("/transactionsofasset/", &TransactionController{}, "post:TransactionsOfAsset"),
+		web.NSRouter("/transactionswithoutwrapper/", &TransactionController{}, "post:TransactionsWithoutWrapper"),
 		web.NSRouter("/expecttime/", &StatisticController{}, "post:ExpectTime"),
 		web.NSRouter("/gettokenasset/", &TokenAssetController{}, "post:Gettokenasset"),
 		web.NSRouter("/getmanualtxdata/", &TransactionController{}, "post:GetManualTxData"),

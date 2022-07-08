@@ -75,18 +75,18 @@ func (this *ZilliqaChainListen) getExtendLatestHeight(url string) (uint64, error
 	return info.GetLastHeight()
 }
 
-func (this *ZilliqaChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *ZilliqaChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.zliSdk.GetBlockByHeight(height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no zilliqa block!")
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no zilliqa block!")
 	}
 	srcTransactions := this.getzilliqaSrcTransactionByBlockNumber(height, block)
 	dstTransactions := this.getzilliqaDstTransactionByBlockNumber(height, block)
 
-	return nil, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
+	return nil, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uint64, block *chainsdk.ZilBlock) []*models.SrcTransaction {

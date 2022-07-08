@@ -20,7 +20,7 @@ func (c *WrapperController) WrapperCheck() {
 		c.ServeJSON()
 		return
 	}
-	wrappers, ok := wrapperContract[wrapperCheckReq.ChainId]
+	wrappers, ok := contractCheck[wrapperCheckReq.ChainId]
 	if !ok {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("no this chain!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
