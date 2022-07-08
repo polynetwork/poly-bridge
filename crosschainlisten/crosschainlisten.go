@@ -273,7 +273,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							logs.Error("check fee on block %d err: %v", height, err)
 							ch <- false
 						}
-						err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+						err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 						if err != nil {
 							logs.Error("UpdateEvents on block %d err: %v", height, err)
 							ch <- false
