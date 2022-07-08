@@ -325,15 +325,15 @@ func newChainSdks(config *conf.Config) {
 		celoSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.CELO_CROSSCHAIN_ID] = celoSdk
 	}
-	//{
-	//	chainConfig := config.GetChainListenConfig(basedef.CLOVER_CROSSCHAIN_ID)
-	//	if chainConfig == nil {
-	//		panic("clover chain is invalid")
-	//	}
-	//	urls := chainConfig.GetNodesUrl()
-	//	cloverSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
-	//	sdkMap[basedef.CLOVER_CROSSCHAIN_ID] = cloverSdk
-	//}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.CLOVER_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("clover chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		cloverSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.CLOVER_CROSSCHAIN_ID] = cloverSdk
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
