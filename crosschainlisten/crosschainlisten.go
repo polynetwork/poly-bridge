@@ -78,7 +78,7 @@ func StopCrossChainListen() {
 type ChainHandle interface {
 	GetExtendLatestHeight() (uint64, error)
 	GetLatestHeight() (uint64, error)
-	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error)
+	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error)
 	GetChainListenSlot() uint64
 	GetChainId() uint64
 	GetChainName() string
@@ -95,7 +95,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID,
 		basedef.PIXIE_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID,
 		basedef.HARMONY_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID, basedef.BCSPALETTE_CROSSCHAIN_ID, basedef.BYTOM_CROSSCHAIN_ID,
-		basedef.KCC_CROSSCHAIN_ID, basedef.MILKOMEDA_CROSSCHAIN_ID, basedef.BCSPALETTE2_CROSSCHAIN_ID, basedef.KAVA_CROSSCHAIN_ID, 
+		basedef.KCC_CROSSCHAIN_ID, basedef.MILKOMEDA_CROSSCHAIN_ID, basedef.BCSPALETTE2_CROSSCHAIN_ID, basedef.KAVA_CROSSCHAIN_ID,
 		basedef.CUBE_CROSSCHAIN_ID, basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID, basedef.CLOVER_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
@@ -167,10 +167,10 @@ func (ccl *CrossChainListen) ListenChain() {
 	}
 }
 
-func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, err error) {
+func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, wd []*models.WrapperDetail, pd []*models.PolyDetail, err error) {
 	// chain := ccl.handle.GetChainId()
 	// var locks, unlocks int
-	w, s, p, d, _, _, err = ccl.handle.HandleNewBlock(height)
+	w, s, p, d, wd, pd, _, _, err = ccl.handle.HandleNewBlock(height)
 	if err != nil {
 		return
 	}
@@ -249,7 +249,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				ch := make(chan bool, batchSize)
 				for i := uint64(1); i <= batchSize; i++ {
 					go func(height uint64) {
-						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.HandleNewBlock(height)
+						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails, err := ccl.HandleNewBlock(height)
 						if err != nil {
 							logs.Error("HandleNewBlock chain：%s, height: %d err: %v", ccl.handle.GetChainName(), height, err)
 							ch <- false
@@ -258,6 +258,12 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 						logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
 							"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
 							chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
+
+						err = ccl.db.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
+						if err != nil {
+							logs.Error("FillTxSpecialChain on block %d err: %v", height, err)
+							ch <- false
+						}
 
 						err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 						if err != nil {

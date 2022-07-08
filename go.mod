@@ -25,6 +25,8 @@ require (
 	github.com/polynetwork/cosmos-poly-module v0.0.0-20200827085015-12374709b707
 	github.com/polynetwork/poly v1.3.1
 	github.com/polynetwork/poly-go-sdk v0.0.0-20210114035303-84e1615f4ad4
+	github.com/polynetwork/ripple-sdk v0.0.0-20220616022641-d64d4aa053fe
+	github.com/rubblelabs/ripple v0.0.0-20220222071018-38c1a8b14c18
 	github.com/starcoinorg/starcoin-go v0.0.0-20220105024102-530daedc128b
 	github.com/stretchr/testify v1.7.0
 	github.com/tendermint/tendermint v0.33.7
@@ -36,4 +38,5 @@ require (
 replace (
 	github.com/cosmos/cosmos-sdk => github.com/Switcheo/cosmos-sdk v0.39.2-0.20200814061308-474a0dbbe4ba
 	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20210126025041-8d21ec4f0324
+	github.com/rubblelabs/ripple v0.0.0-20220222071018-38c1a8b14c18 => github.com/siovanus/ripple v0.0.0-20220406100637-81f6afe283d9
 )

@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -101,27 +100,33 @@ func (this *EthereumChainListen) getPLTUnlock(tx common.Hash) *models.ProxyUnloc
 	}
 }
 
-func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	startHeight := height - 2
 	endHeight := height
 
 	blockTimer := make(map[uint64]uint64)
 	for i := startHeight; i <= endHeight; i++ {
-		timestamp, err := this.ethSdk.GetBlockTimeByNumber(i)
+		blockHeader, err := this.ethSdk.GetHeaderByNumber(i)
 		if err != nil {
-			return nil, nil, nil, nil, 0, 0, err
+			return nil, nil, nil, nil, nil, nil, 0, 0, err
 		}
-		blockTimer[i] = timestamp
+		if blockHeader == nil {
+			if basedef.ENV == basedef.TESTNET && this.GetChainId() == basedef.OPTIMISTIC_CROSSCHAIN_ID {
+				continue
+			}
+			return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no ethereum block on height: %d!", i)
+		}
+		blockTimer[i] = blockHeader.Time
 	}
 
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	erc20WrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	nftWrapperTransactions, err := this.getNFTWrapperEventByBlockNumber(this.ethCfg.NFTWrapperContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	wrapperTransactions = append(wrapperTransactions, erc20WrapperTransactions...)
 	wrapperTransactions = append(wrapperTransactions, nftWrapperTransactions...)
@@ -134,18 +139,18 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 
 	proxyLockEvents, proxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
 	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err := this.getProxyEventByBlockNumber(startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 
 	nftProxyLockEvents, nftProxyUnlockEvents, err := this.getNFTProxyEventByBlockNumber(this.ethCfg.NFTProxyContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 
 	proxyLockEvents = append(proxyLockEvents, erc20ProxyLockEvents...)
@@ -155,7 +160,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 	swapLockEvents, swapEvents, err := this.getSwapEventByBlockNumber(this.ethCfg.SwapContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	proxyLockEvents = append(proxyLockEvents, swapLockEvents...)
 
@@ -293,7 +298,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			//}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(proxyLockEvents), len(proxyUnlockEvents), nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(proxyLockEvents), len(proxyUnlockEvents), nil
 }
 
 func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddrs []string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {

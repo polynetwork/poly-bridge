@@ -169,9 +169,12 @@ func (c *TransactionController) TransactionsOfAddress() {
 		c.ServeJSON()
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
-	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("inner join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
+	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).
+		Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").
+		Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
 		Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses)).
 		Where("src_transactions.standard = ?", 0).
+		Where("wrapper_transactions.hash is NOT NULL or src_transfers.chain_id = ?", basedef.RIPPLE_CROSSCHAIN_ID).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
 		Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
 		Joins("left join src_transactions on u.hash = src_transactions.hash").
@@ -521,5 +524,37 @@ func (c *TransactionController) GetManualTxData() {
 		return
 	}
 	c.return400(fmt.Sprintf("%v getManualData timeout", manualTxDataReq.PolyHash))
+	return
+}
+
+func (c *TransactionController) TransactionsWithoutWrapper() {
+	var txWithoutWrapperReq models.TxWithoutWrapperReq
+	var err error
+	if err = json.Unmarshal(c.Ctx.Input.RequestBody, &txWithoutWrapperReq); err != nil {
+		c.return400("request parameter is invalid!")
+		return
+	}
+	srcTransfers := make([]*models.SrcTransfer, 0)
+	db.Table("src_transfers").
+		Where("src_transfers.from = ?", txWithoutWrapperReq.User).
+		Where("src_transfers.chain_id = ?", txWithoutWrapperReq.ChainId).
+		Where("src_transfers.standard = ?", 0).
+		Where("wrapper_transactions.hash is NULL").
+		Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash and src_transfers.chain_id = wrapper_transactions.src_chain_id").
+		Limit(txWithoutWrapperReq.PageSize).
+		Offset(txWithoutWrapperReq.PageSize * txWithoutWrapperReq.PageNo).
+		Order("src_transfers.id desc").
+		Preload("Token").
+		Find(&srcTransfers)
+	var count int64
+	db.Table("src_transfers").
+		Where("src_transfers.from = ?", txWithoutWrapperReq.User).
+		Where("src_transfers.chain_id = ?", txWithoutWrapperReq.ChainId).
+		Where("src_transfers.standard = ?", 0).
+		Where("wrapper_transactions.hash is NULL").
+		Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash and src_transfers.chain_id = wrapper_transactions.src_chain_id").
+		Count(&count)
+	c.Data["json"] = models.MakeTxWithoutWrapperRsp(txWithoutWrapperReq.PageSize, txWithoutWrapperReq.PageNo, srcTransfers, count)
+	c.ServeJSON()
 	return
 }
