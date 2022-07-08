@@ -104,7 +104,7 @@ func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandl
 		if err != nil {
 			return err
 		}
-		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 		if err != nil {
 			return fmt.Errorf("UpdateEvents err", err)
 		}
