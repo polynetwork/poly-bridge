@@ -870,10 +870,10 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 		resp.ChainName = ChainId2Name(resp.ChainId)
 		resp.ChainLogo = ChainId2ChainCache(resp.ChainId).ChainLogo
 		resp.ChainExplorerUrl = ChainId2ChainCache(resp.ChainId).ChainExplorerUrl
-		resp.Hash = lockTokenStatistic.Hash
+		resp.Hash = basedef.FormatAddr(resp.ChainId, basedef.Hash2Address(resp.ChainId, lockTokenStatistic.Hash))
 		resp.TokenName = lockTokenStatistic.Token.Name
 		resp.TokenLogo = lockTokenStatistic.Token.TokenBasic.Meta
-		resp.ItemProxy = basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy)
+		resp.ItemProxy = basedef.FormatAddr(resp.ChainId, basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy))
 		resp.AmountUsd = decimal.NewFromBigInt(&lockTokenStatistic.InAmountUsd.Int, -4).String()
 		lockTokenInfoResps = append(lockTokenInfoResps, resp)
 	}
