@@ -764,7 +764,7 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 }
 
 func (dao *BridgeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) error {
-	if len(wrapperDetails) == 0 {
+	if len(wrapperDetails) == 0 && len(srcTransactions) == 0 && len(dstTransactions) == 0 {
 		return nil
 	}
 	rippleWDs := make([]*models.WrapperDetail, 0)
@@ -797,7 +797,7 @@ func (dao *BridgeDao) fillTxRipple(wrapperTransactions []*models.WrapperTransact
 		wrapperHashWdMap := make(map[string]([]*models.WrapperDetail))
 		wdHashs := make([]string, 0)
 		wrapperHashs := make([]string, 0)
-		for _, v := range wrapperDetails {
+		for _, v := range rippleWDs {
 			wdHashs = append(wdHashs, v.WrapperHash)
 			hashWdMap[v.Hash] = v
 		}
@@ -831,11 +831,17 @@ func (dao *BridgeDao) fillTxRipple(wrapperTransactions []*models.WrapperTransact
 				feeAmount.Add(feeAmount, &v1.FeeAmount.Int)
 			}
 			if wrapperDetail != nil {
+				var dstChainId uint64
+				var dstUser string
+				if txHashSrcInfo[k] != nil {
+					dstChainId = txHashSrcInfo[k].DstChainId
+					dstUser = txHashSrcInfo[k].DstUser
+				}
 				wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
 					Hash:         k,
 					User:         wrapperDetail.User,
-					DstChainId:   txHashSrcInfo[k].DstChainId,
-					DstUser:      txHashSrcInfo[k].DstUser,
+					DstChainId:   dstChainId,
+					DstUser:      dstUser,
 					FeeTokenHash: wrapperDetail.FeeTokenHash,
 					FeeAmount:    models.NewBigInt(feeAmount),
 					ServerId:     wrapperDetail.ServerId,
@@ -860,7 +866,7 @@ func (dao *BridgeDao) fillTxRipple(wrapperTransactions []*models.WrapperTransact
 			dstXRPinfo[v.ChainId] = v
 		}
 		for _, v := range srcTransactions {
-			if v.ChainId == basedef.RIPPLE_CROSSCHAIN_ID {
+			if v.ChainId == basedef.RIPPLE_CROSSCHAIN_ID && v.SrcTransfer != nil && dstXRPinfo[v.SrcTransfer.DstChainId] != nil {
 				v.SrcTransfer.DstAsset = dstXRPinfo[v.SrcTransfer.DstChainId].Hash
 			}
 		}
@@ -878,7 +884,7 @@ func (dao *BridgeDao) fillTxRipple(wrapperTransactions []*models.WrapperTransact
 			sequencePolyHash[v.DstSequence] = v
 		}
 		for _, v := range dstTransactions {
-			if v.ChainId == basedef.RIPPLE_CROSSCHAIN_ID {
+			if v.ChainId == basedef.RIPPLE_CROSSCHAIN_ID && sequencePolyHash[v.Sequence] != nil {
 				v.PolyHash = sequencePolyHash[v.Sequence].Hash
 				v.SrcChainId = sequencePolyHash[v.Sequence].SrcChainId
 			}

@@ -97,7 +97,13 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				time := uint64(txData.Date.Uint32())
 				fromAccount := payment.Account.String()
 				toAccount := payment.Destination.String()
-				fee, _ := new(big.Int).SetString(payment.Fee.String(), 10)
+				fee := big.NewInt(0)
+				paymentfee, err := payment.Fee.NonNative()
+				if err == nil {
+					if feeAmount, ok := new(big.Int).SetString(paymentfee.String(), 10); ok {
+						fee = feeAmount
+					}
+				}
 				nonNative, err := txData.MetaData.DeliveredAmount.NonNative()
 				if err != nil {
 					logs.Error("chian :%v, height: %v, txhasah: %v, txData.MetaData.DeliveredAmount.NonNative() err: %v", this.GetChainName(), height, payment.Hash.String(), err)
