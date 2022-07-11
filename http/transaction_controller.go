@@ -172,9 +172,9 @@ func (c *TransactionController) TransactionsOfAddress() {
 	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).
 		Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").
 		Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
-		Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses)).
+		Where("`from` in ? or src_transfers.dst_user in ?", transactionsOfAddressReq.Addresses, transactionsOfAddressReq.Addresses).
+		Where("wrapper_transactions.hash is NOT NULL or src_transfers.chain_id = ?", basedef.RIPPLE_CROSSCHAIN_ID)).
 		Where("src_transactions.standard = ?", 0).
-		Where("wrapper_transactions.hash is NOT NULL or src_transfers.chain_id = ?", basedef.RIPPLE_CROSSCHAIN_ID).
 		Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
 		Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
 		Joins("left join src_transactions on u.hash = src_transactions.hash").
