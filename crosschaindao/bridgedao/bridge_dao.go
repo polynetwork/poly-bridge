@@ -36,36 +36,9 @@ import (
 )
 
 type BridgeDao struct {
-	dbCfg             *conf.DBConfig
-	chainListenConfig []*conf.ChainListenConfig
-	feeListenConfig   []*conf.FeeListenConfig
-	db                *gorm.DB
-	EstimateProxy     map[string]bool
-	EstimateFeeMin    map[uint64]int64
-	backup            bool
-}
-
-func (dao *BridgeDao) initEstimateProxy() {
-	dao.EstimateProxy = make(map[string]bool, 0)
-	proxyConfigs := dao.chainListenConfig
-	for _, v := range proxyConfigs {
-		for _, proxy := range v.OtherProxyContract {
-			if proxy.ItemName == "O3V2" {
-				dao.EstimateProxy[strings.ToUpper(proxy.ItemProxy)] = true
-				dao.EstimateProxy[strings.ToUpper(basedef.HexStringReverse(proxy.ItemProxy))] = true
-			}
-		}
-	}
-	logs.Info("init EstimateProxy:", dao.EstimateProxy)
-}
-
-func (dao *BridgeDao) initEstimateFeeMin() {
-	dao.EstimateFeeMin = make(map[uint64]int64, 0)
-	feeListenConfig := dao.feeListenConfig
-	for _, v := range feeListenConfig {
-		dao.EstimateFeeMin[v.ChainId] = v.MinFee
-	}
-	logs.Info("init EstimateFeeMin:", dao.EstimateFeeMin)
+	dbCfg  *conf.DBConfig
+	db     *gorm.DB
+	backup bool
 }
 
 func NewBridgeDao(dbCfg *conf.DBConfig, backup bool) *BridgeDao {
@@ -83,27 +56,6 @@ func NewBridgeDao(dbCfg *conf.DBConfig, backup bool) *BridgeDao {
 		panic(err)
 	}
 	swapDao.db = db
-	return swapDao
-}
-func NewBridgeDaoCheckFee(dbCfg *conf.DBConfig, chainListenConfig []*conf.ChainListenConfig, feeListenConfig []*conf.FeeListenConfig, backup bool) *BridgeDao {
-	swapDao := &BridgeDao{
-		dbCfg:             dbCfg,
-		chainListenConfig: chainListenConfig,
-		feeListenConfig:   feeListenConfig,
-		backup:            backup,
-	}
-	Logger := logger.Default
-	if dbCfg.Debug == true {
-		Logger = Logger.LogMode(logger.Info)
-	}
-	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
-	if err != nil {
-		panic(err)
-	}
-	swapDao.db = db
-	swapDao.initEstimateProxy()
-	swapDao.initEstimateFeeMin()
 	return swapDao
 }
 
@@ -732,13 +684,13 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 			feeMin = new(big.Float).Add(feeMin, L1MinFee)
 		}
 
-		if _, in := dao.EstimateProxy[strings.ToUpper(curSrcTransaction.Contract)]; in {
+		if _, in := conf.EstimateProxy[strings.ToUpper(curSrcTransaction.Contract)]; in {
 			//is estimateGas proxy
 			if gasPay.Cmp(new(big.Float).SetInt64(0)) <= 0 {
 				v.IsPaid = false
 				continue
 			}
-			if minFee, in := dao.EstimateFeeMin[v.DstChainId]; in {
+			if minFee, in := conf.EstimateFeeMin[v.DstChainId]; in {
 				if minFee > 0 && minFee < 100 {
 					gasPay = new(big.Float).Mul(gasPay, new(big.Float).SetInt64(100))
 					gasPay = new(big.Float).Quo(gasPay, new(big.Float).SetInt64(minFee))
@@ -757,7 +709,7 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 			logs.Info("check fee wrapper_hash %s PAID,feePay %v >= feeMin %v", v.Hash, feePayFloat64, feeMinFloat64)
 		} else {
 			v.IsPaid = false
-			logs.Info("check fee wrapper_hash %s NOT_PAID,feePay %v < FluctuatingFeeMin %v", v.Hash, feePayFloat64, feeMinFloat64)
+			logs.Info("check fee wrapper_hash %s NOT_PAID,feePay %v < feeMin %v", v.Hash, feePayFloat64, feeMinFloat64)
 		}
 	}
 	return nil

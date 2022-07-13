@@ -49,11 +49,6 @@ func TestFloat64(t *testing.T) {
 
 }
 
-func TestNewBridgeDaoCheckFee(t *testing.T) {
-	cfg := conf.NewConfig("../../config.json")
-	NewBridgeDaoCheckFee(cfg.DBConfig, cfg.ChainListenConfig, cfg.FeeListenConfig, false)
-}
-
 func TestPointer(t *testing.T) {
 	var curSrcTransaction *models.SrcTransaction
 	if curSrcTransaction == nil {

@@ -52,7 +52,7 @@ import (
 var chainListens = make([]*CrossChainListen, 0)
 
 func StartCrossChainListen(config *conf.Config) {
-	dao := crosschaindao.NewCrossChainDaoWithCheckFeeConfig(config.Server, config.Backup, config.DBConfig, config.ChainListenConfig, config.FeeListenConfig)
+	dao := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
