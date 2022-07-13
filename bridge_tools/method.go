@@ -95,10 +95,11 @@ func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandl
 		logs.Error(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
 		return err
 	}
-	err = dao.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
+	detailWrapperTxs, err := dao.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 	if err != nil {
 		return fmt.Errorf("FillTxSpecialChain err", err)
 	}
+	wrapperTransactions = append(wrapperTransactions, detailWrapperTxs...)
 	if save {
 		err = dao.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 		if err != nil {

@@ -763,9 +763,9 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 	return nil
 }
 
-func (dao *BridgeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) error {
+func (dao *BridgeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
 	if len(wrapperDetails) == 0 && len(srcTransactions) == 0 && len(dstTransactions) == 0 {
-		return nil
+		return
 	}
 	rippleWDs := make([]*models.WrapperDetail, 0)
 	rippleSrctxs := make([]*models.SrcTransaction, 0)
@@ -788,11 +788,12 @@ func (dao *BridgeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTr
 			rippleDsttxs = append(rippleDsttxs, v)
 		}
 	}
-	return dao.fillTxRipple(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails, rippleWDs, rippleSrctxs, rippleDsttxs)
+	return dao.fillTxRipple(srcTransactions, dstTransactions, rippleWDs, rippleSrctxs, rippleDsttxs)
 }
 
-func (dao *BridgeDao) fillTxRipple(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail, rippleWDs []*models.WrapperDetail, rippleSrctxs []*models.SrcTransaction, rippleDsttxs []*models.DstTransaction) error {
+func (dao *BridgeDao) fillTxRipple(srcTransactions []*models.SrcTransaction, dstTransactions []*models.DstTransaction, rippleWDs []*models.WrapperDetail, rippleSrctxs []*models.SrcTransaction, rippleDsttxs []*models.DstTransaction) (detailWrapperTxs []*models.WrapperTransaction, err error) {
 	if len(rippleWDs) > 0 {
+		detailWrapperTxs = make([]*models.WrapperTransaction, 0)
 		hashWdMap := make(map[string]*models.WrapperDetail)
 		wrapperHashWdMap := make(map[string]([]*models.WrapperDetail))
 		wdHashs := make([]string, 0)
@@ -837,7 +838,7 @@ func (dao *BridgeDao) fillTxRipple(wrapperTransactions []*models.WrapperTransact
 					dstChainId = txHashSrcInfo[k].DstChainId
 					dstUser = txHashSrcInfo[k].DstUser
 				}
-				wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+				detailWrapperTxs = append(detailWrapperTxs, &models.WrapperTransaction{
 					Hash:         k,
 					User:         wrapperDetail.User,
 					DstChainId:   dstChainId,
@@ -891,5 +892,5 @@ func (dao *BridgeDao) fillTxRipple(wrapperTransactions []*models.WrapperTransact
 		}
 
 	}
-	return nil
+	return
 }

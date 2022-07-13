@@ -259,14 +259,15 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							return
 						}
 						logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
-							"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
-							chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
+							"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d, len(wrapperDetails)=%d, len(polyDetails)=%d",
+							chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), len(wrapperDetails), len(polyDetails))
 
-						err = ccl.db.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
+						detailWrapperTxs, err := ccl.db.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 						if err != nil {
 							logs.Error("FillTxSpecialChain on block %d err: %v", height, err)
 							ch <- false
 						}
+						wrapperTransactions = append(wrapperTransactions, detailWrapperTxs...)
 
 						err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 						if err != nil {

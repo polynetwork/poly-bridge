@@ -79,7 +79,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
-
+	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
 	wrapperDetails := make([]*models.WrapperDetail, 0)
@@ -208,7 +208,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 			}
 		}
 	}
-	return nil, srcTransactions, nil, dstTransactions, wrapperDetails, nil, len(srcTransactions), len(dstTransactions), nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, wrapperDetails, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 func isContract(srcContract string, contracts ...string) bool {
