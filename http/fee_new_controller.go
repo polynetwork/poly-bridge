@@ -164,7 +164,7 @@ func (c *FeeController) NewCheckFee() {
 				logs.Info("check fee poly_hash %s PAID,feePay %v >= feeMin %v", k, v.Paid, v.Min)
 			} else {
 				v.Status = NOT_PAID
-				logs.Info("check fee poly_hash %s NOT_PAID,feePay %v < FluctuatingFeeMin %v", k, v.Paid, v.Min)
+				logs.Info("check fee poly_hash %s NOT_PAID,feePay %v < feeMin %v", k, v.Paid, v.Min)
 			}
 		}
 	}
@@ -213,12 +213,11 @@ func checkFeeSrcTransaction(chainId uint64, txId string) (*models.SrcTransaction
 //checkFeewrapperTransaction fetch wrapper transaction record from db
 func checkFeewrapperTransaction(srcHashs []string, mapCheckFeesReq map[string]*models.CheckFeeRequest) {
 	wrapperTransactionWithTokens := make([]*models.WrapperTransactionWithToken, 0)
-	db.Debug().Table("wrapper_transactions").Where("hash in ?", srcHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
+	db.Table("wrapper_transactions").Where("hash in ?", srcHashs).Preload("FeeToken").Preload("FeeToken.TokenBasic").Find(&wrapperTransactionWithTokens)
 	for _, v := range mapCheckFeesReq {
 		for _, wrapper := range wrapperTransactionWithTokens {
 			if v.SrcTransaction != nil && v.SrcTransaction.Hash == wrapper.Hash {
 				v.WrapperTransactionWithToken = wrapper
-				fmt.Println(wrapper)
 				break
 			}
 		}
