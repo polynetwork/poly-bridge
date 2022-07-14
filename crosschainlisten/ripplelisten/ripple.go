@@ -194,11 +194,11 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 					})
 				} else if isContract(toAccount, this.rippleCfg.WrapperContract...) {
 					type WrapperInfo struct {
-						DstChain uint64
-						DstUser  string
-						Amount   string
-						LockHash string
-						Asset    string
+						SrcAddress string
+						DstChain   uint64
+						DstAddress string
+						Amount     string
+						LockTxHash string
 					}
 					//wrapperTx
 					if len(payment.Memos) > 0 {
@@ -208,15 +208,15 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							err = json.Unmarshal(memoData, wrapperInfo)
 							if err == nil {
 								wrapperDetails = append(wrapperDetails, &models.WrapperDetail{
-									WrapperHash:  wrapperInfo.LockHash,
+									WrapperHash:  wrapperInfo.LockTxHash,
 									Hash:         hash,
-									User:         fromAccount,
+									User:         models.FormatString(wrapperInfo.SrcAddress),
 									SrcChainId:   this.GetChainId(),
 									Standard:     models.TokenTypeErc20,
 									BlockHeight:  height,
 									Time:         time,
 									DstChainId:   wrapperInfo.DstChain,
-									DstUser:      models.FormatString(wrapperInfo.DstUser),
+									DstUser:      models.FormatString(wrapperInfo.DstAddress),
 									ServerId:     0,
 									FeeTokenHash: this.GetXRP(),
 									FeeAmount:    models.NewBigInt(amount),
