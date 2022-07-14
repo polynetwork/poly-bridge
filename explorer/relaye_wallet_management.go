@@ -32,12 +32,16 @@ var AssetCirculateDetailDescription = []string{
 	"auto extract fee from wrapper and circluate to BSC",
 	"l2 wallet refill relayer account with distribute",
 	"contract deployment",
+	"auto extract fee from wrapper",
+	"auto swap asset for avoiding risk",
 }
 var specialRefillDetailsId = map[uint]bool{
 	0: true,
 	1: true,
 	3: true,
 	5: true,
+	7: true,
+	8: true,
 }
 
 var specialTransactionInfoId = map[uint]bool{
