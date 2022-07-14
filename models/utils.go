@@ -412,6 +412,13 @@ func FormatString(data string) string {
 	return data
 }
 
+func Format8190(data string) string {
+	if len(data) > 8190 {
+		return data[:8190]
+	}
+	return data
+}
+
 func GetTokenType(chainId uint64, standard uint8) string {
 	tokenType := ""
 	switch standard {

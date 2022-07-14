@@ -716,22 +716,15 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 }
 
 func (dao *BridgeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
-	if len(wrapperDetails) == 0 && len(srcTransactions) == 0 && len(dstTransactions) == 0 {
+	if len(wrapperDetails) == 0 && len(dstTransactions) == 0 {
 		return
 	}
 	rippleWDs := make([]*models.WrapperDetail, 0)
-	rippleSrctxs := make([]*models.SrcTransaction, 0)
 	rippleDsttxs := make([]*models.DstTransaction, 0)
 	for _, v := range wrapperDetails {
 		switch v.SrcChainId {
 		case basedef.RIPPLE_CROSSCHAIN_ID:
 			rippleWDs = append(rippleWDs, v)
-		}
-	}
-	for _, v := range srcTransactions {
-		switch v.ChainId {
-		case basedef.RIPPLE_CROSSCHAIN_ID:
-			rippleSrctxs = append(rippleSrctxs, v)
 		}
 	}
 	for _, v := range dstTransactions {
@@ -740,10 +733,10 @@ func (dao *BridgeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTr
 			rippleDsttxs = append(rippleDsttxs, v)
 		}
 	}
-	return dao.fillTxRipple(srcTransactions, dstTransactions, rippleWDs, rippleSrctxs, rippleDsttxs)
+	return dao.fillTxRipple(dstTransactions, rippleWDs, rippleDsttxs)
 }
 
-func (dao *BridgeDao) fillTxRipple(srcTransactions []*models.SrcTransaction, dstTransactions []*models.DstTransaction, rippleWDs []*models.WrapperDetail, rippleSrctxs []*models.SrcTransaction, rippleDsttxs []*models.DstTransaction) (detailWrapperTxs []*models.WrapperTransaction, err error) {
+func (dao *BridgeDao) fillTxRipple(dstTransactions []*models.DstTransaction, rippleWDs []*models.WrapperDetail, rippleDsttxs []*models.DstTransaction) (detailWrapperTxs []*models.WrapperTransaction, err error) {
 	if len(rippleWDs) > 0 {
 		detailWrapperTxs = make([]*models.WrapperTransaction, 0)
 		hashWdMap := make(map[string]*models.WrapperDetail)
@@ -771,12 +764,6 @@ func (dao *BridgeDao) fillTxRipple(srcTransactions []*models.SrcTransaction, dst
 			wrapperHashs = append(wrapperHashs, v.WrapperHash)
 		}
 
-		srcTransfers := make([]*models.SrcTransfer, 0)
-		dao.db.Where("tx_hash in ?", wdHashs).Find(&srcTransfers)
-		txHashSrcInfo := make(map[string]*models.SrcTransfer)
-		for _, v := range srcTransfers {
-			txHashSrcInfo[v.TxHash] = v
-		}
 		for k, v := range wrapperHashWdMap {
 			feeAmount := big.NewInt(0)
 			wrapperDetail := v[0]
@@ -784,17 +771,11 @@ func (dao *BridgeDao) fillTxRipple(srcTransactions []*models.SrcTransaction, dst
 				feeAmount.Add(feeAmount, &v1.FeeAmount.Int)
 			}
 			if wrapperDetail != nil {
-				var dstChainId uint64
-				var dstUser string
-				if txHashSrcInfo[k] != nil {
-					dstChainId = txHashSrcInfo[k].DstChainId
-					dstUser = txHashSrcInfo[k].DstUser
-				}
 				detailWrapperTxs = append(detailWrapperTxs, &models.WrapperTransaction{
 					Hash:         k,
 					User:         wrapperDetail.User,
-					DstChainId:   dstChainId,
-					DstUser:      dstUser,
+					DstChainId:   wrapperDetail.DstChainId,
+					DstUser:      wrapperDetail.DstUser,
 					FeeTokenHash: wrapperDetail.FeeTokenHash,
 					FeeAmount:    models.NewBigInt(feeAmount),
 					ServerId:     wrapperDetail.ServerId,
@@ -803,24 +784,6 @@ func (dao *BridgeDao) fillTxRipple(srcTransactions []*models.SrcTransaction, dst
 					BlockHeight:  wrapperDetail.BlockHeight,
 					SrcChainId:   wrapperDetail.SrcChainId,
 				})
-			}
-		}
-	}
-
-	if len(rippleSrctxs) > 0 {
-		dstChainXRP := make([]uint64, 0)
-		for _, v := range rippleSrctxs {
-			dstChainXRP = append(dstChainXRP, v.DstChainId)
-		}
-		tokens := make([]*models.Token, 0)
-		dao.db.Where("property = 1 and chain_id in ? ", dstChainXRP).Find(&tokens)
-		dstXRPinfo := make(map[uint64]*models.Token)
-		for _, v := range tokens {
-			dstXRPinfo[v.ChainId] = v
-		}
-		for _, v := range srcTransactions {
-			if v.ChainId == basedef.RIPPLE_CROSSCHAIN_ID && v.SrcTransfer != nil && dstXRPinfo[v.SrcTransfer.DstChainId] != nil {
-				v.SrcTransfer.DstAsset = dstXRPinfo[v.SrcTransfer.DstChainId].Hash
 			}
 		}
 	}

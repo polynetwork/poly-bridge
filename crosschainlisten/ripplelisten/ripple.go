@@ -11,6 +11,7 @@ import (
 	"poly-bridge/models"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 type RippleChainListen struct {
@@ -117,19 +118,27 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 					type CrossChainInfo struct {
 						DstChain   uint64
 						DstAddress string
+						DstAsset   string
 					}
 					crossChainInfo := new(CrossChainInfo)
-					if len(payment.Memos) > 0 {
-						memoData, err := hex.DecodeString(payment.Memos[0].Memo.MemoData.String())
-						if err == nil {
-							err = json.Unmarshal(memoData, crossChainInfo)
-							if err != nil {
-								logs.Error("HandleNewBlock: deserialize cross chain info error: %v, chain : %v, txHash is: %s", err, this.GetChainName(), hash)
-							}
-						} else {
-							logs.Error("HandleNewBlock: DecodeString MemoData error: %v, chain : %v, txHash is: %s", err, this.GetChainName(), hash)
-						}
+					if len(payment.Memos) == 0 {
+						continue
 					}
+					memoData, err := hex.DecodeString(payment.Memos[0].Memo.MemoData.String())
+					if err != nil {
+						logs.Error("HandleNewBlock: DecodeString MemoData error: %v, chain : %v, txHash is: %s", err, this.GetChainName(), hash)
+						continue
+					}
+					if !utf8.ValidString(string(memoData)) {
+						logs.Error("HandleNewBlock: memoData ValidString error: %v, chain : %v, txHash is: %s", err, this.GetChainName(), hash)
+						continue
+					}
+					err = json.Unmarshal(memoData, crossChainInfo)
+					if err != nil {
+						logs.Error("HandleNewBlock: deserialize cross chain info error: %v, chain : %v, txHash is: %s", err, this.GetChainName(), hash)
+						continue
+					}
+
 					param, _ := json.Marshal(payment.Memos)
 
 					srcTransactions = append(srcTransactions, &models.SrcTransaction{
@@ -144,7 +153,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						DstChainId: crossChainInfo.DstChain,
 						Contract:   fromAccount,
 						Key:        strconv.Itoa(int(payment.Sequence)),
-						Param:      string(param),
+						Param:      models.Format8190(string(param)),
 						SrcTransfer: &models.SrcTransfer{
 							TxHash:     hash,
 							ChainId:    this.GetChainId(),
@@ -155,8 +164,8 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							To:         toAccount,
 							Amount:     models.NewBigInt(amount),
 							DstChainId: crossChainInfo.DstChain,
-							DstAsset:   "", //
-							DstUser:    crossChainInfo.DstAddress,
+							DstAsset:   strings.ToLower(crossChainInfo.DstAsset),
+							DstUser:    models.FormatString(crossChainInfo.DstAddress),
 						},
 					})
 				} else if isContract(fromAccount, this.rippleCfg.CCMContract) {
@@ -184,24 +193,35 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						},
 					})
 				} else if isContract(toAccount, this.rippleCfg.WrapperContract...) {
+					type WrapperInfo struct {
+						DstChain uint64
+						DstUser  string
+						Amount   string
+						LockHash string
+						Asset    string
+					}
 					//wrapperTx
 					if len(payment.Memos) > 0 {
 						memoData, err := hex.DecodeString(payment.Memos[0].Memo.MemoData.String())
-						if err == nil && len(memoData) > 0 {
-							wrapperDetails = append(wrapperDetails, &models.WrapperDetail{
-								WrapperHash:  string(memoData),
-								Hash:         hash,
-								User:         fromAccount,
-								SrcChainId:   this.GetChainId(),
-								Standard:     models.TokenTypeErc20,
-								BlockHeight:  height,
-								Time:         time,
-								DstChainId:   0,  //
-								DstUser:      "", //
-								ServerId:     0,
-								FeeTokenHash: this.GetXRP(),
-								FeeAmount:    models.NewBigInt(amount),
-							})
+						if err == nil && len(memoData) > 0 && utf8.ValidString(string(memoData)) {
+							wrapperInfo := new(WrapperInfo)
+							err = json.Unmarshal(memoData, wrapperInfo)
+							if err == nil {
+								wrapperDetails = append(wrapperDetails, &models.WrapperDetail{
+									WrapperHash:  wrapperInfo.LockHash,
+									Hash:         hash,
+									User:         fromAccount,
+									SrcChainId:   this.GetChainId(),
+									Standard:     models.TokenTypeErc20,
+									BlockHeight:  height,
+									Time:         time,
+									DstChainId:   wrapperInfo.DstChain,
+									DstUser:      models.FormatString(wrapperInfo.DstUser),
+									ServerId:     0,
+									FeeTokenHash: this.GetXRP(),
+									FeeAmount:    models.NewBigInt(amount),
+								})
+							}
 						}
 					}
 				}
