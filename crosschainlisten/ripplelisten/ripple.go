@@ -6,6 +6,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/rubblelabs/ripple/data"
 	"math/big"
+	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -53,7 +54,11 @@ func (this *RippleChainListen) GetBatchSize() uint64 {
 }
 
 func (this *RippleChainListen) GetXRP() string {
-	return "0000000000000000000000000000000000000000"
+	assetXRP := "51fa7b7c1e0c79b54de202e6a24fef61bf54f442"
+	if basedef.ENV == basedef.TESTNET {
+		return assetXRP
+	}
+	return assetXRP
 }
 
 func (this *RippleChainListen) GetExtendLatestHeight() (uint64, error) {
