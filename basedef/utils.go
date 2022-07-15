@@ -186,6 +186,14 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		}
 		hash := fmt.Sprint(addr)
 		return hash, nil
+	} else if chainId == NEO3_CROSSCHAIN_ID {
+		scriptHash, err := crypto.AddressToScriptHash(value, neo3_helper.DefaultAddressVersion)
+		if err != nil {
+			return value, err
+		}
+		addrBytes := scriptHash.ToByteArray()
+		address := hex.EncodeToString(addrBytes)
+		return address, nil
 	} else if chainId == ARBITRUM_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
@@ -214,6 +222,15 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
 	} else if chainId == CUBE_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == ZKSYNC_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == CELO_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == CLOVER_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
 	}
@@ -292,7 +309,44 @@ func GetChainName(id uint64) string {
 		return "KAVA"
 	case CUBE_CROSSCHAIN_ID:
 		return "CUBE"
+	case ZKSYNC_CROSSCHAIN_ID:
+		return "zkSync"
+	case CELO_CROSSCHAIN_ID:
+		return "Celo"
+	case CLOVER_CROSSCHAIN_ID:
+		return "CLV P-Chain"
+
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
 	}
+}
+
+func FormatAddr(chain uint64, addr string) string {
+	switch chain {
+	case ONT_CROSSCHAIN_ID, SWITCHEO_CROSSCHAIN_ID, ZILLIQA_CROSSCHAIN_ID, NEO_CROSSCHAIN_ID, NEO3_CROSSCHAIN_ID:
+		return addr
+	case STARCOIN_CROSSCHAIN_ID:
+		if Has0xPrefix(addr) {
+			addr = addr[2:]
+		}
+		return "0x" + addr
+	default:
+		return common.HexToAddress(addr).String()
+	}
+}
+
+func FormatTxHash(chain uint64, hash string) string {
+	switch chain {
+	case ONT_CROSSCHAIN_ID:
+		return hash
+	case SWITCHEO_CROSSCHAIN_ID:
+		return strings.ToUpper(hash)
+	default:
+		return common.HexToHash(hash).String()
+	}
+}
+
+// Has0xPrefix validates str begins with '0x' or '0X'.
+func Has0xPrefix(str string) bool {
+	return len(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')
 }

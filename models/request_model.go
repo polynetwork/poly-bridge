@@ -602,19 +602,44 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 				srcTransactionState.Blocks = srcTransactionState.NeedBlocks
 			}
 		}
-		if transaction.ChainId == basedef.ARBITRUM_CROSSCHAIN_ID {
+
+		switch transaction.ChainId {
+		case basedef.ARBITRUM_CROSSCHAIN_ID:
 			if l1BlockNumber, err := GetL1BlockNumberOfArbitrumTx(transaction.SrcTransaction.Hash); err == nil {
 				height = l1BlockNumber
 				ethChain, ok := chainsMap[basedef.ETHEREUM_CROSSCHAIN_ID]
 				if ok {
 					srcTransactionState.NeedBlocks = ethChain.BackwardBlockNumber
-					srcTransactionState.Blocks = ethChain.Height - height
+					if ethChain.Height < height {
+						srcTransactionState.Blocks = 0
+					} else {
+						srcTransactionState.Blocks = ethChain.Height - height
+					}
 					if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
 						srcTransactionState.Blocks = srcTransactionState.NeedBlocks
 					}
 				}
 			} else {
 				logs.Error("GetL1BlockNumberOfArbitrumTx failed. hash=%s, err:", transaction.SrcTransaction.Hash, err)
+			}
+		case basedef.ZKSYNC_CROSSCHAIN_ID:
+			if zkChain, ok := chainsMap[basedef.ZKSYNC_CROSSCHAIN_ID]; ok {
+				l1ChainId := basedef.ETHEREUM_CROSSCHAIN_ID
+				if basedef.ENV == basedef.TESTNET {
+					l1ChainId = basedef.GOERLI_CROSSCHAIN_ID
+				}
+				l1Chain, _ := chainsMap[l1ChainId]
+				if l1Height, err := GetZkSyncL1Height(zkChain, l1Chain); err != nil {
+					srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
+					if l1Height < height {
+						srcTransactionState.Blocks = 0
+					} else {
+						srcTransactionState.Blocks = l1Height - height
+					}
+					if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
+						srcTransactionState.Blocks = srcTransactionState.NeedBlocks
+					}
+				}
 			}
 		}
 	}

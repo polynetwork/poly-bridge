@@ -45,7 +45,7 @@ func TestEthNodeMonitor(t *testing.T) {
 
 func EthNodeMonitor(config *conf.Config) {
 	logs.Info("EthNodeMonitor")
-	chainId := basedef.BOBA_CROSSCHAIN_ID
+	chainId := basedef.ZKSYNC_CROSSCHAIN_ID
 	var ccmContractAddr string
 	for _, listenConfig := range config.ChainListenConfig {
 		if listenConfig.ChainId == chainId {
@@ -71,6 +71,13 @@ func EthNodeMonitor(config *conf.Config) {
 				//height = 13881338
 
 				logs.Info("node: %s, height: %d", node.Url, height)
+
+				timestamp, err := sdk.GetBlockTimeByNumber(chainId, height)
+				if err != nil {
+					logs.Error("node: %s, GetHeaderTimeByBlockNumber err: %s, ", sdk.GetUrl(), err)
+					continue
+				}
+				logs.Info("node: %s, GetHeaderTimeByBlockNumber: %d, time:%d", node.Url, height, timestamp)
 
 				eccmContractAddress := common.HexToAddress(ccmContractAddr)
 				client := sdk.GetClient()

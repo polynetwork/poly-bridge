@@ -28,7 +28,6 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ethereum/go-ethereum/common"
@@ -37,7 +36,6 @@ import (
 	"poly-bridge/utils/decimal"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 type ExplorerInfoResp struct {
@@ -194,7 +192,7 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		ChainName:        ChainId2Name(fChainTx.ChainId),
 		ChainLogo:        ChainId2ChainCache(fChainTx.ChainId).ChainFeeLogo,
 		ChainExplorerUrl: ChainId2ChainCache(fChainTx.ChainId).ChainExplorerUrl,
-		TxHash:           fChainTx.Hash,
+		TxHash:           basedef.FormatTxHash(fChainTx.ChainId, fChainTx.Hash),
 		State:            byte(fChainTx.State),
 		TT:               uint32(fChainTx.Time),
 		Fee:              FormatFee(fChainTx.ChainId, fChainTx.Fee),
@@ -213,8 +211,8 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		fChainTx.SrcTransfer.Amount = NewBigIntFromInt(0)
 	}
 	fChainTxResp.Transfer = &FChainTransferResp{
-		From:        basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.From),
-		To:          basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.To),
+		From:        basedef.FormatAddr(fChainTx.SrcTransfer.ChainId, basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.From)),
+		To:          basedef.FormatAddr(fChainTx.SrcTransfer.ChainId, basedef.Hash2Address(fChainTx.SrcTransfer.ChainId, fChainTx.SrcTransfer.To)),
 		Amount:      strconv.FormatUint(fChainTx.SrcTransfer.Amount.Uint64(), 10),
 		ToChain:     uint32(fChainTx.SrcTransfer.DstChainId),
 		ToChainName: ChainId2Name(fChainTx.SrcTransfer.DstChainId),
@@ -243,11 +241,6 @@ func makeFChainTxResp(fChainTx *SrcTransaction, token, toToken *Token) *FChainTx
 		fChainTxResp.Transfer.ToTokenType = GetTokenType(toToken.ChainId, toToken.Standard)
 	} else {
 		fChainTxResp.Transfer.ToTokenName = fChainTx.SrcTransfer.DstAsset
-	}
-	if fChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID || fChainTx.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
-		fChainTxResp.TxHash = "0x" + fChainTxResp.TxHash
-	} else if fChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
-		fChainTxResp.TxHash = strings.ToUpper(fChainTxResp.TxHash)
 	}
 	return fChainTxResp
 }
@@ -334,7 +327,7 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		ChainName:        ChainId2Name(tChainTx.ChainId),
 		ChainLogo:        ChainId2ChainCache(tChainTx.ChainId).ChainLogo,
 		ChainExplorerUrl: ChainId2ChainCache(tChainTx.ChainId).ChainExplorerUrl,
-		TxHash:           tChainTx.Hash,
+		TxHash:           basedef.FormatTxHash(tChainTx.ChainId, tChainTx.Hash),
 		State:            byte(tChainTx.State),
 		TT:               uint32(tChainTx.Time),
 		Fee:              FormatFee(tChainTx.ChainId, tChainTx.Fee),
@@ -351,8 +344,8 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTx.DstTransfer.Amount = NewBigIntFromInt(0)
 	}
 	tChainTxResp.Transfer = &TChainTransferResp{
-		From:   basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.From),
-		To:     basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.To),
+		From:   basedef.FormatAddr(tChainTx.DstTransfer.ChainId, basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.From)),
+		To:     basedef.FormatAddr(tChainTx.DstTransfer.ChainId, basedef.Hash2Address(tChainTx.DstTransfer.ChainId, tChainTx.DstTransfer.To)),
 		Amount: tChainTx.DstTransfer.Amount.String(),
 	}
 	tChainTxResp.Transfer.TokenHash = tChainTx.DstTransfer.Asset
@@ -369,11 +362,6 @@ func makeTChainTxResp(tChainTx *DstTransaction, toToken *Token) *TChainTxResp {
 		tChainTxResp.Transfer.Amount = tChainTx.DstTransfer.Amount.String()
 	}
 
-	if tChainTx.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID || tChainTx.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
-		tChainTxResp.TxHash = "0x" + tChainTxResp.TxHash
-	} else if tChainTx.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
-		tChainTxResp.TxHash = strings.ToUpper(tChainTxResp.TxHash)
-	}
 	return tChainTxResp
 }
 
@@ -417,14 +405,12 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 	crossTransfer.FromChain = ChainId2Name(uint64(crossTransfer.FromChainId))
 	crossTransfer.FromChainExplorer = ChainId2ChainCache(uint64(crossTransfer.FromChainId)).ChainExplorerUrl
 	crossTransfer.FromChainLogo = ChainId2ChainCache(uint64(crossTransfer.FromChainId)).ChainLogo
-	crossTransfer.FromAddress = basedef.Hash2Address(chainid, user)
+	crossTransfer.FromAddress = basedef.FormatAddr(chainid, basedef.Hash2Address(chainid, user))
 	crossTransfer.ToChainId = uint32(transfer.DstChainId)
 	crossTransfer.ToChain = ChainId2Name(uint64(crossTransfer.ToChainId))
 	crossTransfer.ToChainExplorer = ChainId2ChainCache(uint64(crossTransfer.ToChainId)).ChainExplorerUrl
 	crossTransfer.ToChainLogo = ChainId2ChainCache(uint64(crossTransfer.ToChainId)).ChainLogo
-	crossTransfer.ToAddress = basedef.Hash2Address(transfer.DstChainId, transfer.DstUser)
-	jsonToken, _ := json.Marshal(token)
-	logs.Info("yuan crossTransfer.Amount:", transfer.Amount, string(jsonToken))
+	crossTransfer.ToAddress = basedef.FormatAddr(transfer.DstChainId, basedef.Hash2Address(transfer.DstChainId, transfer.DstUser))
 	if token != nil {
 		crossTransfer.TokenHash = token.Hash
 		crossTransfer.TokenName = token.Name
@@ -434,7 +420,6 @@ func makeCrossTransfer(chainid uint64, user string, transfer *SrcTransfer, token
 		crossTransfer.TokenName = transfer.Asset
 		crossTransfer.Amount = transfer.Amount.String()
 	}
-	logs.Info("xian crossTransfer.Amount:", crossTransfer.Amount)
 	return crossTransfer
 }
 
@@ -885,10 +870,10 @@ func MakeLockTokenInfoResp(lockTokenStatistics []*LockTokenStatistic) []*LockTok
 		resp.ChainName = ChainId2Name(resp.ChainId)
 		resp.ChainLogo = ChainId2ChainCache(resp.ChainId).ChainLogo
 		resp.ChainExplorerUrl = ChainId2ChainCache(resp.ChainId).ChainExplorerUrl
-		resp.Hash = lockTokenStatistic.Hash
+		resp.Hash = basedef.FormatAddr(resp.ChainId, basedef.Hash2Address(resp.ChainId, lockTokenStatistic.Hash))
 		resp.TokenName = lockTokenStatistic.Token.Name
 		resp.TokenLogo = lockTokenStatistic.Token.TokenBasic.Meta
-		resp.ItemProxy = basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy)
+		resp.ItemProxy = basedef.FormatAddr(resp.ChainId, basedef.Proxy2Address(resp.ChainId, lockTokenStatistic.ItemProxy))
 		resp.AmountUsd = decimal.NewFromBigInt(&lockTokenStatistic.InAmountUsd.Int, -4).String()
 		lockTokenInfoResps = append(lockTokenInfoResps, resp)
 	}

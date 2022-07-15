@@ -1,6 +1,8 @@
 package basedef
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var (
 	PRICE_PRECISION = int64(100000000)

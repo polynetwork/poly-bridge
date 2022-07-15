@@ -27,6 +27,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
+	"poly-bridge/basedef"
+
 	//"github.com/polynetwork/eth-contracts/go_abi/erc20_abi"
 	"math/big"
 )
@@ -88,6 +90,44 @@ func (s *EthereumSdk) GetHeaderByNumber(number uint64) (*types.Header, error) {
 		return nil, err
 	}
 	return header, err
+}
+
+// GetBlockTimeByNumber returns the timestamp of given block number
+func (s *EthereumSdk) GetBlockTimeByNumber(chainId, number uint64) (timestamp uint64, err error) {
+	type Header struct {
+		Time string `json:"timestamp"`
+	}
+
+	var header interface{}
+	switch chainId {
+	case basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID:
+		header = &Header{}
+	default:
+		header = &types.Header{}
+	}
+
+	var newNumber *big.Int
+	if number < 0 {
+		newNumber = nil
+	} else {
+		newNumber = big.NewInt(int64(number))
+	}
+
+	err = s.rpcClient.CallContext(context.Background(), &header, "eth_getBlockByNumber", toBlockNumArg(newNumber), false)
+	for err != nil {
+		return 0, err
+	}
+	switch chainId {
+	case basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID:
+		if res, ok := header.(*Header); ok {
+			timestamp, err = hexutil.DecodeUint64(res.Time)
+		}
+	default:
+		if res, ok := header.(*types.Header); ok {
+			timestamp = res.Time
+		}
+	}
+	return
 }
 
 func (s *EthereumSdk) GetBlockByNumber(number uint64) (*types.Block, error) {
