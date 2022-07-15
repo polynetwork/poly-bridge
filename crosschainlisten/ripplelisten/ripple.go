@@ -81,10 +81,12 @@ func (this *RippleChainListen) getExtendLatestHeight(url string) (uint64, error)
 
 func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 
-	txs, err := this.rippleSdk.GetTransationsByHeight(height)
+	ledger, err := this.rippleSdk.GetLedgerByHeight(height)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
+	txs := ledger.Ledger.Transactions
+	time := uint64(ledger.Ledger.CloseTime.Time().Unix())
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
@@ -100,7 +102,6 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				}
 				hash := payment.Hash.String()
 				sequence := uint64(payment.Sequence)
-				time := uint64(txData.Date.Uint32())
 				fromAccount := payment.Account.String()
 				toAccount := payment.Destination.String()
 				fee := big.NewInt(0)

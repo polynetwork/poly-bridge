@@ -3,7 +3,7 @@ package chainsdk
 import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/rubblelabs/ripple/data"
+	"github.com/rubblelabs/ripple/websockets"
 	"math/big"
 	"runtime/debug"
 	"sync"
@@ -103,7 +103,7 @@ func (pro *RippleSdkPro) GetLatest() *RippleInfo {
 	return latestInfo
 }
 
-func (pro *RippleSdkPro) GetTransationsByHeight(height uint64) (data.TransactionSlice, error) {
+func (pro *RippleSdkPro) GetLedgerByHeight(height uint64) (*websockets.LedgerResult, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("chain %v all node is not working", pro.id)
@@ -115,7 +115,7 @@ func (pro *RippleSdkPro) GetTransationsByHeight(height uint64) (data.Transaction
 			info = pro.GetLatest()
 			time.Sleep(time.Second * time.Duration(pro.selectionSlot))
 		} else {
-			return ledger.Ledger.Transactions, nil
+			return ledger, nil
 		}
 	}
 	return nil, fmt.Errorf("chain %v all node is not working", pro.id)
