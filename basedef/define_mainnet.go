@@ -62,6 +62,8 @@ const (
 
 	RIPPLE_CROSSCHAIN_ID = uint64(1000223)
 
+	RIPPLE_CROSSCHAIN_ID = uint64(1000223)
+
 	ENV = "mainnet"
 )
 
