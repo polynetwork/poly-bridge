@@ -207,7 +207,7 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 				continue
 			}
 			if w := relation.WrapperTransaction; w != nil {
-				if w.Status < basedef.STATE_SOURCE_CONFIRMED {
+				if w.Status >= basedef.STATE_PENDDING && w.Status <= basedef.STATE_SOURCE_CONFIRMED {
 					stuckCount++
 				}
 			}

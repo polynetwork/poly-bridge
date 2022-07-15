@@ -467,6 +467,11 @@ func GetTokenType(chainId uint64, standard uint8) string {
 		return "ERC" + "-" + tokenType
 	case basedef.CUBE_CROSSCHAIN_ID:
 		return "CRC" + "-" + tokenType
+	case basedef.STARCOIN_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "Starcoin NFT"
+		}
+		return "Starcoin Token"
 	default:
 		return "ERC" + "-" + tokenType
 	}

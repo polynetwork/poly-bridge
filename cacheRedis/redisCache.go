@@ -36,6 +36,7 @@ const (
 	RelayerAccountStatusAlarmPrefix = "RelayerAccountStatusAlarmPrefix_"
 	_ChainTVLAmount                 = "ChainTVLAmount_"
 	MarkTokenAsDying                = "MarkTokenAsDying_"
+	_ChainTVLAmount                 = "ChainTVLAmount_"
 )
 
 type RedisCache struct {

@@ -175,7 +175,7 @@ func (pro *EthereumSdkPro) GetHeaderByNumber(number uint64) (*types.Header, erro
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("GetHeaderByNumber_chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("GetHeaderByNumber_chain:%v,node:%v,GetHeaderByNumber err", pro.id, info.sdk.url)
 				flag = 0
 				time.Sleep(time.Second)
 			}
@@ -225,7 +225,7 @@ func (pro *EthereumSdkPro) GetTransactionByHash(hash common.Hash) (*types.Transa
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("chain:%v,node:%v,GetTransactionByHash err", pro.id, info.sdk.url)
 				flag = 0
 				time.Sleep(time.Second)
 			}
@@ -250,7 +250,7 @@ func (pro *EthereumSdkPro) GetTransactionReceipt(hash common.Hash) (*types.Recei
 		if err != nil {
 			flag++
 			if flag > 3 {
-				logs.Error("chain:%v,node:%v,GetHeaderByNumber err %v", pro.id, info.sdk.url, err)
+				logs.Error("chain:%v,node:%v,GetTransactionReceipt err", pro.id, info.sdk.url)
 				flag = 0
 				time.Sleep(time.Second)
 			}
@@ -613,6 +613,7 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 			}
 			addrHash := (boundAsset.Hex())[2:]
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
+
 			if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
 				srcTokenHashByteString := strings.ToLower(hex.EncodeToString([]byte(srcTokenHash)))
 				logs.Info("srcTokenHashByteString =%s", srcTokenHashByteString)

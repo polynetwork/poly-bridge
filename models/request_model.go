@@ -844,7 +844,6 @@ func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap
 			srcTransactionState.NeedBlocks = srcChain.BackwardBlockNumber
 			srcTransactionState.Blocks = srcTransactionState.NeedBlocks
 		}
-
 	}
 	return transactionRsp
 }

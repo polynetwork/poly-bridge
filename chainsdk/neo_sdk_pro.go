@@ -85,7 +85,7 @@ func (pro *NeoSdkPro) selection() {
 	for url, info := range pro.infos {
 		height, err := info.sdk.GetBlockCount()
 		if err != nil {
-			logs.Error("get current block height err: %v, url: %s", err, url)
+			logs.Error("get current block height err, chain: %v, url: %s", pro.id, url)
 		}
 		pro.mutex.Lock()
 		info.latestHeight = height
@@ -200,7 +200,6 @@ func (pro *NeoSdkPro) Nep5TotalSupply(hash string) (*big.Int, error) {
 	}
 	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
-
 
 func (pro *NeoSdkPro) GetTransactionHeight(hash string) (uint64, error) {
 	info := pro.GetLatest()
