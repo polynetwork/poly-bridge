@@ -24,7 +24,6 @@ import (
 	"gorm.io/gorm/logger"
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
-	"poly-bridge/models"
 )
 
 var db *gorm.DB

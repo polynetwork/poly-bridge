@@ -108,7 +108,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	for i := startHeight; i <= endHeight; i++ {
 		timestamp, err := this.ethSdk.GetBlockTimeByNumber(i)
 		if err != nil {
-			return nil, nil, nil, nil, 0, 0, err
+			return nil, nil, nil, nil, nil, nil, 0, 0, err
 		}
 		blockTimer[i] = timestamp
 	}
