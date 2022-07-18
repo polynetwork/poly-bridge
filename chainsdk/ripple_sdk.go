@@ -36,7 +36,6 @@ func (rs *RippleSdk) GetCurrentBlockHeight() (uint64, error) {
 
 func (rs *RippleSdk) GetLedger(height uint64) (*websockets.LedgerResult, error) {
 	return rs.client.GetLedger(uint32(height))
-
 }
 
 func (rs *RippleSdk) GetXRPBalance(addrhash string) (*big.Int, error) {

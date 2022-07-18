@@ -399,7 +399,7 @@ func newChainSdks(config *conf.Config) {
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 	maxBalance := big.NewInt(0)
 	maxFun := func(balance *big.Int) {
-		if balance.Cmp(maxBalance) > 0 {
+		if balance != nil && balance.Cmp(maxBalance) > 0 {
 			maxBalance = balance
 		}
 	}

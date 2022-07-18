@@ -5,7 +5,9 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/rubblelabs/ripple/websockets"
 	"math/big"
+	"poly-bridge/basedef"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 )
@@ -124,11 +126,11 @@ func (pro *RippleSdkPro) GetLedgerByHeight(height uint64) (*websockets.LedgerRes
 func (pro *RippleSdkPro) XRPBalance(tokenhash, addrhash string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
+		return big.NewInt(0), fmt.Errorf("all node is not working")
 	}
 	var err error
-	if tokenhash != "0000000000000000000000000000000000000000" {
-		return nil, fmt.Errorf("is not XRP hash")
+	if !strings.EqualFold(tokenhash, pro.GetXRP()) {
+		return big.NewInt(0), fmt.Errorf("is not XRP hash")
 	}
 	for i := 0; i < 3; i++ {
 		if info != nil {
@@ -152,4 +154,11 @@ func (pro *RippleSdkPro) GetMinimumGasPrice() (string, error) {
 		return "", fmt.Errorf("all node is not working")
 	}
 	return "", nil
+}
+
+func (pro *RippleSdkPro) GetXRP() string {
+	if basedef.ENV == basedef.MAINNET {
+		return "51fa7b7c1e0c79b54de202e6a24fef61bf54f442"
+	}
+	return "51fa7b7c1e0c79b54de202e6a24fef61bf54f442"
 }

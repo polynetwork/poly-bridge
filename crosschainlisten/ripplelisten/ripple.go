@@ -54,11 +54,7 @@ func (this *RippleChainListen) GetBatchSize() uint64 {
 }
 
 func (this *RippleChainListen) GetXRP() string {
-	assetXRP := "51fa7b7c1e0c79b54de202e6a24fef61bf54f442"
-	if basedef.ENV == basedef.TESTNET {
-		return assetXRP
-	}
-	return assetXRP
+	return this.rippleSdk.GetXRP()
 }
 
 func (this *RippleChainListen) GetExtendLatestHeight() (uint64, error) {
