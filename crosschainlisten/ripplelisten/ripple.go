@@ -226,6 +226,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 									ServerId:     0,
 									FeeTokenHash: this.GetXRP(),
 									FeeAmount:    models.NewBigInt(amount),
+									Status:       basedef.STATE_SOURCE_DONE,
 								})
 							}
 						}
