@@ -10,7 +10,6 @@ import (
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -154,7 +153,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						User:       fromAccount,
 						DstChainId: crossChainInfo.DstChain,
 						Contract:   fromAccount,
-						Key:        strconv.Itoa(int(payment.Sequence)),
+						Key:        strings.ToLower(hash),
 						Param:      models.Format8190(string(param)),
 						SrcTransfer: &models.SrcTransfer{
 							TxHash:     hash,
