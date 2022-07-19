@@ -276,6 +276,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.RIPPLE_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 6)
 		return fee_new.Div(precision_new).String() + " XRP"
+	case basedef.CONFLUX_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " CFX"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()

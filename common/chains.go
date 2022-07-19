@@ -49,6 +49,7 @@ var (
 	celoSdk        *chainsdk.EthereumSdkPro
 	cloverSdk      *chainsdk.EthereumSdkPro
 	rippleSdk      *chainsdk.RippleSdkPro
+	confluxSdk     *chainsdk.EthereumSdkPro
 	config         *conf.Config
 	sdkMap         map[uint64]interface{}
 )
@@ -394,6 +395,15 @@ func newChainSdks(config *conf.Config) {
 		rippleSdk = chainsdk.NewRippleSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
 		sdkMap[basedef.RIPPLE_CROSSCHAIN_ID] = rippleSdk
 	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.CONFLUX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("conflux chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		confluxSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.CONFLUX_CROSSCHAIN_ID] = confluxSdk
+	}
 }
 
 func GetBalance(chainId uint64, hash string) (*big.Int, error) {
@@ -693,21 +703,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			if len(strings.TrimSpace(v)) == 0 {
 				continue
 			}
-			balance, err := hscSdk.Erc20Balance(hash, v)
-			maxFun(balance)
-			errMap[err] = true
-		}
-	}
-	if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
-		starcoinConfig := config.GetChainListenConfig(basedef.STARCOIN_CROSSCHAIN_ID)
-		if starcoinConfig == nil {
-			panic("starcoin chain is invalid")
-		}
-		for _, v := range starcoinConfig.ProxyContract {
-			if len(strings.TrimSpace(v)) == 0 {
-				continue
-			}
-			balance, err := starcoinSdk.GetBalance(hash, v)
+			balance, err := oasisSdk.Erc20Balance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
 		}
@@ -852,7 +848,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
-
+	if chainId == basedef.CONFLUX_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CONFLUX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("conflux chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := confluxSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -1069,6 +1078,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return cloverSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.CONFLUX_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CONFLUX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("conflux chain GetTotalSupply invalid")
+		}
+		return confluxSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -1144,6 +1160,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return cloverSdk.Erc20Balance(hash, proxy)
 	case basedef.RIPPLE_CROSSCHAIN_ID:
 		return rippleSdk.XRPBalance(hash, proxy)
+	case basedef.CONFLUX_CROSSCHAIN_ID:
+		return confluxSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
