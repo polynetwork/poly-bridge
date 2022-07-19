@@ -95,7 +95,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				if len(payment.Memos) > 1 {
 					continue
 				}
-				hash := payment.Hash.String()
+				hash := strings.ToLower(payment.Hash.String())
 				sequence := uint64(payment.Sequence)
 				fromAccount := payment.Account.String()
 				toAccount := payment.Destination.String()
@@ -152,8 +152,8 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						Height:     height,
 						User:       fromAccount,
 						DstChainId: crossChainInfo.DstChain,
-						Contract:   fromAccount,
-						Key:        strings.ToLower(hash),
+						Contract:   toAccount,
+						Key:        hash,
 						Param:      models.Format8190(string(param)),
 						SrcTransfer: &models.SrcTransfer{
 							TxHash:     hash,
@@ -209,7 +209,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							err = json.Unmarshal(memoData, wrapperInfo)
 							if err == nil {
 								wrapperDetails = append(wrapperDetails, &models.WrapperDetail{
-									WrapperHash:  wrapperInfo.LockTxHash,
+									WrapperHash:  strings.ToLower(models.FormatString(wrapperInfo.LockTxHash)),
 									Hash:         hash,
 									User:         models.FormatString(wrapperInfo.SrcAddress),
 									SrcChainId:   this.GetChainId(),
