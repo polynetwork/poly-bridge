@@ -22,8 +22,10 @@ func NewRippleFee(rippleCfg *conf.FeeListenConfig, feeUpdateSlot int64) *RippleF
 }
 
 func (this *RippleFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
-
-	gasPrice := big.NewInt(50)
+	gasPrice, err := this.rippleSdk.GetFee()
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(basedef.FEE_PRECISION))
 	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(this.rippleCfg.GasLimit))

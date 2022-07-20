@@ -1,6 +1,7 @@
 package chainsdk
 
 import (
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	ripple_sdk "github.com/polynetwork/ripple-sdk"
 	ripple_client "github.com/polynetwork/ripple-sdk/client"
@@ -49,6 +50,27 @@ func (rs *RippleSdk) GetXRPBalance(addrhash string) (*big.Int, error) {
 		logs.Error("RippleSdk GetTokenBalance err: %s\n", err.Error())
 		return big.NewInt(0), err
 	}
-	balance, _ := new(big.Int).SetString(amount.String(), 10)
+	balance, ok := new(big.Int).SetString(amount.String(), 10)
+	if !ok {
+		return big.NewInt(0), fmt.Errorf("RippleSdk GetXRPBalance SetString err")
+	}
 	return balance, nil
+}
+
+func (rs *RippleSdk) GetFee() (*big.Int, error) {
+	fee, err := rs.client.GetFee()
+	if err != nil {
+		logs.Error("RippleSdk GetFee err: %s\n", err.Error())
+		return big.NewInt(0), err
+	}
+	rippleFee, err := fee.Drops.OpenLedgerFee.NonNative()
+	if err != nil {
+		logs.Error("RippleSdk fee NonNative err: %s\n", err.Error())
+		return big.NewInt(0), err
+	}
+	feeAmount, ok := new(big.Int).SetString(rippleFee.String(), 10)
+	if !ok {
+		return big.NewInt(0), fmt.Errorf("RippleSdk GetFee SetString err")
+	}
+	return feeAmount, nil
 }

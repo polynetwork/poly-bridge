@@ -148,12 +148,12 @@ func (pro *RippleSdkPro) XRPBalance(tokenhash, addrhash string) (*big.Int, error
 	return new(big.Int).SetUint64(0), err
 }
 
-func (pro *RippleSdkPro) GetMinimumGasPrice() (string, error) {
+func (pro *RippleSdkPro) GetFee() (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
-		return "", fmt.Errorf("all node is not working")
+		return big.NewInt(0), fmt.Errorf("all node is not working")
 	}
-	return "", nil
+	return info.sdk.GetFee()
 }
 
 func (pro *RippleSdkPro) GetXRP() string {
