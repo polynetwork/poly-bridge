@@ -16,6 +16,7 @@ import (
 	"poly-bridge/monitor/healthmonitor/neomonitor"
 	"poly-bridge/monitor/healthmonitor/ontologymonitor"
 	"poly-bridge/monitor/healthmonitor/polymonitor"
+	"poly-bridge/monitor/healthmonitor/ripplemonitor"
 	"poly-bridge/monitor/healthmonitor/zilliqamonitor"
 	"poly-bridge/utils/transactions"
 	"runtime/debug"
@@ -500,7 +501,7 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHand
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		return zilliqamonitor.NewZilliqaHealthMonitor(monitorConfig)
 	case basedef.RIPPLE_CROSSCHAIN_ID:
-		return (monitorConfig)
+		return ripplemonitor.NewRippleHealthMonitor(monitorConfig)
 	default:
 		return nil
 	}
