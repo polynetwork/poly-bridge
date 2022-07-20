@@ -499,6 +499,8 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHand
 		return neo3monitor.NewNeo3HealthMonitor(monitorConfig)
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		return zilliqamonitor.NewZilliqaHealthMonitor(monitorConfig)
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		return (monitorConfig)
 	default:
 		return nil
 	}

@@ -351,6 +351,8 @@ func GetChainName(id uint64) string {
 		return "CLV P-Chain"
 	case CONFLUX_CROSSCHAIN_ID:
 		return "Conflux eSpace"
+	case RIPPLE_CROSSCHAIN_ID:
+		return "Ripple"
 
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
