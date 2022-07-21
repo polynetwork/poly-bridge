@@ -43,6 +43,7 @@ var (
 	zkSyncSdk     *chainsdk.EthereumSdkPro
 	celoSdk       *chainsdk.EthereumSdkPro
 	cloverSdk     *chainsdk.EthereumSdkPro
+	confluxSdk    *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
 	config        *conf.Config
 )
@@ -333,6 +334,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		cloverSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.CLOVER_CROSSCHAIN_ID] = cloverSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.CONFLUX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("conflux chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		confluxSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.CONFLUX_CROSSCHAIN_ID] = confluxSdk
 	}
 }
 
@@ -736,6 +746,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.CONFLUX_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CONFLUX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("conflux chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := confluxSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -930,6 +954,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return cloverSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.CONFLUX_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CONFLUX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("conflux chain GetTotalSupply invalid")
+		}
+		return confluxSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -997,6 +1028,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return celoSdk.Erc20Balance(hash, proxy)
 	case basedef.CLOVER_CROSSCHAIN_ID:
 		return cloverSdk.Erc20Balance(hash, proxy)
+	case basedef.CONFLUX_CROSSCHAIN_ID:
+		return confluxSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
