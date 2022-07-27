@@ -49,7 +49,9 @@ func GetStuckTxs(db *gorm.DB, redis *cacheRedis.RedisCache, pageSize, pageNo, fr
 		if (txs[i].SrcChainId == basedef.NEO_CROSSCHAIN_ID ||
 			txs[i].DstChainId == basedef.NEO_CROSSCHAIN_ID ||
 			txs[i].SrcChainId == basedef.NEO3_CROSSCHAIN_ID ||
-			txs[i].DstChainId == basedef.NEO3_CROSSCHAIN_ID) && txs[i].WrapperId == 0 {
+			txs[i].DstChainId == basedef.NEO3_CROSSCHAIN_ID ||
+			txs[i].SrcChainId == basedef.NEO3N3T5_CROSSCHAIN_ID ||
+			txs[i].DstChainId == basedef.NEO3N3T5_CROSSCHAIN_ID) && txs[i].WrapperId == 0 {
 			count--
 			txs = append(txs[:i], txs[i+1:]...)
 			logs.Info("skip %s, because it is a NEO/NEO3 tx with no wrapper_transactions", hash)

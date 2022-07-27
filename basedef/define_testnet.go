@@ -30,6 +30,7 @@ const (
 	BSC_CROSSCHAIN_ID         = uint64(79)
 	O3_CROSSCHAIN_ID          = uint64(82)
 	NEO3_CROSSCHAIN_ID        = uint64(88)
+	NEO3N3T5_CROSSCHAIN_ID    = uint64(888)
 	PLT_CROSSCHAIN_ID         = uint64(107)
 	OK_CROSSCHAIN_ID          = uint64(200)
 	MATIC_CROSSCHAIN_ID       = uint64(202)

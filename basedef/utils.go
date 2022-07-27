@@ -80,7 +80,7 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
 		addr, _ := cosmos_types.AccAddressFromHex(value)
 		return addr.String()
-	} else if chainId == NEO3_CROSSCHAIN_ID {
+	} else if chainId == NEO3_CROSSCHAIN_ID || chainId == NEO3N3T5_CROSSCHAIN_ID {
 		addrHex, _ := hex.DecodeString(value)
 		addr := neo3_helper.UInt160FromBytes(addrHex)
 		address := crypto.ScriptHashToAddress(addr, neo3_helper.DefaultAddressVersion)
@@ -198,7 +198,7 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		}
 		hash := fmt.Sprint(addr)
 		return hash, nil
-	} else if chainId == NEO3_CROSSCHAIN_ID {
+	} else if chainId == NEO3_CROSSCHAIN_ID || chainId == NEO3N3T5_CROSSCHAIN_ID {
 		scriptHash, err := crypto.AddressToScriptHash(value, neo3_helper.DefaultAddressVersion)
 		if err != nil {
 			return value, err
@@ -263,7 +263,7 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 
 //lock item_proxy use
 func Proxy2Address(chainId uint64, proxy string) string {
-	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID {
+	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID || chainId == NEO3N3T5_CROSSCHAIN_ID {
 		proxy = HexStringReverse(proxy)
 	}
 	return Hash2Address(chainId, proxy)
@@ -305,6 +305,8 @@ func GetChainName(id uint64) string {
 		return "BTC"
 	case NEO3_CROSSCHAIN_ID:
 		return "Neo3"
+	case NEO3N3T5_CROSSCHAIN_ID:
+		return "Neo3 N3T5"
 	case PLT_CROSSCHAIN_ID:
 		return "PLT"
 	case AVAX_CROSSCHAIN_ID:
@@ -361,7 +363,7 @@ func GetChainName(id uint64) string {
 
 func FormatAddr(chain uint64, addr string) string {
 	switch chain {
-	case ONT_CROSSCHAIN_ID, SWITCHEO_CROSSCHAIN_ID, ZILLIQA_CROSSCHAIN_ID, NEO_CROSSCHAIN_ID, NEO3_CROSSCHAIN_ID, RIPPLE_CROSSCHAIN_ID:
+	case ONT_CROSSCHAIN_ID, SWITCHEO_CROSSCHAIN_ID, ZILLIQA_CROSSCHAIN_ID, NEO_CROSSCHAIN_ID, NEO3_CROSSCHAIN_ID, NEO3N3T5_CROSSCHAIN_ID, RIPPLE_CROSSCHAIN_ID:
 		return addr
 	case STARCOIN_CROSSCHAIN_ID:
 		if Has0xPrefix(addr) {

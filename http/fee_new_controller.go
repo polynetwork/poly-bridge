@@ -82,7 +82,9 @@ func (c *FeeController) NewCheckFee() {
 				if v.SrcTransaction.ChainId == basedef.NEO_CROSSCHAIN_ID ||
 					v.SrcTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID ||
 					v.SrcTransaction.ChainId == basedef.NEO3_CROSSCHAIN_ID ||
-					v.SrcTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID {
+					v.SrcTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID ||
+					v.SrcTransaction.ChainId == basedef.NEO3N3T5_CROSSCHAIN_ID ||
+					v.SrcTransaction.DstChainId == basedef.NEO3N3T5_CROSSCHAIN_ID {
 					v.Status = SKIP
 					logs.Info("check fee poly_hash %s SKIP, because it is a NEO/NEO3 tx with no wrapper_transactions", k)
 					continue

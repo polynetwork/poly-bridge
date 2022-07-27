@@ -496,7 +496,7 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHand
 		return ontologymonitor.NewOntologyHealthMonitor(monitorConfig)
 	//case basedef.SWITCHEO_CROSSCHAIN_ID:
 	//	return switcheomonitor.NewSwitcheoHealthMonitor(monitorConfig)
-	case basedef.NEO3_CROSSCHAIN_ID:
+	case basedef.NEO3_CROSSCHAIN_ID, basedef.NEO3N3T5_CROSSCHAIN_ID:
 		return neo3monitor.NewNeo3HealthMonitor(monitorConfig)
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		return zilliqamonitor.NewZilliqaHealthMonitor(monitorConfig)
