@@ -128,7 +128,7 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 		return tx.Debug().Table("(?) as u", u).
 			Where("src_transactions.standard = ?", 0).
 			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
-			Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
+			Joins("left join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
 			Joins("left join src_transactions on u.hash = src_transactions.hash").
 			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
