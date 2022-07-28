@@ -105,9 +105,19 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	query := func(tx *gorm.DB) *gorm.DB {
-		u := db.Model(&models.SrcTransfer{}).Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").Joins("left join wrapper_transactions on src_transfers.tx_hash = wrapper_transactions.hash").
-			Where("`from` in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses).
-			Where("src_transfers.asset in ?", req.Assets)
+		var u *gorm.DB
+		if len(req.Assets) == 0 {
+			u = db.Model(&models.SrcTransaction{}).Select("src_transactions.hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transactions.chain_id as chain_id").
+				Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+				Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+				Where("src_transactions.user in ? or src_transfers.from in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses, req.Addresses)
+		} else {
+			u = db.Model(&models.SrcTransaction{}).Select("src_transactions.hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transactions.chain_id as chain_id").
+				Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+				Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+				Where("src_transactions.user in ? or src_transfers.from in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses, req.Addresses).
+				Where("src_transfers.asset in ?", req.Assets)
+		}
 
 		if req.SrcChainId > 0 {
 			u = u.Where("src_transfers.chain_id = ?", req.SrcChainId)
@@ -118,7 +128,7 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 		return tx.Table("(?) as u", u).
 			Where("src_transactions.standard = ?", 0).
 			Select("src_transactions.hash as src_hash, poly_transactions.hash as poly_hash, dst_transactions.hash as dst_hash, src_transactions.chain_id as chain_id, u.asset as token_hash, u.fee_token_hash as fee_token_hash").
-			Joins("inner join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
+			Joins("left join tokens on u.chain_id = tokens.chain_id and u.asset = tokens.hash").
 			Joins("left join src_transactions on u.hash = src_transactions.hash").
 			Joins("left join poly_transactions on src_transactions.hash = poly_transactions.src_hash").
 			Joins("left join dst_transactions on poly_transactions.hash = dst_transactions.poly_hash")
