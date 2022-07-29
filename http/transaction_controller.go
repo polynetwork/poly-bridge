@@ -105,25 +105,21 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 	}
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	query := func(tx *gorm.DB) *gorm.DB {
-		var u *gorm.DB
-		if len(req.Assets) == 0 {
-			u = db.Model(&models.SrcTransaction{}).Select("src_transactions.hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transactions.chain_id as chain_id").
-				Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
-				Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
-				Where("src_transactions.user in ? or src_transfers.from in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses, req.Addresses)
-		} else {
-			u = db.Model(&models.SrcTransaction{}).Select("src_transactions.hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transactions.chain_id as chain_id").
-				Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
-				Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
-				Where("src_transactions.user in ? or src_transfers.from in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses, req.Addresses).
-				Where("src_transfers.asset in ?", req.Assets)
-		}
-
+		u := db.Model(&models.SrcTransaction{}).Select("src_transactions.hash as hash, contract, asset as asset, fee_token_hash as fee_token_hash, src_transactions.chain_id as chain_id").
+			Joins("left join wrapper_transactions on src_transactions.hash = wrapper_transactions.hash").
+			Joins("left join src_transfers on src_transactions.hash = src_transfers.tx_hash").
+			Where("src_transactions.user in ? or src_transfers.from in ? or src_transfers.dst_user in ?", req.Addresses, req.Addresses, req.Addresses)
 		if req.SrcChainId > 0 {
-			u = u.Where("src_transfers.chain_id = ?", req.SrcChainId)
+			u = u.Where("src_transactions.chain_id = ?", req.SrcChainId)
 		}
 		if req.DstChainId > 0 {
-			u = u.Where("src_transfers.dst_chain_id = ?", req.DstChainId)
+			u = u.Where("src_transactions.dst_chain_id = ?", req.DstChainId)
+		}
+		if len(req.Contracts) != 0 {
+			u = u.Where("src_transactions.contract in ?", req.Contracts)
+		}
+		if len(req.Assets) != 0 {
+			u = u.Where("src_transfers.asset in ?", req.Assets)
 		}
 		return tx.Table("(?) as u", u).
 			Where("src_transactions.standard = ?", 0).
