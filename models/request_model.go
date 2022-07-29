@@ -1003,6 +1003,7 @@ type TransactionsOfAddressWithFilterReq struct {
 	SrcChainId int
 	DstChainId int
 	Assets     []string
+	Contracts  []string
 	PageSize   int
 	PageNo     int
 }
