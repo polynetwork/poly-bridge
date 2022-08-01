@@ -505,6 +505,7 @@ type TransactionRsp struct {
 	ServerId         uint64
 	State            uint64
 	Token            *TokenRsp
+	TokenHash        string
 	FeeToken         *TokenRsp
 	TransactionState []*TransactionStateRsp
 }
@@ -541,6 +542,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		TransferAmount: transferAmount,
 		DstUser:        dstUser,
 		State:          transaction.WrapperTransaction.Status,
+		TokenHash:      transaction.TokenHash,
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
