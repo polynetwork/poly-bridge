@@ -144,6 +144,10 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 		Order("src_transactions.time desc").
 		Find(&srcPolyDstRelations).Error
 
+	for _, relation := range srcPolyDstRelations {
+		fmt.Printf("relation=%+v\n", *relation)
+	}
+
 	if err == nil {
 		var transactionNum int64
 		err = query(db).Count(&transactionNum).Error
