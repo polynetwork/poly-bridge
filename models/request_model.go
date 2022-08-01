@@ -544,6 +544,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		State:          transaction.WrapperTransaction.Status,
 		TokenHash:      transaction.TokenHash,
 	}
+	fmt.Printf("transactionRsp=%+v\n", *transactionRsp)
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
 		precision := decimal.NewFromInt(basedef.Int64FromFigure(int(transaction.Token.Precision)))
