@@ -96,9 +96,13 @@ func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandl
 		return err
 	}
 	if save {
+		err = dao.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
+		if err != nil {
+			return err
+		}
 		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
 		if err != nil {
-			return nil
+			return err
 		}
 	}
 	fmt.Printf(

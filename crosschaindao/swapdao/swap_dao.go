@@ -380,3 +380,7 @@ func (dao *SwapDao) GetTokenBasicByHash(chainId uint64, hash string) (*models.To
 func (dao *SwapDao) GetDstTransactionByHash(hash string) (*models.DstTransaction, error) {
 	return nil, nil
 }
+
+func (dao *SwapDao) WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error {
+	return nil
+}

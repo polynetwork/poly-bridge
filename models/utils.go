@@ -149,7 +149,7 @@ func (bigInt *BigInt) Scan(v interface{}) error {
 		return fmt.Errorf("type error, %v", v)
 	}
 	str := string(value)
-	if str == "null" || str == "nil" || str == "<nil>" {
+	if str == "null" || str == "nil" || str == "<nil>" || str == "" {
 		return nil
 	}
 	data, ok := new(big.Int).SetString(str, 10)

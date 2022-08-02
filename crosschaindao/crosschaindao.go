@@ -40,6 +40,7 @@ type CrossChainDao interface {
 	RemoveTokens(tokens []string) error
 	RemoveTokenMaps(tokenMaps []*models.TokenMap) error
 	Name() string
+	WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error
 }
 
 func NewCrossChainDao(server string, backup bool, dbCfg *conf.DBConfig) CrossChainDao {
