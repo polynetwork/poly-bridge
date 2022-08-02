@@ -478,6 +478,12 @@ func GetTokenType(chainId uint64, standard uint8) string {
 			return "Starcoin NFT"
 		}
 		return "Starcoin Token"
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "Ripple NFT"
+		}
+		return "XRP"
+
 	default:
 		return "ERC" + "-" + tokenType
 	}
