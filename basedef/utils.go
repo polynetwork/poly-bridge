@@ -390,3 +390,12 @@ func FormatTxHash(chain uint64, hash string) string {
 func Has0xPrefix(str string) bool {
 	return len(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')
 }
+
+func IsETHChain(chainId uint64) bool {
+	for _, v := range ETH_CHAINS {
+		if chainId == v {
+			return true
+		}
+	}
+	return false
+}
