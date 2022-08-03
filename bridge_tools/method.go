@@ -66,6 +66,9 @@ func executeMethod(method string, ctx *cli.Context) {
 		updateZilliqaPolyOldData(config)
 	case "nft":
 		toolsmethod.Nft(config)
+	case "migrateAirDropTable":
+		toolsmethod.AirDrop(config)
+
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
 	}

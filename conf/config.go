@@ -274,6 +274,15 @@ type IPPortConfig struct {
 	DingIP string
 }
 
+type ActivityConfig struct {
+	TokenPriceStartTime   int64 //time(unix) start update TokenPriceAvg
+	TokenPriceEndTime     int64 //time(unix) end update TokenPriceAvg
+	AirDropStartTime      int64 //time(unix) start update AirDropInfo
+	AirDropEndTime        int64 //time(unix) end update AirDropInfo
+	TokenPriceAvgInterval int64 //TokenPriceAvg stats interval in seconds
+	AirDropInfoInterval   int64 //AirDropInfo stats interval in seconds
+}
+
 type Config struct {
 	Server                string
 	Env                   string
@@ -297,6 +306,7 @@ type Config struct {
 	IPPortConfig          *IPPortConfig
 	NftConfig             *NftConfig
 	RelayUrl              string
+	ActivityConfig        *ActivityConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

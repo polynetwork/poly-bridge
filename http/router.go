@@ -48,6 +48,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/getmanualtxdata/", &TransactionController{}, "post:GetManualTxData"),
 		web.NSRouter("/chainhealth/", &ChainHealthController{}, "post:Health"),
 		web.NSRouter("/wrappercheck/", &WrapperController{}, "post:WrapperCheck"),
+		web.NSRouter("/airdropofaddress/", &AirDropController{}, "post:AirDropOfAddress"),
 	)
 	return ns
 }

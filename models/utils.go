@@ -166,6 +166,19 @@ func FormatAmount(precision uint64, amount *BigInt) string {
 	return amount_new.Div(precision_new).String()
 }
 
+func FeePrecison(chain uint64) int {
+	switch chain {
+	case basedef.BTC_CROSSCHAIN_ID, basedef.NEO_CROSSCHAIN_ID, basedef.SWITCHEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID:
+		return 8
+	case basedef.ONT_CROSSCHAIN_ID, basedef.STARCOIN_CROSSCHAIN_ID:
+		return 9
+	case basedef.ZILLIQA_CROSSCHAIN_ID:
+		return 12
+	default:
+		return 18
+	}
+}
+
 func FormatFee(chain uint64, fee *BigInt) string {
 	fee_new := decimal.NewFromBigInt(&fee.Int, 0)
 
