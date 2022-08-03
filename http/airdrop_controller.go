@@ -12,7 +12,7 @@ type AirDropController struct {
 	web.Controller
 }
 
-func (c *AddressController) AirDropOfAddress() {
+func (c *AirDropController) AirDropOfAddress() {
 	var addressReq models.AirDropReq
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &addressReq)
 	if err != nil || len(addressReq.Users) == 0 || len(addressReq.Users) > 10 {
