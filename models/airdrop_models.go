@@ -55,29 +55,26 @@ type AirDropRsp struct {
 func MakeAirDropRsp(addressReq AirDropReq, airDropInfos []*AirDropInfo) *AirDropRsp {
 	airDropRsp := new(AirDropRsp)
 	for _, v := range addressReq.Users {
-		for _, airDropInfo := range airDropInfos {
-			if v.Address == airDropInfo.User || v.Address == airDropInfo.OntAddr || v.Address == airDropInfo.NeoAddr ||
-				v.Address == airDropInfo.Neo3Addr || v.Address == airDropInfo.StarCoinAddr {
-				user := &AirDropRspData{
-					v.ChainId,
-					basedef.Hash2Address(v.ChainId, v.Address),
-					basedef.Hash2Address(airDropInfo.ChainID, airDropInfo.User),
-					airDropInfo.Rank,
-					new(big.Int).Div(&airDropInfo.Amount.Int, big.NewInt(100)).String(),
-				}
-				if !basedef.IsETHChain(airDropInfo.ChainID) {
-					user.AirDropAddr = ""
-				}
-				airDropRsp.Users = append(airDropRsp.Users, user)
-				break
-			}
-		}
 		user := &AirDropRspData{
 			v.ChainId,
 			basedef.Hash2Address(v.ChainId, v.Address),
 			"",
 			0,
 			"0",
+		}
+		for _, airDropInfo := range airDropInfos {
+			if v.Address == airDropInfo.User || v.Address == airDropInfo.OntAddr || v.Address == airDropInfo.NeoAddr ||
+				v.Address == airDropInfo.Neo3Addr || v.Address == airDropInfo.StarCoinAddr {
+
+				user.AirDropAddr = basedef.Hash2Address(airDropInfo.ChainID, airDropInfo.User)
+				user.Rank = airDropInfo.Rank
+				user.Amount = new(big.Int).Div(&airDropInfo.Amount.Int, big.NewInt(100)).String()
+
+				if !basedef.IsETHChain(airDropInfo.ChainID) {
+					user.AirDropAddr = ""
+				}
+				break
+			}
 		}
 		airDropRsp.Users = append(airDropRsp.Users, user)
 	}
