@@ -22,7 +22,7 @@ func (c *AirDropController) AirDropOfAddress() {
 		return
 	}
 
-	evmAddressHashes := make([]string, 0)
+	allAddressHashes := make([]string, 0)
 	ontAddressHashes := make([]string, 0)
 	neoAddressHashes := make([]string, 0)
 	neo3AddressHashes := make([]string, 0)
@@ -30,6 +30,8 @@ func (c *AirDropController) AirDropOfAddress() {
 
 	for _, v := range addressReq.Users {
 		if len(v.Address) > 0 {
+			allAddressHashes = append(allAddressHashes, v.Address)
+
 			if v.ChainId == basedef.ONT_CROSSCHAIN_ID {
 				ontAddressHashes = append(ontAddressHashes, v.Address)
 			} else if v.ChainId == basedef.NEO_CROSSCHAIN_ID {
@@ -38,16 +40,14 @@ func (c *AirDropController) AirDropOfAddress() {
 				neo3AddressHashes = append(neo3AddressHashes, v.Address)
 			} else if v.ChainId == basedef.STARCOIN_CROSSCHAIN_ID {
 				starcoinAddressHashes = append(starcoinAddressHashes, v.Address)
-			} else if basedef.IsETHChain(v.ChainId) {
-				evmAddressHashes = append(evmAddressHashes, v.Address)
 			}
 		}
 	}
 	airDropInfos := make([]*models.AirDropInfo, 0)
 
-	if len(evmAddressHashes) > 0 {
+	if len(allAddressHashes) > 0 {
 		airDrops := make([]*models.AirDropInfo, 0)
-		db.Where("user in ?", evmAddressHashes).
+		db.Where("user in ?", allAddressHashes).
 			Find(&airDrops)
 		airDropInfos = append(airDropInfos, airDrops...)
 	}

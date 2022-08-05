@@ -72,6 +72,14 @@ func MakeAirDropRsp(addressReq AirDropReq, airDropInfos []*AirDropInfo) *AirDrop
 				break
 			}
 		}
+		user := &AirDropRspData{
+			v.ChainId,
+			basedef.Hash2Address(v.ChainId, v.Address),
+			"",
+			0,
+			"0",
+		}
+		airDropRsp.Users = append(airDropRsp.Users, user)
 	}
 	return airDropRsp
 }
