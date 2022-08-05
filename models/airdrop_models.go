@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"math/big"
 	"poly-bridge/basedef"
 )
@@ -68,7 +69,8 @@ func MakeAirDropRsp(addressReq AirDropReq, airDropInfos []*AirDropInfo) *AirDrop
 
 				user.AirDropAddr = basedef.Hash2Address(airDropInfo.ChainID, airDropInfo.User)
 				user.Rank = airDropInfo.Rank
-				user.Amount = new(big.Int).Div(&airDropInfo.Amount.Int, big.NewInt(100)).String()
+				amount := new(big.Float).Quo(new(big.Float).SetInt(&airDropInfo.Amount.Int), new(big.Float).SetInt64(100))
+				user.Amount = fmt.Sprintf("%.2f", amount)
 
 				if !basedef.IsETHChain(airDropInfo.ChainID) {
 					user.AirDropAddr = ""
