@@ -811,7 +811,7 @@ func (dao *BridgeDao) fillTxRipple(dstTransactions []*models.DstTransaction, rip
 }
 
 func (dao *BridgeDao) GetAirDropInfoCount() (count int64, err error) {
-	err = dao.db.Count(&count).Error
+	err = dao.db.Model(&models.AirDropInfo{}).Count(&count).Error
 	return
 }
 
@@ -831,7 +831,7 @@ func (dao *BridgeDao) GetSrcTxsWithTimeAndChains(startTime int64, chains []uint6
 }
 
 func (dao *BridgeDao) GetSrcCountWithIdAndChains(startId int64, endId int64, chains []uint64) (count int64, err error) {
-	err = dao.db.Where("id  > ? and id < ? and chain_id in ?", startId, endId, chains).
+	err = dao.db.Model(&models.SrcTransaction{}).Where("id  > ? and id < ? and chain_id in ?", startId, endId, chains).
 		Count(&count).
 		Error
 	return
@@ -854,13 +854,15 @@ func (dao *BridgeDao) GetWrapperTxsWithHashes(hashes []string) (wrapperTxs []*mo
 }
 
 func (dao *BridgeDao) GetToken(chain uint64, hash string) (token *models.Token, err error) {
-	err = dao.db.Where("chain_id = ? and `hash` = ?", chain, hash).Preload("TokenBasic").First(&token).
+	err = dao.db.Where("chain_id = ? and `hash` = ?", chain, hash).Preload("TokenBasic").
+		First(&token).
 		Error
 	return
 }
 
 func (dao *BridgeDao) GetTokenPriceAvg(tokenBasicName string) (tokenPriceAvg *models.TokenPriceAvg, err error) {
-	err = dao.db.Where("name = ? ", tokenBasicName).First(&tokenPriceAvg).
+	err = dao.db.Where("name = ? ", tokenBasicName).
+		First(&tokenPriceAvg).
 		Error
 	return
 }
@@ -871,8 +873,8 @@ func (dao *BridgeDao) GetLastWrapperTx() (wrapperTx *models.WrapperTransaction, 
 	return
 }
 
-func (dao *BridgeDao) GetLastSrcTx() (wrapperTx *models.SrcTransaction, err error) {
-	err = dao.db.Preload("SrcTransfer").Last(&wrapperTx).
+func (dao *BridgeDao) GetLastSrcTx() (srcTx *models.SrcTransaction, err error) {
+	err = dao.db.Preload("SrcTransfer").Last(&srcTx).
 		Error
 	return
 }
@@ -880,12 +882,6 @@ func (dao *BridgeDao) GetLastSrcTx() (wrapperTx *models.SrcTransaction, err erro
 func (dao *BridgeDao) GetChainFeeTokens(chains []uint64) (chainFees []*models.ChainFee, err error) {
 	err = dao.db.Model(&models.ChainFee{}).Where("chain_id in ?", chains).Preload("TokenBasic").
 		Find(&chainFees).
-		Error
-	return
-}
-
-func (dao *BridgeDao) GetMaxWrapperIdInAirDrop() (maxWrapperId int, err error) {
-	err = dao.db.Model(&models.AirDropInfo{}).Select("max(wrapper_tx_id)").Scan(&maxWrapperId).
 		Error
 	return
 }

@@ -66,7 +66,7 @@ func (this *ActivityStats) Start() {
 	}
 	go this.StartAirDrop()
 	go this.StartTokenPrice()
-	logs.Info("end ActivityStats")
+	logs.Info("ActivityStats ...")
 
 }
 

@@ -111,6 +111,7 @@ func (this *ActivityStats) AirDropInfoStats() (err error) {
 					dataAirDrop.BindAddr = airDropInfo.BindAddr
 				}
 				dataAirDrop.Amount += airDropInfo.Amount
+				dataAirDrop.SrcTxId = airDropInfo.SrcTxId
 				err = this.dao.UpdateAirDrop(dataAirDrop)
 				if err != nil {
 					logs.Error("UpdateAirDrop err", err)
