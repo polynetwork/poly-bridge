@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/server/web"
-	"poly-bridge/basedef"
 	"poly-bridge/models"
 )
 
@@ -21,61 +20,43 @@ func (c *AirDropController) AirDropOfAddress() {
 		c.ServeJSON()
 		return
 	}
-
-	allAddressHashes := make([]string, 0)
-	ontAddressHashes := make([]string, 0)
-	neoAddressHashes := make([]string, 0)
-	neo3AddressHashes := make([]string, 0)
-	starcoinAddressHashes := make([]string, 0)
-
+	addressHashes := make([]string, 0)
 	for _, v := range addressReq.Users {
 		if len(v.Address) > 0 {
-			allAddressHashes = append(allAddressHashes, v.Address)
-
-			if v.ChainId == basedef.ONT_CROSSCHAIN_ID {
-				ontAddressHashes = append(ontAddressHashes, v.Address)
-			} else if v.ChainId == basedef.NEO_CROSSCHAIN_ID {
-				neoAddressHashes = append(neoAddressHashes, v.Address)
-			} else if v.ChainId == basedef.NEO3_CROSSCHAIN_ID {
-				neo3AddressHashes = append(neo3AddressHashes, v.Address)
-			} else if v.ChainId == basedef.STARCOIN_CROSSCHAIN_ID {
-				starcoinAddressHashes = append(starcoinAddressHashes, v.Address)
-			}
+			addressHashes = append(addressHashes, v.Address)
 		}
 	}
+
+	if len(addressHashes) == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+
 	airDropInfos := make([]*models.AirDropInfo, 0)
+	db.Where("user in ?", addressHashes).
+		Find(&airDropInfos)
 
-	if len(allAddressHashes) > 0 {
-		airDrops := make([]*models.AirDropInfo, 0)
-		db.Where("user in ?", allAddressHashes).
-			Find(&airDrops)
-		airDropInfos = append(airDropInfos, airDrops...)
-	}
-	if len(ontAddressHashes) > 0 {
-		airDrops := make([]*models.AirDropInfo, 0)
-		db.Where("ont_addr in ?", ontAddressHashes).
-			Find(&airDrops)
-		airDropInfos = append(airDropInfos, airDrops...)
-	}
-	if len(neoAddressHashes) > 0 {
-		airDrops := make([]*models.AirDropInfo, 0)
-		db.Where("neo_addr in ?", neoAddressHashes).
-			Find(&airDrops)
-		airDropInfos = append(airDropInfos, airDrops...)
-	}
-	if len(neo3AddressHashes) > 0 {
-		airDrops := make([]*models.AirDropInfo, 0)
-		db.Where("neo3_addr in ?", neo3AddressHashes).
-			Find(&airDrops)
-		airDropInfos = append(airDropInfos, airDrops...)
-	}
-	if len(starcoinAddressHashes) > 0 {
-		airDrops := make([]*models.AirDropInfo, 0)
-		db.Where("star_coin_addr in ?", starcoinAddressHashes).
-			Find(&airDrops)
-		airDropInfos = append(airDropInfos, airDrops...)
+	airDropRanks := make([]*models.AirDropRank, 0)
+	for _, v := range airDropInfos {
+		var amount int64
+		db.Model(&models.AirDropInfo{}).Select("sum(amount)").Where("bind_addr = ?", v.User).
+			Scan(&amount)
+		var rank int64
+		db.Raw("select count(*) from (select sum(amount) as sumamount, user from air_drop_info group by bind_addr) z where z.sumamount >= ?", amount).
+			Scan(&rank)
+		airDropRanks = append(airDropRanks, &models.AirDropRank{
+			v.User,
+			v.ChainID,
+			v.BindAddr,
+			v.BindChainId,
+			v.Amount,
+			v.IsClaim,
+			rank,
+		})
 	}
 
-	c.Data["json"] = models.MakeAirDropRsp(addressReq, airDropInfos)
+	c.Data["json"] = models.MakeAirDropRsp(addressReq, airDropRanks)
 	c.ServeJSON()
 }

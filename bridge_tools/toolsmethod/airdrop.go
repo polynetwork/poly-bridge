@@ -7,13 +7,10 @@ import (
 	"gorm.io/gorm/logger"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"time"
 )
 
 func AirDrop(cfg *conf.Config) {
-	//runflag := os.Getenv("runflag")
-	//if runflag == "" {
-	//	panic(fmt.Sprintf("runflag is null "))
-	//}
 	Logger := logger.Default
 	dbCfg := cfg.DBConfig
 	if dbCfg.Debug == true {
@@ -37,8 +34,15 @@ func AirDrop(cfg *conf.Config) {
 		panic(fmt.Sprintf("AutoMigrate TokenPriceAvg err:%v", err))
 	}
 	var count int64
-	db.Model(&models.TokenPriceAvg{}).Count(&count)
+	err = db.Model(&models.TokenPriceAvg{}).Count(&count).
+		Error
+	if err != nil {
+		panic(fmt.Sprintf("Count TokenPriceAvg err:%v", err))
+	}
 	if count == 0 {
+		currentTime := time.Now()
+		nowDayStartTime := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, currentTime.Location()).Unix()
+
 		tokenBasics := make([]*models.TokenBasic, 0)
 		tokenPriceAvgs := make([]*models.TokenPriceAvg, 0)
 		db.Find(&tokenBasics)
@@ -46,10 +50,10 @@ func AirDrop(cfg *conf.Config) {
 			tokenPriceAvgs = append(tokenPriceAvgs, &models.TokenPriceAvg{
 				Name:        v.Name,
 				PriceAvg:    v.Price,
-				UpdateTime:  v.Time,
+				UpdateTime:  currentTime.Unix(),
 				PriceTotal:  v.Price,
 				PriceNumber: 1,
-				PriceTime:   v.Time,
+				PriceTime:   nowDayStartTime,
 			})
 		}
 		err = db.Save(tokenPriceAvgs).Error

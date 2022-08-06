@@ -2,24 +2,29 @@ package models
 
 import (
 	"fmt"
-	"math/big"
 	"poly-bridge/basedef"
 )
 
 type AirDropInfo struct {
-	id           int64   `gorm:"primaryKey;autoIncrement"`
-	User         string  `gorm:"uniqueIndex;type:varchar(66);not null"`
-	ChainID      uint64  `gorm:"type:bigint(20);not null"`
-	IsEth        bool    `gorm:"type:int(8);not null"`
-	OntAddr      string  `gorm:"type:varchar(66)"`
-	NeoAddr      string  `gorm:"type:varchar(66)"`
-	Neo3Addr     string  `gorm:"type:varchar(66)"`
-	StarCoinAddr string  `gorm:"type:varchar(66)"`
-	Amount       *BigInt `gorm:"type:varchar(80);not null"`
-	WrapperTxId  int64   `gorm:"type:bigint(20);not null"`
-	SrcTxId      int64   `gorm:"type:bigint(20);not null"`
-	Rank         int64   `gorm:"type:bigint(20);not null"`
-	IsClaim      bool    `gorm:"type:int(8);not null"`
+	Id          int64  `gorm:"primaryKey;autoIncrement"`
+	User        string `gorm:"uniqueIndex;type:varchar(66);not null"`
+	ChainID     uint64 `gorm:"type:bigint(20);not null"`
+	IsEth       bool   `gorm:"type:int(8);not null"`
+	BindAddr    string `gorm:"type:varchar(66);not null"`
+	BindChainId uint64 `gorm:"type:bigint(20);not null"`
+	Amount      int64  `gorm:"type:bigint(20);not null"`
+	SrcTxId     int64  `gorm:"index:airdropinfos_srctxid;type:bigint(20);not null"`
+	IsClaim     bool   `gorm:"type:int(8);not null"`
+}
+
+type AirDropRank struct {
+	User        string
+	ChainID     uint64
+	BindAddr    string
+	BindChainId uint64
+	Amount      int64
+	IsClaim     bool
+	Rank        int64
 }
 
 type TokenPriceAvg struct {
@@ -53,7 +58,7 @@ type AirDropRsp struct {
 	Users []*AirDropRspData
 }
 
-func MakeAirDropRsp(addressReq AirDropReq, airDropInfos []*AirDropInfo) *AirDropRsp {
+func MakeAirDropRsp(addressReq AirDropReq, airDropRanks []*AirDropRank) *AirDropRsp {
 	airDropRsp := new(AirDropRsp)
 	for _, v := range addressReq.Users {
 		user := &AirDropRspData{
@@ -63,18 +68,13 @@ func MakeAirDropRsp(addressReq AirDropReq, airDropInfos []*AirDropInfo) *AirDrop
 			0,
 			"0",
 		}
-		for _, airDropInfo := range airDropInfos {
-			if v.Address == airDropInfo.User || v.Address == airDropInfo.OntAddr || v.Address == airDropInfo.NeoAddr ||
-				v.Address == airDropInfo.Neo3Addr || v.Address == airDropInfo.StarCoinAddr {
-
-				user.AirDropAddr = basedef.Hash2Address(airDropInfo.ChainID, airDropInfo.User)
-				user.Rank = airDropInfo.Rank
-				amount := new(big.Float).Quo(new(big.Float).SetInt(&airDropInfo.Amount.Int), new(big.Float).SetInt64(100))
-				user.Amount = fmt.Sprintf("%.2f", amount)
-
-				if !basedef.IsETHChain(airDropInfo.ChainID) {
-					user.AirDropAddr = ""
+		for _, airDropRank := range airDropRanks {
+			if v.Address == airDropRank.User {
+				if basedef.IsETHChain(airDropRank.BindChainId) {
+					user.AirDropAddr = basedef.Hash2Address(airDropRank.BindChainId, airDropRank.BindAddr)
 				}
+				user.Rank = airDropRank.Rank
+				user.Amount = fmt.Sprintf("%v", float64(airDropRank.Amount)/100.0)
 				break
 			}
 		}
