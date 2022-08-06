@@ -41,10 +41,10 @@ func (c *AirDropController) AirDropOfAddress() {
 	airDropRanks := make([]*models.AirDropRank, 0)
 	for _, v := range airDropInfos {
 		var amount int64
-		db.Model(&models.AirDropInfo{}).Select("sum(amount)").Where("bind_addr = ?", v.User).
+		db.Model(&models.AirDropInfo{}).Select("sum(amount)").Where("bind_addr = ?", v.BindAddr).
 			Scan(&amount)
 		var rank int64
-		db.Raw("select count(*) from (select sum(amount) as sumamount, user from air_drop_infos group by bind_addr) z where z.sumamount >= ?", amount).
+		db.Raw("select count(*) from (select sum(amount) as sumamount, bind_addr from air_drop_infos group by bind_addr) z where z.sumamount >= ?", amount).
 			Scan(&rank)
 		airDropRanks = append(airDropRanks, &models.AirDropRank{
 			v.User,
