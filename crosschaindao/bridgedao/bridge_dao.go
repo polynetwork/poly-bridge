@@ -901,12 +901,6 @@ func (dao *BridgeDao) SaveAirDrop(info *models.AirDropInfo) (err error) {
 	return
 }
 
-func (dao *BridgeDao) UpdateAirDrop(info *models.AirDropInfo) (err error) {
-	err = dao.db.Updates(info).
-		Error
-	return
-}
-
 func (dao *BridgeDao) GetAirDropByUser(user string) (*models.AirDropInfo, error) {
 	airDrop := new(models.AirDropInfo)
 	err := dao.db.Where("user = ?", user).First(airDrop).
