@@ -1,8 +1,10 @@
 package activity
 
 import (
+	"errors"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"gorm.io/gorm"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
@@ -108,25 +110,27 @@ func (this *ActivityStats) AirDropInfoStats() (err error) {
 					break
 				}
 			}
-			dataAirDrop, _ := this.dao.GetAirDropByUser(airDropInfo.User)
-			if dataAirDrop != nil {
+			dataAirDrop, err := this.dao.GetAirDropByUser(airDropInfo.User)
+			if err == nil {
 				if !basedef.IsETHChain(dataAirDrop.BindChainId) && basedef.IsETHChain(airDropInfo.BindChainId) {
 					dataAirDrop.BindChainId = airDropInfo.BindChainId
 					dataAirDrop.BindAddr = airDropInfo.BindAddr
 				}
 				dataAirDrop.Amount += airDropInfo.Amount
 				dataAirDrop.SrcTxId = airDropInfo.SrcTxId
-				err = this.dao.UpdateAirDrop(dataAirDrop)
+				err = this.dao.SaveAirDrop(dataAirDrop)
 				if err != nil {
 					logs.Error("UpdateAirDrop err", err)
 					return err
 				}
-			} else {
+			} else if errors.Is(err, gorm.ErrRecordNotFound) {
 				err = this.dao.SaveAirDrop(airDropInfo)
 				if err != nil {
 					logs.Error("SaveAirDrop err", err)
 					return err
 				}
+			} else {
+				return fmt.Errorf("GetAirDropByUser err:", err)
 			}
 		}
 	}
