@@ -99,7 +99,7 @@ func (this *ActivityStats) AirDropInfoStats() (err error) {
 						}
 						x := new(big.Int).Mul(&wrapperTx.FeeAmount.Int, big.NewInt(price))
 						y := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
-						y = new(big.Float).Mul(y, new(big.Float).SetInt64(100))
+						y = new(big.Float).Mul(y, new(big.Float).SetInt64(10000))
 						y = new(big.Float).Quo(y, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 						z := fmt.Sprintf("%.0f", y)
 						amount, err := strconv.Atoi(z)
@@ -181,7 +181,7 @@ func (this *ActivityStats) fillAirDropInfo(srcTx *models.SrcTransaction) *models
 
 			x := new(big.Int).Mul(&feeAmount.Int, big.NewInt(price))
 			y := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(feePresion)))
-			y = new(big.Float).Mul(y, new(big.Float).SetInt64(100))
+			y = new(big.Float).Mul(y, new(big.Float).SetInt64(10000))
 			y = new(big.Float).Quo(y, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 			z := fmt.Sprintf("%.0f", y)
 			amount, err := strconv.Atoi(z)
