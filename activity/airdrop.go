@@ -37,11 +37,13 @@ func (this *ActivityStats) StartTokenPrice() {
 }
 
 func (this *ActivityStats) AirDropInfoStats() (err error) {
+	logs.Info("jinru aaaAirDropInfoStats****")
 	count, err := this.dao.GetAirDropInfoCount()
 	if err != nil {
 		logs.Error("AirDropInfoStats GetAirDropInfoCount err:", err)
 		return err
 	}
+	logs.Info("aaaAirDropInfoStats**** count",count)
 	if count == 0 {
 		err = this.initialization()
 		if err != nil {
@@ -52,11 +54,15 @@ func (this *ActivityStats) AirDropInfoStats() (err error) {
 	if err != nil || lastSrcTx == nil {
 		return fmt.Errorf("GetLastSrcTx err: %v", err)
 	}
+	logs.Info("aaaGetLastSrcTx**** lastSrcTx",lastSrcTx)
+
 	maxSrcTxId, err := this.dao.GetMaxSrcIdInAirDrop()
+	logs.Info("aaaGetMaxSrcIdInAirDrop**** maxSrcTxId",maxSrcTxId)
 	if err != nil {
 		return err
 	}
 	gapId := lastSrcTx.Id - maxSrcTxId
+	logs.Info("aaaAirDropInfoStats**** gapId",gapId)
 	if gapId <= 0 {
 		return
 	}
@@ -64,6 +70,8 @@ func (this *ActivityStats) AirDropInfoStats() (err error) {
 	if err != nil {
 		return err
 	}
+	logs.Info("aaaGetSrcCountWithIdAndChains**** txCount",txCount)
+
 	if txCount == 0 {
 		return
 	}

@@ -833,7 +833,7 @@ func (dao *BridgeDao) GetSrcTxsWithTimeAndChains(startTime int64, chains []uint6
 }
 
 func (dao *BridgeDao) GetSrcCountWithIdAndChains(startId int64, endId int64, chains []uint64) (count int64, err error) {
-	err = dao.db.Model(&models.SrcTransaction{}).Where("id  > ? and id < ? and chain_id in ?", startId, endId, chains).
+	err = dao.db.Model(&models.SrcTransaction{}).Where("id  > ? and id <= ? and chain_id in ?", startId, endId, chains).
 		Count(&count).
 		Error
 	return
