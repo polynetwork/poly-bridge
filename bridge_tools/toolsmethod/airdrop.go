@@ -62,3 +62,29 @@ func AirDrop(cfg *conf.Config) {
 		}
 	}
 }
+
+func UpdateAirDropAmount(cfg *conf.Config) {
+	Logger := logger.Default
+	dbCfg := cfg.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(fmt.Sprintf("database err", err))
+	}
+	airDropInfos := make([]*models.AirDropInfo, 0)
+	err = db.Find(&airDropInfos).Error
+	if len(airDropInfos) == 0 {
+		panic(fmt.Sprintf("Find airDropInfos err", err))
+	}
+	for _, v := range airDropInfos {
+		v.Amount *= 100
+	}
+	err = db.Save(airDropInfos).Error
+	if err != nil {
+		panic(fmt.Sprintf("Save airDropInfos err", err))
+	}
+
+}

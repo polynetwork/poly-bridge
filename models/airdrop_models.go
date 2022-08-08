@@ -74,7 +74,7 @@ func MakeAirDropRsp(addressReq AirDropReq, airDropRanks []*AirDropRank) *AirDrop
 					user.AirDropAddr = basedef.Hash2Address(airDropRank.BindChainId, airDropRank.BindAddr)
 				}
 				user.Rank = airDropRank.Rank
-				user.Amount = fmt.Sprintf("%v", float64(airDropRank.Amount)/100.0)
+				user.Amount = fmt.Sprintf("%.2f", float64(airDropRank.Amount)/10000.0)
 				break
 			}
 		}

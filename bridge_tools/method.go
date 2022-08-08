@@ -68,6 +68,8 @@ func executeMethod(method string, ctx *cli.Context) {
 		updateRippleTables(config)
 	case "migrateAirDropTable":
 		toolsmethod.AirDrop(config)
+	case "updateAirDropAmount":
+		toolsmethod.UpdateAirDropAmount(config)
 
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
