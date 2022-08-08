@@ -51,7 +51,7 @@ func (c *AirDropController) AirDropOfAddress() {
 			v.ChainID,
 			v.BindAddr,
 			v.BindChainId,
-			v.Amount,
+			amount,
 			v.IsClaim,
 			rank,
 		})
