@@ -505,6 +505,7 @@ type TransactionRsp struct {
 	ServerId         uint64
 	State            uint64
 	Token            *TokenRsp
+	TokenHash        string
 	FeeToken         *TokenRsp
 	TransactionState []*TransactionStateRsp
 }
@@ -541,6 +542,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 		TransferAmount: transferAmount,
 		DstUser:        dstUser,
 		State:          transaction.WrapperTransaction.Status,
+		TokenHash:      transaction.TokenHash,
 	}
 	if transaction.Token != nil {
 		transactionRsp.Token = MakeTokenRsp(transaction.Token)
@@ -706,6 +708,7 @@ func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap
 		DstChainId:     transaction.SrcTransaction.DstChainId,
 		TransferAmount: transferAmount,
 		DstUser:        dstUser,
+		TokenHash: transaction.TokenHash,
 	}
 	switch {
 	case transaction.PolyTransaction == nil && transaction.DstTransaction == nil:
@@ -982,6 +985,7 @@ type TransactionsOfAddressWithFilterReq struct {
 	SrcChainId int
 	DstChainId int
 	Assets     []string
+	Contracts  []string
 	PageSize   int
 	PageNo     int
 }
