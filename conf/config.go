@@ -56,6 +56,7 @@ type DBConfig struct {
 type RedisConfig struct {
 	Proto        string        `json:"proto"`
 	Addr         string        `json:"addr"`
+	DB           int           `json:"DB"`
 	Password     string        `json:"password"`
 	PoolSize     int           `json:"pool_size"`
 	MinIdleConns int           `json:"min_idle_conns"`
