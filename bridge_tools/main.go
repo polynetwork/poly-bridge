@@ -102,7 +102,8 @@ func startServer(ctx *cli.Context) {
 		executeMethod(method, ctx)
 		return
 	}
-	if cmd == 1 {
+	switch cmd {
+	case 1:
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
 		config := conf.NewDeployConfig(configFile)
 		if config == nil {
@@ -113,7 +114,7 @@ func startServer(ctx *cli.Context) {
 		serverconfig := serverconf.NewConfig(configserverFile)
 		startDeploy(config, serverconfig)
 		dumpStatus(config.DBConfig)
-	} else if cmd == 2 {
+	case 2:
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
 		config := conf.NewDeployConfig(configFile)
 		if config == nil {
@@ -121,7 +122,7 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		dumpStatus(config.DBConfig)
-	} else if cmd == 3 {
+	case 3:
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
 		config := conf.NewDeployConfig(configFile)
 		if config == nil {
@@ -132,7 +133,7 @@ func startServer(ctx *cli.Context) {
 		serverconfig := serverconf.NewConfig(configserverFile)
 		startUpdateToken(config, serverconfig)
 		dumpStatus(config.DBConfig)
-	} else if cmd == 4 {
+	case 4:
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
 		config := conf.NewUpdateConfig(configFile)
 		if config == nil {
@@ -144,7 +145,7 @@ func startServer(ctx *cli.Context) {
 		startUpdate(config, serverconfig)
 		dumpAffectedRows(config, config.DBConfig)
 		//dumpStatus(config.DBConfig)
-	} else if cmd == 5 {
+	case 5:
 		configFile := ctx.GlobalString(getFlagName(configPathFlag))
 		config := conf.NewTransactionsConfig(configFile)
 		if config == nil {
@@ -152,9 +153,14 @@ func startServer(ctx *cli.Context) {
 			return
 		}
 		startTransactions(config)
-	} else if cmd == 6 {
+	case 6:
 		merge()
+	case 7:
+		configServerFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverConfig := serverconf.NewConfig(configServerFile)
+		zionSetUp(serverConfig)
 	}
+
 }
 
 func main() {

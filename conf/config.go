@@ -46,11 +46,12 @@ func GetFlagName(flag cli.Flag) string {
 }
 
 type DBConfig struct {
-	URL      string
-	User     string
-	Password string
-	Scheme   string
-	Debug    bool
+	URL        string
+	User       string
+	Password   string
+	Scheme     string
+	PolyScheme string
+	Debug      bool
 }
 
 type RedisConfig struct {
@@ -402,7 +403,7 @@ func initPolyProxy() {
 		panic("init PolyProxy err,polyProxy is nil")
 	}
 	PolyProxy[""] = true
-	logs.Info("init polyProxy:", PolyProxy)
+	//logs.Info("init polyProxy:", PolyProxy)
 }
 
 func initEstimateProxy() {
