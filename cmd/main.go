@@ -21,12 +21,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"poly-bridge/activity"
 	"poly-bridge/cacheRedis"
 	"runtime"
 	"syscall"
 
 	"github.com/polynetwork/bridge-common/metrics"
-	"poly-bridge/activity"
 	"poly-bridge/basedef"
 	"poly-bridge/chainfeelisten"
 	"poly-bridge/coinpricelisten"
@@ -100,7 +100,7 @@ func startServer(ctx *cli.Context) {
 	chainfeelisten.StartFeeListen(config.Server, config.FeeUpdateSlot, config.FeeListenConfig, config.DBConfig)
 	crosschaineffect.StartCrossChainEffect(config.Server, config.EventEffectConfig, config.DBConfig, config.RedisConfig)
 	crosschainstats.StartCrossChainStats(config.Server, config.StatsConfig, config.DBConfig, config.IPPortConfig, config.ChainListenConfig)
-	activity.StartActivity(config.Server, config.ActivityConfig, config.DBConfig)
+	//activity.StartActivity(config.Server, config.ActivityConfig, config.DBConfig)
 
 	metricConfig := config.MetricConfig
 	if metricConfig == nil {
@@ -143,6 +143,7 @@ func stopServer() {
 	chainfeelisten.StopFeeListen()
 	crosschaineffect.StopCrossChainEffect()
 	crosschainstats.StopCrossChainStats()
+	activity.StopActivity()
 }
 
 func main() {
