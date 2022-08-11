@@ -87,7 +87,7 @@ func startServer(ctx *cli.Context) {
 	//initialize redis
 	cacheRedis.Init()
 
-	metrics.Init("bridge")
+	metrics.Init("zionBridge")
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
 	if config.Backup {
