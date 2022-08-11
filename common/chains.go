@@ -20,7 +20,7 @@ var (
 	okSdk          *chainsdk.EthereumSdkPro
 	neoSdk         *chainsdk.NeoSdkPro
 	neo3Sdk        *chainsdk.Neo3SdkPro
-	neo3n3t5Sdk   *chainsdk.Neo3SdkPro
+	neo3n3t5Sdk    *chainsdk.Neo3SdkPro
 	ontologySdk    *chainsdk.OntologySdkPro
 	maticSdk       *chainsdk.EthereumSdkPro
 	swthSdk        *chainsdk.SwitcheoSdkPro
@@ -882,6 +882,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 				continue
 			}
 			balance, err := confluxSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
+	if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
+		starcoinConfig := config.GetChainListenConfig(basedef.STARCOIN_CROSSCHAIN_ID)
+		if starcoinConfig == nil {
+			panic("starcoin chain is invalid")
+		}
+		for _, v := range starcoinConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := starcoinSdk.GetBalance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
 		}
