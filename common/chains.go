@@ -15,6 +15,7 @@ import (
 var (
 	ethereumSdk    *chainsdk.EthereumSdkPro
 	pltSdk         *chainsdk.EthereumSdkPro
+	plt2Sdk        *chainsdk.EthereumSdkPro
 	bscSdk         *chainsdk.EthereumSdkPro
 	hecoSdk        *chainsdk.EthereumSdkPro
 	okSdk          *chainsdk.EthereumSdkPro
@@ -176,6 +177,16 @@ func newChainSdks(config *conf.Config) {
 			sdkMap[basedef.PLT_CROSSCHAIN_ID] = pltSdk
 		} else {
 			logs.Error("Missing plt chain sdk config")
+		}
+	}
+	{
+		conf := config.GetChainListenConfig(basedef.PLT2_CROSSCHAIN_ID)
+		if conf != nil {
+			urls := conf.GetNodesUrl()
+			plt2Sdk = chainsdk.NewEthereumSdkPro(urls, conf.ListenSlot, conf.ChainId)
+			sdkMap[basedef.PLT2_CROSSCHAIN_ID] = plt2Sdk
+		} else {
+			logs.Error("Missing plt2 chain sdk config")
 		}
 	}
 	{
