@@ -127,13 +127,14 @@ func (c *OperationController) getAirDropData() ([]byte, error) {
 
 	rows := make([]string, 0)
 	for _, v := range methodValues {
-		rows = append(rows, fmt.Sprintf(
-			fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td align=\"center\" height=\"50px\" width=\"30%\">%v</td>", 2)),
-			v.Method, v.Value,
-		))
+		rows = append(rows,
+			fmt.Sprintf("<tr>%s</tr>", fmt.Sprintf("<td align=\"center\" height=\"50px\" width=\"30%\">%s</td>"), v.Method))
+		rows = append(rows,
+			fmt.Sprintf("<tr>%s</tr>", fmt.Sprintf("<td align=\"center\">%s</td>", v.Value)))
+
 	}
 	rows = append(rows, fmt.Sprintf(
-		fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td align=\"center\" >%v</td>", 3)),
+		fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td align=\"center\">%s</td>", 3)),
 		"top5 user", top5_addr, top5_amount,
 	))
 	rb := []byte(
