@@ -286,6 +286,10 @@ type ActivityConfig struct {
 	AirDropInfoInterval   int64 //AirDropInfo stats interval in seconds
 }
 
+type OperationConfig struct {
+	ApiToken string //Operation api token
+}
+
 type Config struct {
 	Server                string
 	Env                   string
@@ -311,6 +315,7 @@ type Config struct {
 	NftConfig             *NftConfig
 	RelayUrl              string
 	ActivityConfig        *ActivityConfig
+	OperationConfig       *OperationConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
