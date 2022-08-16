@@ -64,28 +64,28 @@ func (c *OperationController) getAirDropData() ([]byte, error) {
 		return nil, err
 	}
 	methodValues = append(methodValues, &methodValue{
-		"total", fmt.Sprint(count_all),
+		"total user", fmt.Sprint(count_all),
 	})
 	count_gt_1, err := getCountWithAmount(1 * AIRDROP_AMOUNT_PRECISION)
 	if err != nil {
 		return nil, err
 	}
 	methodValues = append(methodValues, &methodValue{
-		"gt$1", fmt.Sprint(count_gt_1),
+		"gt$1 user", fmt.Sprint(count_gt_1),
 	})
 	count_gt_10, err := getCountWithAmount(10 * AIRDROP_AMOUNT_PRECISION)
 	if err != nil {
 		return nil, err
 	}
 	methodValues = append(methodValues, &methodValue{
-		"gt$10", fmt.Sprint(count_gt_10),
+		"gt$10 user", fmt.Sprint(count_gt_10),
 	})
 	count_gt_100, err := getCountWithAmount(100 * AIRDROP_AMOUNT_PRECISION)
 	if err != nil {
 		return nil, err
 	}
 	methodValues = append(methodValues, &methodValue{
-		"gt$100", fmt.Sprint(count_gt_100),
+		"gt$100 user", fmt.Sprint(count_gt_100),
 	})
 	type airDropSumAmount struct {
 		BindChainId uint64
@@ -109,37 +109,37 @@ func (c *OperationController) getAirDropData() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	top5 := ""
+	top5_addr := ""
+	top5_amount := ""
 	for _, airDropSum := range airDropSumAmounts {
 		for _, v := range airDropInfos {
 			if airDropSum.BindAddr == v.BindAddr {
 				airDropSum.BindChainId = v.BindChainId
-				airDropSum.BindAddr = basedef.Hash2Address(airDropSum.BindChainId, airDropSum.BindAddr)
+				airDropSum.BindAddr = basedef.FormatAddr(airDropSum.BindChainId, basedef.Hash2Address(airDropSum.BindChainId, airDropSum.BindAddr))
 				break
 			}
 		}
-		top5 += fmt.Sprint(airDropSum.BindAddr) + "($" + fmt.Sprint(airDropSum.Amount/10000) + ")" + "</br>"
+		top5_addr += "<br>" + fmt.Sprint(airDropSum.BindAddr)
+		top5_amount += "<br>" + "	$" + fmt.Sprint(airDropSum.Amount/10000)
 	}
-	methodValues = append(methodValues, &methodValue{
-		"top5", top5,
-	})
+	top5_addr += "<br>" + "<br>"
+	top5_amount += "<br>" + "<br>"
 
 	rows := make([]string, 0)
 	for _, v := range methodValues {
 		rows = append(rows, fmt.Sprintf(
-			fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td align=\"center\">%v</td>", 2)),
+			fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td align=\"center\" height=\"50px\" width=\"30%\">%v</td>", 2)),
 			v.Method, v.Value,
 		))
 	}
+	rows = append(rows, fmt.Sprintf(
+		fmt.Sprintf("<tr>%s</tr>", strings.Repeat("<td align=\"center\" >%v</td>", 3)),
+		"top5 user", top5_addr, top5_amount,
+	))
 	rb := []byte(
 		fmt.Sprintf(
-			`<html><body><h1>Poly transaction status</h1>
-					<div>Air Drop Info</div>
-						<table border="3px outset #98bf21" style="width:80%%">
-						<tr>
-							<th height="50px" width="60px">key</th>
-							<th>value</th>
-						</tr>
+			`<html><body><h1><center>Air Drop User Info</center></h1>
+						<table border="3px outset #98bf21" align="center">
 						%s
 						</table>
 				</body></html>`,
