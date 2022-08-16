@@ -18,7 +18,7 @@ const (
 	AIRDROP                  = "airdrop"
 )
 
-func (c *BotController) GetOperationData() {
+func (c *OperationController) GetOperationData() {
 	token := c.Ctx.Input.Query("token")
 	if len(token) == 0 || token != conf.GlobalConfig.OperationConfig.ApiToken {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
@@ -54,7 +54,7 @@ type methodValue struct {
 	Value  string
 }
 
-func (c *BotController) getAirDropData() ([]byte, error) {
+func (c *OperationController) getAirDropData() ([]byte, error) {
 	methodValues := make([]*methodValue, 0)
 	var count_all int64
 	err := db.Table("(?) as z", db.Model(&models.AirDropInfo{}).Select("bind_addr").Group("bind_addr")).
