@@ -60,7 +60,7 @@ var (
 
 	cmdFlag = cli.UintFlag{
 		Name:  "cmd",
-		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:update bridge 5:update transactions",
+		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:update bridge 5:update transactions 7:set dying token 8:remove dying token",
 		Value: 2,
 	}
 	dyingTokensFlag = cli.StringFlag{
@@ -69,9 +69,9 @@ var (
 		Value: "",
 	}
 	dyingTokensRisingRateFlag = cli.IntFlag{
-		Name:  "proxyfee",
-		Usage: "ratio for dying token",
-		Value: 500,
+		Name:  "rate",
+		Usage: "rate of increase for dying token",
+		Value: 0,
 	}
 )
 
@@ -177,10 +177,14 @@ func startServer(ctx *cli.Context) {
 		cacheRedis.Init()
 		tokenBasicName := ctx.GlobalString(getFlagName(dyingTokensFlag))
 		if tokenBasicName == "" {
-			fmt.Printf("please input token name")
+			fmt.Println("please input token name, i.e. -tokenbasicname ETH")
 			return
 		}
 		dyingTokensRisingRate := ctx.GlobalInt(getFlagName(dyingTokensRisingRateFlag))
+		if tokenBasicName == "" {
+			fmt.Println("please input rate for dying token, i.e. -rate 5")
+			return
+		}
 		SetDyingToken(tokenBasicName, dyingTokensRisingRate)
 	} else if cmd == 8 {
 		configServerFile := ctx.GlobalString(getFlagName(configServerPathFlag))
@@ -192,7 +196,7 @@ func startServer(ctx *cli.Context) {
 		cacheRedis.Init()
 		tokenBasicName := ctx.GlobalString(getFlagName(dyingTokensFlag))
 		if tokenBasicName == "" {
-			fmt.Printf("please input token name")
+			fmt.Println("please input token name, i.e. -tokenbasicname ETH")
 			return
 		}
 		RemoveDyingToken(tokenBasicName)

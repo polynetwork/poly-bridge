@@ -90,7 +90,6 @@ func (c *FeeController) GetFee() {
 	if exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTokenAsDying + token.TokenBasicName); exists {
 		logs.Info("this token is dying", token.TokenBasicName)
 		if val, err := cacheRedis.Redis.Get(cacheRedis.MarkTokenAsDying + token.TokenBasicName); err == nil {
-			proxyFee = new(big.Float).SetInt(&chainFee.MaxFee.Int)
 			manualRatio, ok := big.NewFloat(0.0).SetString(val)
 			if ok {
 				proxyFee.Mul(proxyFee, manualRatio)
@@ -100,7 +99,6 @@ func (c *FeeController) GetFee() {
 		}
 	} else {
 		if token.TokenBasic.Rank > riskyCoinRankThreshold {
-			proxyFee = new(big.Float).SetInt(&chainFee.MaxFee.Int)
 			proxyFee.Mul(proxyFee, riskyCoinRisingRate)
 		}
 	}
@@ -693,10 +691,10 @@ func (c *FeeController) CheckSwapFee(Checks []*models.CheckFeeReq) []*models.Che
 
 func SetCoinRankFilterInfo(RiskyCoinHandleConfig *conf.RiskyCoinHandleConfig) {
 	if RiskyCoinHandleConfig == nil {
-		riskyCoinRisingRate = big.NewFloat(250)
+		riskyCoinRisingRate = big.NewFloat(1)
 		riskyCoinRankThreshold = 100
 	} else {
 		riskyCoinRankThreshold = RiskyCoinHandleConfig.RiskyCoinRankThreshold
-	        riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate))
+	riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate) / 100)
 	}
 }
