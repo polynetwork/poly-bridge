@@ -128,6 +128,15 @@ type QuotesLatestMedia struct {
 	Data map[string]*Ticker `json:"data"`
 }
 
+/*
+Please notice!
+Each API key have only 10000 credits/month, every 100 coins requires 1 credit per request, for now we have more than 100 coins in db,
+thus each request for token price consumes 2 credits of an api key.
+For instance, we request 150 coins per 5 minutes, which means we will consume 2 credits * (60/5) * 24 * 30 = 17280 credits per month,
+which means we need at least 2 api keys.
+*/
+
+//QuotesLatest rotate multiple api keys to request coin price from coinmarketcap
 func (sdk *CoinMarketCapSdk) QuotesLatest(coins string) (map[string]*Ticker, error) {
 	if apiKeyCount == len(sdk.nodes) {
 		apiKeyCount = 0

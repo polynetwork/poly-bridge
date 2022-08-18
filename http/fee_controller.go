@@ -695,7 +695,8 @@ func SetCoinRankFilterInfo(RiskyCoinHandleConfig *conf.RiskyCoinHandleConfig) {
 	if RiskyCoinHandleConfig == nil {
 		riskyCoinRisingRate = big.NewFloat(250)
 		riskyCoinRankThreshold = 100
+	} else {
+		riskyCoinRankThreshold = RiskyCoinHandleConfig.RiskyCoinRankThreshold
+	        riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate))
 	}
-	riskyCoinRankThreshold = RiskyCoinHandleConfig.RiskyCoinRankThreshold
-	riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate))
 }
