@@ -295,9 +295,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 								ch <- false
 								return
 							}
-							logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
+							logs.Info("HandleNewBlock [chainName: %s, height: %d, start: %d, end: %d ]. "+
 								"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
-								chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
+								chain.Name, height, start, end, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
 
 							err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 							if err != nil {
