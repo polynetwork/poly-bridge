@@ -121,6 +121,13 @@ func (s *StarcoinChainListen) GetDefer() uint64 {
 func (s *StarcoinChainListen) GetBatchSize() uint64 {
 	return s.starcoinCfg.BatchSize
 }
+func (s *StarcoinChainListen) GetBatchLength() (uint64, uint64) {
+	return s.starcoinCfg.MinBatchLength, s.starcoinCfg.MaxBatchLength
+}
+
+func (this *StarcoinChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
+}
 
 func (s *StarcoinChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := s.starcoinSdk.GetBlockByIndex(height)

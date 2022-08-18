@@ -87,6 +87,10 @@ func (this *EthereumChainListen) GetBatchSize() uint64 {
 	return this.ethCfg.BatchSize
 }
 
+func (this *EthereumChainListen) GetBatchLength() (uint64, uint64) {
+	return this.ethCfg.MinBatchLength, this.ethCfg.MaxBatchLength
+}
+
 func (this *EthereumChainListen) getPLTUnlock(tx common.Hash) *models.ProxyUnlockEvent {
 	address, asset, amount, err := this.GetPaletteLockProxyUnlockEvent(tx)
 	if err != nil {

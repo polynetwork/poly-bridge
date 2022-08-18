@@ -85,7 +85,13 @@ func (this *O3ChainListen) GetDefer() uint64 {
 func (this *O3ChainListen) GetBatchSize() uint64 {
 	return this.ethCfg.BatchSize
 }
+func (this *O3ChainListen) GetBatchLength() (uint64, uint64) {
+	return this.ethCfg.MinBatchLength, this.ethCfg.MaxBatchLength
+}
 
+func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
+}
 func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {

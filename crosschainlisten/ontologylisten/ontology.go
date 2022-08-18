@@ -78,6 +78,12 @@ func (this *OntologyChainListen) GetBatchSize() uint64 {
 	return this.ontCfg.BatchSize
 }
 
+func (this *OntologyChainListen) GetBatchLength() (uint64, uint64) {
+	return this.ontCfg.MinBatchLength, this.ontCfg.MaxBatchLength
+}
+func (this *OntologyChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
+}
 func (this *OntologyChainListen) isListeningContract(contract string, contracts []string) bool {
 	for _, item := range contracts {
 		if contract == item {
