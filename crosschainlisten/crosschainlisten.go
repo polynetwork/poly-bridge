@@ -266,11 +266,14 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					if minBatchLength == 0 {
 						minBatchLength = 1
 					}
+					if height-ccl.handle.GetDefer()-chain.Height < minBatchLength {
+						break
+					}
 					if maxBatchLength == 0 {
-						minBatchLength = 1
+						maxBatchLength = 1
 					}
 					batchLength := minBatchLength
-					if height-chain.Height-ccl.handle.GetDefer() > maxBatchLength {
+					if height-chain.Height-ccl.handle.GetDefer() > maxBatchLength && maxBatchLength > minBatchLength {
 						batchLength = maxBatchLength
 					}
 
@@ -298,7 +301,6 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							logs.Info("HandleNewBlock [chainName: %s, height: %d, start: %d, end: %d ]. "+
 								"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
 								chain.Name, height, start, end, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
-
 							err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 							if err != nil {
 								logs.Error("check fee on block %d err: %v", height, err)
@@ -330,7 +332,11 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					}
 
 					flagChainHeight := chain.Height
-					chain.Height = height - ccl.handle.GetDefer()
+					endheight := chain.Height + batchSize*batchLength
+					if endheight > height-ccl.handle.GetDefer() {
+						endheight = height - ccl.handle.GetDefer()
+					}
+					chain.Height = endheight
 					if err := ccl.db.UpdateChain(chain); err != nil {
 						logs.Error("UpdateChain [chainId:%d, height:%d] err %v", chain.ChainId, chain.Height, err)
 						chain.Height = flagChainHeight
@@ -410,7 +416,6 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 			}
 		}
 	}
-
 
 func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.SrcTransaction) {
 	ccl.dingMux.Lock()

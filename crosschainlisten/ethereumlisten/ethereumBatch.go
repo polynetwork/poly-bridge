@@ -76,7 +76,7 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 		filterContracts = append(filterContracts, swapContract)
 	}
 
-	contractlogs, err := this.ethSdk.FilterLog(big.NewInt(int64(51762390)), big.NewInt(int64(51762390)), filterContracts)
+	contractlogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), filterContracts)
 	if err != nil {
 		return nil, nil, nil, nil, 0, 0, err
 	}
