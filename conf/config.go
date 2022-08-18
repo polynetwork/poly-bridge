@@ -97,6 +97,8 @@ type ChainListenConfig struct {
 	ListenSlot         uint64
 	Defer              uint64
 	BatchSize          uint64
+	MinBatchLength     uint64
+	MaxBatchLength     uint64
 	Nodes              []*Restful
 	ExtendNodes        []*Restful
 	WrapperContract    []string

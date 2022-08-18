@@ -65,6 +65,14 @@ func (this *PolyChainListen) GetBatchSize() uint64 {
 	return this.polyCfg.BatchSize
 }
 
+func (this *PolyChainListen) GetBatchLength() (uint64, uint64) {
+	return this.polyCfg.MinBatchLength, this.polyCfg.MaxBatchLength
+}
+
+func (this *PolyChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
+}
+
 func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.polySdk.GetBlockByHeight(height)
 	if err != nil {

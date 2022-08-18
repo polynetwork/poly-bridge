@@ -241,3 +241,12 @@ func (s *EthereumSdk) EthBalance(addr string) (*big.Int, error) {
 	err := s.rpcClient.CallContext(ctx, &result, "eth_getBalance", "0x"+addr, "latest")
 	return (*big.Int)(&result), err
 }
+
+func (s *EthereumSdk) FilterLog(FromBlock *big.Int, ToBlock *big.Int, Addresses []common.Address) ([]types.Log, error) {
+	ctx := context.Background()
+	var filterQuery ethereum.FilterQuery
+	filterQuery.FromBlock = FromBlock
+	filterQuery.ToBlock = ToBlock
+	filterQuery.Addresses = Addresses
+	return s.rawClient.FilterLogs(ctx, filterQuery)
+}

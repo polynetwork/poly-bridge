@@ -85,6 +85,10 @@ func (this *Neo3ChainListen) GetBatchSize() uint64 {
 	return this.neoCfg.BatchSize
 }
 
+func (this *Neo3ChainListen) GetBatchLength() (uint64, uint64) {
+	return this.neoCfg.MinBatchLength, this.neoCfg.MaxBatchLength
+}
+
 func (this *Neo3ChainListen) isListeningContract(contract string, contracts []string) bool {
 	for _, item := range contracts {
 		if contract == item {
@@ -92,6 +96,10 @@ func (this *Neo3ChainListen) isListeningContract(contract string, contracts []st
 		}
 	}
 	return false
+}
+
+func (this *Neo3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
 }
 
 func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {

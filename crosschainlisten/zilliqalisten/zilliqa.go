@@ -57,6 +57,10 @@ func (this *ZilliqaChainListen) GetBatchSize() uint64 {
 	return this.zliCfg.BatchSize
 }
 
+func (this *ZilliqaChainListen) GetBatchLength() (uint64, uint64) {
+	return this.zliCfg.MinBatchLength, this.zliCfg.MaxBatchLength
+}
+
 func (this *ZilliqaChainListen) GetExtendLatestHeight() (uint64, error) {
 	if len(this.zliCfg.ExtendNodes) == 0 {
 		return this.GetLatestHeight()
@@ -73,6 +77,10 @@ func (this *ZilliqaChainListen) GetExtendLatestHeight() (uint64, error) {
 func (this *ZilliqaChainListen) getExtendLatestHeight(url string) (uint64, error) {
 	info := chainsdk.NewZilliqaInfo(url)
 	return info.GetLastHeight()
+}
+
+func (this *ZilliqaChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
 }
 
 func (this *ZilliqaChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
