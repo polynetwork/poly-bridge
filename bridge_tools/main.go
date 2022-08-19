@@ -22,6 +22,7 @@ import (
 	"github.com/urfave/cli"
 	"os"
 	"poly-bridge/bridge_tools/conf"
+	"poly-bridge/cacheRedis"
 	serverconf "poly-bridge/conf"
 	"runtime"
 	"strings"
@@ -59,8 +60,18 @@ var (
 
 	cmdFlag = cli.UintFlag{
 		Name:  "cmd",
-		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:update bridge 5:update transactions",
+		Usage: "which command? 1:init poly bridge 2:dump status 3:update token information 4:update bridge 5:update transactions 7:set dying token 8:remove dying token",
 		Value: 2,
+	}
+	dyingTokensFlag = cli.StringFlag{
+		Name:  "tokenbasicname",
+		Usage: "marked a token as dying by tokenbasicname",
+		Value: "",
+	}
+	dyingTokensRisingRateFlag = cli.IntFlag{
+		Name:  "rate",
+		Usage: "rate of increase for dying token",
+		Value: 0,
 	}
 )
 
@@ -86,6 +97,8 @@ func setupApp() *cli.App {
 		logDirFlag,
 		cmdFlag,
 		methodFlag,
+		dyingTokensFlag,
+		dyingTokensRisingRateFlag,
 	}
 	app.Commands = []cli.Command{}
 	app.Before = func(context *cli.Context) error {
@@ -154,6 +167,39 @@ func startServer(ctx *cli.Context) {
 		startTransactions(config)
 	} else if cmd == 6 {
 		merge()
+	} else if cmd == 7 {
+		configServerFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverConfig := serverconf.NewConfig(configServerFile)
+		if serverConfig == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		cacheRedis.Init()
+		tokenBasicName := ctx.GlobalString(getFlagName(dyingTokensFlag))
+		if tokenBasicName == "" {
+			fmt.Println("please input token name, i.e. -tokenbasicname ETH")
+			return
+		}
+		dyingTokensRisingRate := ctx.GlobalInt(getFlagName(dyingTokensRisingRateFlag))
+		if tokenBasicName == "" {
+			fmt.Println("please input rate for dying token, i.e. -rate 5")
+			return
+		}
+		SetDyingToken(tokenBasicName, dyingTokensRisingRate)
+	} else if cmd == 8 {
+		configServerFile := ctx.GlobalString(getFlagName(configServerPathFlag))
+		serverConfig := serverconf.NewConfig(configServerFile)
+		if serverConfig == nil {
+			fmt.Printf("startServer - read config failed!")
+			return
+		}
+		cacheRedis.Init()
+		tokenBasicName := ctx.GlobalString(getFlagName(dyingTokensFlag))
+		if tokenBasicName == "" {
+			fmt.Println("please input token name, i.e. -tokenbasicname ETH")
+			return
+		}
+		RemoveDyingToken(tokenBasicName)
 	}
 }
 

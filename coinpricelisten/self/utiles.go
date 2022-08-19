@@ -84,7 +84,7 @@ func (sdk *SelfSdk) GetMarketName() string {
 	return basedef.MARKET_SELF
 }
 
-func (sdk *SelfSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
+func (sdk *SelfSdk) GetCoinPriceAndRank(coins []models.NameAndmarketId) (map[string]float64, map[string]int, error) {
 	coinIds := make([]string, 0)
 	for _, coin := range coins {
 		coinIds = append(coinIds, coin.PriceMarketName)
@@ -98,6 +98,7 @@ func (sdk *SelfSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]flo
 		coinSymbol2Price[v.Symbol] = v.Price
 	}
 	coinPrice := make(map[string]float64, 0)
+	coinRank := make(map[string]int, 0)
 	for _, coin := range coins {
 		price, ok := coinSymbol2Price[coin.PriceMarketName]
 		if !ok {
@@ -105,6 +106,7 @@ func (sdk *SelfSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]flo
 			continue
 		}
 		coinPrice[coin.PriceMarketName] = price
+		coinRank[coin.PriceMarketName] = 0
 	}
-	return coinPrice, nil
+	return coinPrice, coinRank, nil
 }

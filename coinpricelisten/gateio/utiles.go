@@ -23,8 +23,9 @@ func (g *GateioSdk) GetMarketName() string {
 	return basedef.MARKET_GATEIO
 }
 
-func (g *GateioSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]float64, error) {
+func (g *GateioSdk) GetCoinPriceAndRank(coins []models.NameAndmarketId) (map[string]float64, map[string]int, error) {
 	coinPrice := make(map[string]float64, 0)
+	coinRank := make(map[string]int, 0)
 	for _, coin := range coins {
 		tickers, _, err := g.client.SpotApi.ListTickers(context.Background(), &gateapi.ListTickersOpts{optional.NewString(coin.PriceMarketName)})
 		if err != nil {
@@ -45,7 +46,8 @@ func (g *GateioSdk) GetCoinPrice(coins []models.NameAndmarketId) (map[string]flo
 			logs.Error("[token: %s] lastPriceString is empty", coin.PriceMarketName, err.Error())
 		}
 		coinPrice[coin.PriceMarketName] = basedef.String2Float64(lastPriceString)
+		coinRank[coin.PriceMarketName] = 0
 	}
 	logs.Info("gateio coin price: %+v", coinPrice)
-	return coinPrice, nil
+	return coinPrice, coinRank, nil
 }
