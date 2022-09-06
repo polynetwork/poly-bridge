@@ -48,7 +48,7 @@ func AirDropNft(cfg *conf.Config) {
 		createipfsjson(nftCfg, db)
 	} else if runflag == "2" {
 		signNft(nftCfg, db)
-	} else if runflag == "2" {
+	} else if runflag == "3" {
 		signOtherNft(nftCfg, db)
 	} else if runflag == "-99" {
 		db.Exec("DELETE FROM air_drop_nfts")
