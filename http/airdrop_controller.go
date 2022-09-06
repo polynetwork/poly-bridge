@@ -74,7 +74,11 @@ func (c *AirDropController) AirDropClaim() {
 		return
 	}
 	airDropNfts := make([]*models.AirDropNft, 0)
-	db.Where("bind_addr in ? and bind_chain_id = ? and rank <=1000 ", addressReq.AirDropAddrs, basedef.ETHEREUM_CROSSCHAIN_ID).
+	chain := basedef.ETHEREUM_CROSSCHAIN_ID
+	if basedef.ENV == basedef.TESTNET {
+		chain = basedef.RINKEBY_CROSSCHAIN_ID
+	}
+	db.Where("bind_addr in ? and bind_chain_id = ? and rank <=1000 ", addressReq.AirDropAddrs, chain).
 		Find(&airDropNfts)
 	airDropClaimRsp, claimFlag := models.MakeAirDropClaimRsp(airDropNfts)
 	if len(claimFlag) > 0 {

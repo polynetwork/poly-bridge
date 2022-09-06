@@ -45,7 +45,7 @@ func initAirDropNft(db *gorm.DB) {
 		airDropNft.Amount = v.Amount
 		airDropNft.Rank = v.Rank
 		if basedef.IsETHChain(bindChain) {
-			bindChain = 2
+			bindChain = getAirDropChain()
 		}
 		airDropNft.BindChainId = bindChain
 		if v.Rank <= 100 {
@@ -167,7 +167,7 @@ func signNft(nftCfg *conf.NftConfig, db *gorm.DB) {
 	db.Find(&airDropNfts)
 
 	for _, v := range airDropNfts {
-		if v.BindChainId != basedef.ETHEREUM_CROSSCHAIN_ID {
+		if v.BindChainId != getAirDropChain() {
 			continue
 		}
 		if v.Rank > 1000 {
@@ -257,7 +257,7 @@ func signOtherNft(nftCfg *conf.NftConfig, db *gorm.DB) {
 	db.Where("nft_df_sig = ''").Or("nft_df_sig is null").Find(&airDropNfts)
 
 	for _, v := range airDropNfts {
-		if v.BindChainId != basedef.ETHEREUM_CROSSCHAIN_ID {
+		if v.BindChainId != getAirDropChain() {
 			continue
 		}
 
@@ -321,4 +321,12 @@ func signOtherNft(nftCfg *conf.NftConfig, db *gorm.DB) {
 	}
 
 	logs.Info("********* end signOtherNft *********")
+}
+
+func getAirDropChain() uint64 {
+	airdropChain := basedef.ETHEREUM_CROSSCHAIN_ID
+	if basedef.ENV == basedef.TESTNET {
+		airdropChain = basedef.RINKEBY_CROSSCHAIN_ID
+	}
+	return airdropChain
 }
