@@ -3,6 +3,9 @@ package models
 import (
 	"fmt"
 	"poly-bridge/basedef"
+	"poly-bridge/common"
+	"poly-bridge/conf"
+	"strconv"
 )
 
 type AirDropInfo struct {
@@ -23,7 +26,6 @@ type AirDropRank struct {
 	BindAddr    string
 	BindChainId uint64
 	Amount      int64
-	IsClaim     bool
 	Rank        int64
 }
 
@@ -81,4 +83,71 @@ func MakeAirDropRsp(addressReq AirDropReq, airDropRanks []*AirDropRank) *AirDrop
 		airDropRsp.Users = append(airDropRsp.Users, user)
 	}
 	return airDropRsp
+}
+
+type AirDropClaimReq struct {
+	AirDropAddrs []string
+}
+
+type AirDropClaimNft struct {
+	AirDropAddr   string
+	NftTbId       int64
+	NftDfId       int64
+	NftTbSig      string
+	NftDfSig      string
+	NftTbContract string
+	NftDfContract string
+	NftTbUrl      string
+	NftDfUrl      string
+	IsClaimTb     bool
+	IsClaimDf     bool
+}
+
+type AirDropClaimRsp struct {
+	AirDropClaimNft []*AirDropClaimNft
+}
+
+func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]bool) {
+	claimFlag := make(map[int]bool, 0)
+	airDropClaimRsp := new(AirDropClaimRsp)
+	for i, v := range airDropNfts {
+		airDropClaimNft := new(AirDropClaimNft)
+		airDropClaimNft.AirDropAddr = basedef.Hash2Address(v.BindChainId, v.BindAddr)
+		if v.Rank <= 100 {
+			airDropClaimNft.NftTbId = v.NftTbId
+			airDropClaimNft.IsClaimTb = v.IsClaimTb
+			airDropClaimNft.NftTbContract = conf.GlobalConfig.NftConfig.TbContract
+			if !v.IsClaimTb {
+				_, err := common.GetNftOwner(basedef.ETHEREUM_CROSSCHAIN_ID, airDropClaimNft.NftTbContract, int(airDropClaimNft.NftTbId))
+				if err != nil {
+					airDropClaimNft.NftTbSig = v.NftTbSig
+				} else {
+					v.IsClaimTb = true
+					airDropClaimNft.IsClaimTb = true
+					claimFlag[i] = true
+				}
+			}
+		}
+		if v.IsClaimTb {
+			airDropClaimNft.NftTbUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.TbContract + "/" + strconv.Itoa(int(airDropClaimNft.NftTbId))
+		}
+		airDropClaimNft.NftDfId = v.NftDfId
+		airDropClaimNft.IsClaimDf = v.IsClaimDf
+		airDropClaimNft.NftDfContract = conf.GlobalConfig.NftConfig.DfContract
+		if !v.IsClaimDf {
+			_, err := common.GetNftOwner(basedef.ETHEREUM_CROSSCHAIN_ID, airDropClaimNft.NftDfContract, int(airDropClaimNft.NftDfId))
+			if err != nil {
+				airDropClaimNft.NftDfSig = v.NftDfSig
+			} else {
+				v.IsClaimDf = true
+				airDropClaimNft.IsClaimDf = true
+				claimFlag[i] = true
+			}
+		}
+		if v.IsClaimDf {
+			airDropClaimNft.NftDfUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.DfContract + "/" + strconv.Itoa(int(airDropClaimNft.NftDfId))
+		}
+		airDropClaimRsp.AirDropClaimNft = append(airDropClaimRsp.AirDropClaimNft, airDropClaimNft)
+	}
+	return airDropClaimRsp, claimFlag
 }

@@ -447,10 +447,13 @@ func initEstimateFeeMin() {
 type NftConfig struct {
 	Description string
 	ExternalUrl string
-	ColImage    string
+	TbImage     string
 	DfImage     string
-	ColName     string
+	TbName      string
 	DfName      string
+	TbContract  string
+	DfContract  string
+	OpenseaUrl  string
 	IpfsUrl     string
 	Pwd         string
 }
