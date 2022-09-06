@@ -46,7 +46,7 @@ func (c *AirDropController) AirDropOfAddress() {
 
 	airDropRanks := make([]*models.AirDropRank, 0)
 	db.Table("(?) as b", db.Table("(select @curRank := 0) as r, (?) as t",
-		db.Model(&models.AirDropInfo{}).Select("sum(amount) as sum_amount, bind_addr").Group("bind_addr").Order("sum_amount desc")).Select("t.sum_amount as amount,t.bind_addr,@curRank := @curRank + 1 as rank")).
+		db.Model(&models.AirDropInfo{}).Select("sum(amount) as sum_amount, bind_addr").Group("bind_addr").Order("sum_amount desc, bind_addr")).Select("t.sum_amount as amount,t.bind_addr,@curRank := @curRank + 1 as rank")).
 		Where("b.bind_addr in ?", bindAddrs).
 		Find(&airDropRanks)
 
