@@ -219,11 +219,11 @@ func bingfaSWTH(config *conf.Config) {
 	heights = append(heights, dstHeights...)
 
 	for _, height := range heights {
-		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := handle.HandleNewBlock(uint64(height))
+		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, _, _, err := handle.HandleNewBlock(uint64(height))
 		if err != nil {
 			panic(fmt.Sprintf("bingfaSWTH HandleNewBlock %d err: %v", height, err))
 		}
-		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
 		if err != nil {
 			panic(fmt.Sprintf("bingfaSWTH bingfaSWTH panic panicHeight:%v,flagerr is:%v", height, err))
 		}
