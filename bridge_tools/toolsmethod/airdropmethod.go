@@ -51,6 +51,6 @@ func AirDropNft(cfg *conf.Config) {
 	} else if runflag == "2" {
 		signOtherNft(nftCfg, db)
 	} else if runflag == "-99" {
-		db.Exec("DELETE * FROM air_drop_nfts")
+		db.Exec("DELETE FROM air_drop_nfts")
 	}
 }
