@@ -488,7 +488,8 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHand
 		basedef.OASIS_CROSSCHAIN_ID, basedef.HARMONY_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID, basedef.BCSPALETTE_CROSSCHAIN_ID,
 		basedef.BYTOM_CROSSCHAIN_ID, basedef.KCC_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID, basedef.MILKOMEDA_CROSSCHAIN_ID,
 		basedef.BCSPALETTE2_CROSSCHAIN_ID, basedef.KAVA_CROSSCHAIN_ID, basedef.CUBE_CROSSCHAIN_ID, basedef.ZKSYNC_CROSSCHAIN_ID,
-		basedef.CELO_CROSSCHAIN_ID, basedef.CLOVER_CROSSCHAIN_ID, basedef.CONFLUX_CROSSCHAIN_ID, basedef.PLT2_CROSSCHAIN_ID:
+		basedef.CELO_CROSSCHAIN_ID, basedef.CLOVER_CROSSCHAIN_ID, basedef.CONFLUX_CROSSCHAIN_ID, basedef.PLT2_CROSSCHAIN_ID,
+		basedef.ASTAR_CROSSCHAIN_ID:
 		return ethereummonitor.NewEthereumHealthMonitor(monitorConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neomonitor.NewNeoHealthMonitor(monitorConfig)

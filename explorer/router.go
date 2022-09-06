@@ -63,6 +63,7 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/getTVLRipple/", &DefiLlamaController{}, "get:GetTVLRipple"),
 		web.NSRouter("/operation/", &OperationController{}, "get:GetOperationData"),
 		web.NSRouter("/getoperation/", &OperationController{}, "get:GetOperationData"),
+		web.NSRouter("/GetTVLAstar/", &DefiLlamaController{}, "get:GetTVLAstar"),
 	)
 	return ns
 }
