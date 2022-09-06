@@ -90,17 +90,19 @@ type AirDropClaimReq struct {
 }
 
 type AirDropClaimNft struct {
-	AirDropAddr   string
-	NftTbId       int64
-	NftDfId       int64
-	NftTbSig      string
-	NftDfSig      string
-	NftTbContract string
-	NftDfContract string
-	NftTbUrl      string
-	NftDfUrl      string
-	IsClaimTb     bool
-	IsClaimDf     bool
+	AirDropAddr     string
+	NftTbId         int64
+	NftDfId         int64
+	NftTbSig        string
+	NftDfSig        string
+	NftTbContract   string
+	NftDfContract   string
+	NftTbIpfsUri    string
+	NftDfIpfsUri    string
+	NftTbOpenseaUrl string
+	NftDfOpenseaUrl string
+	IsClaimTb       bool
+	IsClaimDf       bool
 }
 
 type AirDropClaimRsp struct {
@@ -121,6 +123,7 @@ func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]b
 				_, err := common.GetNftOwner(basedef.ETHEREUM_CROSSCHAIN_ID, airDropClaimNft.NftTbContract, int(airDropClaimNft.NftTbId))
 				if err != nil {
 					airDropClaimNft.NftTbSig = v.NftTbSig
+					airDropClaimNft.NftTbIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + conf.GlobalConfig.NftConfig.TbName + "_" + strconv.Itoa(int(v.NftTbId))
 				} else {
 					v.IsClaimTb = true
 					airDropClaimNft.IsClaimTb = true
@@ -129,7 +132,7 @@ func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]b
 			}
 		}
 		if v.IsClaimTb {
-			airDropClaimNft.NftTbUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.TbContract + "/" + strconv.Itoa(int(airDropClaimNft.NftTbId))
+			airDropClaimNft.NftTbOpenseaUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.TbContract + "/" + strconv.Itoa(int(airDropClaimNft.NftTbId))
 		}
 		airDropClaimNft.NftDfId = v.NftDfId
 		airDropClaimNft.IsClaimDf = v.IsClaimDf
@@ -138,6 +141,7 @@ func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]b
 			_, err := common.GetNftOwner(basedef.ETHEREUM_CROSSCHAIN_ID, airDropClaimNft.NftDfContract, int(airDropClaimNft.NftDfId))
 			if err != nil {
 				airDropClaimNft.NftDfSig = v.NftDfSig
+				airDropClaimNft.NftDfIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + conf.GlobalConfig.NftConfig.DfName + "_" + strconv.Itoa(int(v.NftDfId))
 			} else {
 				v.IsClaimDf = true
 				airDropClaimNft.IsClaimDf = true
@@ -145,7 +149,7 @@ func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]b
 			}
 		}
 		if v.IsClaimDf {
-			airDropClaimNft.NftDfUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.DfContract + "/" + strconv.Itoa(int(airDropClaimNft.NftDfId))
+			airDropClaimNft.NftDfOpenseaUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.DfContract + "/" + strconv.Itoa(int(airDropClaimNft.NftDfId))
 		}
 		airDropClaimRsp.AirDropClaimNft = append(airDropClaimRsp.AirDropClaimNft, airDropClaimNft)
 	}
