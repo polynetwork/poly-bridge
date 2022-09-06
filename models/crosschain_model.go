@@ -333,7 +333,7 @@ type AirDropNft struct {
 	Amount      int64  `gorm:"type:bigint(20);not null"`
 	Rank        int64  `gorm:"type:bigint(20);not null"`
 	BindChainId uint64 `gorm:"type:bigint(20);not null"`
-	BindAddr    string `gorm:"type:varchar(66);not null"`
+	BindAddr    string `gorm:"uniqueIndex;type:varchar(66);not null"`
 	NftTbId     int64  `gorm:"index:nftusers_nftcolid;type:int;not null"`
 	NftDfId     int64  `gorm:"index:nftusers_nftdfid;type:int;not null"`
 	NftTbSig    string `gorm:"size:132;not null"`
