@@ -469,14 +469,7 @@ func (pro *EthereumSdkPro) GetNFTOwner(asset string, tokenId *big.Int) (owner co
 	if info == nil {
 		return EmptyAddress, fmt.Errorf("all node is not working")
 	}
-
-	for info != nil {
-		if owner, err = info.sdk.GetNFTOwner(assetAddr, tokenId); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
+	owner, err = info.sdk.GetNFTOwner(assetAddr, tokenId)
 	return
 }
 

@@ -64,8 +64,10 @@ func executeMethod(method string, ctx *cli.Context) {
 		migrateLockTokenStatisticTable(config)
 	case "updateZilliqaPolyOldData":
 		updateZilliqaPolyOldData(config)
-	case "nft":
-		toolsmethod.Nft(config)
+	case "airdrop":
+		toolsmethod.AirDropNft(config)
+	case "createaccount":
+		toolsmethod.CreateAccount()
 	case "migrateAirDropTable":
 		toolsmethod.AirDrop(config)
 	case "updateAirDropAmount":

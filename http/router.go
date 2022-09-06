@@ -51,6 +51,7 @@ func GetRouter(config *conf.Config) web.LinkNamespace {
 		web.NSRouter("/chainhealth/", &ChainHealthController{}, "post:Health"),
 		web.NSRouter("/wrappercheck/", &WrapperController{}, "post:WrapperCheck"),
 		web.NSRouter("/airdropofaddress/", &AirDropController{}, "post:AirDropOfAddress"),
+		web.NSRouter("/airdropclaim/", &AirDropController{}, "post:AirDropClaim"),
 	)
 	return ns
 }

@@ -1051,6 +1051,8 @@ func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Addres
 		return arbitrumSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	case basedef.XDAI_CROSSCHAIN_ID:
 		return xdaiSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.RINKEBY_CROSSCHAIN_ID:
+		return rinkebySdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	default:
 		return common.Address{}, fmt.Errorf("has nat func with chain:%v", chainId)
 	}
