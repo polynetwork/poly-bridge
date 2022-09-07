@@ -6,6 +6,7 @@ import (
 	"poly-bridge/common"
 	"poly-bridge/conf"
 	"strconv"
+	"strings"
 )
 
 type AirDropInfo struct {
@@ -123,7 +124,8 @@ func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]b
 				_, err := common.GetNftOwner(v.BindChainId, airDropClaimNft.NftTbContract, int(airDropClaimNft.NftTbId))
 				if err != nil {
 					airDropClaimNft.NftTbSig = v.NftTbSig
-					airDropClaimNft.NftTbIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + conf.GlobalConfig.NftConfig.TbName + "_" + strconv.Itoa(int(v.NftTbId))
+					txtTbName := strings.ReplaceAll(conf.GlobalConfig.NftConfig.TbName, " ", "_")
+					airDropClaimNft.NftTbIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + txtTbName + "_" + strconv.Itoa(int(v.NftTbId))
 				} else {
 					v.IsClaimTb = true
 					airDropClaimNft.IsClaimTb = true
@@ -141,7 +143,8 @@ func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]b
 			_, err := common.GetNftOwner(v.BindChainId, airDropClaimNft.NftDfContract, int(airDropClaimNft.NftDfId))
 			if err != nil {
 				airDropClaimNft.NftDfSig = v.NftDfSig
-				airDropClaimNft.NftDfIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + conf.GlobalConfig.NftConfig.DfName + "_" + strconv.Itoa(int(v.NftDfId))
+				txtDfName := strings.ReplaceAll(conf.GlobalConfig.NftConfig.DfName, " ", "_")
+				airDropClaimNft.NftDfIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + txtDfName + "_" + strconv.Itoa(int(v.NftDfId))
 			} else {
 				v.IsClaimDf = true
 				airDropClaimNft.IsClaimDf = true
