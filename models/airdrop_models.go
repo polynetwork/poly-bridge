@@ -130,9 +130,9 @@ func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]b
 					claimFlag[i] = true
 				}
 			}
-		}
-		if v.IsClaimTb {
-			airDropClaimNft.NftTbOpenseaUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.TbContract + "/" + strconv.Itoa(int(airDropClaimNft.NftTbId))
+			if v.IsClaimTb {
+				airDropClaimNft.NftTbOpenseaUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.TbContract + "/" + strconv.Itoa(int(airDropClaimNft.NftTbId))
+			}
 		}
 		airDropClaimNft.NftDfId = v.NftDfId
 		airDropClaimNft.IsClaimDf = v.IsClaimDf

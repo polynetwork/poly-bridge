@@ -66,7 +66,8 @@ func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB) {
 	if nftCfg == nil || nftCfg.TbName == "" || nftCfg.DfName == "" {
 		panic(fmt.Sprintf("nftCfg is null"))
 	}
-	description := nftCfg.Description
+	tbDescription := nftCfg.TbDescription
+	dfDescription := nftCfg.DfDescription
 	externalurl := nftCfg.ExternalUrl
 	tbImage := nftCfg.TbImage
 	dfImage := nftCfg.DfImage
@@ -85,7 +86,7 @@ func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB) {
 	for _, v := range airDropNfts {
 		if v.Rank <= 100 {
 			nftJson := new(NftJson)
-			nftJson.Description = description
+			nftJson.Description = tbDescription
 			nftJson.ExternalUrl = externalurl
 			nftJson.Image = tbImage
 			nftJson.Name = tbName
@@ -101,7 +102,7 @@ func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB) {
 				},
 				&Attribute{
 					"amount",
-					fmt.Sprintf("%.2f", float64(v.Amount)/10000.0),
+					fmt.Sprintf("$%.2f", float64(v.Amount)/10000.0),
 				})
 			nftJson.Attributes = attributes
 			nftid := strconv.Itoa(int(v.NftTbId))
@@ -113,7 +114,7 @@ func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB) {
 		}
 
 		nftJson := new(NftJson)
-		nftJson.Description = description
+		nftJson.Description = dfDescription
 		nftJson.ExternalUrl = externalurl
 		nftJson.Image = dfImage
 		nftJson.Name = dfName

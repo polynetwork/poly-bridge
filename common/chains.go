@@ -1260,7 +1260,7 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 
 func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Address, err error) {
 	switch chainId {
-	case basedef.ETHEREUM_CROSSCHAIN_ID:
+	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID:
 		return ethereumSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
