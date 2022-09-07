@@ -130,7 +130,7 @@ func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB) {
 			},
 			&Attribute{
 				"amount",
-				fmt.Sprintf("%.2f", float64(v.Amount)/10000.0),
+				fmt.Sprintf("$%.2f", float64(v.Amount)/10000.0),
 			})
 		nftJson.Attributes = attributes
 		nftid := strconv.Itoa(int(v.NftDfId))
