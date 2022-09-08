@@ -402,7 +402,7 @@ func signCloNft(nftCfg *conf.NftConfig, pwd string, useraddrs string) {
 		if err != nil {
 			panic(fmt.Sprint("crypto.Sign Error:", err))
 		}
-		signrsp += "0x" + string(sig)
+		signrsp += "0x" + fmt.Sprintf("%x", sig)
 		if i < len(addresses)-1 {
 			signrsp += ","
 		}
