@@ -445,18 +445,21 @@ func initEstimateFeeMin() {
 }
 
 type NftConfig struct {
-	TbDescription string
-	DfDescription string
-	ExternalUrl   string
-	TbImage       string
-	DfImage       string
-	TbName        string
-	DfName        string
-	TbContract    string
-	DfContract    string
-	OpenseaUrl    string
-	IpfsUrl       string
-	Pwd           string
+	TbDescription  string
+	DfDescription  string
+	ColDescription string
+	ExternalUrl    string
+	TbImage        string
+	DfImage        string
+	ColImage       string
+	TbName         string
+	DfName         string
+	ColName        string
+	TbContract     string
+	DfContract     string
+	ColContract    string
+	OpenseaUrl     string
+	IpfsUrl        string
 }
 
 func NewRelayerConfig(filePath string) *RelayerConfig {

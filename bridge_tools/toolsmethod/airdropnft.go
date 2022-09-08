@@ -61,20 +61,24 @@ func initAirDropNft(db *gorm.DB) {
 	logs.Info("*** end initAirDropNft ***")
 }
 
-func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB) {
+func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB, colNumber int) {
 	logs.Info("--------- start createipfsjson --------------------")
 	if nftCfg == nil || nftCfg.TbName == "" || nftCfg.DfName == "" {
 		panic(fmt.Sprintf("nftCfg is null"))
 	}
 	tbDescription := nftCfg.TbDescription
 	dfDescription := nftCfg.DfDescription
+	colDescription := nftCfg.ColDescription
 	externalurl := nftCfg.ExternalUrl
 	tbImage := nftCfg.TbImage
 	dfImage := nftCfg.DfImage
+	colImage := nftCfg.ColImage
 	tbName := nftCfg.TbName
 	txtTbName := strings.ReplaceAll(tbName, " ", "_")
 	dfName := nftCfg.DfName
 	txtDfName := strings.ReplaceAll(dfName, " ", "_")
+	colName := nftCfg.ColName
+	txtColName := strings.ReplaceAll(colName, " ", "_")
 	path := "../polynft"
 	err := os.Mkdir(path, os.ModePerm)
 	if err != nil {
@@ -141,16 +145,37 @@ func createipfsjson(nftCfg *conf.NftConfig, db *gorm.DB) {
 		}
 
 	}
+	for i := 0; i < colNumber; i++ {
+		nftJson := new(NftJson)
+		nftJson.Description = colDescription
+		nftJson.ExternalUrl = externalurl
+		nftJson.Image = colImage
+		nftJson.Name = colName
+		attributes := make([]*Attribute, 0)
+		attributes = append(attributes,
+			&Attribute{
+				"name",
+				colName,
+			})
+		nftJson.Attributes = attributes
+		nftid := strconv.Itoa(i)
+		data, _ := json.MarshalIndent(nftJson, "", "    ")
+		err = ioutil.WriteFile(path+"/"+txtColName+"_"+nftid, data, 0644)
+		if err != nil {
+			panic(fmt.Sprintf("WriteFile The bridge POLYNFT Error ,err:%v:", err))
+		}
+	}
+
 	logs.Info("********* end createipfsjson *********")
 }
 
-func signNft(nftCfg *conf.NftConfig, db *gorm.DB) {
+func signNft(nftCfg *conf.NftConfig, db *gorm.DB, pwd string) {
 	logs.Info("--------- start signNft --------------------")
 	if nftCfg == nil || nftCfg.TbName == "" || nftCfg.DfName == "" {
 		panic(fmt.Sprintf("nftCfg is null"))
 	}
-	if nftCfg.Pwd == "" {
-		panic(fmt.Sprintf("nftCfgPwd is null"))
+	if pwd == "" {
+		panic(fmt.Sprintf("pwd is null"))
 	}
 	tbName := nftCfg.TbName
 	txtTbName := strings.ReplaceAll(tbName, " ", "_")
@@ -158,7 +183,7 @@ func signNft(nftCfg *conf.NftConfig, db *gorm.DB) {
 	txtDfName := strings.ReplaceAll(dfName, " ", "_")
 	ipfsurl := nftCfg.IpfsUrl
 
-	privateKeyBytes := hexutil.MustDecode(nftCfg.Pwd)
+	privateKeyBytes := hexutil.MustDecode(pwd)
 	privateKey, err := crypto.ToECDSA(privateKeyBytes)
 	if err != nil {
 		panic(fmt.Sprintf("crypto.ToECDSA(privateKeyBytes)  Error:", err))
@@ -234,13 +259,13 @@ func signNft(nftCfg *conf.NftConfig, db *gorm.DB) {
 	logs.Info("********* end signNft *********")
 }
 
-func signOtherNft(nftCfg *conf.NftConfig, db *gorm.DB) {
+func signOtherNft(nftCfg *conf.NftConfig, db *gorm.DB, pwd string) {
 	logs.Info("--------- start signOtherNft --------------------")
 	if nftCfg == nil || nftCfg.TbName == "" || nftCfg.DfName == "" {
 		panic(fmt.Sprintf("nftCfg is null"))
 	}
-	if nftCfg.Pwd == "" {
-		panic(fmt.Sprintf("nftCfgPwd is null"))
+	if pwd == "" {
+		panic(fmt.Sprintf("pwd is null"))
 	}
 	tbName := nftCfg.TbName
 	txtTbName := strings.ReplaceAll(tbName, " ", "_")
@@ -248,7 +273,7 @@ func signOtherNft(nftCfg *conf.NftConfig, db *gorm.DB) {
 	txtDfName := strings.ReplaceAll(dfName, " ", "_")
 	ipfsurl := nftCfg.IpfsUrl
 
-	privateKeyBytes := hexutil.MustDecode(nftCfg.Pwd)
+	privateKeyBytes := hexutil.MustDecode(pwd)
 	privateKey, err := crypto.ToECDSA(privateKeyBytes)
 	if err != nil {
 		panic(fmt.Sprintf("crypto.ToECDSA(privateKeyBytes)  Error:", err))
@@ -330,4 +355,60 @@ func getAirDropChain() uint64 {
 		airdropChain = basedef.RINKEBY_CROSSCHAIN_ID
 	}
 	return airdropChain
+}
+
+func signCloNft(nftCfg *conf.NftConfig, pwd string, useraddrs string) {
+	logs.Info("--------- start signCloNft --------------------")
+	if nftCfg == nil || nftCfg.ColName == "" {
+		panic(fmt.Sprintf("nftCfg is null"))
+	}
+	if pwd == "" {
+		panic(fmt.Sprintf("pwd is null"))
+	}
+	colName := nftCfg.ColName
+	txtColName := strings.ReplaceAll(colName, " ", "_")
+
+	ipfsurl := nftCfg.IpfsUrl
+
+	privateKeyBytes := hexutil.MustDecode(pwd)
+	privateKey, err := crypto.ToECDSA(privateKeyBytes)
+	if err != nil {
+		panic(fmt.Sprintf("crypto.ToECDSA(privateKeyBytes)  Error:", err))
+	}
+
+	addresses := strings.Split(useraddrs, ",")
+
+	signrsp := ""
+	for i, v := range addresses {
+		//tokenId
+		colTokenId := big.NewInt(int64(i))
+		//user addr
+		colAccount := common.HexToAddress(v)
+		//ipfs uri
+		uri := ipfsurl + txtColName + "_" + strconv.Itoa(i)
+		hash := crypto.Keccak256Hash(
+			common.BigToHash(colTokenId).Bytes(),
+			colAccount[:],
+			[]byte(uri),
+		)
+		// normally we sign prefixed hash
+		// as in solidity with `ECDSA.toEthSignedMessageHash`
+		prefixedHash := crypto.Keccak256Hash(
+			[]byte(fmt.Sprintf("\x19Ethereum Signed Message:\n%v", len(hash))),
+			hash.Bytes(),
+		)
+		// sign hash to validate later in Solidity
+		sig, err := crypto.Sign(prefixedHash.Bytes(), privateKey)
+		if err != nil {
+			panic(fmt.Sprint("crypto.Sign Error:", err))
+		}
+		signrsp += "0x" + string(sig)
+		if i < len(addresses)-1 {
+			signrsp += ","
+		}
+	}
+	fmt.Println("*******************************")
+	fmt.Println(signrsp)
+	fmt.Println("*******************************")
+	logs.Info("********* end signCloNft *********")
 }

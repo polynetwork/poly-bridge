@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm/logger"
 	"os"
 	"poly-bridge/conf"
+	"strconv"
 )
 
 type Attribute struct {
@@ -45,11 +46,76 @@ func AirDropNft(cfg *conf.Config) {
 	if runflag == "0" {
 		initAirDropNft(db)
 	} else if runflag == "1" {
-		createipfsjson(nftCfg, db)
+		colnumber := os.Getenv("colnumber")
+		if colnumber == "" {
+			panic(fmt.Sprintf("colnumber is null "))
+		}
+		number, err := strconv.Atoi(colnumber)
+		if err != nil {
+			panic(fmt.Sprintf("colnumber Atoi err %v", err))
+		}
+		createipfsjson(nftCfg, db, number)
 	} else if runflag == "2" {
-		signNft(nftCfg, db)
+		path := os.Getenv("path")
+		if path == "" {
+			panic(fmt.Sprintf("path is null "))
+		}
+		pass := os.Getenv("pass")
+		if pass == "" {
+			fmt.Println("pass is test")
+			path = "test"
+		}
+		addr := os.Getenv("addr")
+		if addr == "" {
+			panic(fmt.Sprintf("addr is null "))
+		}
+		pwd, err := getPrivateKey(path, pass, addr)
+		if err != nil {
+			panic(fmt.Sprintf("getPrivateKey err %v", err))
+		}
+		signNft(nftCfg, db, pwd)
 	} else if runflag == "3" {
-		signOtherNft(nftCfg, db)
+		path := os.Getenv("path")
+		if path == "" {
+			panic(fmt.Sprintf("path is null "))
+		}
+		pass := os.Getenv("pass")
+		if pass == "" {
+			fmt.Println("pass is test")
+			path = "test"
+		}
+		addr := os.Getenv("addr")
+		if addr == "" {
+			panic(fmt.Sprintf("addr is null "))
+		}
+		pwd, err := getPrivateKey(path, pass, addr)
+		if err != nil {
+			panic(fmt.Sprintf("getPrivateKey err %v", err))
+		}
+		signOtherNft(nftCfg, db, pwd)
+	} else if runflag == "4" {
+		path := os.Getenv("path")
+		if path == "" {
+			panic(fmt.Sprintf("path is null "))
+		}
+		pass := os.Getenv("pass")
+		if pass == "" {
+			fmt.Println("pass is test")
+			path = "test"
+		}
+		addr := os.Getenv("addr")
+		if addr == "" {
+			panic(fmt.Sprintf("addr is null "))
+		}
+		pwd, err := getPrivateKey(path, pass, addr)
+		if err != nil {
+			panic(fmt.Sprintf("getPrivateKey err %v", err))
+		}
+		useraddrs := os.Getenv("useraddrs")
+		if addr == "" {
+			panic(fmt.Sprintf("useraddrs is null "))
+		}
+		signCloNft(nftCfg, pwd, useraddrs)
 	} else if runflag == "-99" {
 		db.Exec("DELETE FROM air_drop_nfts")
 	}
