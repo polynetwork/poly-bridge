@@ -379,6 +379,7 @@ func signCloNft(nftCfg *conf.NftConfig, pwd string, useraddrs string) {
 	addresses := strings.Split(useraddrs, ",")
 
 	signrsp := ""
+	ipfsurlrsp := ""
 	for i, v := range addresses {
 		//tokenId
 		colTokenId := big.NewInt(int64(i))
@@ -403,12 +404,15 @@ func signCloNft(nftCfg *conf.NftConfig, pwd string, useraddrs string) {
 			panic(fmt.Sprint("crypto.Sign Error:", err))
 		}
 		signrsp += "0x" + fmt.Sprintf("%x", sig)
+		ipfsurlrsp += conf.GlobalConfig.NftConfig.IpfsUrl + txtColName + "_" + strconv.Itoa(i)
 		if i < len(addresses)-1 {
 			signrsp += ","
+			ipfsurlrsp += ","
 		}
 	}
 	fmt.Println("*******************************")
 	fmt.Println(signrsp)
 	fmt.Println("*******************************")
+	fmt.Println(ipfsurlrsp)
 	logs.Info("********* end signCloNft *********")
 }
