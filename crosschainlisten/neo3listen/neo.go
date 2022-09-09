@@ -22,6 +22,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"runtime/debug"
 
 	neo3_models "github.com/joeqian10/neo3-gogogo/rpc/models"
 	"poly-bridge/basedef"
@@ -103,6 +104,12 @@ func (this *Neo3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.W
 }
 
 func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
+	var errTxHash string
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error("Neo N3 chain listen issue: %s, %v, hash: %s", string(debug.Stack()), height, errTxHash)
+		}
+	}()
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, 0, 0, err
@@ -115,6 +122,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
 	for _, tx := range block.Tx {
+		errTxHash = tx.Hash
 		appLog, err := this.neoSdk.GetApplicationLog(tx.Hash)
 		if err != nil || appLog == nil {
 			continue
