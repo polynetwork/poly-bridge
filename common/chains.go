@@ -126,13 +126,15 @@ func newChainSdks(config *conf.Config) {
 		sdkMap[basedef.NEO_CROSSCHAIN_ID] = neoSdk
 	}
 	{
-		neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
-		if neo3Config == nil {
-			panic("chain is invalid")
+		if basedef.ENV == basedef.MAINNET {
+			neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+			if neo3Config == nil {
+				panic("chain is invalid")
+			}
+			urls := neo3Config.GetNodesUrl()
+			neo3Sdk = chainsdk.NewNeo3SdkPro(urls, neo3Config.ListenSlot, neo3Config.ChainId)
+			sdkMap[basedef.NEO3_CROSSCHAIN_ID] = neo3Sdk
 		}
-		urls := neo3Config.GetNodesUrl()
-		neo3Sdk = chainsdk.NewNeo3SdkPro(urls, neo3Config.ListenSlot, neo3Config.ChainId)
-		sdkMap[basedef.NEO3_CROSSCHAIN_ID] = neo3Sdk
 	}
 	{
 		cfg := config.GetChainListenConfig(basedef.NEO3N3T5_CROSSCHAIN_ID)
