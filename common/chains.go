@@ -21,7 +21,6 @@ var (
 	okSdk          *chainsdk.EthereumSdkPro
 	neoSdk         *chainsdk.NeoSdkPro
 	neo3Sdk        *chainsdk.Neo3SdkPro
-	neo3n3t5Sdk    *chainsdk.Neo3SdkPro
 	ontologySdk    *chainsdk.OntologySdkPro
 	maticSdk       *chainsdk.EthereumSdkPro
 	swthSdk        *chainsdk.SwitcheoSdkPro
@@ -126,24 +125,13 @@ func newChainSdks(config *conf.Config) {
 		sdkMap[basedef.NEO_CROSSCHAIN_ID] = neoSdk
 	}
 	{
-		if basedef.ENV == basedef.MAINNET {
-			neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
-			if neo3Config == nil {
-				panic("chain is invalid")
-			}
-			urls := neo3Config.GetNodesUrl()
-			neo3Sdk = chainsdk.NewNeo3SdkPro(urls, neo3Config.ListenSlot, neo3Config.ChainId)
-			sdkMap[basedef.NEO3_CROSSCHAIN_ID] = neo3Sdk
+		neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+		if neo3Config == nil {
+			panic("chain is invalid")
 		}
-	}
-	{
-		cfg := config.GetChainListenConfig(basedef.NEO3N3T5_CROSSCHAIN_ID)
-		if cfg == nil {
-			panic("NEO3N3T5 chain is invalid")
-		}
-		urls := cfg.GetNodesUrl()
-		neo3n3t5Sdk = chainsdk.NewNeo3SdkPro(urls, cfg.ListenSlot, cfg.ChainId)
-		sdkMap[basedef.NEO3N3T5_CROSSCHAIN_ID] = neo3n3t5Sdk
+		urls := neo3Config.GetNodesUrl()
+		neo3Sdk = chainsdk.NewNeo3SdkPro(urls, neo3Config.ListenSlot, neo3Config.ChainId)
+		sdkMap[basedef.NEO3_CROSSCHAIN_ID] = neo3Sdk
 	}
 	{
 		ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
@@ -532,31 +520,15 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 		}
 	}
 	if chainId == basedef.NEO3_CROSSCHAIN_ID {
-		if basedef.ENV == basedef.MAINNET {
-			neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
-			if neo3Config == nil {
-				panic("chain is invalid")
-			}
-			for _, v := range neo3Config.ProxyContract {
-				if len(strings.TrimSpace(v)) == 0 {
-					continue
-				}
-				balance, err := neo3Sdk.Nep17Balance(hash, v)
-				maxFun(balance)
-				errMap[err] = true
-			}
+		neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+		if neo3Config == nil {
+			panic("chain is invalid")
 		}
-	}
-	if chainId == basedef.NEO3N3T5_CROSSCHAIN_ID {
-		cfg := config.GetChainListenConfig(basedef.NEO3N3T5_CROSSCHAIN_ID)
-		if cfg == nil {
-			panic("NEO3N3T5 chain is invalid")
-		}
-		for _, v := range cfg.ProxyContract {
+		for _, v := range neo3Config.ProxyContract {
 			if len(strings.TrimSpace(v)) == 0 {
 				continue
 			}
-			balance, err := neo3n3t5Sdk.Nep17Balance(hash, v)
+			balance, err := neo3Sdk.Nep17Balance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
 		}
@@ -990,20 +962,11 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		return neoSdk.Nep5TotalSupply(hash)
 	}
 	if chainId == basedef.NEO3_CROSSCHAIN_ID {
-		if basedef.ENV == basedef.MAINNET {
-			neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
-			if neo3Config == nil {
-				panic("chain is invalid")
-			}
-			return neo3Sdk.Nep17TotalSupply(hash)
+		neo3Config := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+		if neo3Config == nil {
+			panic("chain is invalid")
 		}
-	}
-	if chainId == basedef.NEO3N3T5_CROSSCHAIN_ID {
-		cfg := config.GetChainListenConfig(basedef.NEO3N3T5_CROSSCHAIN_ID)
-		if cfg == nil {
-			panic("NEO3N3T5 chain is invalid")
-		}
-		return neo3n3t5Sdk.Nep17TotalSupply(hash)
+		return neo3Sdk.Nep17TotalSupply(hash)
 	}
 	if chainId == basedef.ONT_CROSSCHAIN_ID {
 		ontConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
@@ -1203,8 +1166,6 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return neoSdk.Nep5Balance(hash, proxy)
 	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3Sdk.Nep17Balance(hash, proxy)
-	case basedef.NEO3N3T5_CROSSCHAIN_ID:
-		return neo3n3t5Sdk.Nep17Balance(hash, proxy)
 	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologySdk.Oep4Balance(hash, proxy)
 	case basedef.ONTEVM_CROSSCHAIN_ID:

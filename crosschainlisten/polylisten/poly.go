@@ -115,7 +115,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					polyDetail.SrcChainId = uint64(fchainid)
 					polyDetail.DstChainId = uint64(tchainid)
 					switch uint64(fchainid) {
-					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.NEO3N3T5_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
 						polyDetail.SrcHash = basedef.HexStringReverse(states[3].(string))
 					default:
 						polyDetail.SrcHash = states[3].(string)
@@ -138,7 +138,7 @@ func (this *PolyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					mctx.SrcChainId = uint64(fchainid)
 					mctx.DstChainId = uint64(tchainid)
 					switch uint64(fchainid) {
-					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.NEO3N3T5_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
 						mctx.SrcHash = basedef.HexStringReverse(states[3].(string))
 					default:
 						mctx.SrcHash = states[3].(string)

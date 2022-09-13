@@ -112,7 +112,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return o3listen.NewO3ChainListen(chainListenConfig)
 	case basedef.SWITCHEO_CROSSCHAIN_ID:
 		return switcheolisten.NewSwitcheoChainListen(chainListenConfig)
-	case basedef.NEO3_CROSSCHAIN_ID, basedef.NEO3N3T5_CROSSCHAIN_ID:
+	case basedef.NEO3_CROSSCHAIN_ID:
 		return neo3listen.NewNeo3ChainListen(chainListenConfig)
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		return zilliqalisten.NewZilliqaChainListen(chainListenConfig)

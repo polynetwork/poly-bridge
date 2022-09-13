@@ -216,9 +216,6 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.NEO3_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 8)
 		return fee_new.Div(precision_new).String() + " GAS"
-	case basedef.NEO3N3T5_CROSSCHAIN_ID:
-		precision_new := decimal.New(1, 8)
-		return fee_new.Div(precision_new).String() + " GAS"
 	case basedef.ARBITRUM_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
@@ -476,7 +473,7 @@ func GetTokenType(chainId uint64, standard uint8) string {
 		return "HRC" + "-" + tokenType
 	case basedef.OK_CROSSCHAIN_ID:
 		return "KIP" + "-" + tokenType
-	case basedef.NEO3_CROSSCHAIN_ID, basedef.NEO3N3T5_CROSSCHAIN_ID:
+	case basedef.NEO3_CROSSCHAIN_ID:
 		if standard == TokenTypeErc721 {
 			return "NFT"
 		}

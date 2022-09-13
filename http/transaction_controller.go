@@ -493,7 +493,7 @@ func (c *TransactionController) GetManualTxData() {
 		c.return400(fmt.Sprintf("%v is not polyhash", manualTxDataReq.PolyHash))
 		return
 	}
-	if polyTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO3N3T5_CROSSCHAIN_ID {
+	if polyTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID{
 		c.return400(fmt.Sprintf("%v can not submit to dst chain", manualTxDataReq.PolyHash))
 		return
 	}
