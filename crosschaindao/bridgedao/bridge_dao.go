@@ -675,13 +675,14 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 				continue
 			}
 
-			L1MinFee, _, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
+			L1MinFee, _, l1FeeAmount, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
 			if err != nil {
 				v.IsPaid = false
 				logs.Info("check fee wrapper_hash %s NOT_PAID, get L1 fee failed. err=%v", v.Hash, err)
 				continue
 			}
 			feeMin = new(big.Float).Add(feeMin, L1MinFee)
+			gasPay = new(big.Float).Sub(gasPay, l1FeeAmount)
 		}
 
 		if _, in := conf.EstimateProxy[strings.ToUpper(curSrcTransaction.Contract)]; in {
