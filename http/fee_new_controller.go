@@ -121,14 +121,14 @@ func (c *FeeController) NewCheckFee() {
 					continue
 				}
 
-				L1MinFee, _, l1FeeAmount, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
+				L1MinFee, _, _, l1FeeWei, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
 				if err != nil {
 					v.Status = NOT_PAID
 					logs.Info("check fee poly_hash %s NOT_PAID, get L1 fee failed. err=%v", k, err)
 					continue
 				}
 				feeMin = new(big.Float).Add(feeMin, L1MinFee)
-				gasPay = new(big.Float).Sub(gasPay, l1FeeAmount)
+				gasPay = new(big.Float).Sub(gasPay, l1FeeWei)
 			}
 
 			v.Paid, _ = feePay.Float64()

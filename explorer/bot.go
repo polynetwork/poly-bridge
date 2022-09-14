@@ -314,7 +314,7 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 		if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
 			ethChainFee, ok2 := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
 			if ok2 {
-				l1MinFee, _, _, e := fee.GetL1Fee(ethChainFee, chainId)
+				l1MinFee, _, _, _, e := fee.GetL1Fee(ethChainFee, chainId)
 				if e == nil {
 					minFee = new(big.Float).Add(minFee, l1MinFee)
 				}

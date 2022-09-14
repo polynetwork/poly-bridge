@@ -123,7 +123,7 @@ func (c *FeeController) GetFee() {
 			return
 		}
 
-		_, l1UsdtFee, _, err := fee.GetL1Fee(ethChainFee, getFeeReq.DstChainId)
+		_, l1UsdtFee, _, _, err := fee.GetL1Fee(ethChainFee, getFeeReq.DstChainId)
 		if err != nil {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("get ethereum L1 fee failed. err=%v", err))
 			c.Ctx.ResponseWriter.WriteHeader(400)
@@ -178,7 +178,7 @@ func (c *FeeController) GetFee() {
 							c.ServeJSON()
 							return
 						}
-						_, _, l1FeeAmount, err := fee.GetL1Fee(ethChainFee, getFeeReq.SrcChainId)
+						_, _, l1FeeAmount, _, err := fee.GetL1Fee(ethChainFee, getFeeReq.SrcChainId)
 						if err != nil {
 							c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("get ethereum L1 fee failed. err=%v", err))
 							c.Ctx.ResponseWriter.WriteHeader(400)
@@ -322,7 +322,7 @@ func (c *FeeController) OldGetFee() {
 			return
 		}
 
-		_, l1UsdtFee, _, err := fee.GetL1Fee(ethChainFee, getFeeReq.DstChainId)
+		_, l1UsdtFee, _, _, err := fee.GetL1Fee(ethChainFee, getFeeReq.DstChainId)
 		if err != nil {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("get ethereum L1 fee failed. err=%v", err))
 			c.Ctx.ResponseWriter.WriteHeader(400)
