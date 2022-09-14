@@ -34,7 +34,9 @@ var AssetCirculateDetailDescription = []string{
 	"contract deployment",
 	"auto extract fee from wrapper",
 	"auto swap asset for avoiding risk",
+	"poly bridge + netswap",
 }
+
 var specialRefillDetailsId = map[uint]bool{
 	0: true,
 	1: true,
@@ -42,18 +44,21 @@ var specialRefillDetailsId = map[uint]bool{
 	5: true,
 	7: true,
 	8: true,
+	9: true,
 }
 
 var specialTransactionInfoId = map[uint]bool{
-	0: true,
-	1: true,
-	2: true,
-	3: true,
-	4: true,
-	5: true,
-	6: true,
-	7: true,
-	8: true,
+	0:  true,
+	1:  true,
+	2:  true,
+	3:  true,
+	4:  true,
+	5:  true,
+	6:  true,
+	7:  true,
+	8:  true,
+	11: true,
+	12: true,
 }
 
 var TransactionDetailDescription = []string{
@@ -68,6 +73,8 @@ var TransactionDetailDescription = []string{
 	"cbridge cross chain target Chain funding transaction",
 	"contract deployment",
 	"wrapper set fee collector",
+	"lock proxy lock call",
+	"speed up tx",
 }
 
 var testChainId = []uint64{
