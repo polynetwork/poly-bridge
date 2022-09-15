@@ -121,6 +121,10 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
+
+	wrapperContracts := make([]string, 0)
+	wrapperContracts = append(wrapperContracts, this.neoCfg.WrapperContract...)
+	wrapperContracts = append(wrapperContracts, this.neoCfg.NFTWrapperContract...)
 	for _, tx := range block.Tx {
 		errTxHash = tx.Hash
 		appLog, err := this.neoSdk.GetApplicationLog(tx.Hash)
@@ -132,7 +136,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 				continue
 			}
 			for _, notify := range exeitem.Notifications {
-				if this.isListeningContract(notify.Contract[2:], this.neoCfg.WrapperContract) {
+				if this.isListeningContract(notify.Contract[2:], wrapperContracts) {
 					if notify.State.Type != "Array" {
 						continue
 					}
@@ -198,6 +202,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							Time:         uint64(tt),
 							BlockHeight:  height,
 							SrcChainId:   this.GetChainId(),
+							Standard:     this.CheckStandard(notify.Contract[2:], this.neoCfg.WrapperContract, this.neoCfg.NFTWrapperContract),
 						})
 					}
 				} else if notify.Contract[2:] == this.neoCfg.CCMContract {
@@ -255,6 +260,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								fctransfer.DstChainId = toChainId.Value.(*big.Int).Uint64()
 								fctransfer.DstUser = hex.EncodeToString(dstUser.Value.([]byte))
 								fctransfer.DstAsset = hex.EncodeToString(dstAsset.Value.([]byte))
+								fctransfer.Standard = this.CheckStandard(notifyNew.Contract[2:], this.neoCfg.ProxyContract, this.neoCfg.NFTProxyContract)
 								break
 							}
 						}
@@ -270,6 +276,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						fctx.Contract = hex.EncodeToString(contract.Value.([]byte))
 						fctx.Key = hex.EncodeToString(key.Value.([]byte))
 						fctx.Param = hex.EncodeToString(param.Value.([]byte))
+						fctx.Standard = fctransfer.Standard
 						fctx.SrcTransfer = fctransfer
 						srcTransactions = append(srcTransactions, fctx)
 					case _neo_crosschainunlock:
@@ -308,6 +315,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								} else {
 									tctransfer.Amount = models.NewBigInt(x)
 								}
+								tctransfer.Standard = this.CheckStandard(notifyNew.Contract[2:], this.neoCfg.ProxyContract, this.neoCfg.NFTProxyContract)
 								break
 							}
 						}
@@ -321,6 +329,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						tctx.SrcChainId = fromChainId.Uint64()
 						tctx.Contract = basedef.HexStringReverse(hex.EncodeToString(contract.Value.([]byte)))
 						tctx.PolyHash = basedef.HexStringReverse(hex.EncodeToString(polyHash.Value.([]byte)))
+						tctx.Standard = tctransfer.Standard
 						tctx.DstTransfer = tctransfer
 						dstTransactions = append(dstTransactions, tctx)
 					default:
@@ -347,4 +356,13 @@ func (this *Neo3ChainListen) GetExtendLatestHeight() (uint64, error) {
 		return this.GetLatestHeight()
 	}
 	return this.GetLatestHeight()
+}
+
+func (this *Neo3ChainListen) CheckStandard(contract string, erc20Contracts, nftContracts []string) uint8 {
+	if this.isListeningContract(contract, erc20Contracts) {
+		return models.TokenTypeErc20
+	} else if this.isListeningContract(contract, nftContracts) {
+		return models.TokenTypeErc721
+	}
+	return models.TokenTypeErc20
 }
