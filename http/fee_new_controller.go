@@ -97,6 +97,20 @@ func (c *FeeController) NewCheckFee() {
 				}
 			}
 		} else {
+			// skip use speed up tokens, e.g. PHX from NEO to BNB（special case）
+			if v.WrapperTransactionWithToken.SrcChainId == basedef.NEO_CROSSCHAIN_ID {
+				feeListenConfig := conf.GlobalConfig.GetFeeListenConfig(v.WrapperTransactionWithToken.SrcChainId)
+				if feeListenConfig != nil && feeListenConfig.UserSpeedUpTokens != nil {
+					for _, token := range feeListenConfig.UserSpeedUpTokens {
+						if strings.TrimPrefix(strings.ToLower(v.WrapperTransactionWithToken.FeeTokenHash), "0x") == strings.TrimPrefix(strings.ToLower(token), "0x") {
+							logs.Info("check fee poly_hash %s SKIP, because the swap token is a user-speed-up-token", k)
+							v.Status = SKIP
+							continue
+						}
+					}
+				}
+			}
+
 			//check db
 			if v.WrapperTransactionWithToken.IsPaid == true {
 				logs.Info("check fee poly_hash %s marked as paid in db", k)
