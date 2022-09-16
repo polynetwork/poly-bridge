@@ -6,7 +6,6 @@ import (
 	"github.com/beego/beego/v2/server/web"
 	"poly-bridge/basedef"
 	"poly-bridge/models"
-	"strings"
 )
 
 type AirDropController struct {
@@ -22,23 +21,35 @@ func (c *AirDropController) AirDropOfAddress() {
 		c.ServeJSON()
 		return
 	}
-	addressHashes := make([]string, 0)
+	ethAddrs := make([]string, 0)
+	otherUsers := make([]string, 0)
 	for _, v := range addressReq.Users {
 		if len(v.Address) > 0 {
-			addressHashes = append(addressHashes, v.Address)
+			if basedef.IsETHChain(v.ChainId) {
+				ethAddrs = append(ethAddrs, v.Address)
+			} else {
+				otherUsers = append(otherUsers, v.Address)
+			}
 		}
 	}
 
-	if len(addressHashes) == 0 {
+	if len(ethAddrs) == 0 && len(otherUsers) == 0 {
 		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("request parameter is invalid!"))
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 		return
 	}
 
+	airDropInfosUser := make([]*models.AirDropInfo, 0)
+	db.Where("user in ?", otherUsers).
+		Find(&airDropInfosUser)
+	airDropInfosAddr := make([]*models.AirDropInfo, 0)
+	db.Where("bind_addr in ?", ethAddrs).
+		Find(&airDropInfosAddr)
 	airDropInfos := make([]*models.AirDropInfo, 0)
-	db.Where("user in ?", addressHashes).
-		Find(&airDropInfos)
+	airDropInfos = append(airDropInfos, airDropInfosUser...)
+	airDropInfos = append(airDropInfos, airDropInfosAddr...)
+
 	bindAddrs := make([]string, 0)
 	for _, v := range airDropInfos {
 		bindAddrs = append(bindAddrs, v.BindAddr)
@@ -50,17 +61,7 @@ func (c *AirDropController) AirDropOfAddress() {
 		Where("b.bind_addr in ?", bindAddrs).
 		Find(&airDropRanks)
 
-	for _, airDropRank := range airDropRanks {
-		for _, v := range airDropInfos {
-			if strings.EqualFold(airDropRank.BindAddr, v.BindAddr) {
-				airDropRank.User = v.User
-				airDropRank.ChainID = v.ChainID
-				airDropRank.BindAddr = v.BindAddr
-				airDropRank.BindChainId = v.BindChainId
-			}
-		}
-	}
-	c.Data["json"] = models.MakeAirDropRsp(addressReq, airDropRanks)
+	c.Data["json"] = models.MakeAirDropRsp(addressReq, airDropInfos, airDropRanks)
 	c.ServeJSON()
 }
 
