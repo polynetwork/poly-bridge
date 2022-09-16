@@ -129,19 +129,6 @@ func (c *FeeController) GetFee() {
 		tokenFeeWithPrecision = new(big.Float).Add(tokenFeeWithPrecision, l1TokenFeeWithPrecision)
 	}
 
-	// set tokenFee to 0 when feeToken in UserSpeedUpTokens
-	if getFeeReq.SrcChainId == basedef.NEO_CROSSCHAIN_ID {
-		feeListenConfig := conf.GlobalConfig.GetFeeListenConfig(getFeeReq.SrcChainId)
-		if feeListenConfig != nil && feeListenConfig.UserSpeedUpTokens != nil {
-			for _, token := range feeListenConfig.UserSpeedUpTokens {
-				if strings.TrimPrefix(strings.ToLower(getFeeReq.Hash), "0x") == strings.TrimPrefix(strings.ToLower(token), "0x") {
-					tokenFee = big.NewFloat(0)
-					tokenFeeWithPrecision = big.NewFloat(0)
-				}
-			}
-		}
-	}
-
 	{
 		chainFeeJson, _ := json.Marshal(chainFee)
 		logs.Error("chain fee: %s", string(chainFeeJson))
