@@ -61,7 +61,7 @@ type AirDropRsp struct {
 	Users []*AirDropRspData
 }
 
-func MakeAirDropRsp(addressReq AirDropReq, airDropRanks []*AirDropRank) *AirDropRsp {
+func MakeAirDropRsp(addressReq AirDropReq, airDropInfos []*AirDropInfo, airDropRanks []*AirDropRank) *AirDropRsp {
 	airDropRsp := new(AirDropRsp)
 	for _, v := range addressReq.Users {
 		user := &AirDropRspData{
@@ -71,13 +71,31 @@ func MakeAirDropRsp(addressReq AirDropReq, airDropRanks []*AirDropRank) *AirDrop
 			0,
 			"0",
 		}
-		for _, airDropRank := range airDropRanks {
-			if v.Address == airDropRank.User {
-				if basedef.IsETHChain(airDropRank.BindChainId) {
-					user.AirDropAddr = basedef.Hash2Address(airDropRank.BindChainId, airDropRank.BindAddr)
+		for _, airDropInfo := range airDropInfos {
+			if strings.EqualFold(v.Address, airDropInfo.User) {
+				if basedef.IsETHChain(airDropInfo.BindChainId) {
+					user.AirDropAddr = basedef.Hash2Address(airDropInfo.BindChainId, airDropInfo.BindAddr)
 				}
-				user.Rank = airDropRank.Rank
-				user.Amount = fmt.Sprintf("%.2f", float64(airDropRank.Amount)/10000.0)
+				for _, airDropRank := range airDropRanks {
+					if strings.EqualFold(airDropInfo.BindAddr, airDropRank.BindAddr) {
+						user.Rank = airDropRank.Rank
+						user.Amount = fmt.Sprintf("%.2f", float64(airDropRank.Amount)/10000.0)
+						break
+					}
+				}
+				break
+			}
+			if strings.EqualFold(v.Address, airDropInfo.BindAddr) {
+				if basedef.IsETHChain(airDropInfo.BindChainId) {
+					user.AirDropAddr = basedef.Hash2Address(airDropInfo.BindChainId, airDropInfo.BindAddr)
+				}
+				for _, airDropRank := range airDropRanks {
+					if strings.EqualFold(airDropInfo.BindAddr, airDropRank.BindAddr) {
+						user.Rank = airDropRank.Rank
+						user.Amount = fmt.Sprintf("%.2f", float64(airDropRank.Amount)/10000.0)
+						break
+					}
+				}
 				break
 			}
 		}
