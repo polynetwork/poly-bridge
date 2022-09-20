@@ -194,14 +194,13 @@ func (cfg *CoinPriceListenConfig) GetNodesKey() []string {
 }
 
 type FeeListenConfig struct {
-	ChainId           uint64
-	ChainName         string
-	Nodes             []*Restful
-	ProxyFee          int64
-	MinFee            int64
-	GasLimit          int64
-	EthL1GasLimit     int64
-	UserSpeedUpTokens []string
+	ChainId       uint64
+	ChainName     string
+	Nodes         []*Restful
+	ProxyFee      int64
+	MinFee        int64
+	GasLimit      int64
+	EthL1GasLimit int64
 }
 
 func (cfg *FeeListenConfig) GetNodesUrl() []string {
