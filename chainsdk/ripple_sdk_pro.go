@@ -156,8 +156,11 @@ func (pro *RippleSdkPro) GetFee() (*big.Int, error) {
 	return info.sdk.GetFee()
 }
 
+//ripple sign address
 func (pro *RippleSdkPro) GetXRP() string {
 	if basedef.ENV == basedef.MAINNET {
+		return "4513bc38527817053bdd4ef041c79aa87b6929d3"
+	} else if basedef.ENV == basedef.TESTNET {
 		return "51fa7b7c1e0c79b54de202e6a24fef61bf54f442"
 	}
 	return "51fa7b7c1e0c79b54de202e6a24fef61bf54f442"
