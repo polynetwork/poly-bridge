@@ -33,6 +33,7 @@ var (
 	metisSdk       *chainsdk.EthereumSdkPro
 	bobaSdk        *chainsdk.EthereumSdkPro
 	rinkebySdk     *chainsdk.EthereumSdkPro
+	goerliSdk      *chainsdk.EthereumSdkPro
 	pixieSdk       *chainsdk.EthereumSdkPro
 	oasisSdk       *chainsdk.EthereumSdkPro
 	starcoinSdk    *chainsdk.StarcoinSdkPro
@@ -270,6 +271,15 @@ func newChainSdks(config *conf.Config) {
 			urls := rinkebyConfig.GetNodesUrl()
 			rinkebySdk = chainsdk.NewEthereumSdkPro(urls, rinkebyConfig.ListenSlot, rinkebyConfig.ChainId)
 			sdkMap[basedef.RINKEBY_CROSSCHAIN_ID] = rinkebySdk
+		}
+		{
+			goerliConfig := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
+			if goerliConfig == nil {
+				panic("goerli chain is invalid")
+			}
+			urls := goerliConfig.GetNodesUrl()
+			goerliSdk = chainsdk.NewEthereumSdkPro(urls, goerliConfig.ListenSlot, goerliConfig.ChainId)
+			sdkMap[basedef.GOERLI_CROSSCHAIN_ID] = goerliSdk
 		}
 	}
 	{
@@ -701,6 +711,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.GOERLI_CROSSCHAIN_ID {
+		goerliConfig := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
+		if goerliConfig == nil {
+			panic("goerli chain is invalid")
+		}
+		for _, v := range goerliConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := goerliSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if chainId == basedef.BOBA_CROSSCHAIN_ID {
 		bobaConfig := config.GetChainListenConfig(basedef.BOBA_CROSSCHAIN_ID)
 		if bobaConfig == nil {
@@ -1050,6 +1074,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return rinkebySdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.GOERLI_CROSSCHAIN_ID {
+		goerliConfig := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
+		if goerliConfig == nil {
+			panic("goerli chain GetTotalSupply invalid")
+		}
+		return goerliSdk.Erc20TotalSupply(hash)
+	}
 	if chainId == basedef.BOBA_CROSSCHAIN_ID {
 		bobaConfig := config.GetChainListenConfig(basedef.BOBA_CROSSCHAIN_ID)
 		if bobaConfig == nil {
@@ -1188,6 +1219,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return pixieSdk.Erc20Balance(hash, proxy)
 	case basedef.RINKEBY_CROSSCHAIN_ID:
 		return rinkebySdk.Erc20Balance(hash, proxy)
+	case basedef.GOERLI_CROSSCHAIN_ID:
+		return goerliSdk.Erc20Balance(hash, proxy)
 	case basedef.BOBA_CROSSCHAIN_ID:
 		return bobaSdk.Erc20Balance(hash, proxy)
 	case basedef.OASIS_CROSSCHAIN_ID:
@@ -1243,6 +1276,8 @@ func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Addres
 		return xdaiSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	case basedef.RINKEBY_CROSSCHAIN_ID:
 		return rinkebySdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
+	case basedef.GOERLI_CROSSCHAIN_ID:
+		return goerliSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	default:
 		return common.Address{}, fmt.Errorf("has nat func with chain:%v", chainId)
 	}

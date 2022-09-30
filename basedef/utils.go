@@ -80,7 +80,7 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == SWITCHEO_CROSSCHAIN_ID {
 		addr, _ := cosmos_types.AccAddressFromHex(value)
 		return addr.String()
-	} else if chainId == NEO3_CROSSCHAIN_ID{
+	} else if chainId == NEO3_CROSSCHAIN_ID {
 		addrHex, _ := hex.DecodeString(value)
 		addr := neo3_helper.UInt160FromBytes(addrHex)
 		address := crypto.ScriptHashToAddress(addr, neo3_helper.DefaultAddressVersion)
@@ -128,6 +128,9 @@ func Hash2Address(chainId uint64, value string) string {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
 	} else if chainId == ASTAR_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
+	} else if chainId == GOERLI_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
 	}
@@ -201,7 +204,7 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		}
 		hash := fmt.Sprint(addr)
 		return hash, nil
-	} else if chainId == NEO3_CROSSCHAIN_ID{
+	} else if chainId == NEO3_CROSSCHAIN_ID {
 		scriptHash, err := crypto.AddressToScriptHash(value, neo3_helper.DefaultAddressVersion)
 		if err != nil {
 			return value, err
@@ -263,13 +266,16 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == ASTAR_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == GOERLI_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
 
 //lock item_proxy use
 func Proxy2Address(chainId uint64, proxy string) string {
-	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID{
+	if chainId == NEO_CROSSCHAIN_ID || chainId == ONT_CROSSCHAIN_ID || chainId == NEO3_CROSSCHAIN_ID {
 		proxy = HexStringReverse(proxy)
 	}
 	return Hash2Address(chainId, proxy)
@@ -363,6 +369,8 @@ func GetChainName(id uint64) string {
 		return "Ripple"
 	case ASTAR_CROSSCHAIN_ID:
 		return "Astar"
+	case GOERLI_CROSSCHAIN_ID:
+		return "Goerli"
 
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
