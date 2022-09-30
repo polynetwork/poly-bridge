@@ -51,7 +51,11 @@ func StartHealthMonitor(config *conf.Config, relayerConfig *conf.RelayerConfig) 
 		healthMonitorConfigMap[cfg.ChainId].CCMContract = cfg.CCMContract
 	}
 	for _, cfg := range relayerConfig.RelayAccountConfig {
-		healthMonitorConfigMap[cfg.ChainId].RelayerAccount = cfg
+		if c, ok := healthMonitorConfigMap[cfg.ChainId]; ok {
+			c.RelayerAccount = cfg
+		} else {
+			logs.Error("relayer config  chainId=%d undefined.", cfg.ChainId)
+		}
 	}
 	for _, monitorConfig := range healthMonitorConfigMap {
 		healthMonitorHandle := NewHealthMonitorHandle(monitorConfig)
