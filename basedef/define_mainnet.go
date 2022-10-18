@@ -63,6 +63,7 @@ const (
 	CONFLUX_CROSSCHAIN_ID     = uint64(1000980)
 	PLT2_CROSSCHAIN_ID        = uint64(1000108)
 	ASTAR_CROSSCHAIN_ID       = uint64(100990)
+	APTOS_CROSSCHAIN_ID       = uint64(100998)
 
 	ENV = "mainnet"
 )

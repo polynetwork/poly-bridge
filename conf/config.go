@@ -92,26 +92,28 @@ type ChainNodes struct {
 }
 
 type ChainListenConfig struct {
-	ChainName          string
-	ChainId            uint64
-	ListenSlot         uint64
-	Defer              uint64
-	BatchSize          uint64
-	MinBatchLength     uint64
-	MaxBatchLength     uint64
-	Nodes              []*Restful
-	ExtendNodes        []*Restful
-	WrapperContract    []string
-	CCMContract        string
-	ProxyContract      []string
-	OtherProxyContract []*OtherItemProxy
-	OtherTVLContract   []*OtherItemProxy
-	NFTWrapperContract []string
-	NFTProxyContract   []string
-	NFTQueryContract   string
-	SwapContract       string
-	L1Url              string
-	L1Contract         string
+	ChainName                     string
+	ChainId                       uint64
+	ListenSlot                    uint64
+	Defer                         uint64
+	BatchSize                     uint64
+	MinBatchLength                uint64
+	MaxBatchLength                uint64
+	Nodes                         []*Restful
+	ExtendNodes                   []*Restful
+	WrapperContract               []string
+	CCMContract                   string
+	CrossChainEventCreationNumber string
+	ExecuteTxEventCreationNumber  string
+	ProxyContract                 []string
+	OtherProxyContract            []*OtherItemProxy
+	OtherTVLContract              []*OtherItemProxy
+	NFTWrapperContract            []string
+	NFTProxyContract              []string
+	NFTQueryContract              string
+	SwapContract                  string
+	L1Url                         string
+	L1Contract                    string
 }
 
 type HealthMonitorConfig struct {
