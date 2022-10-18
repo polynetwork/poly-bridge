@@ -199,7 +199,7 @@ func (c *FeeController) GetFee() {
 			return
 		}
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
-		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
+		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.APTOS_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
 				ethChains := make(map[uint64]struct{})
@@ -257,6 +257,9 @@ func (c *FeeController) GetFee() {
 			return
 		}
 		tokenBalanceWithoutPrecision := new(big.Float).Quo(balance, new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
+		if tokenMap.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+			fmt.Printf("aptos getfee. tokenBalance=%s, tokenBalanceWithoutPrecision=%s", tokenBalance.String(), tokenBalanceWithoutPrecision.String())
+		}
 		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
 			getFeeReq.SwapTokenHash, balance, tokenBalanceWithoutPrecision, isNative, nativeTokenAmount, feeTokenPrecison)
 		c.ServeJSON()

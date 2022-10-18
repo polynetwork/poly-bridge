@@ -333,6 +333,8 @@ func GetChainName(id uint64) string {
 		return "Ripple"
 	case ASTAR_CROSSCHAIN_ID:
 		return "Astar"
+	case APTOS_CROSSCHAIN_ID:
+		return "Aptos"
 
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)

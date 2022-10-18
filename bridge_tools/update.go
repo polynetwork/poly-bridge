@@ -53,7 +53,7 @@ func startUpdate(cfg *conf.UpdateConfig, servercfg *serverconf.Config) {
 	//
 	for _, tokenBasic := range cfg.TokenBasics {
 		for _, token := range tokenBasic.Tokens {
-			if token.ChainId != basedef.STARCOIN_CROSSCHAIN_ID {
+			if token.ChainId != basedef.STARCOIN_CROSSCHAIN_ID && token.ChainId != basedef.APTOS_CROSSCHAIN_ID {
 				token.Hash = strings.ToLower(token.Hash)
 			}
 		}

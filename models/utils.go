@@ -494,6 +494,8 @@ func GetTokenType(chainId uint64, standard uint8) string {
 			return "Ripple NFT"
 		}
 		return "XRP"
+	case basedef.APTOS_CROSSCHAIN_ID:
+		return ""
 
 	default:
 		return "ERC" + "-" + tokenType
