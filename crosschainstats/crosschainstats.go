@@ -255,10 +255,6 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			logs.Error("this_dao_GetTokenBasicByHash err", err)
 			continue
 		}
-		logs.Info(fmt.Sprintf("ttttttttoken1:%v", token))
-		logs.Info(fmt.Sprintf("ttttttttoken1:%v", token.Hash, token.ChainId))
-		logs.Info(fmt.Sprintf("ttttttttoken2:%v", token.TokenBasic))
-		logs.Info(fmt.Sprintf("ttttttttoken2:%v", token.TokenBasic.Name))
 		price_new := decimal.New(token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 		precision_new := decimal.New(int64(1), int32(token.Precision))
 		if token.TokenBasic.ChainId == statistic.ChainId {
