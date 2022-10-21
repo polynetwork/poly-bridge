@@ -91,7 +91,7 @@ type CheckFeeRequest struct {
 
 type Token struct {
 	Id              int64       `gorm:"primaryKey;autoIncrement"`
-	Hash            string      `gorm:"uniqueIndex:idx_token;size:66;not null"`
+	Hash            string      `gorm:"uniqueIndex:idx_token;size:120;not null"`
 	ChainId         uint64      `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
 	Name            string      `gorm:"size:64;not null"`
 	Precision       uint64      `gorm:"type:bigint(20);not null"`
@@ -106,7 +106,7 @@ type Token struct {
 
 type TokenStatistic struct {
 	Id             int64   `gorm:"primaryKey;autoIncrement"`
-	Hash           string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
+	Hash           string  `gorm:"uniqueIndex:idx_token;size:120;not null"`
 	ChainId        uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
 	InCounter      int64   `gorm:"type:bigint(20)"`
 	InAmount       *BigInt `gorm:"type:varchar(64)"`
@@ -124,9 +124,9 @@ type TokenStatistic struct {
 type TokenMap struct {
 	Id           int64  `gorm:"primaryKey;autoIncrement"`
 	SrcChainId   uint64 `gorm:"uniqueIndex:idx_token_map;type:bigint(20);not null"`
-	SrcTokenHash string `gorm:"uniqueIndex:idx_token_map;size:66;not null"`
+	SrcTokenHash string `gorm:"uniqueIndex:idx_token_map;size:120;not null"`
 	DstChainId   uint64 `gorm:"uniqueIndex:idx_token_map;type:bigint(20);not null"`
-	DstTokenHash string `gorm:"uniqueIndex:idx_token_map;size:66;not null"`
+	DstTokenHash string `gorm:"uniqueIndex:idx_token_map;size:120;not null"`
 	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
 	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
 	Standard     uint8  `gorm:"type:int(8);not null"`
@@ -143,7 +143,7 @@ type WrapperTransactionWithToken struct {
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
 	DstUser      string  `gorm:"type:varchar(66);not null"`
 	ServerId     uint64  `gorm:"type:bigint(20);not null"`
-	FeeTokenHash string  `gorm:"size:66;not null"`
+	FeeTokenHash string  `gorm:"size:120;not null"`
 	FeeToken     *Token  `gorm:"foreignKey:FeeTokenHash,SrcChainId;references:Hash,ChainId"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`

@@ -18,14 +18,16 @@
 package models
 
 type Chain struct {
-	Id                  int64  `gorm:"primaryKey;autoIncrement"`
-	ChainId             uint64 `gorm:"uniqueIndex;type:bigint(20);not null"`
-	Name                string `gorm:"type:varchar(32)"`
-	Height              uint64 `gorm:"type:bigint(20);not null"`
-	HeightSwap          uint64 `gorm:"type:bigint(20);not null"`
-	BackwardBlockNumber uint64 `gorm:"type:bigint(20);not null"`
-	ChainLogo           string `gorm:"type:varchar(128)"`
-	ChainExplorerUrl    string `gorm:"type:varchar(128)"`
+	Id                       int64  `gorm:"primaryKey;autoIncrement"`
+	ChainId                  uint64 `gorm:"uniqueIndex;type:bigint(20);not null"`
+	Name                     string `gorm:"type:varchar(32)"`
+	Height                   uint64 `gorm:"type:bigint(20);not null"`
+	CrossChainSequenceNumber uint64 `gorm:"type:bigint(20);not null"`
+	ExecuteTxSequenceNumber  uint64 `gorm:"type:bigint(20);not null"`
+	HeightSwap               uint64 `gorm:"type:bigint(20);not null"`
+	BackwardBlockNumber      uint64 `gorm:"type:bigint(20);not null"`
+	ChainLogo                string `gorm:"type:varchar(128)"`
+	ChainExplorerUrl         string `gorm:"type:varchar(128)"`
 }
 
 type ChainStatistic struct {
@@ -167,7 +169,7 @@ type DstSwap struct {
 	ChainId    uint64  `gorm:"type:bigint(20);not null"`
 	Time       uint64  `gorm:"type:bigint(20);not null"`
 	PoolId     uint64  `gorm:"type:bigint(20);not null"`
-	InAsset    string  `gorm:"type:varchar(66);not null"`
+	InAsset    string  `gorm:"type:varchar(120);not null"`
 	InAmount   *BigInt `gorm:"type:varchar(64);not null"`
 	OutAsset   string  `gorm:"type:varchar(120);not null"`
 	OutAmount  *BigInt `gorm:"type:varchar(64);not null"`
