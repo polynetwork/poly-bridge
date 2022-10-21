@@ -271,8 +271,8 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					if maxBatchLength == 0 {
 						maxBatchLength = 1
 					}
-					batchLength := minBatchLength
-					if height-chain.Height-ccl.handle.GetDefer() > maxBatchLength && maxBatchLength > minBatchLength {
+					batchLength := height - chain.Height - ccl.handle.GetDefer()
+					if height-chain.Height-ccl.handle.GetDefer() > maxBatchLength {
 						batchLength = maxBatchLength
 					}
 
