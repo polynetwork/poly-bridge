@@ -255,8 +255,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				}
 				logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			}
-			switch ccl.handle.GetChainId() {
-			case basedef.CONFLUX_CROSSCHAIN_ID:
+			if basedef.IsETHChain(ccl.handle.GetChainId()) {
 				for chain.Height < height-ccl.handle.GetDefer() {
 					batchSize := ccl.handle.GetBatchSize() //concurrency size
 					if batchSize == 0 {
@@ -342,8 +341,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 						chain.Height = flagChainHeight
 					}
 				}
-
-			default:
+			} else {
 				for chain.Height < height-ccl.handle.GetDefer() {
 					batchSize := ccl.handle.GetBatchSize()
 					if batchSize == 0 {
