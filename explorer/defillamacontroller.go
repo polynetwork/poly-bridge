@@ -343,3 +343,12 @@ func (c *DefiLlamaController) GetTVLAstar() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+
+func (c *DefiLlamaController) GetTVLBitgert() {
+	tvlAmount, err := getTVLAmount(basedef.BRISE_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLBitgert err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
