@@ -606,14 +606,24 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 			addrHash := (boundAsset.Hex())[2:]
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
 
-			if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
+			switch chainId {
+			case basedef.STARCOIN_CROSSCHAIN_ID:
 				srcTokenHashByteString := strings.ToLower(hex.EncodeToString([]byte(srcTokenHash)))
-				logs.Info("srcTokenHashByteString =%s", srcTokenHashByteString)
 				if strings.Contains(srcTokenHashByteString, strings.ToLower(addrHash)) {
 					return proxy, nil
 				}
-			} else if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
-				return proxy, nil
+			case basedef.APTOS_CROSSCHAIN_ID:
+				srcTokenHashByteString := strings.ToLower(hex.EncodeToString([]byte(fmt.Sprintf("0x1::coin::Coin<%s>", srcTokenHash))))
+				logs.Info("aptos GetBoundLockProxy")
+				logs.Info("srcTokenHashByteString %s", srcTokenHashByteString)
+				logs.Info("bind asset %s", strings.ToLower(addrHash))
+				if strings.Contains(srcTokenHashByteString, strings.ToLower(addrHash)) {
+					return proxy, nil
+				}
+			default:
+				if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
+					return proxy, nil
+				}
 			}
 		}
 	}
