@@ -53,6 +53,7 @@ var (
 	rippleSdk      *chainsdk.RippleSdkPro
 	confluxSdk     *chainsdk.EthereumSdkPro
 	astarSdk       *chainsdk.EthereumSdkPro
+	briseSdk       *chainsdk.EthereumSdkPro
 	config         *conf.Config
 	sdkMap         map[uint64]interface{}
 )
@@ -434,6 +435,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		astarSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.ASTAR_CROSSCHAIN_ID] = astarSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.BRISE_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("brise chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		briseSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.BRISE_CROSSCHAIN_ID] = briseSdk
 	}
 }
 
@@ -935,6 +945,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.BRISE_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.BRISE_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("brise chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := briseSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -1172,6 +1196,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return astarSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.BRISE_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.BRISE_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("brise chain GetTotalSupply invalid")
+		}
+		return briseSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -1253,6 +1284,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return confluxSdk.Erc20Balance(hash, proxy)
 	case basedef.ASTAR_CROSSCHAIN_ID:
 		return astarSdk.Erc20Balance(hash, proxy)
+	case basedef.BRISE_CROSSCHAIN_ID:
+		return briseSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
