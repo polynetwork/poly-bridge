@@ -56,7 +56,7 @@ func (pro *AptosSdkPro) nodeSelection() {
 		}
 	}()
 	logs.Debug("node selection of chain : %d......", pro.id)
-	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot))
+	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot) * 30)
 	for {
 		select {
 		case <-ticker.C:

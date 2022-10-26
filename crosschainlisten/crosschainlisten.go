@@ -348,13 +348,12 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 					}
 				}
 			} else {
-
 				switch ccl.handle.GetChainId() {
 				case basedef.APTOS_CROSSCHAIN_ID:
 					if ccl.handle.GetChainId() == basedef.APTOS_CROSSCHAIN_ID {
 						h := ccl.handle
 						if aptos, ok := h.(*aptoslisten.AptosChainListen); ok {
-							wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := aptos.HandleEvent(ccl.db)
+							wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := aptos.HandleEvent(ccl.db, 0, 0, 0)
 							if err != nil {
 								logs.Error("aptos HandleNewBlock chain：%s, err: %v", ccl.handle.GetChainName(), err)
 								return

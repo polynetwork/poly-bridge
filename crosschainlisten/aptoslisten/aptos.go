@@ -66,30 +66,39 @@ func (a *AptosChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 	return nil, nil, nil, nil, nil, nil, 0, 0, nil
 }
 
-func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, error) {
-	dbChain, err := db.GetChain(a.GetChainId())
-	if err != nil {
-		return nil, nil, nil, nil, nil, nil, fmt.Errorf("get chain %d err: %v", a.GetChainId(), err)
+func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChainSequenceNumber, executeTxSequenceNumber, limit uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, error) {
+	var dbChain *models.Chain
+	if db != nil {
+		chain, err := db.GetChain(a.GetChainId())
+		if err != nil {
+			return nil, nil, nil, nil, nil, nil, fmt.Errorf("get chain %d err: %v", a.GetChainId(), err)
+		}
+		crossChainSequenceNumber = chain.CrossChainSequenceNumber
+		executeTxSequenceNumber = chain.ExecuteTxSequenceNumber
+		dbChain = chain
+
+		height, err := a.aptosSdk.GetBlockCount()
+		if err != nil {
+			return nil, nil, nil, nil, nil, nil, fmt.Errorf("get aptos latest err: %v", a.GetChainId(), err)
+		}
+		dbChain.Height = height
 	}
 
-	height, err := a.aptosSdk.GetBlockCount()
-	if err != nil {
-		return nil, nil, nil, nil, nil, nil, fmt.Errorf("get aptos latest err: %v", a.GetChainId(), err)
+	if limit == 0 {
+		limit = a.aptosCfg.BatchSize
 	}
-	dbChain.Height = height
 
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
 
 	crossChainEventFilter := &chainsdk.AptosEventFilter{Address: a.aptosCfg.CCMContract, CreationNumber: a.aptosCfg.CrossChainEventCreationNumber, Query: make(map[string]interface{})}
-	crossChainEventFilter.Query["limit"] = a.aptosCfg.BatchSize
-	crossChainEventFilter.Query["start"] = dbChain.CrossChainSequenceNumber
+	crossChainEventFilter.Query["limit"] = limit
+	crossChainEventFilter.Query["start"] = crossChainSequenceNumber
 
 	executeTxEventFilter := &chainsdk.AptosEventFilter{Address: a.aptosCfg.CCMContract, CreationNumber: a.aptosCfg.ExecuteTxEventCreationNumber, Query: make(map[string]interface{})}
-	executeTxEventFilter.Query["limit"] = a.aptosCfg.BatchSize
-	executeTxEventFilter.Query["start"] = dbChain.ExecuteTxSequenceNumber
-
+	executeTxEventFilter.Query["limit"] = limit
+	executeTxEventFilter.Query["start"] = executeTxSequenceNumber
 	crossChainEvents, err := a.aptosSdk.GetEvents(crossChainEventFilter)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, fmt.Errorf("aptos get crossChainEvents failed. filter: %+v, err: %v", *crossChainEventFilter, err)
@@ -108,15 +117,11 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao) ([]*model
 
 	var nextCrossChainSequenceNumber uint64
 	for _, event := range crossChainEvents {
-		version, err := strconv.ParseUint(event.Version, 10, 32)
-		if err != nil {
-			return nil, nil, nil, nil, nil, nil, fmt.Errorf("parse version failed. version:%s, err: %v", event.Version, err)
-		}
-		block, err := a.aptosSdk.GetBlockByVersion(version)
+		block, err := a.aptosSdk.GetBlockByVersion(uint64(event.Version))
 		if err != nil {
 			return nil, nil, nil, nil, nil, nil, fmt.Errorf("GetBlockByVersion failed. version:%s, err: %v", event.Version, err)
 		}
-		tx, err := a.aptosSdk.GetTxByVersion(version)
+		tx, err := a.aptosSdk.GetTxByVersion(uint64(event.Version))
 		if err != nil {
 			return nil, nil, nil, nil, nil, nil, fmt.Errorf("GetTxByVersion failed. version:%s, err: %v", event.Version, err)
 		}
@@ -139,7 +144,7 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao) ([]*model
 		srcTx.Height, _ = strconv.ParseUint(block.BlockHeight, 0, 32)
 		srcTx.User = tx.Sender
 		srcTx.Contract = event.GUID.AccountAddress
-		srcTx.Key = event.Data["tx_id"].(string)
+		srcTx.Key = event.Data["tx_id"].(string)[2:]
 		srcTx.Param = event.Data["raw_data"].(string)
 
 		// source transfer
@@ -175,20 +180,16 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao) ([]*model
 			wrapperTx.Status = basedef.STATE_SOURCE_DONE
 			wrapperTransactions = append(wrapperTransactions, wrapperTx)
 		}
-		nextCrossChainSequenceNumber, _ = strconv.ParseUint(event.SequenceNumber, 10, 32)
+		nextCrossChainSequenceNumber = uint64(event.SequenceNumber)
 	}
 
 	var nextExecuteTxSequenceNumber uint64
 	for _, event := range executeTxEvents {
-		version, err := strconv.ParseUint(event.Version, 10, 32)
-		if err != nil {
-			return nil, nil, nil, nil, nil, nil, fmt.Errorf("parse version failed. version:%s, err: %v", event.Version, err)
-		}
-		block, err := a.aptosSdk.GetBlockByVersion(version)
+		block, err := a.aptosSdk.GetBlockByVersion(uint64(event.Version))
 		if err != nil {
 			return nil, nil, nil, nil, nil, nil, fmt.Errorf("GetBlockByVersion failed. version:%s, err: %v", event.Version, err)
 		}
-		tx, err := a.aptosSdk.GetTxByVersion(version)
+		tx, err := a.aptosSdk.GetTxByVersion(uint64(event.Version))
 		if err != nil {
 			return nil, nil, nil, nil, nil, nil, fmt.Errorf("GetTxByVersion failed. version:%s, err: %v", event.Version, err)
 		}
@@ -225,21 +226,22 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao) ([]*model
 			//dstTransfer.Amount
 			dstTx.DstTransfer = dstTransfer
 		}
-		nextExecuteTxSequenceNumber, _ = strconv.ParseUint(event.SequenceNumber, 10, 32)
+		nextExecuteTxSequenceNumber = uint64(event.SequenceNumber)
 		dstTransactions = append(dstTransactions, dstTx)
 	}
 
-	// update CrossChainSequenceNumber
-	if len(srcTransactions) > 0 && nextCrossChainSequenceNumber >= dbChain.CrossChainSequenceNumber {
-		dbChain.CrossChainSequenceNumber = nextCrossChainSequenceNumber + 1
-	}
-	// update executeTxSequenceNumber
-	if len(executeTxEvents) > 0 && nextExecuteTxSequenceNumber >= dbChain.ExecuteTxSequenceNumber {
-		dbChain.ExecuteTxSequenceNumber = nextExecuteTxSequenceNumber + 1
-	}
-	err = db.UpdateChain(dbChain)
-	if err != nil {
-		logs.Error("Aptos listen update chain err: %v", err)
+	// update chain
+	if dbChain != nil {
+		if len(srcTransactions) > 0 && nextCrossChainSequenceNumber >= dbChain.CrossChainSequenceNumber {
+			dbChain.CrossChainSequenceNumber = nextCrossChainSequenceNumber + 1
+		}
+		if len(executeTxEvents) > 0 && nextExecuteTxSequenceNumber >= dbChain.ExecuteTxSequenceNumber {
+			dbChain.ExecuteTxSequenceNumber = nextExecuteTxSequenceNumber + 1
+		}
+		err = db.UpdateChain(dbChain)
+		if err != nil {
+			logs.Error("Aptos listen update chain err: %v", err)
+		}
 	}
 
 	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, nil
