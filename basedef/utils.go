@@ -380,7 +380,7 @@ func GetChainName(id uint64) string {
 	case APTOS_CROSSCHAIN_ID:
 		return "Aptos"
 	case BRISE_CROSSCHAIN_ID:
-		return "Brise"
+		return "Bitgert"
 
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
