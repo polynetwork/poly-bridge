@@ -301,26 +301,27 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractlogs []types.Log
 		}
 
 		evt, err := wrapperContractAbi.ParsePolyWrapperLock(v)
-		if err != nil {
-			continue
-		}
-
-		wrapperTransaction := &models.WrapperTransaction{
-			Hash:         evt.Raw.TxHash.String()[2:],
-			User:         models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
-			DstChainId:   evt.ToChainId,
-			DstUser:      models.FormatString(hex.EncodeToString(evt.ToAddress)),
-			FeeTokenHash: models.FormatString(strings.ToLower(evt.FromAsset.String()[2:])),
-			FeeAmount:    models.NewBigInt(evt.Fee),
-			ServerId:     evt.Id.Uint64(),
-			BlockHeight:  evt.Raw.BlockNumber,
-		}
-		if !strings.EqualFold(v.Address.String(), wrapperV1Contract.String()) {
-			if this.GetChainId() == basedef.METIS_CROSSCHAIN_ID {
-				wrapperTransaction.FeeTokenHash = "deaddeaddeaddeaddeaddeaddeaddeaddead0000"
-			} else {
-				wrapperTransaction.FeeTokenHash = "0000000000000000000000000000000000000000"
-			}
+		if err == nil {
+			wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+				Hash:       evt.Raw.TxHash.String()[2:],
+				User:       models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
+				DstChainId: evt.ToChainId,
+				DstUser:    models.FormatString(hex.EncodeToString(evt.ToAddress)),
+				FeeTokenHash: func() string {
+					if !strings.EqualFold(v.Address.String(), wrapperV1Contract.String()) {
+						switch this.GetChainId() {
+						case basedef.METIS_CROSSCHAIN_ID:
+							return "deaddeaddeaddeaddeaddeaddeaddeaddead0000"
+						default:
+							return "0000000000000000000000000000000000000000"
+						}
+					}
+					return models.FormatString(strings.ToLower(evt.FromAsset.String()[2:]))
+				}(),
+				FeeAmount:   models.NewBigInt(evt.Fee),
+				ServerId:    evt.Id.Uint64(),
+				BlockHeight: evt.Raw.BlockNumber,
+			})
 		}
 	}
 
