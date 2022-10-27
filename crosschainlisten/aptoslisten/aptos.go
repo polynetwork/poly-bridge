@@ -139,7 +139,7 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 
 		srcTx.Height, _ = strconv.ParseUint(block.BlockHeight, 0, 32)
 		srcTx.User = tx.Sender
-		srcTx.Contract = event.GUID.AccountAddress
+		srcTx.Contract = event.GUID.AccountAddress[2:]
 		srcTx.Key = event.Data["tx_id"].(string)[2:]
 		srcTx.Param = event.Data["raw_data"].(string)
 
