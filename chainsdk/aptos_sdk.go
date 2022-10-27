@@ -2,6 +2,7 @@ package chainsdk
 
 import (
 	"context"
+	"fmt"
 	"github.com/portto/aptos-go-sdk/client"
 	"github.com/portto/aptos-go-sdk/models"
 	"net/http"
@@ -100,6 +101,10 @@ func (sdk *AptosSdk) GetUnLockEvent(events []models.Event) *models.Event {
 
 func (sdk *AptosSdk) GetGasPrice(ctx context.Context) (uint64, error) {
 	return sdk.client.EstimateGasPrice(ctx)
+}
+
+func (sdk *AptosSdk) GetBalance(ctx context.Context, token, address string) (*client.AccountResource, error) {
+	return sdk.client.GetResourceByAccountAddressAndResourceType(ctx, address, fmt.Sprintf("%s::lock_proxy::Treasury<%s>", "0x"+strings.TrimPrefix(address, "0x"), token))
 }
 
 //func (sdk *AptosSdk) GetTransactionInfoByHash(hash string) (*client.TransactionInfo, error) {
