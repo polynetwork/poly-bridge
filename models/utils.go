@@ -293,6 +293,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 			return feeString + " SBY"
 		}
 		return feeString + " ASTR"
+	case basedef.APTOS_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 8)
+		return fee_new.Div(precision_new).String() + " APT"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()
@@ -495,7 +498,10 @@ func GetTokenType(chainId uint64, standard uint8) string {
 		}
 		return "XRP"
 	case basedef.APTOS_CROSSCHAIN_ID:
-		return ""
+		if standard == TokenTypeErc721 {
+			return "NFT"
+		}
+		return "Coin"
 
 	default:
 		return "ERC" + "-" + tokenType
