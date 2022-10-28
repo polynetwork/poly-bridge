@@ -109,6 +109,10 @@ func (pro *Neo3SdkPro) GetLatest() *Neo3Info {
 	}
 	return latestInfo
 }
+func (pro *Neo3SdkPro) reset(info *Neo3Info) *Neo3Info {
+	info.latestHeight = 0
+	return pro.GetLatest()
+}
 
 func (pro *Neo3SdkPro) GetBlockCount() (uint64, error) {
 	info := pro.GetLatest()

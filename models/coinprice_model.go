@@ -27,27 +27,28 @@ const (
 )
 
 type TokenBasic struct {
-	Id              int64          `gorm:"primaryKey;autoIncrement"`
-	Name            string         `gorm:"uniqueIndex;size:64;not null"`
-	Precision       uint64         `gorm:"type:bigint(20);not null"`
-	Price           int64          `gorm:"size:64;not null"`
-	ChainId         uint64         `gorm:"type:bigint(20);not null"` //该tokenbasicname的源链ID
-	Ind             uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
-	Time            int64          `gorm:"type:bigint(20);not null"`
-	Property        int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
-	Standard        uint8          `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
-	Meta            string         `gorm:"type:varchar(128)"`
-	TotalAmount     *BigInt        `gorm:"type:varchar(64)"`
-	TotalCount      uint64         `gorm:"type:bigint(20)"`
-	StatsUpdateTime int64          `gorm:"type:bigint(20)"`
-	SocialTwitter   string         `gorm:"type:varchar(256)"`
-	SocialTelegram  string         `gorm:"type:varchar(256)"`
-	SocialWebsite   string         `gorm:"type:varchar(256)"`
-	SocialOther     string         `gorm:"type:varchar(256)"`
-	MetaFetcherType int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: unknown 0, opensea: 1, standard: 2,
-	Rank            int            `gorm:"type:int(8);not null"`
-	PriceMarkets    []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
-	Tokens          []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
+	Id               int64          `gorm:"primaryKey;autoIncrement"`
+	Name             string         `gorm:"uniqueIndex;size:64;not null"`
+	Precision        uint64         `gorm:"type:bigint(20);not null"`
+	Price            int64          `gorm:"size:64;not null"`
+	ChainId          uint64         `gorm:"type:bigint(20);not null"` //该tokenbasicname的源链ID
+	Ind              uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
+	Time             int64          `gorm:"type:bigint(20);not null"`
+	Property         int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
+	Standard         uint8          `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
+	Meta             string         `gorm:"type:varchar(128)"`
+	TotalAmount      *BigInt        `gorm:"type:varchar(64)"`
+	TotalCount       uint64         `gorm:"type:bigint(20)"`
+	StatsUpdateTime  int64          `gorm:"type:bigint(20)"`
+	SocialTwitter    string         `gorm:"type:varchar(256)"`
+	SocialTelegram   string         `gorm:"type:varchar(256)"`
+	SocialWebsite    string         `gorm:"type:varchar(256)"`
+	SocialOther      string         `gorm:"type:varchar(256)"`
+	MetaFetcherType  int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: unknown 0, opensea: 1, standard: 2,
+	Rank             int            `gorm:"type:int(8);not null"`
+	ImageDisplayType int            `gorm:"type:int(8);not null"` // return token image url type 0 : asset meta url  1: token image url
+	PriceMarkets     []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
+	Tokens           []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
 type PriceMarket struct {

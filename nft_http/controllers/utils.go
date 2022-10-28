@@ -22,10 +22,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"poly-bridge/nft_http/meta"
+	"poly-bridge/nft_http/nft_sdk"
 	"regexp"
 	"strings"
 	"time"
@@ -43,9 +43,9 @@ var (
 	db             *gorm.DB
 	chainConfig    = make(map[uint64]*conf.ChainListenConfig)
 	txCounter      *TransactionCounter
-	sdks           = make(map[uint64]*chainsdk.EthereumSdkPro)
+	sdks           = make(map[uint64]nft_sdk.INftSdkPro)
 	assets         = make([]*models.Token, 0)
-	inquirerAddrs  = make(map[uint64]common.Address)
+	inquirerAddrs  = make(map[uint64]string)
 	fetcher        *meta.StoreFetcher
 	feeTokens      = make(map[uint64]*models.Token)
 	lruDB          *lru.ARCCache
@@ -168,9 +168,9 @@ func (s *TransactionCounter) Number() int64 {
 }
 
 func selectNodeAndWrapper(chainId uint64) (
-	pro *chainsdk.EthereumSdkPro,
-	inquirer common.Address,
-	lockProxies []common.Address,
+	pro nft_sdk.INftSdkPro,
+	inquirer string,
+	lockProxies []string,
 	err error,
 ) {
 
@@ -180,24 +180,22 @@ func selectNodeAndWrapper(chainId uint64) (
 		err = chainIdErr
 		return
 	}
-
 	if pro, ok = sdks[chainId]; !ok {
 		urls := cfg.GetNodesUrl()
 		if len(urls) == 0 {
 			err = chainIdErr
 			return
 		}
-		pro = chainsdk.NewEthereumSdkPro(urls, cfg.ListenSlot, chainId)
+		pro = nft_sdk.SelectNftSdkPro(chainId, urls, cfg.ListenSlot)
 		sdks[chainId] = pro
 	}
-
 	if inquirer, ok = inquirerAddrs[chainId]; !ok {
-		inquirer = common.HexToAddress(cfg.NFTQueryContract)
+		inquirer = cfg.NFTQueryContract
 		inquirerAddrs[chainId] = inquirer
 	}
 
 	for _, contract := range cfg.NFTProxyContract {
-		lockProxies = append(lockProxies, common.HexToAddress(contract))
+		lockProxies = append(lockProxies, contract)
 	}
 	return
 }
@@ -260,8 +258,15 @@ func notExist(c *web.Controller) {
 	c.ServeJSON()
 }
 
-func checkPageSize(c *web.Controller, size int) bool {
-	if size <= 10 {
+func checkPageSize(c *web.Controller, size, limit int) bool {
+	if size <= 0 {
+		code := ErrCodeRequest
+		c.Data["json"] = models.MakeErrorRsp("invalid page size")
+		c.Ctx.ResponseWriter.WriteHeader(code)
+		c.ServeJSON()
+		return false
+	}
+	if size <= limit {
 		return true
 	}
 	code := ErrCodeRequest

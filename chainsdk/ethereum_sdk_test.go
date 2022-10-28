@@ -54,10 +54,10 @@ func TestNewEthereumSdk_TestABI(t *testing.T) {
 func TestNewEthereumSdk_GetAndCheckOwnerNFT(t *testing.T) {
 	t.Logf("current context: %s", ctx.EthUrl)
 
-	tokenId := big.NewInt(201)
-	url, err := ctx.SDK.GetAndCheckNFTUrl(ctx.QueryAddress, ctx.Asset, ctx.Owner, tokenId)
+	tokenId := "201"
+	url, err := ctx.SDK.GetAndCheckNFTUri(ctx.QueryAddress, ctx.Asset, ctx.Owner, tokenId)
 	assert.NoError(t, err)
-	t.Logf("token %d url %s", tokenId.Uint64(), url)
+	t.Logf("token %s url %s", tokenId, url)
 }
 
 func TestNewEthereumSdk_GetUserTokenIds(t *testing.T) {
@@ -111,7 +111,7 @@ func TestNewEthereumSdk_GetTokens(t *testing.T) {
 	}
 
 	for _, tokenId := range tokenIds {
-		url, err := ctx.SDK.GetAndCheckNFTUrl(ctx.QueryAddress, ctx.Asset, ctx.Owner, tokenId)
+		url, err := ctx.SDK.GetAndCheckNFTUri(ctx.QueryAddress, ctx.Asset, ctx.Owner, tokenId.String())
 		assert.NoError(t, err)
 		t.Logf("getAndCheckTokenUrl: token %d url is %s", tokenId.Uint64(), url)
 	}

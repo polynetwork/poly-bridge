@@ -14,12 +14,12 @@ import (
 )
 
 func TestHandleSingleBlock(t *testing.T) {
-	c := conf.NewConfig("./../../../conf/config_testnet.json")
+	c := conf.NewConfig("../../../config.json")
 	assert.NotNil(t, c)
 
 	var (
-		chainId            = basedef.BSC_CROSSCHAIN_ID
-		blockHeight uint64 = 8022375
+		chainId            = basedef.POLY_CROSSCHAIN_ID
+		blockHeight uint64 = 41921465
 	)
 
 	dbcfg := c.DBConfig
@@ -34,7 +34,7 @@ func TestHandleSingleBlock(t *testing.T) {
 
 	handler := crosschainlisten.NewChainHandle(cfg)
 
-	wpTxs, srcTxs, polyTxs, dstTxs, err := handler.HandleNewBlock(blockHeight)
+	wpTxs, srcTxs, polyTxs, dstTxs, _, _, _, _, err := handler.HandleNewBlock(blockHeight)
 	assert.NoError(t, err)
 
 	err = onlyUpdateEvents(db, wpTxs, srcTxs, polyTxs, dstTxs)

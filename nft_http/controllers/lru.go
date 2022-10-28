@@ -64,7 +64,7 @@ func GetItemCache(chainId uint64, asset string, tokenId string) (*Item, bool) {
 	return item, true
 }
 
-func formatHomePageItemsCache(chainId uint64, assetName string)  string {
+func formatHomePageItemsCache(chainId uint64, assetName string) string {
 	return fmt.Sprintf("homepage_%d_%s", chainId, assetName)
 }
 

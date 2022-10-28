@@ -33,7 +33,7 @@ func Test_getItemsWithChainData(t *testing.T) {
 		profileReqs = append(profileReqs, req)
 	}
 
-	// fetch meta data list and show rpc time
+	// fetch metadata list and show rpc time
 	tBeforeBatchFetch := time.Now().UnixNano()
 	profiles, err := fetcher.BatchFetch(chainId, name, profileReqs)
 	if err != nil {

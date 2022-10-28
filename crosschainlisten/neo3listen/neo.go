@@ -24,7 +24,6 @@ import (
 	"math/big"
 	"runtime/debug"
 
-	neo3_models "github.com/joeqian10/neo3-gogogo/rpc/models"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -140,8 +139,12 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					if notify.State.Type != "Array" {
 						continue
 					}
-					notify.State.Convert()
-					states := notify.State.Value.([]neo3_models.InvokeStack)
+					stateNotify := chainsdk.InvokeStack{
+						Type:  notify.State.Type,
+						Value: notify.State.Value,
+					}
+					stateNotify.Convert()
+					states := stateNotify.Value.([]chainsdk.InvokeStack)
 					if len(states) < 0 {
 						continue
 					}
@@ -209,8 +212,12 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					if notify.State.Type != "Array" {
 						continue
 					}
-					notify.State.Convert()
-					states := notify.State.Value.([]neo3_models.InvokeStack)
+					stateNotify := chainsdk.InvokeStack{
+						Type:  notify.State.Type,
+						Value: notify.State.Value,
+					}
+					stateNotify.Convert()
+					states := stateNotify.Value.([]chainsdk.InvokeStack)
 					eventName := notify.EventName
 					switch eventName {
 					case _neo_crosschainlock:
@@ -227,8 +234,12 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							if notifyNew.State.Type != "Array" {
 								continue
 							}
-							notifyNew.State.Convert()
-							statesNew := notifyNew.State.Value.([]neo3_models.InvokeStack)
+							stateNotifyNew := chainsdk.InvokeStack{
+								Type:  notifyNew.State.Type,
+								Value: notifyNew.State.Value,
+							}
+							stateNotifyNew.Convert()
+							statesNew := stateNotifyNew.Value.([]chainsdk.InvokeStack)
 							eventNameNew := notifyNew.EventName
 							if eventNameNew == _neo_lock || eventNameNew == _neo_lock2 {
 								if len(statesNew) < 6 {
@@ -293,8 +304,12 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							if notifyNew.State.Type != "Array" {
 								continue
 							}
-							notifyNew.State.Convert()
-							statesNew := notifyNew.State.Value.([]neo3_models.InvokeStack)
+							stateNotifyNew := chainsdk.InvokeStack{
+								Type:  notifyNew.State.Type,
+								Value: notifyNew.State.Value,
+							}
+							stateNotifyNew.Convert()
+							statesNew := stateNotifyNew.Value.([]chainsdk.InvokeStack)
 							eventNameNew := notifyNew.EventName
 							if eventNameNew == _neo_unlock || eventNameNew == _neo_unlock2 {
 								if len(statesNew) < 3 {

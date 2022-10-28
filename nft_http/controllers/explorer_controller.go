@@ -21,7 +21,7 @@ func (c *ExplorerController) Transactions() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
 
@@ -47,7 +47,7 @@ func (c *ExplorerController) Transactions() {
 	for _, v := range relations {
 		tk := selectNFTAsset(v.SrcAsset)
 		var tokenBasicName string
-		if tk == nil{
+		if tk == nil {
 			tokenBasicName = v.SrcAsset
 		} else {
 			tokenBasicName = tk.TokenBasicName
@@ -65,7 +65,7 @@ func (c *ExplorerController) TransactionsOfAddress() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
 
@@ -180,16 +180,22 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 		return
 	}
 
-	tokenId, ok := string2Big(data.Transaction.TokenId)
-	if !ok {
-		return
-	}
+	tokenId := data.Transaction.TokenId
+
 	asset := selectNFTAsset(data.SrcTransaction.AssetHash)
 	if asset != nil {
 		item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
 		if err != nil {
-			logs.Error("fillMetaInfo err: %v", err)
-			return
+			logs.Error("get item form src chain err, will try from dst chain : %v", err)
+			dstSdk, dstInquirer, _, err := selectNodeAndWrapper(data.DstTransaction.ChainId)
+			if err != nil {
+				return
+			}
+			item, err = getSingleItem(dstSdk, dstInquirer, selectNFTAsset(data.DstTransaction.AssetHash), tokenId, "")
+			if err != nil {
+				logs.Error("get item form dst chain err: %v", err)
+				return
+			}
 		}
 		data.Meta = item
 	}

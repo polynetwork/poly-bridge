@@ -372,7 +372,6 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 	s.SrcTransaction = new(SideChainRsp)
 	s.DstTransaction = new(SideChainRsp)
 	s.PolyTransaction = new(PolyChainRsp)
-
 	s.Transaction.Hash = basedef.FormatTxHash(r.WrapperTransaction.SrcChainId, r.WrapperTransaction.Hash)
 	s.Transaction.Status = r.WrapperTransaction.Status
 	s.Transaction.BlockHeight = r.WrapperTransaction.BlockHeight

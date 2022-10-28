@@ -42,7 +42,7 @@ func TestBscCross(t *testing.T) {
 	bscChainListenConfig := config.GetChainListenConfig(basedef.BSC_CROSSCHAIN_ID)
 	urls := bscChainListenConfig.GetNodesUrl()
 	ethSdk := chainsdk.NewEthereumSdkPro(urls, bscChainListenConfig.ListenSlot, basedef.BSC_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
+	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.PolyWrapperABI))
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +53,7 @@ func TestBscCross(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("TestInvokeContract - txdata:%s\n", hex.EncodeToString(txData))
-	wrapperContractAddress := common.HexToAddress(bscChainListenConfig.WrapperContract)
+	wrapperContractAddress := common.HexToAddress(bscChainListenConfig.WrapperContract[0])
 	privateKey := NewPrivateKey("56b446a2de5edfccee1581fbba79e8bb5c269e28ab4c0487860afb7e2c2d2b6e")
 	fromAddr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	fmt.Printf("user address: %s\n", fromAddr.String())

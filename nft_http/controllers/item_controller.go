@@ -19,16 +19,16 @@ package controllers
 
 import (
 	"math/big"
-	"poly-bridge/chainsdk"
+	"poly-bridge/basedef"
 	"poly-bridge/models"
 	mcm "poly-bridge/nft_http/meta/common"
+	"poly-bridge/nft_http/nft_sdk"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type ItemController struct {
@@ -50,9 +50,12 @@ func (c *ItemController) Items() {
 
 func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 	// check params
-	tokenId, err := checkNumString(req.TokenId)
-	if err != nil {
-		customInput(&c.Controller, ErrCodeRequest, err.Error())
+	//tokenId, err := checkNumString(req.TokenId)
+	//if err != nil {
+	//	customInput(&c.Controller, ErrCodeRequest, err.Error())
+	//	return
+	//}
+	if !checkPageSize(&c.Controller, req.PageSize, 20) {
 		return
 	}
 	sdk, wrapper, _, err := selectNodeAndWrapper(req.ChainId)
@@ -65,8 +68,7 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 		customInput(&c.Controller, ErrCodeRequest, "NFT Asset not exist")
 		return
 	}
-
-	item, err := getSingleItem(sdk, wrapper, token, tokenId, req.Address)
+	item, err := getSingleItem(sdk, wrapper, token, req.TokenId, req.Address)
 	if err != nil {
 		logs.Error("get single item err: %v", err)
 	}
@@ -81,9 +83,9 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 
 func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	// check size in contract
-	//if !checkPageSize(&c.Controller, req.PageSize) {
-	//	return
-	//}
+	if !checkPageSize(&c.Controller, req.PageSize, 20) {
+		return
+	}
 	sdk, wrapper, _, err := selectNodeAndWrapper(req.ChainId)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
@@ -96,8 +98,8 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	}
 
 	// get user balance and format page attribute
-	asset := common.HexToAddress(token.Hash)
-	owner := common.HexToAddress(req.Address)
+	asset := token.Hash
+	owner := req.Address
 	bigTotalCnt, err := sdk.NFTBalance(asset, owner)
 	if err != nil {
 		customInput(&c.Controller, ErrCodeRequest, err.Error())
@@ -139,20 +141,19 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 		return
 	}
 
-	items := getItemsWithChainData(token.TokenBasicName, token.Hash, token.ChainId, tokenIdUrlMap)
+	items := getItemsWithChainData(token.TokenBasicName, token.Hash, token.ChainId, tokenIdUrlMap, token.TokenBasic)
 	response(items)
 }
 
 func getSingleItem(
-	sdk *chainsdk.EthereumSdkPro,
-	wrapper common.Address,
+	sdk nft_sdk.INftSdkPro,
+	wrapper string,
 	asset *models.Token,
-	tokenId *big.Int,
+	tokenId string,
 	ownerHash string,
 ) (item *Item, err error) {
-
 	// get and output cache if exist
-	cache, ok := GetItemCache(asset.ChainId, asset.Hash, tokenId.String())
+	cache, ok := GetItemCache(asset.ChainId, asset.Hash, tokenId)
 	if ok {
 		return cache, nil
 	}
@@ -160,29 +161,36 @@ func getSingleItem(
 	// fetch url from wrapper contract
 	// do not need to check user address if ownerHash is empty
 	var url string
-	assetAddr := common.HexToAddress(asset.Hash)
+	assetAddr := asset.Hash
 	if ownerHash == "" {
 		url, err = sdk.GetNFTUrl(assetAddr, tokenId)
 	} else {
-		owner := common.HexToAddress(ownerHash)
-		url, err = sdk.GetAndCheckTokenUrl(wrapper, assetAddr, owner, tokenId)
+		url, err = sdk.GetAndCheckTokenUrl(wrapper, assetAddr, ownerHash, tokenId)
 	}
 	if err != nil {
 		return
 	}
 
-	profile, _ := fetcher.Fetch(asset.ChainId, asset.TokenBasicName, &mcm.FetchRequestParams{
-		TokenId: tokenId.String(),
+	profile, err := fetcher.Fetch(asset.ChainId, asset.TokenBasicName, &mcm.FetchRequestParams{
+		TokenId: tokenId,
 		Url:     url,
 	})
-	item = new(Item).instance(asset.TokenBasicName, tokenId.String(), profile)
-	SetItemCache(asset.ChainId, asset.Hash, tokenId.String(), item)
+	if err != nil {
+		return
+	}
+	item = new(Item).instance(asset.TokenBasicName, tokenId, profile)
+	if item != nil {
+		if asset.TokenBasic.ImageDisplayType == 0 {
+			// display asset image instead of specific token image
+			item.Image = asset.TokenBasic.Meta
+		}
+	}
+	SetItemCache(asset.ChainId, asset.Hash, tokenId, item)
 	return
 }
 
-func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrlMap map[string]string) []*Item {
+func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrlMap map[string]string, tokenBasic *models.TokenBasic) []*Item {
 	list := make([]*Item, 0)
-
 	// get cache if exist
 	profileReqs := make([]*mcm.FetchRequestParams, 0)
 	for tokenId, url := range tokenIdUrlMap {
@@ -199,7 +207,7 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 		}
 		profileReqs = append(profileReqs, req)
 	}
-	// fetch meta data list and show rpc time
+	// fetch metadata list and show rpc time
 	tBeforeBatchFetch := time.Now().UnixNano()
 	profiles, err := fetcher.BatchFetch(chainId, name, profileReqs)
 	if err != nil {
@@ -208,29 +216,41 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 	tAfterBatchFetch := time.Now().UnixNano()
 	debugBatchFetchTime := (tAfterBatchFetch - tBeforeBatchFetch) / int64(time.Microsecond)
 	logs.Info("batchFetchNFTItems - batchFetchTime: %d microsecond， profiles %d", debugBatchFetchTime, len(profiles))
-
 	// convert to items
 	for _, v := range profiles {
 		tokenId := v.NftTokenId
 		item := new(Item).instance(name, tokenId, v)
+		if item != nil {
+			// display asset image instead of specific token image
+			if tokenBasic.ImageDisplayType == 0 {
+				item.Image = tokenBasic.Meta
+			}
+		}
 		list = append(list, item)
 		SetItemCache(chainId, asset, tokenId, item)
 		delete(tokenIdUrlMap, tokenId)
 	}
-	for tokenId, _ := range tokenIdUrlMap {
+	for tokenId := range tokenIdUrlMap {
 		item := new(Item).instance(name, tokenId, nil)
 		list = append(list, item)
 	}
-
 	// sort items with token id
 	if len(list) < 2 {
 		return list
 	}
-	sort.Slice(list, func(i, j int) bool {
-		itemi, _ := string2Big(list[i].TokenId)
-		itemj, _ := string2Big(list[j].TokenId)
-		return itemi.Cmp(itemj) < 0
-	})
+	if chainId == basedef.NEO3_CROSSCHAIN_ID {
+		sort.Slice(list, func(i, j int) bool {
+			itemi := list[i].TokenId
+			itemj := list[j].TokenId
+			return itemi < itemj
+		})
+	} else {
+		sort.Slice(list, func(i, j int) bool {
+			itemi, _ := string2Big(list[i].TokenId)
+			itemj, _ := string2Big(list[j].TokenId)
+			return itemi.Cmp(itemj) < 0
+		})
+	}
 	return list
 }
 

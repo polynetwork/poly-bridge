@@ -4,6 +4,7 @@ import (
 	"poly-bridge/models"
 	. "poly-bridge/nft_http/meta/common"
 	"poly-bridge/nft_http/meta/utils"
+	"strings"
 )
 
 type StandardFetcher struct {
@@ -19,6 +20,9 @@ func NewFetcher(assetName, baseUri string) *StandardFetcher {
 }
 
 func (f *StandardFetcher) Fetch(req *FetchRequestParams) (*models.NFTProfile, error) {
+	if strings.HasPrefix(req.Url, "ipfs.io") {
+		req.Url = "https://" + req.Url
+	}
 	raw, err := utils.Request(req.Url)
 	if err != nil {
 		return nil, err

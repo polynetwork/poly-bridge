@@ -39,16 +39,14 @@ func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (fetcher Meta
 }
 
 type StoreFetcher struct {
-	fetcher      map[FetcherType]MetaFetcher
-	assetFetcher map[uint64]map[string]FetcherType // mapping asset to fetcher type
+	assetFetcher map[uint64]map[string]MetaFetcher // mapping asset to fetcher type
 	db           *gorm.DB
 }
 
 func NewStoreFetcher(orm *gorm.DB) *StoreFetcher {
 	sf := new(StoreFetcher)
 	sf.db = orm
-	sf.fetcher = make(map[FetcherType]MetaFetcher)
-	sf.assetFetcher = make(map[uint64]map[string]FetcherType)
+	sf.assetFetcher = make(map[uint64]map[string]MetaFetcher)
 	return sf
 }
 
@@ -57,11 +55,10 @@ func (s *StoreFetcher) Register(ft FetcherType, chainId uint64, asset string, ba
 	if fetcher == nil {
 		return
 	}
-	s.fetcher[ft] = fetcher
 	if _, ok := s.assetFetcher[chainId]; !ok {
-		s.assetFetcher[chainId] = make(map[string]FetcherType)
+		s.assetFetcher[chainId] = make(map[string]MetaFetcher)
 	}
-	s.assetFetcher[chainId][asset] = ft
+	s.assetFetcher[chainId][asset] = fetcher
 }
 
 func (s *StoreFetcher) selectFetcher(chainId uint64, asset string) MetaFetcher {
@@ -69,12 +66,7 @@ func (s *StoreFetcher) selectFetcher(chainId uint64, asset string) MetaFetcher {
 		return nil
 	}
 
-	typ, ok := s.assetFetcher[chainId][asset]
-	if !ok {
-		return nil
-	}
-
-	fetcher, ok := s.fetcher[typ]
+	fetcher, ok := s.assetFetcher[chainId][asset]
 	if !ok {
 		return nil
 	}

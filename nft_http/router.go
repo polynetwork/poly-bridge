@@ -40,7 +40,6 @@ func Init(config *conf.Config) web.LinkNamespace {
 		//web.NSRouter("/assetmapreverse/", &controllers.AssetMapController{}, "post:AssetMapReverse"),
 
 		web.NSRouter("/items/", &controllers.ItemController{}, "post:Items"),
-		web.NSRouter("/getfee/", &controllers.FeeController{}, "post:GetFee"),
 
 		web.NSRouter("/exp_transactions/", &controllers.ExplorerController{}, "post:Transactions"),
 		web.NSRouter("/exp_transactionsofaddress/", &controllers.ExplorerController{}, "post:TransactionsOfAddress"),

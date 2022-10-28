@@ -32,7 +32,7 @@ func (c *TransactionController) TransactionsOfAddress() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
 
@@ -114,7 +114,7 @@ func (c *TransactionController) TransactionsOfState() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
 

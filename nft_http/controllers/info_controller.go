@@ -25,7 +25,6 @@ import (
 
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -112,7 +111,7 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 
 	chainId := asset.ChainId
 	assetName := asset.TokenBasicName
-	assetAddr := common.HexToAddress(asset.Hash)
+	assetAddr := asset.Hash
 	pageSize := 10
 
 	list := make([]*Item, 0)
@@ -121,7 +120,7 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 		if len(tokenUrls) == 0 {
 			break
 		}
-		items := getItemsWithChainData(assetName, asset.Hash, chainId, tokenUrls)
+		items := getItemsWithChainData(assetName, asset.Hash, chainId, tokenUrls, asset.TokenBasic)
 		list = append(list, items...)
 	}
 
