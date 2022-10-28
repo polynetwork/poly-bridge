@@ -25,6 +25,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/models"
+	"strings"
 	"time"
 
 	"github.com/beego/beego/v2/core/logs"
@@ -103,6 +104,16 @@ func (c *TransactionController) TransactionsOfAddressWithFilter() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
+
+	for i := 0; i < len(req.Addresses); i++ {
+		address := req.Addresses[i]
+		if strings.HasPrefix(address, "0x00") && len(address) == 66 {
+			// aptos address
+			address = "0x" + strings.TrimPrefix(address, "0x00")
+			req.Addresses[i] = address
+		}
+	}
+
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	query := func(tx *gorm.DB) *gorm.DB {
 		u := db.Model(&models.SrcTransaction{}).Select("src_transactions.hash as hash, contract, asset as asset, fee_token_hash as fee_token_hash, src_transactions.chain_id as chain_id").
@@ -174,6 +185,16 @@ func (c *TransactionController) TransactionsOfAddress() {
 		c.Ctx.ResponseWriter.WriteHeader(400)
 		c.ServeJSON()
 	}
+
+	for i := 0; i < len(transactionsOfAddressReq.Addresses); i++ {
+		address := transactionsOfAddressReq.Addresses[i]
+		if strings.HasPrefix(address, "0x00") && len(address) == 66 {
+			// aptos address
+			address = "0x" + strings.TrimPrefix(address, "0x00")
+			transactionsOfAddressReq.Addresses[i] = address
+		}
+	}
+
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).
 		Select("tx_hash as hash, asset as asset, fee_token_hash as fee_token_hash, src_transfers.chain_id as chain_id").
