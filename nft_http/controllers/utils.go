@@ -34,19 +34,17 @@ import (
 
 	"github.com/beego/beego/v2/server/web"
 	"github.com/ethereum/go-ethereum/common"
-	lru "github.com/hashicorp/golang-lru"
 )
 
 var (
-	chainConfig    = make(map[uint64]*conf.ChainListenConfig)
-	txCounter      *TransactionCounter
-	sdks           = make(map[uint64]nft_sdk.INftSdkPro)
-	assets         []*models.Token
-	feeTokens      map[uint64]*models.Token
+	chainConfig = make(map[uint64]*conf.ChainListenConfig)
+	txCounter   *TransactionCounter
+	sdks        = make(map[uint64]nft_sdk.INftSdkPro)
+	assets      []*models.Token
+	//feeTokens      map[uint64]*models.Token
 	db             *gorm.DB
 	inquirerAddrs  = make(map[uint64]string)
 	fetcher        *meta.StoreFetcher
-	lruDB          *lru.ARCCache
 	homePageTicker = time.NewTimer(600 * time.Second)
 )
 
@@ -57,15 +55,11 @@ func Initialize(c *conf.Config) {
 	//init db
 	db = nftdb.NewDB(c.DBConfig)
 	//init lru
-	arcLRU, err := lru.NewARC(5000)
-	if err != nil {
-		panic(err)
-	}
-	lruDB = arcLRU
+	nftdb.InitLru()
 	//init nft assets
 	assets = nftdb.InitNftAssets()
-	//init feetokens
-	feeTokens = nftdb.InitFeeTokens()
+	//init fee tokens
+	//feeTokens = nftdb.InitFeeTokens()
 	//init
 	go func() {
 		fetcher = meta.NewStoreFetcher(db)
@@ -168,7 +162,7 @@ func selectNodeAndWrapper(chainId uint64) (
 	return
 }
 
-var emptyAddr = common.Address{}
+//var emptyAddr = common.Address{}
 
 func selectNFTAsset(addr string) *models.Token {
 	for _, v := range assets {

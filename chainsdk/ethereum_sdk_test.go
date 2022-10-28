@@ -54,7 +54,7 @@ func TestNewEthereumSdk_TestABI(t *testing.T) {
 func TestNewEthereumSdk_GetAndCheckOwnerNFT(t *testing.T) {
 	t.Logf("current context: %s", ctx.EthUrl)
 
-	tokenId := "201"
+	tokenId := "5"
 	url, err := ctx.SDK.GetAndCheckNFTUri(ctx.QueryAddress, ctx.Asset, ctx.Owner, tokenId)
 	assert.NoError(t, err)
 	t.Logf("token %s url %s", tokenId, url)

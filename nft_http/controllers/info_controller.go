@@ -20,6 +20,7 @@ package controllers
 import (
 	"fmt"
 	"poly-bridge/models"
+	"poly-bridge/nft_http/db"
 	"poly-bridge/nft_http/meta"
 	"poly-bridge/utils/net"
 
@@ -81,7 +82,7 @@ func (c *InfoController) Home() {
 			Items:   nil,
 			HasMore: false,
 		}
-		if cache, exist := GetHomePageItemsCache(req.ChainId, asset.TokenBasicName); exist {
+		if cache, exist := nftdb.GetHomePageItemsCache(req.ChainId, asset.TokenBasicName); exist {
 			if total := len(cache); total > start {
 				if end > total && end > start {
 					end = total
@@ -114,7 +115,7 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 	assetAddr := asset.Hash
 	pageSize := 10
 
-	list := make([]*Item, 0)
+	list := make([]*nftdb.Item, 0)
 	for start := 0; start < maxNum; start += pageSize {
 		tokenUrls, _ := sdk.GetUnCrossChainNFTsByIndex(inquirer, assetAddr, lockProxies, start, pageSize)
 		if len(tokenUrls) == 0 {
@@ -128,8 +129,8 @@ func prepareHomepageItems(asset *models.Token, maxNum int) (bool, error) {
 		return false, nil
 	}
 
-	SetHomePageItemsCache(asset.ChainId, assetName, list)
-	cache, _ := GetHomePageItemsCache(asset.ChainId, asset.TokenBasicName)
+	nftdb.SetHomePageItemsCache(asset.ChainId, assetName, list)
+	cache, _ := nftdb.GetHomePageItemsCache(asset.ChainId, asset.TokenBasicName)
 	logs.Info("prepare chain %d asset %s home page items, total %d ", chainId, assetName, len(cache))
 	return true, nil
 }

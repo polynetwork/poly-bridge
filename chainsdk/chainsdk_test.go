@@ -41,10 +41,10 @@ var (
 			Owner:        common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
 		},
 		C_ETH_TEST: &TestConfig{
-			EthUrl:       "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea",
-			QueryAddress: common.HexToAddress("0xD2B67aeeA3A5e85AEe9F77E98db094d1E30A00Ed"),
-			Asset:        common.HexToAddress("0xa85c9FC8F2c9060d674E0CA97F703a0A30619305"),
-			Owner:        common.HexToAddress("0xf1c7203ef81fb9663babd8516ebd30d33ee84ee8"),
+			EthUrl:       "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+			QueryAddress: common.HexToAddress("0x0eaAe6F5D8Be3177D9286825c3878Dd4AAAFD2e6"),
+			Asset:        common.HexToAddress("0x52d3d38ceca694c3dd163a85ef8a08e0edc7b07b"),
+			Owner:        common.HexToAddress("0x1eeDc8e7A4c708acF64106205F79CA4CDe11Ce3A"),
 		},
 		C_BSC_TEST: &TestConfig{
 			EthUrl:       "http://43.128.231.211:8575", //"https://data-seed-prebsc-2-s2.binance.org:8545",
@@ -53,10 +53,10 @@ var (
 			Owner:        common.HexToAddress("0x5fb03eb21303d39967a1a119b32dd744a0fa8986"),
 		},
 		C_ETH_SEASCAPE_TEST: &TestConfig{
-			EthUrl:       "https://ropsten.infura.io/v3/19e799349b424211b5758903de1c47ea",
-			QueryAddress: common.HexToAddress("0xD2B67aeeA3A5e85AEe9F77E98db094d1E30A00Ed"),
-			Asset:        common.HexToAddress("0x3680fb34f55030326659cd9aaec522b6e355bdb6"),
-			Owner:        common.HexToAddress("0xc12E333cdD2843c7719aFfca036cDe023579F192"),
+			EthUrl:       "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+			QueryAddress: common.HexToAddress("0x0eaAe6F5D8Be3177D9286825c3878Dd4AAAFD2e6"),
+			Asset:        common.HexToAddress("0x52d3d38ceca694c3dd163a85ef8a08e0edc7b07b"),
+			Owner:        common.HexToAddress("0x1eeDc8e7A4c708acF64106205F79CA4CDe11Ce3A"),
 		},
 		C_BSC_SEASCAPE_TEST: &TestConfig{
 			EthUrl:       "https://data-seed-prebsc-2-s2.binance.org:8545",

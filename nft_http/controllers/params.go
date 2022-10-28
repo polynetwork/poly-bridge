@@ -4,6 +4,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/models"
+	"poly-bridge/nft_http/db"
 	"poly-bridge/utils/decimal"
 )
 
@@ -32,34 +33,8 @@ func MakeErrorRsp(messgae string) *ErrorRsp {
 
 type AssetItems struct {
 	Asset   *AssetRsp
-	Items   []*Item
+	Items   []*nftdb.Item
 	HasMore bool
-}
-
-type Item struct {
-	AssetName string
-	TokenId   string
-	Name      string
-	Url       string
-	Image     string
-	Desc      string
-	Meta      string
-}
-
-func (i *Item) instance(assetName string, tokenId string, profile *models.NFTProfile) *Item {
-	i.AssetName = assetName
-	i.TokenId = tokenId
-	if profile == nil {
-		return i
-	}
-	i.Name = profile.Name
-	i.Url = profile.Url
-	i.Image = profile.Image
-	i.Desc = profile.Description
-
-	// todo(fuk): useless field
-	//i.Meta = profile.Text
-	return i
 }
 
 type AssetRsp struct {
@@ -186,16 +161,16 @@ type ItemsOfAddressRsp struct {
 	PageNo     int
 	TotalPage  int
 	TotalCount int
-	Items      []*Item
+	Items      []*nftdb.Item
 }
 
-func (s *ItemsOfAddressRsp) instance(pageSize, pageNo, totalPage, totalCnt int, items []*Item) *ItemsOfAddressRsp {
+func (s *ItemsOfAddressRsp) instance(pageSize, pageNo, totalPage, totalCnt int, items []*nftdb.Item) *ItemsOfAddressRsp {
 	s.PageSize = pageSize
 	s.PageNo = pageNo
 	s.TotalCount = totalCnt
 	s.TotalPage = totalPage
 	if items == nil {
-		s.Items = make([]*Item, 0)
+		s.Items = make([]*nftdb.Item, 0)
 		return s
 	}
 	s.Items = items
@@ -361,7 +336,7 @@ type TransactionDetailRsp struct {
 	SrcTransaction  *SideChainRsp
 	DstTransaction  *SideChainRsp
 	PolyTransaction *PolyChainRsp
-	Meta            *Item
+	Meta            *nftdb.Item
 }
 
 func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *TransactionDetailRsp {

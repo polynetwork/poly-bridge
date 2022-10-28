@@ -1,13 +1,45 @@
-package controllers
+package nftdb
 
 import (
 	"fmt"
-	"time"
+	lru "github.com/hashicorp/golang-lru"
+	"poly-bridge/models"
 )
 
-type CacheHomeRsp struct {
-	Rsp  *HomeRsp
-	Time time.Time
+var lruDB *lru.ARCCache
+
+type Item struct {
+	AssetName string
+	TokenId   string
+	Name      string
+	Url       string
+	Image     string
+	Desc      string
+	Meta      string
+}
+
+func (i *Item) Instance(assetName string, tokenId string, profile *models.NFTProfile) *Item {
+	i.AssetName = assetName
+	i.TokenId = tokenId
+	if profile == nil {
+		return i
+	}
+	i.Name = profile.Name
+	i.Url = profile.Url
+	i.Image = profile.Image
+	i.Desc = profile.Description
+
+	// todo(fuk): useless field
+	//i.Meta = profile.Text
+	return i
+}
+
+func InitLru() {
+	arcLRU, err := lru.NewARC(5000)
+	if err != nil {
+		panic(err)
+	}
+	lruDB = arcLRU
 }
 
 func SetHomePageItemsCache(chainId uint64, assetName string, list []*Item) {

@@ -22,6 +22,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/models"
+	"poly-bridge/nft_http/db"
 	mcm "poly-bridge/nft_http/meta/common"
 	"poly-bridge/nft_http/nft_sdk"
 	"sort"
@@ -79,7 +80,7 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
 		item.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(item.TokenId)
 	}
-	items := make([]*Item, 0)
+	items := make([]*nftdb.Item, 0)
 	if item != nil {
 		items = append(items, item)
 	}
@@ -119,7 +120,7 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	totalPage := getPageNo(totalCnt, req.PageSize)
 
 	// define empty output
-	response := func(list []*Item) {
+	response := func(list []*nftdb.Item) {
 		data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, totalPage, totalCnt, list)
 		output(&c.Controller, data)
 	}
@@ -174,9 +175,9 @@ func getSingleItem(
 	asset *models.Token,
 	tokenId string,
 	ownerHash string,
-) (item *Item, err error) {
+) (item *nftdb.Item, err error) {
 	// get and output cache if exist
-	cache, ok := GetItemCache(asset.ChainId, asset.Hash, tokenId)
+	cache, ok := nftdb.GetItemCache(asset.ChainId, asset.Hash, tokenId)
 	if ok {
 		return cache, nil
 	}
@@ -203,23 +204,23 @@ func getSingleItem(
 	if err != nil {
 		return
 	}
-	item = new(Item).instance(asset.TokenBasicName, tokenId, profile)
+	item = new(nftdb.Item).Instance(asset.TokenBasicName, tokenId, profile)
 	if item != nil {
 		if asset.TokenBasic.ImageDisplayType == 0 {
 			// display asset image instead of specific token image
 			item.Image = asset.TokenBasic.Meta
 		}
 	}
-	SetItemCache(asset.ChainId, asset.Hash, tokenId, item)
+	nftdb.SetItemCache(asset.ChainId, asset.Hash, tokenId, item)
 	return
 }
 
-func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrlMap map[string]string, tokenBasic *models.TokenBasic) []*Item {
-	list := make([]*Item, 0)
+func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrlMap map[string]string, tokenBasic *models.TokenBasic) []*nftdb.Item {
+	list := make([]*nftdb.Item, 0)
 	// get cache if exist
 	profileReqs := make([]*mcm.FetchRequestParams, 0)
 	for tokenId, url := range tokenIdUrlMap {
-		cache, ok := GetItemCache(chainId, asset, tokenId)
+		cache, ok := nftdb.GetItemCache(chainId, asset, tokenId)
 		if ok {
 			list = append(list, cache)
 			delete(tokenIdUrlMap, tokenId)
@@ -246,7 +247,7 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 	// convert to items
 	for _, v := range profiles {
 		tokenId := v.NftTokenId
-		item := new(Item).instance(name, tokenId, v)
+		item := new(nftdb.Item).Instance(name, tokenId, v)
 		if item != nil {
 			// display asset image instead of specific token image
 			if tokenBasic.ImageDisplayType == 0 {
@@ -254,11 +255,11 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 			}
 		}
 		list = append(list, item)
-		SetItemCache(chainId, asset, tokenId, item)
+		nftdb.SetItemCache(chainId, asset, tokenId, item)
 		delete(tokenIdUrlMap, tokenId)
 	}
 	for tokenId := range tokenIdUrlMap {
-		item := new(Item).instance(name, tokenId, nil)
+		item := new(nftdb.Item).Instance(name, tokenId, nil)
 		list = append(list, item)
 	}
 	// sort items with token id
