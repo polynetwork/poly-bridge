@@ -6,9 +6,17 @@ import (
 	"testing"
 )
 
+func TestNeo3AddrToHash160(t *testing.T) {
+	addrStr, _ := Neo3AddrToHash160("NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9")
+	fmt.Println(addrStr)
+	fmt.Println(Hash160StrToNeo3Addr(addrStr.String()))
+	reversed, _ := Neo3AddrToReverseHash160("NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9")
+	fmt.Println(ReversedHash160ToNeo3Addr(reversed.String()))
+}
+
 func TestNeo3Sdk_Nep11OwnerOf(t *testing.T) {
 	sdk := NewNeo3Sdk("http://seed1t5.neo.org:20332")
-	fmt.Println(sdk.Nep11OwnerOf("0x4fb2f93b37ff47c0c5d14cfc52087e3ca338bc56", "4d65746150616e616365612023302d3031"))
+	fmt.Println(sdk.Nep11OwnerOf("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", "1601"))
 }
 
 func TestNeo3Sdk_Nep11Properties(t *testing.T) {

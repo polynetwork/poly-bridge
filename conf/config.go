@@ -271,6 +271,7 @@ type BotConfig struct {
 type HttpConfig struct {
 	Address string
 	Port    int
+	Timeout int
 }
 
 type IPPortConfig struct {

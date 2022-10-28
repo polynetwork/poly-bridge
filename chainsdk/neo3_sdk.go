@@ -29,6 +29,7 @@ import (
 	"github.com/joeqian10/neo3-gogogo/sc"
 	"github.com/joeqian10/neo3-gogogo/vm"
 	"math/big"
+	"poly-bridge/basedef"
 	"strconv"
 	"strings"
 )
@@ -146,7 +147,7 @@ func (sdk *Neo3Sdk) Nep11OwnerOf(assetHash, tokenId string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return Hash160ToNeo3Addr(stack[0].Value.(string))
+	return EncodedHashToNeo3Addr(stack[0].Value.(string))
 }
 
 func (sdk *Neo3Sdk) Nep11BalanceOf(assetHash, owner string) (string, error) {
@@ -523,16 +524,36 @@ func (s *InvokeStack) ToParameter() (*sc.ContractParameter, error) {
 	return parameter, err
 }
 
-func Neo3AddrToHash160(addr string) (*helper.UInt160, error) {
-	scriptHash, err := crypto.AddressToScriptHash(addr, helper.DefaultAddressVersion)
-	return scriptHash, err
-}
-
-func Hash160ToNeo3Addr(encodedHash string) (string, error) {
+func EncodedHashToNeo3Addr(encodedHash string) (string, error) {
 	decodedByte, err := crypto.Base64Decode(encodedHash)
 	if err != nil {
 		return "", err
 	}
 	hash160 := helper.UInt160FromBytes(decodedByte)
+	return crypto.ScriptHashToAddress(hash160, helper.DefaultAddressVersion), nil
+}
+
+func Neo3AddrToHash160(addr string) (*helper.UInt160, error) {
+	scriptHash, err := crypto.AddressToScriptHash(addr, helper.DefaultAddressVersion)
+	return scriptHash, err
+}
+
+func Neo3AddrToReverseHash160(addr string) (*helper.UInt160, error) {
+	data, err := crypto.Base58CheckDecode(addr)
+	if err != nil {
+		return nil, err
+	}
+	scriptHash := helper.UInt160FromBytes(basedef.HexReverse(data[1:]))
+	return scriptHash, nil
+}
+
+func Hash160StrToNeo3Addr(hash string) (string, error) {
+	hash160, _ := helper.UInt160FromString(hash)
+	return crypto.ScriptHashToAddress(hash160, helper.DefaultAddressVersion), nil
+}
+
+func ReversedHash160ToNeo3Addr(reversedHash string) (string, error) {
+	hash := basedef.HexStringReverse(reversedHash)
+	hash160, _ := helper.UInt160FromString(hash)
 	return crypto.ScriptHashToAddress(hash160, helper.DefaultAddressVersion), nil
 }

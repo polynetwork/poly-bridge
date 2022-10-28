@@ -7,9 +7,12 @@ import (
 )
 
 func (sdk *Neo3Sdk) GetAndCheckNFTUri(queryAddr, asset, owner, tokenId string) (string, error) {
+	ownerAddr, err := ReversedHash160ToNeo3Addr(owner)
+	if err != nil {
+		return "", fmt.Errorf("invalid owner")
+	}
 	tokenOwner, err := sdk.Nep11OwnerOf(asset, tokenId)
-	if tokenOwner != owner {
-		fmt.Println(tokenOwner, owner)
+	if tokenOwner != ownerAddr {
 		return "", fmt.Errorf("owner token not exist")
 	}
 	tokenUrl, err := sdk.Nep11TokenUri(asset, tokenId)
@@ -28,7 +31,11 @@ func (sdk *Neo3Sdk) GetNFTTokenUri(asset, tokenId string) (string, error) {
 }
 
 func (sdk *Neo3Sdk) GetNFTBalance(asset, owner string) (*big.Int, error) {
-	balanceStr, err := sdk.Nep11BalanceOf(asset, owner)
+	ownerAddr, err := ReversedHash160ToNeo3Addr(owner)
+	if err != nil {
+		return nil, fmt.Errorf("invalid owner")
+	}
+	balanceStr, err := sdk.Nep11BalanceOf(asset, ownerAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +44,11 @@ func (sdk *Neo3Sdk) GetNFTBalance(asset, owner string) (*big.Int, error) {
 }
 
 func (sdk *Neo3Sdk) GetOwnerNFTsByIndex(queryAddr, asset, owner string, start, length int) (map[string]string, error) {
-	tokenIdsAll, err := sdk.Nep11TokensOf(asset, owner)
+	ownerAddr, err := ReversedHash160ToNeo3Addr(owner)
+	if err != nil {
+		return nil, fmt.Errorf("invalid owner")
+	}
+	tokenIdsAll, err := sdk.Nep11TokensOf(asset, ownerAddr)
 	var tokenIds []string
 	if err != nil {
 		return nil, err
