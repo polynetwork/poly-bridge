@@ -221,9 +221,9 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 			dstTransfer.ChainId = a.GetChainId()
 			dstTransfer.From = event.GUID.AccountAddress
 			dstTransfer.To = models.FormatString(unLockEvent.Data["to_address"].(string))
-			//unLockEvent.Data["to_asset"]
-			//dstTransfer.Asset
-			//dstTransfer.Amount
+			dstTransfer.Asset = tx.Payload.TypeArguments[0]
+			amount, _ := strconv.ParseInt(unLockEvent.Data["amount"].(string), 0, 32)
+			dstTransfer.Amount = models.NewBigIntFromInt(amount)
 			dstTx.DstTransfer = dstTransfer
 		}
 		nextExecuteTxSequenceNumber = uint64(event.SequenceNumber)
