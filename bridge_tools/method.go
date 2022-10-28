@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/urfave/cli"
@@ -32,6 +33,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
+	"poly-bridge/crosschainlisten/aptoslisten"
 	"poly-bridge/models"
 	"strconv"
 	"strings"
@@ -144,9 +146,6 @@ func fetchBlock(config *conf.Config) {
 	if endheight < height {
 		endheight = height
 	}
-	if height == 0 {
-		panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
-	}
 
 	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
 	if dao == nil {
@@ -166,13 +165,58 @@ func fetchBlock(config *conf.Config) {
 	}
 
 	g := cogroup.Start(context.Background(), 4, 8, false)
-	for h := height; h <= endheight; h++ {
-		block := uint64(h)
+
+	if uint64(chain) == basedef.APTOS_CROSSCHAIN_ID {
+		sourceSeq, _ := strconv.Atoi(os.Getenv("SOURCE_SEQ"))
+		dstSeq, _ := strconv.Atoi(os.Getenv("DST_SEQ"))
 		g.Insert(retry(func() error {
-			return fetchSingleBlock(uint64(chain), block, handle, dao, save == "true")
-		}, 0, 2*time.Second))
+			return fetchAptosEvents(handle, dao, uint64(sourceSeq), uint64(dstSeq), save == "true")
+		}, 10, 6*time.Second))
+		g.Wait()
+	} else {
+		if height == 0 {
+			panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
+		}
+		for h := height; h <= endheight; h++ {
+			block := uint64(h)
+			g.Insert(retry(func() error {
+				return fetchSingleBlock(uint64(chain), block, handle, dao, save == "true")
+			}, 0, 2*time.Second))
+		}
+		g.Wait()
 	}
-	g.Wait()
+}
+
+func fetchAptosEvents(handle crosschainlisten.ChainHandle, dao crosschaindao.CrossChainDao, sourceSeq, dstSeq uint64, save bool) error {
+	if aptos, ok := handle.(*aptoslisten.AptosChainListen); ok {
+		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := aptos.HandleEvent(nil, sourceSeq, dstSeq, 1)
+		if err != nil {
+			logs.Error("aptos HandleEvent", "err", err)
+			return err
+		}
+		fmt.Printf(
+			"Fetch aptos events success  wrapper %d src %d  dst %d\n",
+			len(wrapperTransactions), len(srcTransactions), len(dstTransactions),
+		)
+
+		marshal, _ := json.Marshal(wrapperTransactions)
+		logs.Info("wrapperTransactions=%s", marshal)
+
+		marshal, _ = json.Marshal(srcTransactions)
+		logs.Info("srcTransactions=%s", marshal)
+
+		marshal, _ = json.Marshal(dstTransactions)
+		logs.Info("dstTransactions=%s", marshal)
+
+		if save {
+			err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
+			if err != nil {
+				logs.Error("aptos UpdateEvents", "err", err)
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func initcoinmarketid(config *conf.Config) {

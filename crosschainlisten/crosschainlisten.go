@@ -246,7 +246,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				if ccl.handle.GetChainId() == basedef.APTOS_CROSSCHAIN_ID {
 					h := ccl.handle
 					if aptos, ok := h.(*aptoslisten.AptosChainListen); ok {
-						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := aptos.HandleEvent(ccl.db)
+						wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := aptos.HandleEvent(ccl.db, 0, 0, 0)
 						if err != nil {
 							logs.Error("aptos HandleNewBlock chain：%s, err: %v", ccl.handle.GetChainName(), err)
 							return
@@ -254,13 +254,13 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 
 						logs.Error("aptos log")
 						marshal, _ := json.Marshal(wrapperTransactions)
-						logs.Error("wrapperTransactions=%s", marshal)
+						logs.Info("wrapperTransactions=%s", marshal)
 
 						marshal, _ = json.Marshal(srcTransactions)
-						logs.Error("srcTransactions=%s", marshal)
+						logs.Info("srcTransactions=%s", marshal)
 
 						marshal, _ = json.Marshal(dstTransactions)
-						logs.Error("dstTransactions=%s", marshal)
+						logs.Info("dstTransactions=%s", marshal)
 
 						err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
 						if err != nil {

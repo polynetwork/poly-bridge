@@ -6,6 +6,7 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/portto/aptos-go-sdk/client"
 	"github.com/portto/aptos-go-sdk/models"
+	"math/big"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -56,7 +57,7 @@ func (pro *AptosSdkPro) nodeSelection() {
 		}
 	}()
 	logs.Debug("node selection of chain : %d......", pro.id)
-	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot))
+	ticker := time.NewTicker(time.Second * time.Duration(pro.selectionSlot) * 30)
 	for {
 		select {
 		case <-ticker.C:
@@ -184,6 +185,25 @@ func (pro *AptosSdkPro) GetGasPrice() (uint64, error) {
 		}
 	}
 	return 0, fmt.Errorf("all nodes are not working")
+}
+
+func (pro *AptosSdkPro) GetBalance(token, address string) (*big.Int, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all nodes are not working")
+	}
+	for info != nil {
+		resource, err := info.Sdk.GetBalance(pro.ctx, token, address)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			if balance, ok := new(big.Int).SetString(resource.Data.CoinStoreResource.Coin.Value, 10); ok {
+				return balance, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("all nodes are not working")
 }
 
 //func (pro *AptosSdkPro) GetTransactionInfoByHash(hash string) (*client.TransactionInfo, error) {
