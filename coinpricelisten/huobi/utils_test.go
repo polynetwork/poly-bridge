@@ -16,5 +16,4 @@ func TestHuobiSdk_GetCoinPrice(t *testing.T) {
 		cube,
 	}
 	fmt.Println(sdk.GetCoinPriceAndRank(coins))
-
 }
