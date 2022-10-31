@@ -56,6 +56,14 @@ func (this *RippleChainListen) GetXRP() string {
 	return this.rippleSdk.GetXRP()
 }
 
+func (this *RippleChainListen) GetBatchLength() (uint64, uint64) {
+	return this.rippleCfg.MinBatchLength, this.rippleCfg.MaxBatchLength
+}
+
+func (this *RippleChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
+}
+
 func (this *RippleChainListen) GetExtendLatestHeight() (uint64, error) {
 	if len(this.rippleCfg.ExtendNodes) == 0 {
 		return this.GetLatestHeight()

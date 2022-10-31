@@ -53,6 +53,10 @@ func (a *AptosChainListen) GetBatchSize() uint64 {
 	return a.aptosCfg.BatchSize
 }
 
+func (a *AptosChainListen) GetBatchLength() (uint64, uint64) {
+	return a.aptosCfg.MinBatchLength, a.aptosCfg.MaxBatchLength
+}
+
 func (a *AptosChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	return nil, nil, nil, nil, 0, 0, nil
 }
