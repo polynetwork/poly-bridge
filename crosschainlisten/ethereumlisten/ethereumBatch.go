@@ -320,12 +320,18 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractlogs []types.Log
 				}(),
 				FeeAmount: func() *models.BigInt {
 					if evt.Fee == nil {
-						logs.Error("evtFeeevtFeeevtFee is nil,hash", evt.Raw.TxHash.String()[2:])
+						logs.Error("evtFeeevtFeeevtFee is nil,hash", evt.Raw.TxHash.String()[2:], "height", evt.Raw.BlockNumber, "chain", this.GetChainName())
 						return models.NewBigIntFromInt(0)
 					}
 					return models.NewBigInt(evt.Fee)
 				}(),
-				ServerId:    evt.Id.Uint64(),
+				ServerId: func() uint64 {
+					if evt.Id == nil {
+						logs.Error("evtIdevtIdevtId is nil,hash", evt.Raw.TxHash.String()[2:], "height", evt.Raw.BlockNumber, "chain", this.GetChainName())
+						return 0
+					}
+					return evt.Id.Uint64()
+				}(),
 				BlockHeight: evt.Raw.BlockNumber,
 			})
 		}
