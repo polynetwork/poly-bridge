@@ -300,40 +300,31 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractlogs []types.Log
 			continue
 		}
 
-		evt, err := wrapperContractAbi.ParsePolyWrapperLock(v)
-		if err == nil {
-			wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
-				Hash:       evt.Raw.TxHash.String()[2:],
-				User:       models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
-				DstChainId: evt.ToChainId,
-				DstUser:    models.FormatString(hex.EncodeToString(evt.ToAddress)),
-				FeeTokenHash: func() string {
-					if !strings.EqualFold(v.Address.String(), wrapperV1Contract.String()) {
-						switch this.GetChainId() {
-						case basedef.METIS_CROSSCHAIN_ID:
-							return "deaddeaddeaddeaddeaddeaddeaddeaddead0000"
-						default:
-							return "0000000000000000000000000000000000000000"
+		switch v.Topics[0] {
+		case this.eventPolyWrapperLockId:
+			evt, err := wrapperContractAbi.ParsePolyWrapperLock(v)
+			if err == nil {
+				wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+					Hash:       evt.Raw.TxHash.String()[2:],
+					User:       models.FormatString(strings.ToLower(evt.Sender.String()[2:])),
+					DstChainId: evt.ToChainId,
+					DstUser:    models.FormatString(hex.EncodeToString(evt.ToAddress)),
+					FeeTokenHash: func() string {
+						if !strings.EqualFold(v.Address.String(), wrapperV1Contract.String()) {
+							switch this.GetChainId() {
+							case basedef.METIS_CROSSCHAIN_ID:
+								return "deaddeaddeaddeaddeaddeaddeaddeaddead0000"
+							default:
+								return "0000000000000000000000000000000000000000"
+							}
 						}
-					}
-					return models.FormatString(strings.ToLower(evt.FromAsset.String()[2:]))
-				}(),
-				FeeAmount: func() *models.BigInt {
-					if evt.Fee == nil {
-						logs.Error("evtFeeevtFeeevtFee is nil,hash", evt.Raw.TxHash.String()[2:], "height", evt.Raw.BlockNumber, "chain", this.GetChainName())
-						return models.NewBigIntFromInt(0)
-					}
-					return models.NewBigInt(evt.Fee)
-				}(),
-				ServerId: func() uint64 {
-					if evt.Id == nil {
-						logs.Error("evtIdevtIdevtId is nil,hash", evt.Raw.TxHash.String()[2:], "height", evt.Raw.BlockNumber, "chain", this.GetChainName())
-						return 0
-					}
-					return evt.Id.Uint64()
-				}(),
-				BlockHeight: evt.Raw.BlockNumber,
-			})
+						return models.FormatString(strings.ToLower(evt.FromAsset.String()[2:]))
+					}(),
+					FeeAmount:   models.NewBigInt(evt.Fee),
+					ServerId:    evt.Id.Uint64(),
+					BlockHeight: evt.Raw.BlockNumber,
+				})
+			}
 		}
 	}
 
@@ -354,13 +345,14 @@ func (e *EthereumChainListen) ParseNFTWrapperEventByLog(contractlogs []types.Log
 		if !inSlice(v.Address, nftWrapperContracts...) {
 			continue
 		}
-
-		evt, err := nftWrapperContractAbi.ParsePolyWrapperLock(v)
-		if err != nil {
-			continue
+		switch v.Topics[0] {
+		case e.eventNftPolyWrapperLockId:
+			evt, err := nftWrapperContractAbi.ParsePolyWrapperLock(v)
+			if err == nil {
+				wtx := wrapLockEvent2WrapTx(evt)
+				wrapperTransactions = append(wrapperTransactions, wtx)
+			}
 		}
-		wtx := wrapLockEvent2WrapTx(evt)
-		wrapperTransactions = append(wrapperTransactions, wtx)
 	}
 	return wrapperTransactions, nil
 }
@@ -382,31 +374,34 @@ func (this *EthereumChainListen) getECCMEvents(contractlogs []types.Log, ccmCont
 		if !inSlice(v.Address, ccmContract) {
 			continue
 		}
-		evt, err := ccmContractAbi.ParseCrossChainEvent(v)
-		if err == nil {
-			user := evt.Sender
-			if evt.Sender.String() == "0x0000000000000000000000000000000000000000" {
-				sender, err := this.getTxSenderByTxHash(evt.Raw.TxHash)
-				if err != nil {
-					logs.Error("getTxSenderByTxHash error： vv")
-				} else {
-					user = sender
+		switch v.Topics[0] {
+		case this.eventCrossChainEventId:
+			evt, err := ccmContractAbi.ParseCrossChainEvent(v)
+			if err == nil {
+				user := evt.Sender
+				if evt.Sender.String() == "0x0000000000000000000000000000000000000000" {
+					sender, err := this.getTxSenderByTxHash(evt.Raw.TxHash)
+					if err != nil {
+						logs.Error("getTxSenderByTxHash error： vv")
+					} else {
+						user = sender
+					}
 				}
-			}
 
-			Fee := this.GetConsumeGas(evt.Raw.TxHash)
-			eccmLockEvents = append(eccmLockEvents, &models.ECCMLockEvent{
-				Method:   _eth_crosschainlock,
-				Txid:     hex.EncodeToString(evt.TxId),
-				TxHash:   evt.Raw.TxHash.String()[2:],
-				User:     strings.ToLower(user.String()[2:]),
-				Tchain:   uint32(evt.ToChainId),
-				Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
-				Value:    evt.Rawdata,
-				Height:   evt.Raw.BlockNumber,
-				Fee:      Fee,
-			})
-		} else {
+				Fee := this.GetConsumeGas(evt.Raw.TxHash)
+				eccmLockEvents = append(eccmLockEvents, &models.ECCMLockEvent{
+					Method:   _eth_crosschainlock,
+					Txid:     hex.EncodeToString(evt.TxId),
+					TxHash:   evt.Raw.TxHash.String()[2:],
+					User:     strings.ToLower(user.String()[2:]),
+					Tchain:   uint32(evt.ToChainId),
+					Contract: strings.ToLower(evt.ProxyOrAssetContract.String()[2:]),
+					Value:    evt.Rawdata,
+					Height:   evt.Raw.BlockNumber,
+					Fee:      Fee,
+				})
+			}
+		case this.eventVerifyHeaderAndExecuteTxEventId:
 			evt, err := ccmContractAbi.ParseVerifyHeaderAndExecuteTxEvent(v)
 			if err == nil {
 				Fee := this.GetConsumeGas(evt.Raw.TxHash)
@@ -467,20 +462,23 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractlogs []types.L
 		if !inSlice(v.Address, lockProxyContracts...) {
 			continue
 		}
-		evt, err := lockProxyContractAbi.ParseLockEvent(v)
-		if err == nil {
-			proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
-				BlockNumber:   evt.Raw.BlockNumber,
-				Method:        _eth_lock,
-				TxHash:        evt.Raw.TxHash.String()[2:],
-				FromAddress:   evt.FromAddress.String()[2:],
-				FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
-				ToChainId:     uint32(evt.ToChainId),
-				ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
-				ToAddress:     hex.EncodeToString(evt.ToAddress),
-				Amount:        evt.Amount,
-			})
-		} else {
+		switch v.Topics[0] {
+		case this.eventLockEventId:
+			evt, err := lockProxyContractAbi.ParseLockEvent(v)
+			if err == nil {
+				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
+					BlockNumber:   evt.Raw.BlockNumber,
+					Method:        _eth_lock,
+					TxHash:        evt.Raw.TxHash.String()[2:],
+					FromAddress:   evt.FromAddress.String()[2:],
+					FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
+					ToChainId:     uint32(evt.ToChainId),
+					ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
+					ToAddress:     hex.EncodeToString(evt.ToAddress),
+					Amount:        evt.Amount,
+				})
+			}
+		case this.eventUnlockEventId:
 			evt, err := lockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
@@ -513,11 +511,14 @@ func (this *EthereumChainListen) ParseNftProxyEventByLog(contractlogs []types.Lo
 		if !inSlice(v.Address, nftProxyContracts...) {
 			continue
 		}
-		evt, err := nftLockProxyContractAbi.ParseLockEvent(v)
-		if err == nil {
-			proxyLockEvent := convertLockProxyEvent(evt)
-			proxyLockEvents = append(proxyLockEvents, proxyLockEvent)
-		} else {
+		switch v.Topics[0] {
+		case this.eventNftLockEventId:
+			evt, err := nftLockProxyContractAbi.ParseLockEvent(v)
+			if err == nil {
+				proxyLockEvent := convertLockProxyEvent(evt)
+				proxyLockEvents = append(proxyLockEvents, proxyLockEvent)
+			}
+		case this.eventNftUnlockEventId:
 			evt, err := nftLockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvent := convertUnlockProxyEvent(evt)
@@ -545,23 +546,26 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractlogs []types.L
 		if !inSlice(v.Address, swapContract) {
 			continue
 		}
-		evt, err := swapperContractAbi.ParseAddLiquidityEvent(v)
-		if err == nil {
-			swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
-				BlockNumber:   evt.Raw.BlockNumber,
-				Type:          basedef.SWAP_ADDLIQUIDITY,
-				TxHash:        evt.Raw.TxHash.String()[2:],
-				FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
-				FromAddress:   strings.ToLower(evt.FromAddress.String()[2:]),
-				ToChainId:     evt.ToChainId,
-				ToPoolId:      evt.ToPoolId,
-				ToAddress:     hex.EncodeToString(evt.ToAddress),
-				Amount:        evt.Amount,
-				FeeAssetHash:  "0000000000000000000000000000000000000000",
-				Fee:           evt.Fee,
-				ServerId:      evt.Id,
-			})
-		} else {
+		switch v.Topics[0] {
+		case this.eventAddLiquidityEventId:
+			evt, err := swapperContractAbi.ParseAddLiquidityEvent(v)
+			if err == nil {
+				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
+					BlockNumber:   evt.Raw.BlockNumber,
+					Type:          basedef.SWAP_ADDLIQUIDITY,
+					TxHash:        evt.Raw.TxHash.String()[2:],
+					FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
+					FromAddress:   strings.ToLower(evt.FromAddress.String()[2:]),
+					ToChainId:     evt.ToChainId,
+					ToPoolId:      evt.ToPoolId,
+					ToAddress:     hex.EncodeToString(evt.ToAddress),
+					Amount:        evt.Amount,
+					FeeAssetHash:  "0000000000000000000000000000000000000000",
+					Fee:           evt.Fee,
+					ServerId:      evt.Id,
+				})
+			}
+		case this.eventRemoveLiquidityEventId:
 			evt, err := swapperContractAbi.ParseRemoveLiquidityEvent(v)
 			if err == nil {
 				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
@@ -578,39 +582,39 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractlogs []types.L
 					Fee:           evt.Fee,
 					ServerId:      evt.Id,
 				})
-			} else {
-				evt, err := swapperContractAbi.ParseSwapEvent(v)
-				if err == nil {
-					swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
-						BlockNumber:   evt.Raw.BlockNumber,
-						Type:          basedef.SWAP_SWAP,
-						TxHash:        evt.Raw.TxHash.String()[2:],
-						FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
-						FromAddress:   strings.ToLower(evt.FromAddress.String()[2:]),
-						ToChainId:     evt.ToChainId,
-						ToPoolId:      evt.ToPoolId,
-						ToAddress:     hex.EncodeToString(evt.ToAddress),
-						Amount:        evt.Amount,
-						FeeAssetHash:  "0000000000000000000000000000000000000000",
-						Fee:           evt.Fee,
-						ServerId:      evt.Id,
-					})
-				} else {
-					evt, err := swapperContractAbi.ParseLockEvent(v)
-					if err == nil {
-						proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
-							BlockNumber:   evt.Raw.BlockNumber,
-							Method:        _eth_lock,
-							TxHash:        evt.Raw.TxHash.String()[2:],
-							FromAddress:   evt.FromAddress.String()[2:],
-							FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
-							ToChainId:     uint32(evt.ToChainId),
-							ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
-							ToAddress:     hex.EncodeToString(evt.ToAddress),
-							Amount:        evt.Amount,
-						})
-					}
-				}
+			}
+		case this.eventSwapEventId:
+			evt, err := swapperContractAbi.ParseSwapEvent(v)
+			if err == nil {
+				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
+					BlockNumber:   evt.Raw.BlockNumber,
+					Type:          basedef.SWAP_SWAP,
+					TxHash:        evt.Raw.TxHash.String()[2:],
+					FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
+					FromAddress:   strings.ToLower(evt.FromAddress.String()[2:]),
+					ToChainId:     evt.ToChainId,
+					ToPoolId:      evt.ToPoolId,
+					ToAddress:     hex.EncodeToString(evt.ToAddress),
+					Amount:        evt.Amount,
+					FeeAssetHash:  "0000000000000000000000000000000000000000",
+					Fee:           evt.Fee,
+					ServerId:      evt.Id,
+				})
+			}
+		case this.eventSwapperLockEventId:
+			evt, err := swapperContractAbi.ParseLockEvent(v)
+			if err == nil {
+				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
+					BlockNumber:   evt.Raw.BlockNumber,
+					Method:        _eth_lock,
+					TxHash:        evt.Raw.TxHash.String()[2:],
+					FromAddress:   evt.FromAddress.String()[2:],
+					FromAssetHash: strings.ToLower(evt.FromAssetHash.String()[2:]),
+					ToChainId:     uint32(evt.ToChainId),
+					ToAssetHash:   hex.EncodeToString(evt.ToAssetHash),
+					ToAddress:     hex.EncodeToString(evt.ToAddress),
+					Amount:        evt.Amount,
+				})
 			}
 		}
 	}
