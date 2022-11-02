@@ -191,7 +191,10 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 			if err != nil {
 				return
 			}
-			item, err = getSingleItem(dstSdk, dstInquirer, selectNFTAsset(data.DstTransaction.AssetHash), tokenId, "")
+			dstAsset := selectNFTAsset(data.DstTransaction.AssetHash)
+			if dstAsset != nil {
+				item, err = getSingleItem(dstSdk, dstInquirer, dstAsset, tokenId, "")
+			}
 			if err != nil {
 				logs.Error("get item form dst chain err: %v", err)
 				return

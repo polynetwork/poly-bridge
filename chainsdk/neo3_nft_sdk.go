@@ -2,6 +2,7 @@ package chainsdk
 
 import (
 	"fmt"
+	"github.com/joeqian10/neo3-gogogo/helper"
 	"math/big"
 	"sort"
 )
@@ -54,6 +55,9 @@ func (sdk *Neo3Sdk) GetOwnerNFTsByIndex(queryAddr, asset, owner string, start, l
 		return nil, err
 	}
 	sort.Strings(tokenIdsAll)
+	if start > len(tokenIdsAll) {
+		return nil, fmt.Errorf("invalid start")
+	}
 	end := start + length
 	if end < len(tokenIdsAll) {
 		tokenIds = tokenIdsAll[start:end]
@@ -61,4 +65,14 @@ func (sdk *Neo3Sdk) GetOwnerNFTsByIndex(queryAddr, asset, owner string, start, l
 		tokenIds = tokenIdsAll[start:]
 	}
 	return sdk.Nep11UriByBatchInvoke(asset, tokenIds)
+}
+
+func ConvertTokenIdFromIntStr2HexStr(tokenId string) string {
+	tokenIdBigInt, _ := big.NewInt(0).SetString(tokenId, 10)
+	return helper.BytesToHex(helper.BigIntToNeoBytes(tokenIdBigInt))
+}
+
+func ConvertTokenIdFromHexStr2IntStr(tokenIdHexString string) string {
+	tokenIdBigInt := helper.BigIntFromNeoBytes(helper.HexToBytes(tokenIdHexString))
+	return tokenIdBigInt.String()
 }

@@ -18,6 +18,7 @@
 package controllers
 
 import (
+	"poly-bridge/basedef"
 	"poly-bridge/models"
 
 	"github.com/beego/beego/v2/server/web"
@@ -35,8 +36,12 @@ func (c *TransactionController) TransactionsOfAddress() {
 	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
-
 	wrapTxs := make([]*models.WrapperTransaction, 0)
+	//convert for neo3
+	for _, addr := range req.Addresses {
+		potentialNeoAddr := basedef.HexStringReverse(addr)
+		req.Addresses = append(req.Addresses, potentialNeoAddr)
+	}
 	if req.State == -1 {
 		db.Model(&models.WrapperTransaction{}).
 			Where("standard = ? and (user in ? or dst_user in ? )", models.TokenTypeErc721, req.Addresses, req.Addresses).

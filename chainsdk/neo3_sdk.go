@@ -130,7 +130,7 @@ func (sdk *Neo3Sdk) Nep17Info(hash string) (string, string, int64, error) {
 func (sdk *Neo3Sdk) Nep11OwnerOf(assetHash, tokenId string) (string, error) {
 	method := "ownerOf"
 	var params []models.RpcContractParameter
-	tokenIdBase64 := helper.HexToBytes(tokenId)
+	tokenIdBase64 := helper.HexToBytes(ConvertTokenIdFromIntStr2HexStr(tokenId))
 	params = append(params, models.RpcContractParameter{
 		Type:  "ByteArray",
 		Value: tokenIdBase64,
@@ -199,7 +199,7 @@ func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string) ([]string, error) {
 	}
 	for _, v := range resp[0] {
 		tokenId, _ := crypto.Base64Decode(v.Value.(string))
-		res = append(res, helper.BytesToHex(tokenId))
+		res = append(res, ConvertTokenIdFromHexStr2IntStr(helper.BytesToHex(tokenId)))
 	}
 	return res, nil
 }
@@ -215,7 +215,7 @@ func (sdk *Neo3Sdk) Nep11PropertiesByBatchInvoke(assetHash string, tokenIds []st
 	for _, tokenId := range tokenIds {
 		cp := sc.ContractParameter{
 			Type:  sc.ByteArray,
-			Value: helper.HexToBytes(tokenId),
+			Value: helper.HexToBytes(ConvertTokenIdFromIntStr2HexStr(tokenId)),
 		}
 		sb.EmitDynamicCall(assetHash160, method, []interface{}{cp})
 	}
@@ -264,7 +264,7 @@ func (sdk *Neo3Sdk) Nep11UriByBatchInvoke(assetHash string, tokenIds []string) (
 	for _, tokenId := range tokenIds {
 		cp := sc.ContractParameter{
 			Type:  sc.ByteArray,
-			Value: helper.HexToBytes(tokenId),
+			Value: helper.HexToBytes(ConvertTokenIdFromIntStr2HexStr(tokenId)),
 		}
 		sb.EmitDynamicCall(assetHash160, method, []interface{}{cp})
 	}
@@ -312,7 +312,7 @@ func (sdk *Neo3Sdk) Nep11PropertiesByInvoke(assetHash, tokenId string) (*Nep11Pr
 	}
 	cp := sc.ContractParameter{
 		Type:  sc.ByteArray,
-		Value: helper.HexToBytes(tokenId),
+		Value: helper.HexToBytes(ConvertTokenIdFromIntStr2HexStr(tokenId)),
 	}
 	sb.EmitDynamicCall(assetHash160, method, []interface{}{cp})
 	bs, err := sb.ToArray()
@@ -348,7 +348,7 @@ func (sdk *Neo3Sdk) Nep11PropertiesByInvoke(assetHash, tokenId string) (*Nep11Pr
 
 //Nep11PropertiesByRPC cannot use tokenId that start with character
 func (sdk *Neo3Sdk) Nep11PropertiesByRPC(assetHash, tokenId string) (*Nep11Property, error) {
-	response := sdk.client.GetNep11Properties(assetHash, tokenId)
+	response := sdk.client.GetNep11Properties(assetHash, ConvertTokenIdFromIntStr2HexStr(tokenId))
 	errResp := response.ErrorResponse
 	if errResp.HasError() {
 		if errResp.NetError != nil {

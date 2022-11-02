@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/joeqian10/neo3-gogogo/helper"
 	"math/big"
 	"runtime/debug"
 
@@ -248,12 +249,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								fromAddress, _ := statesNew[1].ToParameter()
 								toAddress := contract
 								asset, _ := statesNew[0].ToParameter()
-								//TODO nft
-								amount, err := statesNew[5].ToParameter()
-								if err != nil {
-									logs.Error("%v is neo3 nft", tx.Hash[2:])
-									continue
-								}
+								amount, _ := statesNew[5].ToParameter()
 								toChainId, _ := statesNew[2].ToParameter()
 								dstUser, _ := statesNew[4].ToParameter()
 								dstAsset, _ := statesNew[3].ToParameter()
@@ -263,11 +259,13 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								fctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								fctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
 								fctransfer.Asset = basedef.HexStringReverse(hex.EncodeToString(asset.Value.([]byte)))
-								//TODO nft
 								if _, ok := amount.Value.(*big.Int); !ok {
-									continue
+									nftTokenId := helper.BytesToUInt64(amount.Value.([]byte))
+									fctransfer.Amount = models.NewBigInt(big.NewInt(int64(nftTokenId)))
+								} else {
+									fctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
 								}
-								fctransfer.Amount = models.NewBigInt(amount.Value.(*big.Int))
+
 								fctransfer.DstChainId = toChainId.Value.(*big.Int).Uint64()
 								fctransfer.DstUser = hex.EncodeToString(dstUser.Value.([]byte))
 								fctransfer.DstAsset = hex.EncodeToString(dstAsset.Value.([]byte))
