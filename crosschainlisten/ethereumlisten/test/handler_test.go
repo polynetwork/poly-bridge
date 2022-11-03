@@ -18,8 +18,8 @@ func TestHandleSingleBlock(t *testing.T) {
 	assert.NotNil(t, c)
 
 	var (
-		chainId            = basedef.POLY_CROSSCHAIN_ID
-		blockHeight uint64 = 41921465
+		chainId            = basedef.NEO3_CROSSCHAIN_ID
+		blockHeight uint64 = 980410
 	)
 
 	dbcfg := c.DBConfig

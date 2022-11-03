@@ -20,6 +20,7 @@ package controllers
 import (
 	"math/big"
 	"poly-bridge/basedef"
+	"poly-bridge/chainsdk"
 	"poly-bridge/models"
 	mcm "poly-bridge/nft_http/meta/common"
 	"poly-bridge/nft_http/nft_sdk"
@@ -71,8 +72,13 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 	item, err := getSingleItem(sdk, wrapper, token, req.TokenId, req.Address)
 	if err != nil {
 		logs.Error("get single item err: %v", err)
+		customInput(&c.Controller, ErrCodeRequest, "token not exist")
+		return
 	}
-
+	//convert token id from integer to hexstring
+	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+		item.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(item.TokenId)
+	}
 	items := make([]*Item, 0)
 	if item != nil {
 		items = append(items, item)
@@ -142,6 +148,12 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	}
 
 	items := getItemsWithChainData(token.TokenBasicName, token.Hash, token.ChainId, tokenIdUrlMap, token.TokenBasic)
+	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+		for _, item := range items {
+			//convert token id from integer to hexstring
+			item.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(item.TokenId)
+		}
+	}
 	response(items)
 }
 

@@ -178,7 +178,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							logs.Error("txhash: %s decode wrapper user: %s err: %s", tx.Hash[2:], encodeUserString, err)
 							continue
 						}
-						user := hex.EncodeToString(basedef.HexReverse(decodeUserBytes))
+						user := hex.EncodeToString(decodeUserBytes)
 
 						encodeDstUserString := states[3].Value.(string)
 						decodeDstUserBytes, err := base64.StdEncoding.DecodeString(encodeDstUserString)
@@ -186,7 +186,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							logs.Error("txhash: %s decode wrapper dst user: %s err: %s", tx.Hash[2:], encodeDstUserString, err)
 							continue
 						}
-						dstUser := hex.EncodeToString(basedef.HexReverse(decodeDstUserBytes))
+						dstUser := hex.EncodeToString(decodeDstUserBytes)
 
 						amount := big.NewInt(0)
 						if states[5].Type == "Integer" {

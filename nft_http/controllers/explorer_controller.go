@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"poly-bridge/basedef"
+	"poly-bridge/chainsdk"
 	"poly-bridge/models"
 	"time"
 
@@ -51,6 +52,10 @@ func (c *ExplorerController) Transactions() {
 			tokenBasicName = v.SrcAsset
 		} else {
 			tokenBasicName = tk.TokenBasicName
+		}
+		//convert from integer to hex string
+		if v.SrcChainId == basedef.NEO3_CROSSCHAIN_ID {
+			v.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(v.TokenId)
 		}
 		data := new(TransactionBriefRsp).instance(tokenBasicName, v)
 		list = append(list, data)
@@ -109,6 +114,9 @@ func (c *ExplorerController) TransactionsOfAddress() {
 	list := make([]*TransactionBriefRsp, 0)
 	for _, v := range relations {
 		tk := selectNFTAsset(v.SrcAsset)
+		if v.SrcChainId == basedef.NEO3_CROSSCHAIN_ID {
+			v.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(v.TokenId)
+		}
 		data := new(TransactionBriefRsp).instance(tk.TokenBasicName, v)
 		list = append(list, data)
 	}
@@ -162,7 +170,9 @@ func (c *ExplorerController) TransactionDetail() {
 
 	data := new(TransactionDetailRsp).instance(relations[0])
 	fillMetaInfo(data)
-
+	if data.SrcTransaction.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+		data.Transaction.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(data.Transaction.TokenId)
+	}
 	output(&c.Controller, data)
 }
 
@@ -186,6 +196,7 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 	if asset != nil {
 		item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
 		if err != nil {
+			//src nft has been destroyed
 			logs.Error("get item form src chain err, will try from dst chain : %v", err)
 			dstSdk, dstInquirer, _, err := selectNodeAndWrapper(data.DstTransaction.ChainId)
 			if err != nil {
@@ -194,10 +205,13 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 			dstAsset := selectNFTAsset(data.DstTransaction.AssetHash)
 			if dstAsset != nil {
 				item, err = getSingleItem(dstSdk, dstInquirer, dstAsset, tokenId, "")
-			}
-			if err != nil {
-				logs.Error("get item form dst chain err: %v", err)
-				return
+				if err != nil {
+					logs.Error("get item form dst chain err: %v", err)
+					return
+				}
+				if chainId == basedef.NEO3_CROSSCHAIN_ID {
+					item.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(item.TokenId)
+				}
 			}
 		}
 		data.Meta = item
