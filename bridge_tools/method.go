@@ -76,6 +76,8 @@ func executeMethod(method string, ctx *cli.Context) {
 		toolsmethod.AirDrop(config)
 	case "updateAirDropAmount":
 		toolsmethod.UpdateAirDropAmount(config)
+	case "updateNeo3WrapperUserAndDstUser":
+		updateNeo3WrapperTransactions(config)
 
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
@@ -459,4 +461,76 @@ func updateRippleTables(config *conf.Config) {
 			}
 		}
 	}
+}
+
+type wrapperUsers struct {
+	Id      int
+	Ids     int
+	User    string
+	DstUser string
+	Userf   string
+	Usert   string
+}
+
+func updateNeo3WrapperTransactions(config *conf.Config) {
+	Id, err := strconv.ParseInt(os.Getenv("END_wrapper_id"), 10, 64)
+	if err != nil {
+		panic(fmt.Sprintf("ParseInt err,%v", err))
+	}
+	chainId, err := strconv.Atoi(os.Getenv("CHAINID"))
+	if err != nil {
+		panic(fmt.Sprintf("ParseInt err,%v", err))
+	}
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Warn)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(fmt.Sprintf("db err,%v", err))
+	}
+	srcs := make([]*wrapperUsers, 0)
+	err = db.Raw("select a.id,a.`user`, a.dst_user,b.id  AS ids ,b.`from` AS userf, b.dst_user AS usert from wrapper_transactions a INNER JOIN src_transfers b ON a.hash = b.tx_hash  where  a.id < ? and a.`src_chain_id` = ?", Id, chainId).
+		Find(&srcs).Error
+	if err != nil {
+		panic(fmt.Sprintf("Find srcs err,%v", err))
+	}
+	if len(srcs) > 0 {
+		for _, v := range srcs {
+			if v.Userf == v.User && v.Usert == v.DstUser {
+				continue
+			}
+			if v.Userf == basedef.HexStringReverse(v.User) && v.Usert == basedef.HexStringReverse(v.DstUser) {
+				err = db.Exec("update wrapper_transactions set `user`=?, dst_user=? where id=?", v.Userf, v.Usert, v.Id).
+					Error
+				if err != nil {
+					panic(fmt.Sprintf("update wrapper_transaction err,%v", err))
+				} else {
+					logs.Info("success update wrapper tx id: ", v.Id)
+				}
+			} else if v.Usert == "" {
+				err = db.Exec("update wrapper_transactions set `user`=?, dst_user=? where id=?", v.Userf, basedef.HexStringReverse(v.DstUser), v.Id).
+					Error
+				if err != nil {
+					panic(fmt.Sprintf("update wrapper_transaction err,%v", err))
+				} else {
+					logs.Info("success update wrapper tx id: ", v.Id)
+				}
+				err = db.Exec("update src_transfers set dst_user=? where id=?", basedef.HexStringReverse(v.DstUser), v.Ids).
+					Error
+				if err != nil {
+					panic(fmt.Sprintf("update wrapper_transaction err,%v", err))
+				} else {
+					logs.Info("success update src transfer tx id: ", v.Id)
+				}
+			} else {
+				panic(fmt.Sprintf("invalid tx err,%v, wrapper tx id, %v ", err, v.Id))
+			}
+		}
+	} else {
+		panic(fmt.Sprintf("no tx found"))
+	}
+
 }

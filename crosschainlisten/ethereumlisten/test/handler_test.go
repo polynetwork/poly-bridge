@@ -19,7 +19,7 @@ func TestHandleSingleBlock(t *testing.T) {
 
 	var (
 		chainId            = basedef.NEO3_CROSSCHAIN_ID
-		blockHeight uint64 = 980410
+		blockHeight uint64 = 755494
 	)
 
 	dbcfg := c.DBConfig
