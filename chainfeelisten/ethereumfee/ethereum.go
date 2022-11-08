@@ -44,6 +44,14 @@ func (this *EthereumFee) GetFee() (*big.Int, *big.Int, *big.Int, error) {
 	if err != nil {
 		return nil, nil, nil, err
 	}
+
+	// astar average price is 60 Gwei while node returns 1 Gwei
+	if this.GetChainId() == basedef.ASTAR_CROSSCHAIN_ID {
+		if gasPrice.Cmp(big.NewInt(basedef.ASTAR_NORMAL_GASPRICE)) < 0 {
+			gasPrice = big.NewInt(basedef.ASTAR_NORMAL_GASPRICE)
+		}
+	}
+
 	//bsc mainnet gasprice normal 5Gwei
 	if this.GetChainId() == basedef.BSC_CROSSCHAIN_ID && gasPrice.Cmp(big.NewInt(basedef.BSC_NORMAL_GASPRICE*0.84)) < 0 {
 		return nil, nil, nil, err
