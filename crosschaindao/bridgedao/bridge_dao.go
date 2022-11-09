@@ -656,7 +656,11 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 			continue
 		}
 		token := new(models.Token)
-		dao.db.Where("hash = ? and chain_id = ?", v.FeeTokenHash, v.SrcChainId).Preload("TokenBasic").Find(token)
+		err := dao.db.Where("hash = ? and chain_id = ?", v.FeeTokenHash, v.SrcChainId).Preload("TokenBasic").Find(token).Error
+		if err != nil {
+			logs.Error("find no feeToken for hash %s on chain %v", v.FeeTokenHash, v.SrcChainId)
+			continue
+		}
 
 		chainFee, ok := chain2Fees[v.DstChainId]
 		if !ok {

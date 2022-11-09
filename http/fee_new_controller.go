@@ -110,6 +110,10 @@ func (c *FeeController) NewCheckFee() {
 				continue
 			}
 			//money paid in wrapper
+			if v.WrapperTransactionWithToken.FeeToken == nil {
+				logs.Info("find no fee token", k)
+				continue
+			}
 			feePay, feeMin, gasPay := fee.CheckFeeCal(chainFee, v.WrapperTransactionWithToken.FeeToken, v.WrapperTransactionWithToken.FeeAmount)
 
 			// get optimistic L1 fee on ethereum
