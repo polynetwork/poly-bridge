@@ -78,7 +78,7 @@ func startServer(ctx *cli.Context) {
 		logs.Error("startServer - read config failed!")
 		return
 	}
-	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
+	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.ServerLogFile))
 
 	//{
 	//	conf, _ := json.Marshal(config)

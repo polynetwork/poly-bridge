@@ -58,7 +58,7 @@ func StartServer(ctx *cli.Context) {
 		logs.Error("startServer - read relayer config failed!")
 		return
 	}
-	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
+	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.MonitorLogFile))
 	cacheRedis.Init()
 	basedef.ConfirmEnv(config.Env)
 	healthmonitor.StartHealthMonitor(config, relayerConfig)

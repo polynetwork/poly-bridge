@@ -303,7 +303,9 @@ type Config struct {
 	RunMode               string
 	Backup                bool
 	LargeTxAmount         int64
-	LogFile               string
+	ServerLogFile         string
+	HttpLogFile           string
+	MonitorLogFile        string
 	HttpConfig            *HttpConfig
 	MetricConfig          *HttpConfig
 	ChainNodes            []*ChainNodes
