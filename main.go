@@ -70,7 +70,7 @@ func run(ctx *cli.Context) {
 		//fmt.Println(config.HttpConfig)
 		panic("Invalid server config")
 	}
-	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.LogFile))
+	logs.SetLogger(logs.AdapterFile, fmt.Sprintf(`{"filename":"%s"}`, config.HttpLogFile))
 
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)

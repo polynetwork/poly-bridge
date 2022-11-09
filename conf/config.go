@@ -97,8 +97,8 @@ type ChainListenConfig struct {
 	ListenSlot                    uint64
 	Defer                         uint64
 	BatchSize                     uint64
-	MinBatchLength     			  uint64
-	MaxBatchLength     			  uint64
+	MinBatchLength                uint64
+	MaxBatchLength                uint64
 	CrossChainEventCreationNumber string
 	ExecuteTxEventCreationNumber  string
 	Nodes                         []*Restful
@@ -300,7 +300,9 @@ type Config struct {
 	RunMode               string
 	Backup                bool
 	LargeTxAmount         int64
-	LogFile               string
+	ServerLogFile         string
+	HttpLogFile           string
+	MonitorLogFile        string
 	HttpConfig            *HttpConfig
 	MetricConfig          *HttpConfig
 	ChainNodes            []*ChainNodes
