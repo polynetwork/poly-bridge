@@ -85,6 +85,10 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 	}
 	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, 0, len(items), items)
 	output(&c.Controller, data)
+	//convert back for item cache
+	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+		item.TokenId = chainsdk.ConvertTokenIdFromHexStr2IntStr(item.TokenId)
+	}
 }
 
 func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
@@ -155,6 +159,13 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 		}
 	}
 	response(items)
+	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
+		for _, item := range items {
+			//convert back for item cache
+			item.TokenId = chainsdk.ConvertTokenIdFromHexStr2IntStr(item.TokenId)
+		}
+	}
+
 }
 
 func getSingleItem(

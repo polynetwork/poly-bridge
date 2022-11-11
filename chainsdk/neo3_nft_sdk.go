@@ -68,7 +68,10 @@ func (sdk *Neo3Sdk) GetOwnerNFTsByIndex(queryAddr, asset, owner string, start, l
 }
 
 func ConvertTokenIdFromIntStr2HexStr(tokenId string) string {
-	tokenIdBigInt, _ := big.NewInt(0).SetString(tokenId, 10)
+	tokenIdBigInt, ok := big.NewInt(0).SetString(tokenId, 10)
+	if !ok {
+		return ""
+	}
 	return helper.BytesToHex(helper.BigIntToNeoBytes(tokenIdBigInt))
 }
 
