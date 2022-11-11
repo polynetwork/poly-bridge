@@ -185,15 +185,15 @@ func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string) ([]string, error) {
 		Type:  "Hash160",
 		Value: ownerHash160,
 	})
-	countStr, err := sdk.Nep11BalanceOf(assetHash, owner)
-	if err != nil {
-		return res, err
-	}
-	count, err := strconv.ParseInt(countStr, 10, 32)
-	if err != nil {
-		return res, err
-	}
-	resp, err := sdk.client.InvokeFunctionAndIterate(assetHash, method, params, nil, false, int32(count))
+	//countStr, err := sdk.Nep11BalanceOf(assetHash, owner)
+	//if err != nil {
+	//	return res, err
+	//}
+	//count, err := strconv.ParseInt(countStr, 10, 32)
+	//if err != nil {
+	//	return res, err
+	//}
+	resp, err := sdk.client.InvokeFunctionAndIterate(assetHash, method, params, nil, false, int32(100))
 	if err != nil {
 		return res, err
 	}
@@ -482,7 +482,7 @@ func (s *InvokeStack) ToParameter() (*sc.ContractParameter, error) {
 		parameter.Type = sc.Array
 		a := s.Value.([]InvokeStack)
 		r := make([]sc.ContractParameter, len(a))
-		for i, _ := range a {
+		for i := range a {
 			t, err1 := a[i].ToParameter()
 			if err1 != nil {
 				err = err1

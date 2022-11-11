@@ -7,10 +7,11 @@ import (
 )
 
 func TestNeo3AddrToHash160(t *testing.T) {
-	addrStr, _ := Neo3AddrToHash160("NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9")
+	addrStr, _ := Neo3AddrToHash160("NVGUQ1qyL4SdSm7sVmGVkXetjEsvw2L3NT")
 	fmt.Println(addrStr)
 	fmt.Println(Hash160StrToNeo3Addr(addrStr.String()))
-	reversed, _ := Neo3AddrToReverseHash160("NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9")
+	reversed, _ := Neo3AddrToReverseHash160("NVGUQ1qyL4SdSm7sVmGVkXetjEsvw2L3NT")
+	fmt.Println(reversed)
 	fmt.Println(ReversedHash160ToNeo3Addr(reversed.String()))
 }
 
@@ -40,7 +41,7 @@ func TestNeo3Sdk_Nep11TokensOf(t *testing.T) {
 	//owner := "NbtRKN9wPV7WMAQFhVGsecDfNcHZcWkKoY"
 
 	sdk := NewNeo3Sdk("http://seed1t5.neo.org:20332")
-	tokenLists, _ := sdk.Nep11TokensOf("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", "NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9")
+	tokenLists, _ := sdk.Nep11TokensOf("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", "NVGUQ1qyL4SdSm7sVmGVkXetjEsvw2L3NT")
 	for _, v := range tokenLists {
 		fmt.Println(v)
 	}

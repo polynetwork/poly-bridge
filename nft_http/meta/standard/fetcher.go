@@ -38,10 +38,19 @@ func (f *StandardFetcher) Fetch(req *FetchRequestParams) (*models.NFTProfile, er
 
 func (f *StandardFetcher) BatchFetch(reqs []*FetchRequestParams) ([]*models.NFTProfile, error) {
 	list := make([]*models.NFTProfile, 0)
+	ch := make(chan *models.NFTProfile)
 	for _, v := range reqs {
-		if data, err := f.Fetch(v); err == nil {
+		go f.concurrentFetch(v, ch)
+	}
+	for range reqs {
+		if data := <-ch; data != nil {
 			list = append(list, data)
 		}
 	}
 	return list, nil
+}
+
+func (f *StandardFetcher) concurrentFetch(req *FetchRequestParams, ch chan<- *models.NFTProfile) {
+	data, _ := f.Fetch(req)
+	ch <- data
 }
