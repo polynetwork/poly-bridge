@@ -92,8 +92,7 @@ type UnlockEvent struct {
 func NewStarcoinChainListen(cfg *conf.ChainListenConfig) *StarcoinChainListen {
 	starcoinListen := &StarcoinChainListen{}
 	starcoinListen.starcoinCfg = cfg
-	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewStarcoinSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
+	sdk := chainsdk.NewStarcoinSdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
 	starcoinListen.starcoinSdk = sdk
 	return starcoinListen
 }

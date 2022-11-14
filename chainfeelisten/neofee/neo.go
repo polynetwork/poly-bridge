@@ -33,8 +33,7 @@ func NewNeoFee(neoCfg *conf.FeeListenConfig, feeUpdateSlot int64) *NeoFee {
 	neoFee := &NeoFee{}
 	neoFee.neoCfg = neoCfg
 	//
-	urls := neoCfg.GetNodesUrl()
-	sdk := chainsdk.NewNeoSdkPro(urls, uint64(feeUpdateSlot), neoCfg.ChainId)
+	sdk := chainsdk.NewNeoSdkPro(neoCfg.Nodes, uint64(feeUpdateSlot), neoCfg.ChainId)
 	neoFee.neoSdk = sdk
 	return neoFee
 }

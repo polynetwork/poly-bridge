@@ -89,8 +89,8 @@ type OtherItemProxy struct {
 type ChainNodes struct {
 	ChainName   string
 	ChainId     uint64
-	Nodes       []*Restful
-	ExtendNodes []*Restful
+	Nodes       []string
+	ExtendNodes []string
 }
 
 type ChainListenConfig struct {
@@ -99,8 +99,8 @@ type ChainListenConfig struct {
 	ListenSlot         uint64
 	Defer              uint64
 	BatchSize          uint64
-	Nodes              []*Restful
-	ExtendNodes        []*Restful
+	Nodes              []string
+	ExtendNodes        []string
 	WrapperContract    []string
 	CCMContract        string
 	ProxyContract      []string
@@ -139,38 +139,6 @@ type RelayerConfig struct {
 	RelayAccountConfig []*RelayAccountConfig
 }
 
-func (cfg *ChainListenConfig) GetNodesUrl() []string {
-	urls := make([]string, 0)
-	for _, node := range cfg.Nodes {
-		urls = append(urls, node.Url)
-	}
-	return urls
-}
-
-func (cfg *ChainListenConfig) GetNodesKey() []string {
-	keys := make([]string, 0)
-	for _, node := range cfg.Nodes {
-		keys = append(keys, node.Key)
-	}
-	return keys
-}
-
-func (cfg *ChainListenConfig) GetExtendNodesUrl() []string {
-	urls := make([]string, 0)
-	for _, node := range cfg.ExtendNodes {
-		urls = append(urls, node.Url)
-	}
-	return urls
-}
-
-func (cfg *ChainListenConfig) GetExtendNodesKey() []string {
-	keys := make([]string, 0)
-	for _, node := range cfg.ExtendNodes {
-		keys = append(keys, node.Key)
-	}
-	return keys
-}
-
 type CoinPriceListenConfig struct {
 	MarketName string
 	Nodes      []*Restful
@@ -195,27 +163,11 @@ func (cfg *CoinPriceListenConfig) GetNodesKey() []string {
 type FeeListenConfig struct {
 	ChainId       uint64
 	ChainName     string
-	Nodes         []*Restful
+	Nodes         []string
 	ProxyFee      int64
 	MinFee        int64
 	GasLimit      int64
 	EthL1GasLimit int64
-}
-
-func (cfg *FeeListenConfig) GetNodesUrl() []string {
-	urls := make([]string, 0)
-	for _, node := range cfg.Nodes {
-		urls = append(urls, node.Url)
-	}
-	return urls
-}
-
-func (cfg *FeeListenConfig) GetNodesKey() []string {
-	keys := make([]string, 0)
-	for _, node := range cfg.Nodes {
-		keys = append(keys, node.Key)
-	}
-	return keys
 }
 
 type StatsConfig struct {

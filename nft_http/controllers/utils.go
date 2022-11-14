@@ -182,12 +182,7 @@ func selectNodeAndWrapper(chainId uint64) (
 	}
 
 	if pro, ok = sdks[chainId]; !ok {
-		urls := cfg.GetNodesUrl()
-		if len(urls) == 0 {
-			err = chainIdErr
-			return
-		}
-		pro = chainsdk.NewEthereumSdkPro(urls, cfg.ListenSlot, chainId)
+		pro = chainsdk.NewEthereumSdkPro(cfg.Nodes, cfg.ListenSlot, chainId)
 		sdks[chainId] = pro
 	}
 

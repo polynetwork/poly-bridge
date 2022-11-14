@@ -15,8 +15,7 @@ type StarcoinFee struct {
 func NewStarcoinFee(starcoinCfg *conf.FeeListenConfig, feeUpdateSlot int64) *StarcoinFee {
 	StarcoinFee := &StarcoinFee{}
 	StarcoinFee.starcoinCfg = starcoinCfg
-	urls := starcoinCfg.GetNodesUrl()
-	sdk := chainsdk.NewStarcoinSdkPro(urls, uint64(feeUpdateSlot), starcoinCfg.ChainId)
+	sdk := chainsdk.NewStarcoinSdkPro(starcoinCfg.Nodes, uint64(feeUpdateSlot), starcoinCfg.ChainId)
 	StarcoinFee.starcoinSdk = sdk
 	return StarcoinFee
 }

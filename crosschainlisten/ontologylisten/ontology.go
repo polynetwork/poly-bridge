@@ -43,8 +43,7 @@ type OntologyChainListen struct {
 func NewOntologyChainListen(cfg *conf.ChainListenConfig) *OntologyChainListen {
 	ontListen := &OntologyChainListen{}
 	ontListen.ontCfg = cfg
-	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewOntologySdkPro(urls, cfg.ListenSlot, cfg.ChainId)
+	sdk := chainsdk.NewOntologySdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
 	ontListen.ontSdk = sdk
 	return ontListen
 }

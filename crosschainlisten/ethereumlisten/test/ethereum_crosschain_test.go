@@ -49,9 +49,8 @@ func TestEthereumCross(t *testing.T) {
 		panic("read config failed!")
 	}
 	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
-	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
+	ethSdk := chainsdk.NewEthereumSdkPro(ethChainListenConfig.Nodes, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
+	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.PolyWrapperABI))
 	if err != nil {
 		panic(err)
 	}
@@ -62,7 +61,7 @@ func TestEthereumCross(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("TestInvokeContract - txdata:%s\n", hex.EncodeToString(txData))
-	wrapperContractAddress := common.HexToAddress(ethChainListenConfig.WrapperContract)
+	wrapperContractAddress := common.HexToAddress(ethChainListenConfig.WrapperContract[0])
 	privateKey := NewPrivateKey("56b446a2de5edfccee1581fbba79e8bb5c269e28ab4c0487860afb7e2c2d2b6e")
 	fromAddr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	fmt.Printf("user address: %s\n", fromAddr.String())
@@ -103,10 +102,9 @@ func TestEthereum_GetFeeCollector(t *testing.T) {
 		panic("read config failed!")
 	}
 	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
-	address := common.HexToAddress(ethChainListenConfig.WrapperContract)
-	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
-	instance, err := wrapper_abi.NewIPolyWrapper(address, ethSdk.GetClient())
+	address := common.HexToAddress(ethChainListenConfig.WrapperContract[0])
+	ethSdk := chainsdk.NewEthereumSdkPro(ethChainListenConfig.Nodes, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
+	instance, err := wrapper_abi.NewPolyWrapper(address, ethSdk.GetClient())
 	if err != nil {
 		panic(err)
 	}
@@ -124,9 +122,8 @@ func TestEthereumExtractFee(t *testing.T) {
 		panic("read config failed!")
 	}
 	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
-	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
+	ethSdk := chainsdk.NewEthereumSdkPro(ethChainListenConfig.Nodes, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
+	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.PolyWrapperABI))
 	if err != nil {
 		panic(err)
 	}
@@ -137,7 +134,7 @@ func TestEthereumExtractFee(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("TestInvokeContract - txdata:%s\n", hex.EncodeToString(txData))
-	wrapperContractAddress := common.HexToAddress(ethChainListenConfig.WrapperContract)
+	wrapperContractAddress := common.HexToAddress(ethChainListenConfig.WrapperContract[0])
 	privateKey := NewPrivateKey("56b446a2de5edfccee1581fbba79e8bb5c269e28ab4c0487860afb7e2c2d2b6e")
 	fromAddr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	fmt.Printf("user address: %s\n", fromAddr.String())
@@ -178,9 +175,8 @@ func TestEthereumSpeedup(t *testing.T) {
 		panic("read config failed!")
 	}
 	ethChainListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
-	urls := ethChainListenConfig.GetNodesUrl()
-	ethSdk := chainsdk.NewEthereumSdkPro(urls, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
-	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.IPolyWrapperABI))
+	ethSdk := chainsdk.NewEthereumSdkPro(ethChainListenConfig.Nodes, ethChainListenConfig.ListenSlot, basedef.ETHEREUM_CROSSCHAIN_ID)
+	contractabi, err := abi.JSON(strings.NewReader(wrapper_abi.PolyWrapperABI))
 	if err != nil {
 		panic(err)
 	}
@@ -191,7 +187,7 @@ func TestEthereumSpeedup(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("TestInvokeContract - txdata:%s\n", hex.EncodeToString(txData))
-	wrapperContractAddress := common.HexToAddress(ethChainListenConfig.WrapperContract)
+	wrapperContractAddress := common.HexToAddress(ethChainListenConfig.WrapperContract[0])
 	privateKey := NewPrivateKey("56b446a2de5edfccee1581fbba79e8bb5c269e28ab4c0487860afb7e2c2d2b6e")
 	fromAddr := crypto.PubkeyToAddress(privateKey.PublicKey)
 	fmt.Printf("user address: %s\n", fromAddr.String())

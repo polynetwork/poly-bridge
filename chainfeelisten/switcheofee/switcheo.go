@@ -32,8 +32,7 @@ type SwitcheoFee struct {
 func NewSwitcheoFee(swthCfg *conf.FeeListenConfig, feeUpdateSlot int64) *SwitcheoFee {
 	switcheoFee := &SwitcheoFee{}
 	switcheoFee.swthCfg = swthCfg
-	urls := swthCfg.GetNodesUrl()
-	sdk := chainsdk.NewSwitcheoSdkPro(urls, uint64(feeUpdateSlot), swthCfg.ChainId)
+	sdk := chainsdk.NewSwitcheoSdkPro(swthCfg.Nodes, uint64(feeUpdateSlot), swthCfg.ChainId)
 	switcheoFee.swthSdk = sdk
 	return switcheoFee
 }

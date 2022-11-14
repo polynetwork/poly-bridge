@@ -636,6 +636,8 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 					if srcTransactionState.Blocks > srcTransactionState.NeedBlocks {
 						srcTransactionState.Blocks = srcTransactionState.NeedBlocks
 					}
+				} else {
+					logs.Error("GetZkSyncL1Height failed. err=%s", err)
 				}
 			}
 		}
@@ -708,7 +710,7 @@ func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap
 		DstChainId:     transaction.SrcTransaction.DstChainId,
 		TransferAmount: transferAmount,
 		DstUser:        dstUser,
-		TokenHash: transaction.TokenHash,
+		TokenHash:      transaction.TokenHash,
 	}
 	switch {
 	case transaction.PolyTransaction == nil && transaction.DstTransaction == nil:

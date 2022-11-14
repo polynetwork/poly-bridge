@@ -30,8 +30,7 @@ type SwitcheoChainListen struct {
 func NewSwitcheoChainListen(cfg *conf.ChainListenConfig) *SwitcheoChainListen {
 	swthListen := &SwitcheoChainListen{}
 	swthListen.swthCfg = cfg
-	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewSwitcheoSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
+	sdk := chainsdk.NewSwitcheoSdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
 	swthListen.swthSdk = sdk
 	return swthListen
 }

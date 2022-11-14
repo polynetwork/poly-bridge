@@ -35,8 +35,7 @@ func TestNeoCross(t *testing.T) {
 		panic("read config failed!")
 	}
 	neoChainListenConfig := config.GetChainListenConfig(basedef.NEO_CROSSCHAIN_ID)
-	urls := neoChainListenConfig.GetNodesUrl()
-	neoSdk := chainsdk.NewNeoSdkPro(urls, neoChainListenConfig.ListenSlot, basedef.NEO_CROSSCHAIN_ID)
+	neoSdk := chainsdk.NewNeoSdkPro(neoChainListenConfig.Nodes, neoChainListenConfig.ListenSlot, basedef.NEO_CROSSCHAIN_ID)
 
 	w, err := wallet.NewWalletFromFile("")
 	if err != nil {

@@ -184,15 +184,14 @@ func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
 	var hecoSdk *chainsdk.EthereumSdkPro
 	var neoSdk *chainsdk.NeoSdkPro
 	for _, listenConfig := range config.ChainListenConfig {
-		urls := listenConfig.GetNodesUrl()
 		if listenConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-			ethSdk = chainsdk.NewEthereumSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+			ethSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
 		} else if listenConfig.ChainId == basedef.BSC_CROSSCHAIN_ID {
-			bscSdk = chainsdk.NewEthereumSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+			bscSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
 		} else if listenConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
-			hecoSdk = chainsdk.NewEthereumSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+			hecoSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
 		} else if listenConfig.ChainId == basedef.NEO_CROSSCHAIN_ID {
-			neoSdk = chainsdk.NewNeoSdkPro(urls, listenConfig.ListenSlot, listenConfig.ChainId)
+			neoSdk = chainsdk.NewNeoSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
 		}
 	}
 	{

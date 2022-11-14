@@ -33,8 +33,7 @@ func NewEthereumFee(ethCfg *conf.FeeListenConfig, feeUpdateSlot int64) *Ethereum
 	ethereumFee := &EthereumFee{}
 	ethereumFee.ethCfg = ethCfg
 	//
-	urls := ethCfg.GetNodesUrl()
-	sdk := chainsdk.NewEthereumSdkPro(urls, uint64(feeUpdateSlot), ethCfg.ChainId)
+	sdk := chainsdk.NewEthereumSdkPro(ethCfg.Nodes, uint64(feeUpdateSlot), ethCfg.ChainId)
 	ethereumFee.ethSdk = sdk
 	return ethereumFee
 }

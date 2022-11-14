@@ -58,8 +58,7 @@ func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 	ethListen := &EthereumChainListen{}
 	ethListen.ethCfg = cfg
 	//
-	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewEthereumSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
+	sdk := chainsdk.NewEthereumSdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
 	ethListen.ethSdk = sdk
 	return ethListen
 }

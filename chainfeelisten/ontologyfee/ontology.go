@@ -33,8 +33,7 @@ func NewOntologyFee(ontologyCfg *conf.FeeListenConfig, feeUpdateSlot int64) *Ont
 	ontologyFee := &OntologyFee{}
 	ontologyFee.ontologyCfg = ontologyCfg
 	//
-	urls := ontologyCfg.GetNodesUrl()
-	sdk := chainsdk.NewOntologySdkPro(urls, uint64(feeUpdateSlot), ontologyCfg.ChainId)
+	sdk := chainsdk.NewOntologySdkPro(ontologyCfg.Nodes, uint64(feeUpdateSlot), ontologyCfg.ChainId)
 	ontologyFee.ontologySdk = sdk
 	return ontologyFee
 }

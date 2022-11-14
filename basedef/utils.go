@@ -367,3 +367,11 @@ func IsETHChain(chainId uint64) bool {
 	}
 	return false
 }
+
+func IsNativeTokenAddress(addr string) bool {
+	if addr == "0000000000000000000000000000000000000000" {
+		return true
+	} else {
+		return false
+	}
+}

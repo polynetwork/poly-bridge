@@ -316,7 +316,7 @@ func GetL1BlockNumberOfArbitrumTx(hash string) (uint64, error) {
 	}
 	reqJson, err := json.Marshal(reqPara)
 	arbitrumConfig := conf.GlobalConfig.GetChainListenConfig(basedef.ARBITRUM_CROSSCHAIN_ID)
-	req, err := http.NewRequest("POST", arbitrumConfig.Nodes[0].Url, strings.NewReader(string(reqJson)))
+	req, err := http.NewRequest("POST", arbitrumConfig.Nodes[0], strings.NewReader(string(reqJson)))
 	if err != nil {
 		return 0, err
 	}

@@ -16,8 +16,7 @@ type ZilliqaFee struct {
 func NewZilliqaFee(zilCfg *conf.FeeListenConfig, feeUpdateSlot int64) *ZilliqaFee {
 	zilFee := &ZilliqaFee{}
 	zilFee.zilCfg = zilCfg
-	urls := zilCfg.GetNodesUrl()
-	sdk := chainsdk.NewZilliqaSdkPro(urls, uint64(feeUpdateSlot), zilCfg.ChainId)
+	sdk := chainsdk.NewZilliqaSdkPro(zilCfg.Nodes, uint64(feeUpdateSlot), zilCfg.ChainId)
 	zilFee.zilSdk = sdk
 	return zilFee
 }

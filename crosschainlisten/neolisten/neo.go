@@ -50,8 +50,7 @@ type NeoChainListen struct {
 func NewNeoChainListen(cfg *conf.ChainListenConfig) *NeoChainListen {
 	ethListen := &NeoChainListen{}
 	ethListen.neoCfg = cfg
-	urls := cfg.GetNodesUrl()
-	sdk := chainsdk.NewNeoSdkPro(urls, cfg.ListenSlot, cfg.ChainId)
+	sdk := chainsdk.NewNeoSdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
 	ethListen.neoSdk = sdk
 	return ethListen
 }
