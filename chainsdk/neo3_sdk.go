@@ -231,8 +231,8 @@ func (sdk *Neo3Sdk) Nep11TokensOfWithBatchInvoke(assetHash, owner string) ([]str
 	return res, nil
 }
 
-func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string, start, length int) ([]string, error) {
-	skip := start * length
+func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string, page, length int) ([]string, error) {
+	skip := page * length
 	res := make([]string, 0)
 	rsp, err := GetNep11TokenInfoByRPC(owner, assetHash, length, skip)
 	if err != nil {
