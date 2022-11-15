@@ -73,7 +73,7 @@ func SetupChainsSDK(cfg *conf.Config) {
 
 func newChainSdks(config *conf.Config) {
 	sdkMap = make(map[uint64]interface{}, 0)
-	{
+	if basedef.ENV == basedef.MAINNET {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
 			panic("chain is invalid")
@@ -265,15 +265,6 @@ func newChainSdks(config *conf.Config) {
 		sdkMap[basedef.BOBA_CROSSCHAIN_ID] = bobaSdk
 	}
 	if basedef.ENV == basedef.TESTNET {
-		{
-			rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
-			if rinkebyConfig == nil {
-				panic("rinkeby chain is invalid")
-			}
-			urls := rinkebyConfig.GetNodesUrl()
-			rinkebySdk = chainsdk.NewEthereumSdkPro(urls, rinkebyConfig.ListenSlot, rinkebyConfig.ChainId)
-			sdkMap[basedef.RINKEBY_CROSSCHAIN_ID] = rinkebySdk
-		}
 		{
 			goerliConfig := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
 			if goerliConfig == nil {
