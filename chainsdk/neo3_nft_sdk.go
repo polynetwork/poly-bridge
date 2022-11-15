@@ -49,20 +49,13 @@ func (sdk *Neo3Sdk) GetOwnerNFTsByIndex(queryAddr, asset, owner string, start, l
 	if err != nil {
 		return nil, fmt.Errorf("invalid owner")
 	}
-	tokenIdsAll, err := sdk.Nep11TokensOf(asset, ownerAddr)
-	var tokenIds []string
+	tokenIds, err := sdk.Nep11TokensOf(asset, ownerAddr, start, length)
 	if err != nil {
 		return nil, err
 	}
-	sort.Strings(tokenIdsAll)
-	if start > len(tokenIdsAll) {
+	sort.Strings(tokenIds)
+	if length != len(tokenIds) {
 		return nil, fmt.Errorf("invalid start")
-	}
-	end := start + length
-	if end < len(tokenIdsAll) {
-		tokenIds = tokenIdsAll[start:end]
-	} else {
-		tokenIds = tokenIdsAll[start:]
 	}
 	return sdk.Nep11UriByBatchInvoke(asset, tokenIds)
 }

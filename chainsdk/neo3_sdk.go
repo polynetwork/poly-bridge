@@ -28,7 +28,9 @@ import (
 	"github.com/joeqian10/neo3-gogogo/rpc/models"
 	"github.com/joeqian10/neo3-gogogo/sc"
 	"github.com/joeqian10/neo3-gogogo/vm"
+	"io/ioutil"
 	"math/big"
+	"net/http"
 	"poly-bridge/basedef"
 	"strconv"
 	"strings"
@@ -38,14 +40,6 @@ type Neo3Sdk struct {
 	client *rpc.RpcClient
 	url    string
 }
-
-type Neo3RpcReq struct {
-	JSONRPC string   `json:"jsonrpc"`
-	Method  string   `json:"method"`
-	Params  []string `json:"params"`
-	ID      uint     `json:"id"`
-}
-
 type Nep11Property struct {
 	Name      string `json:"name"`
 	Image     string `json:"image"`
@@ -53,6 +47,39 @@ type Nep11Property struct {
 	Supply    string `json:"supply"`
 	Thumbnail string `json:"thumbnail"`
 	TokenURI  string `json:"tokenURI"`
+}
+type GetNep11OwnedByContractHashAddressReq struct {
+	Address      string
+	ContractHash string
+	Limit        int
+	Skip         int
+}
+type NeoRpcRequest struct {
+	JsonRpc string      `json:"jsonRpc"`
+	Method  string      `json:"method"`
+	Params  interface{} `json:"params"`
+	Id      int         `json:"id"`
+}
+
+type GetNep11OwnedByContractHashAddressRsp struct {
+	Id     int `json:"id"`
+	Result struct {
+		Result []struct {
+			Id          string  `json:"_id"`
+			Blockhash   string  `json:"blockhash"`
+			Contract    string  `json:"contract"`
+			From        *string `json:"from"`
+			Frombalance string  `json:"frombalance"`
+			Timestamp   int64   `json:"timestamp"`
+			To          string  `json:"to"`
+			Tobalance   string  `json:"tobalance"`
+			TokenId     string  `json:"tokenId"`
+			Txid        string  `json:"txid"`
+			Value       string  `json:"value"`
+		} `json:"result"`
+		TotalCount int `json:"totalCount"`
+	} `json:"result"`
+	Error interface{} `json:"error"`
 }
 
 func NewNeo3Sdk(url string) *Neo3Sdk {
@@ -176,7 +203,7 @@ func (sdk *Neo3Sdk) Nep11BalanceOf(assetHash, owner string) (string, error) {
 	return stack[0].Value.(string), nil
 }
 
-func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string) ([]string, error) {
+func (sdk *Neo3Sdk) Nep11TokensOfWithBatchInvoke(assetHash, owner string) ([]string, error) {
 	method := "tokensOf"
 	res := make([]string, 0)
 	ownerHash160, _ := Neo3AddrToHash160(owner)
@@ -185,20 +212,37 @@ func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string) ([]string, error) {
 		Type:  "Hash160",
 		Value: ownerHash160,
 	})
-	//countStr, err := sdk.Nep11BalanceOf(assetHash, owner)
-	//if err != nil {
-	//	return res, err
-	//}
-	//count, err := strconv.ParseInt(countStr, 10, 32)
-	//if err != nil {
-	//	return res, err
-	//}
-	resp, err := sdk.client.InvokeFunctionAndIterate(assetHash, method, params, nil, false, int32(100))
+	countStr, err := sdk.Nep11BalanceOf(assetHash, owner)
+	if err != nil {
+		return res, err
+	}
+	count, err := strconv.ParseInt(countStr, 10, 32)
+	if err != nil {
+		return res, err
+	}
+	resp, err := sdk.client.InvokeFunctionAndIterate(assetHash, method, params, nil, false, int32(count))
 	if err != nil {
 		return res, err
 	}
 	for _, v := range resp[0] {
 		tokenId, _ := crypto.Base64Decode(v.Value.(string))
+		res = append(res, ConvertTokenIdFromHexStr2IntStr(helper.BytesToHex(tokenId)))
+	}
+	return res, nil
+}
+
+func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string, start, length int) ([]string, error) {
+	skip := start * length
+	res := make([]string, 0)
+	rsp, err := GetNep11TokenInfoByRPC(owner, assetHash, length, skip)
+	if err != nil {
+		return nil, err
+	}
+	if rsp.Error != nil {
+		return nil, fmt.Errorf("rpc resp error, %v", rsp.Error)
+	}
+	for _, v := range rsp.Result.Result {
+		tokenId, _ := crypto.Base64Decode(v.TokenId)
 		res = append(res, ConvertTokenIdFromHexStr2IntStr(helper.BytesToHex(tokenId)))
 	}
 	return res, nil
@@ -556,4 +600,38 @@ func ReversedHash160ToNeo3Addr(reversedHash string) (string, error) {
 	hash := basedef.HexStringReverse(reversedHash)
 	hash160, _ := helper.UInt160FromString(hash)
 	return crypto.ScriptHashToAddress(hash160, helper.DefaultAddressVersion), nil
+}
+
+func GetNep11TokenInfoByRPC(ownerHash160, assetHash string, limit, skip int) (*GetNep11OwnedByContractHashAddressRsp, error) {
+	paras := GetNep11OwnedByContractHashAddressReq{
+		Address:      ownerHash160,
+		ContractHash: "0x" + assetHash,
+		Limit:        limit,
+		Skip:         skip,
+	}
+	reqPara := NeoRpcRequest{
+		JsonRpc: "2.0",
+		Method:  "GetNep11OwnedByContractHashAddress",
+		Params:  paras,
+		Id:      1,
+	}
+	reqJson, err := json.Marshal(reqPara)
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", "https://testmagnet.ngd.network", strings.NewReader(string(reqJson)))
+	if err != nil {
+		return nil, fmt.Errorf("fail to call neo3fura rpc method, %v", err)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("fail to call neo3fura rpc method, %v", err)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("fail to read neo3fura rpc resp, %v", err)
+	}
+	rsp := new(GetNep11OwnedByContractHashAddressRsp)
+	_ = json.Unmarshal(body, &rsp)
+	return rsp, err
 }
