@@ -41,10 +41,21 @@ func TestNeo3Sdk_Nep11TokensOf(t *testing.T) {
 	//owner := "NbtRKN9wPV7WMAQFhVGsecDfNcHZcWkKoY"
 
 	sdk := NewNeo3Sdk("http://seed1t5.neo.org:20332")
-	tokenLists, _ := sdk.Nep11TokensOf("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", "NVGUQ1qyL4SdSm7sVmGVkXetjEsvw2L3NT", 0, 12)
+	tokenLists, err := sdk.Nep11TokensOf("9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", "NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9", 0, 12)
+	if err != nil {
+		fmt.Println(err)
+	}
 	for _, v := range tokenLists {
 		fmt.Println(v)
 	}
+	tokenLists, err = sdk.Nep11TokensOfWithBatchInvoke("9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", "NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9")
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, v := range tokenLists {
+		fmt.Println(v)
+	}
+
 	//p, _ := sdk.Nep11PropertiesByBatchInvoke("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", tokenLists)
 	//a, _ := json.MarshalIndent(p, "", "	")
 	//fmt.Println(string(a))
@@ -59,7 +70,7 @@ func TestNeo3Sdk_Nep11PropertiesByInvoke(t *testing.T) {
 
 func TestNeo3Sdk_Nep11UriByBatchInvoke(t *testing.T) {
 	sdk := NewNeo3Sdk("http://seed1t5.neo.org:20332")
-	res, _ := sdk.Nep11UriByBatchInvoke("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", []string{"278", "279"})
+	res, _ := sdk.Nep11UriByBatchInvoke("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", []string{"279"})
 	a, _ := json.MarshalIndent(res, "", "	")
 	fmt.Println(string(a))
 }

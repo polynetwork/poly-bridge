@@ -1,6 +1,7 @@
 package standard
 
 import (
+	log "github.com/beego/beego/v2/core/logs"
 	"poly-bridge/models"
 	. "poly-bridge/nft_http/meta/common"
 	"poly-bridge/nft_http/meta/utils"
@@ -51,6 +52,9 @@ func (f *StandardFetcher) BatchFetch(reqs []*FetchRequestParams) ([]*models.NFTP
 }
 
 func (f *StandardFetcher) concurrentFetch(req *FetchRequestParams, ch chan<- *models.NFTProfile) {
-	data, _ := f.Fetch(req)
+	data, err := f.Fetch(req)
+	if err != nil {
+		log.Error("fail to request %v, err: %v", req.Url, err)
+	}
 	ch <- data
 }

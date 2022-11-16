@@ -32,6 +32,7 @@ import (
 	"math/big"
 	"net/http"
 	"poly-bridge/basedef"
+	"poly-bridge/conf"
 	"strconv"
 	"strings"
 )
@@ -48,7 +49,7 @@ type Nep11Property struct {
 	Thumbnail string `json:"thumbnail"`
 	TokenURI  string `json:"tokenURI"`
 }
-type GetNep11OwnedByContractHashAddressReq struct {
+type GetAssetsHeldByContractHashAddressReq struct {
 	Address      string
 	ContractHash string
 	Limit        int
@@ -61,7 +62,7 @@ type NeoRpcRequest struct {
 	Id      int         `json:"id"`
 }
 
-type GetNep11OwnedByContractHashAddressRsp struct {
+type GetAssetsHeldByContractHashAddressRsp struct {
 	Id     int `json:"id"`
 	Result struct {
 		Result []struct {
@@ -231,10 +232,9 @@ func (sdk *Neo3Sdk) Nep11TokensOfWithBatchInvoke(assetHash, owner string) ([]str
 	return res, nil
 }
 
-func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string, page, length int) ([]string, error) {
-	skip := page * length
+func (sdk *Neo3Sdk) Nep11TokensOf(assetHash, owner string, start, length int) ([]string, error) {
 	res := make([]string, 0)
-	rsp, err := GetNep11TokenInfoByRPC(owner, assetHash, length, skip)
+	rsp, err := GetNep11TokenInfoByRPC(owner, assetHash, length, start)
 	if err != nil {
 		return nil, err
 	}
@@ -602,8 +602,21 @@ func ReversedHash160ToNeo3Addr(reversedHash string) (string, error) {
 	return crypto.ScriptHashToAddress(hash160, helper.DefaultAddressVersion), nil
 }
 
-func GetNep11TokenInfoByRPC(ownerHash160, assetHash string, limit, skip int) (*GetNep11OwnedByContractHashAddressRsp, error) {
-	paras := GetNep11OwnedByContractHashAddressReq{
+func GetNep11TokenInfoByRPC(ownerHash160, assetHash string, limit, skip int) (*GetAssetsHeldByContractHashAddressRsp, error) {
+	if conf.GlobalConfig == nil {
+		return nil, fmt.Errorf("no config available")
+	}
+	neo3Conf := conf.GlobalConfig.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
+	var Neo3furaUrl string
+	for _, v := range neo3Conf.ExtendNodes {
+		if v.Key == "Neo3fura" {
+			Neo3furaUrl = v.Url
+		}
+	}
+	if Neo3furaUrl == "" {
+		return nil, fmt.Errorf("no neo3fura provided")
+	}
+	paras := GetAssetsHeldByContractHashAddressReq{
 		Address:      ownerHash160,
 		ContractHash: "0x" + assetHash,
 		Limit:        limit,
@@ -611,13 +624,13 @@ func GetNep11TokenInfoByRPC(ownerHash160, assetHash string, limit, skip int) (*G
 	}
 	reqPara := NeoRpcRequest{
 		JsonRpc: "2.0",
-		Method:  "GetNep11OwnedByContractHashAddress",
+		Method:  "GetAssetsHeldByContractHashAddress",
 		Params:  paras,
 		Id:      1,
 	}
 	reqJson, err := json.Marshal(reqPara)
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", "https://testmagnet.ngd.network", strings.NewReader(string(reqJson)))
+	req, err := http.NewRequest("POST", Neo3furaUrl, strings.NewReader(string(reqJson)))
 	if err != nil {
 		return nil, fmt.Errorf("fail to call neo3fura rpc method, %v", err)
 	}
@@ -631,7 +644,7 @@ func GetNep11TokenInfoByRPC(ownerHash160, assetHash string, limit, skip int) (*G
 	if err != nil {
 		return nil, fmt.Errorf("fail to read neo3fura rpc resp, %v", err)
 	}
-	rsp := new(GetNep11OwnedByContractHashAddressRsp)
+	rsp := new(GetAssetsHeldByContractHashAddressRsp)
 	_ = json.Unmarshal(body, &rsp)
 	return rsp, err
 }
