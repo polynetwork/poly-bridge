@@ -114,6 +114,9 @@ func (c *ExplorerController) TransactionsOfAddress() {
 	list := make([]*TransactionBriefRsp, 0)
 	for _, v := range relations {
 		tk := selectNFTAsset(v.SrcAsset)
+		if tk == nil {
+			continue
+		}
 		if v.SrcChainId == basedef.NEO3_CROSSCHAIN_ID {
 			v.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(v.TokenId)
 		}

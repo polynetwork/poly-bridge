@@ -32,7 +32,7 @@ func TestNeo3Sdk_GetUrl(t *testing.T) {
 
 func TestNeo3Sdk_Nep11BalanceOf(t *testing.T) {
 	sdk := NewNeo3Sdk("http://seed1t5.neo.org:20332")
-	fmt.Println(sdk.Nep11BalanceOf("0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a", "NbtRKN9wPV7WMAQFhVGsecDfNcHZcWkKoY"))
+	fmt.Println(sdk.Nep11BalanceOf("0xb13b57056775529e9461418a0a66b6dd97640ef8", "NSAcLL5B85z6R1QdjsDxPw49Dw51zbq8J9"))
 
 }
 

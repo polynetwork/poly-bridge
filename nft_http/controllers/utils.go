@@ -68,7 +68,7 @@ func NewDB(cfg *conf.DBConfig) *gorm.DB {
 		panic(err)
 	}
 
-	db.Where("standard = ? and property=?", models.TokenTypeErc721, 1).
+	db.Where("standard = ?", models.TokenTypeErc721).
 		Preload("TokenBasic").
 		Find(&assets)
 	for _, v := range assets {
