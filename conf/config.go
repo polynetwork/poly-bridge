@@ -274,6 +274,12 @@ type HttpConfig struct {
 	Timeout int
 }
 
+type Neo3LocalNftFetcherConfig struct {
+	Neo3Fura          string `json:"Neo3fura"`
+	Neo3JsonUrlLocal  string `json:"Neo3JsonUrlLocal"`
+	Neo3ImageUrlLocal string `json:"Neo3ImageUrlLocal"`
+}
+
 type IPPortConfig struct {
 	WBTCIP string
 	USDTIP string
@@ -298,33 +304,34 @@ type OperationConfig struct {
 }
 
 type Config struct {
-	Server                string
-	Env                   string
-	RunMode               string
-	Backup                bool
-	LargeTxAmount         int64
-	ServerLogFile         string
-	HttpLogFile           string
-	MonitorLogFile        string
-	HttpConfig            *HttpConfig
-	MetricConfig          *HttpConfig
-	ChainNodes            []*ChainNodes
-	ChainListenConfig     []*ChainListenConfig
-	CoinPriceUpdateSlot   int64
-	CoinPriceListenConfig []*CoinPriceListenConfig
-	FeeUpdateSlot         int64
-	RiskyCoinHandleConfig *RiskyCoinHandleConfig
-	FeeListenConfig       []*FeeListenConfig
-	EventEffectConfig     *EventEffectConfig
-	StatsConfig           *StatsConfig
-	DBConfig              *DBConfig
-	BotConfig             *BotConfig
-	RedisConfig           *RedisConfig
-	IPPortConfig          *IPPortConfig
-	NftConfig             *NftConfig
-	RelayUrl              string
-	ActivityConfig        *ActivityConfig
-	OperationConfig       *OperationConfig
+	Server                    string
+	Env                       string
+	RunMode                   string
+	Backup                    bool
+	LargeTxAmount             int64
+	ServerLogFile             string
+	HttpLogFile               string
+	MonitorLogFile            string
+	HttpConfig                *HttpConfig
+	Neo3LocalNftFetcherConfig *Neo3LocalNftFetcherConfig
+	MetricConfig              *HttpConfig
+	ChainNodes                []*ChainNodes
+	ChainListenConfig         []*ChainListenConfig
+	CoinPriceUpdateSlot       int64
+	CoinPriceListenConfig     []*CoinPriceListenConfig
+	FeeUpdateSlot             int64
+	RiskyCoinHandleConfig     *RiskyCoinHandleConfig
+	FeeListenConfig           []*FeeListenConfig
+	EventEffectConfig         *EventEffectConfig
+	StatsConfig               *StatsConfig
+	DBConfig                  *DBConfig
+	BotConfig                 *BotConfig
+	RedisConfig               *RedisConfig
+	IPPortConfig              *IPPortConfig
+	NftConfig                 *NftConfig
+	RelayUrl                  string
+	ActivityConfig            *ActivityConfig
+	OperationConfig           *OperationConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {

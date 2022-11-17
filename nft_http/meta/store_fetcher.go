@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm/clause"
 	"poly-bridge/models"
 	. "poly-bridge/nft_http/meta/common"
+	"poly-bridge/nft_http/meta/neo3local"
 	"poly-bridge/nft_http/meta/standard"
 )
 
@@ -21,9 +22,10 @@ type MetaFetcher interface {
 type FetcherType int
 
 const (
-	FetcherTypeUnknown  = 0
-	FetcherTypeOpensea  = 1
-	FetcherTypeStandard = 2
+	FetcherTypeUnknown   = 0
+	FetcherTypeOpensea   = 1
+	FetcherTypeStandard  = 2
+	FetcherTypeNeo3Local = 3
 )
 
 var ErrFetcherNotExist = errors.New("fetcher not exist")
@@ -32,6 +34,8 @@ func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (fetcher Meta
 	switch fetcherTyp {
 	case FetcherTypeStandard, FetcherTypeOpensea:
 		fetcher = standard.NewFetcher(assetName, baseUri)
+	case FetcherTypeNeo3Local:
+		fetcher = neo3local.NewFetcher(assetName, baseUri)
 	default:
 		fetcher = nil
 	}

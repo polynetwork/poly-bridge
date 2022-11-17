@@ -20,6 +20,7 @@ package controllers
 import (
 	"poly-bridge/basedef"
 	"poly-bridge/models"
+	nftdb "poly-bridge/nft_http/db"
 
 	"github.com/beego/beego/v2/server/web"
 )
@@ -200,7 +201,7 @@ func findSrcPolyDstRelation(wrapTxs []*models.WrapperTransaction) []*SrcPolyDstR
 			v.DstTransaction = dstTx
 			v.DstHash = dstTx.Hash
 		}
-		feeToken := findFeeToken(v.WrapperTransaction.SrcChainId, v.WrapperTransaction.FeeTokenHash)
+		feeToken := nftdb.FindFeeToken(v.WrapperTransaction.SrcChainId, v.WrapperTransaction.FeeTokenHash)
 		if feeToken != nil {
 			v.FeeTokenHash = feeToken.Hash
 			v.FeeToken = feeToken

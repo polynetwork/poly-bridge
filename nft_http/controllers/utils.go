@@ -21,84 +21,52 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"gorm.io/gorm"
 	"math/big"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"poly-bridge/nft_http/db"
 	"poly-bridge/nft_http/meta"
 	"poly-bridge/nft_http/nft_sdk"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/ethereum/go-ethereum/common"
 	lru "github.com/hashicorp/golang-lru"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var (
-	db             *gorm.DB
 	chainConfig    = make(map[uint64]*conf.ChainListenConfig)
 	txCounter      *TransactionCounter
 	sdks           = make(map[uint64]nft_sdk.INftSdkPro)
-	assets         = make([]*models.Token, 0)
+	assets         []*models.Token
+	feeTokens      map[uint64]*models.Token
+	db             *gorm.DB
 	inquirerAddrs  = make(map[uint64]string)
 	fetcher        *meta.StoreFetcher
-	feeTokens      = make(map[uint64]*models.Token)
 	lruDB          *lru.ARCCache
 	homePageTicker = time.NewTimer(600 * time.Second)
-	nativeHash     = []string{"0000000000000000000000000000000000000000", "0000000000000000000000000000000000000103"}
 )
-
-func NewDB(cfg *conf.DBConfig) *gorm.DB {
-	user := cfg.User
-	password := cfg.Password
-	url := cfg.URL
-	scheme := cfg.Scheme
-	Logger := logger.Default
-	if cfg.Debug {
-		Logger = Logger.LogMode(logger.Info)
-	}
-	format := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", user, password, url, scheme)
-	db, err := gorm.Open(mysql.Open(format), &gorm.Config{Logger: Logger})
-	if err != nil {
-		panic(err)
-	}
-
-	db.Where("standard = ?", models.TokenTypeErc721).
-		Preload("TokenBasic").
-		Find(&assets)
-	for _, v := range assets {
-		logs.Info("load asset %s, chainid %d, hash %s", v.TokenBasicName, v.ChainId, v.Hash)
-	}
-
-	feeTokenList := make([]*models.Token, 0)
-	db.Where("hash in ?", nativeHash).
-		Preload("TokenBasic").
-		Find(&feeTokenList)
-	for _, v := range feeTokenList {
-		feeTokens[v.ChainId] = v
-		logs.Info("load chainid %d feeToken %s", v.ChainId, v.TokenBasicName)
-	}
-	return db
-}
 
 func Initialize(c *conf.Config) {
 	for _, v := range c.ChainListenConfig {
 		chainConfig[v.ChainId] = v
 	}
-
-	db = NewDB(c.DBConfig)
-
+	//init db
+	db = nftdb.NewDB(c.DBConfig)
+	//init lru
 	arcLRU, err := lru.NewARC(5000)
 	if err != nil {
 		panic(err)
 	}
 	lruDB = arcLRU
-
+	//init nft assets
+	assets = nftdb.InitNftAssets()
+	//init feetokens
+	feeTokens = nftdb.InitFeeTokens()
+	//init
 	go func() {
 		fetcher = meta.NewStoreFetcher(db)
 		for _, asset := range assets {
@@ -316,29 +284,6 @@ func customOutput(c *web.Controller, code int, msg string) {
 
 func getPageNo(totalNo, pageSize int) int {
 	return (int(totalNo) + pageSize - 1) / pageSize
-}
-
-func findFeeToken(cid uint64, hash string) *models.Token {
-	feeTokens := make([]*models.Token, 0)
-	db.Model(&models.Token{}).
-		Where("hash in ?", nativeHash).
-		Preload("TokenBasic").
-		Find(&feeTokens)
-
-	for _, v := range feeTokens {
-		if cid == v.ChainId && hash == v.Hash {
-			return v
-		}
-	}
-	feeToken := new(models.Token)
-	err := db.Model(&models.Token{}).
-		Where("chain_id = ? and hash = ?", cid, hash).
-		Preload("TokenBasic").
-		First(feeToken).Error
-	if err == nil {
-		return feeToken
-	}
-	return nil
 }
 
 func findAsset(cid uint64, hash string) *models.Token {

@@ -606,13 +606,7 @@ func GetNep11TokenInfoByRPC(ownerHash160, assetHash string, limit, skip int) (*G
 	if conf.GlobalConfig == nil {
 		return nil, fmt.Errorf("no config available")
 	}
-	neo3Conf := conf.GlobalConfig.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
-	var Neo3furaUrl string
-	for _, v := range neo3Conf.ExtendNodes {
-		if v.Key == "Neo3fura" {
-			Neo3furaUrl = v.Url
-		}
-	}
+	Neo3furaUrl := conf.GlobalConfig.Neo3LocalNftFetcherConfig.Neo3Fura
 	if Neo3furaUrl == "" {
 		return nil, fmt.Errorf("no neo3fura provided")
 	}

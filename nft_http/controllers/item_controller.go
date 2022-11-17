@@ -195,8 +195,10 @@ func getSingleItem(
 	}
 
 	profile, err := fetcher.Fetch(asset.ChainId, asset.TokenBasicName, &mcm.FetchRequestParams{
-		TokenId: tokenId,
-		Url:     url,
+		TokenId:   tokenId,
+		ChainId:   asset.ChainId,
+		Url:       url,
+		AssetHash: assetAddr,
 	})
 	if err != nil {
 		return
@@ -225,8 +227,10 @@ func getItemsWithChainData(name string, asset string, chainId uint64, tokenIdUrl
 		}
 
 		req := &mcm.FetchRequestParams{
-			TokenId: tokenId,
-			Url:     url,
+			TokenId:   tokenId,
+			ChainId:   chainId,
+			Url:       url,
+			AssetHash: asset,
 		}
 		profileReqs = append(profileReqs, req)
 	}
