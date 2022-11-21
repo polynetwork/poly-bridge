@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"poly-bridge/basedef"
-	"poly-bridge/chainsdk"
 	"poly-bridge/models"
 	"time"
 
@@ -52,10 +51,6 @@ func (c *ExplorerController) Transactions() {
 			tokenBasicName = v.SrcAsset
 		} else {
 			tokenBasicName = tk.TokenBasicName
-		}
-		//convert from integer to hex string
-		if v.SrcChainId == basedef.NEO3_CROSSCHAIN_ID {
-			v.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(v.TokenId)
 		}
 		data := new(TransactionBriefRsp).instance(tokenBasicName, v)
 		list = append(list, data)
@@ -117,9 +112,6 @@ func (c *ExplorerController) TransactionsOfAddress() {
 		if tk == nil {
 			continue
 		}
-		if v.SrcChainId == basedef.NEO3_CROSSCHAIN_ID {
-			v.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(v.TokenId)
-		}
 		data := new(TransactionBriefRsp).instance(tk.TokenBasicName, v)
 		list = append(list, data)
 	}
@@ -173,9 +165,6 @@ func (c *ExplorerController) TransactionDetail() {
 
 	data := new(TransactionDetailRsp).instance(relations[0])
 	fillMetaInfo(data)
-	if data.SrcTransaction.ChainId == basedef.NEO3_CROSSCHAIN_ID {
-		data.Transaction.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(data.Transaction.TokenId)
-	}
 	output(&c.Controller, data)
 }
 
@@ -211,9 +200,6 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 				if err != nil {
 					logs.Error("get item form dst chain err: %v", err)
 					return
-				}
-				if chainId == basedef.NEO3_CROSSCHAIN_ID {
-					item.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(item.TokenId)
 				}
 			}
 		}

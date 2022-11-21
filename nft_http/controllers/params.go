@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"poly-bridge/basedef"
-	"poly-bridge/chainsdk"
 	"poly-bridge/models"
 	"poly-bridge/nft_http/db"
 	"poly-bridge/utils/decimal"
@@ -494,11 +493,7 @@ func (s *TransactionRsp) instance(
 	s.DstChainId = transaction.WrapperTransaction.DstChainId
 	s.ServerId = transaction.WrapperTransaction.ServerId
 	s.FeeAmount = transaction.WrapperTransaction.FeeAmount.String()
-	if s.SrcChainId == basedef.NEO3_CROSSCHAIN_ID {
-		s.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(transaction.SrcTransaction.SrcTransfer.Amount.String())
-	} else {
-		s.TokenId = transaction.SrcTransaction.SrcTransfer.Amount.String()
-	}
+	s.TokenId = transaction.SrcTransaction.SrcTransfer.Amount.String()
 	s.DstUser = transaction.SrcTransaction.SrcTransfer.DstUser
 	s.State = transaction.WrapperTransaction.Status
 

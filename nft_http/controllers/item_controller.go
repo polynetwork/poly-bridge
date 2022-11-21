@@ -20,7 +20,6 @@ package controllers
 import (
 	"math/big"
 	"poly-bridge/basedef"
-	"poly-bridge/chainsdk"
 	"poly-bridge/models"
 	"poly-bridge/nft_http/db"
 	mcm "poly-bridge/nft_http/meta/common"
@@ -76,20 +75,12 @@ func (c *ItemController) fetchSingleNFTItem(req *ItemsOfAddressReq) {
 		customInput(&c.Controller, ErrCodeRequest, "token not exist")
 		return
 	}
-	//convert token id from integer to hexstring
-	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
-		item.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(item.TokenId)
-	}
 	items := make([]*nftdb.Item, 0)
 	if item != nil {
 		items = append(items, item)
 	}
 	data := new(ItemsOfAddressRsp).instance(req.PageSize, req.PageNo, 0, len(items), items)
 	output(&c.Controller, data)
-	//convert back for item cache
-	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
-		item.TokenId = chainsdk.ConvertTokenIdFromHexStr2IntStr(item.TokenId)
-	}
 }
 
 func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
@@ -153,19 +144,7 @@ func (c *ItemController) batchFetchNFTItems(req *ItemsOfAddressReq) {
 	}
 
 	items := getItemsWithChainData(token.TokenBasicName, token.Hash, token.ChainId, tokenIdUrlMap, token.TokenBasic)
-	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
-		for _, item := range items {
-			//convert token id from integer to hexstring
-			item.TokenId = chainsdk.ConvertTokenIdFromIntStr2HexStr(item.TokenId)
-		}
-	}
 	response(items)
-	if req.ChainId == basedef.NEO3_CROSSCHAIN_ID {
-		for _, item := range items {
-			//convert back for item cache
-			item.TokenId = chainsdk.ConvertTokenIdFromHexStr2IntStr(item.TokenId)
-		}
-	}
 
 }
 
