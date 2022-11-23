@@ -158,14 +158,14 @@ func (c *ExplorerController) GetAddressTxList() {
 	var res *gorm.DB
 	transactionOnAddresses := make([]*models.TransactionOnAddress, 0)
 	if addressTxListReq.ChainId == 0 {
-		res = db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.standard as token_standard, c.name as token_name, 1 as direct, m.precision, m.meta from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id left JOIN token_basics m on c.token_basic_name = m.name where b.from = ? 
-		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.standard as token_standard, f.name as token_name, 2 as direct, n.precision, n.meta from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id left JOIN token_basics n on f.token_basic_name = n.name where e.to = ? 
+		res = db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.standard as token_standard, c.name as token_name, 1 as direct, m.precision, m.meta from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id left JOIN token_basics m on c.token_basic_name = m.name where b.from = ? and c.standard = 0 
+		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.standard as token_standard, f.name as token_name, 2 as direct, n.precision, n.meta from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id left JOIN token_basics n on f.token_basic_name = n.name where e.to = ? and f.standard = 0
 		order by height desc limit ?,?`,
 			addressTxListReq.Address, addressTxListReq.Address, (addressTxListReq.PageNo-1)*addressTxListReq.PageSize, addressTxListReq.PageSize).
 			Find(&transactionOnAddresses)
 	} else {
-		res = db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.standard as token_standard, c.name as token_name, 1 as direct, m.precision, m.meta from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id left JOIN token_basics m on c.token_basic_name = m.name where b.from = ? and b.chain_id = ? 
-		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.standard as token_standard, f.name as token_name, 2 as direct, n.precision, n.meta from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id left JOIN token_basics n on f.token_basic_name = n.name where e.to = ? and e.chain_id = ? 
+		res = db.Debug().Raw(`select a.hash, a.height, a.time, a.chain_id, b.from, b.to, b.amount, c.hash as token_hash, c.standard as token_standard, c.name as token_name, 1 as direct, m.precision, m.meta from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id left JOIN token_basics m on c.token_basic_name = m.name where b.from = ? and b.chain_id = ? and c.standard = 0
+		union select d.hash, d.height, d.time, d.chain_id, e.from, e.to, e.amount, f.hash as token_hash, f.standard as token_standard, f.name as token_name, 2 as direct, n.precision, n.meta from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id left JOIN token_basics n on f.token_basic_name = n.name where e.to = ? and e.chain_id = ? and f.standard = 0
 		order by height desc limit ?,?`,
 			addressTxListReq.Address, addressTxListReq.ChainId, addressTxListReq.Address, addressTxListReq.ChainId, (addressTxListReq.PageNo-1)*addressTxListReq.PageSize, addressTxListReq.PageSize).
 			Find(&transactionOnAddresses)
@@ -189,13 +189,13 @@ func (c *ExplorerController) GetAddressTxList() {
 		Counter int64
 	}{}
 	if addressTxListReq.ChainId == 0 {
-		res = db.Raw(`select sum(cnt) as counter from (select count(*) as cnt from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? 
-		union select count(*) as cnt from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id where e.to = ?) as u`,
+		res = db.Raw(`select sum(cnt) as counter from (select count(*) as cnt from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and c.standard = 0 
+		union all select count(*) as cnt from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id where e.to = ? and f.standard = 0) as u`,
 			addressTxListReq.Address, addressTxListReq.Address).
 			Find(&counter)
 	} else {
-		res = db.Raw(`select sum(cnt) as counter from (select count(*) as cnt from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and b.chain_id = ? 
-		union select count(*) as cnt from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id where e.to = ? and e.chain_id = ?) as u`,
+		res = db.Raw(`select sum(cnt) as counter from (select count(*) as cnt from src_transactions a left join src_transfers b on a.hash = b.tx_hash left join tokens c on b.asset = c.hash and b.chain_id = c.chain_id where b.from = ? and b.chain_id = ? and c.standard = 0 
+		union all select count(*) as cnt from dst_transactions d left join dst_transfers e on d.hash = e.tx_hash left join tokens f on e.asset = f.hash and e.chain_id = f.chain_id where e.to = ? and e.chain_id = ? and f.standard = 0) as u`,
 			addressTxListReq.Address, addressTxListReq.ChainId, addressTxListReq.Address, addressTxListReq.ChainId).
 			Find(&counter)
 	}
