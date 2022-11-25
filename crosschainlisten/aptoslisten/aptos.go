@@ -159,8 +159,19 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 			srcTransfer.Asset = tx.Payload.TypeArguments[0]
 			amount, _ := strconv.ParseInt(tx.Payload.Arguments[0].(string), 0, 32)
 			srcTransfer.Amount = models.NewBigIntFromInt(amount)
-			srcTransfer.DstAsset = models.FormatAssert(lockEvent.Data["to_asset_hash"].(string))
-			srcTransfer.DstUser = models.FormatString(lockEvent.Data["to_address"].(string))
+
+			srcTransfer.DstAsset = lockEvent.Data["to_asset_hash"].(string)
+			if basedef.Has0xPrefix(srcTransfer.DstAsset) {
+				srcTransfer.DstAsset = srcTransfer.DstAsset[2:]
+			}
+			srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
+
+			srcTransfer.DstUser = lockEvent.Data["to_address"].(string)
+			if basedef.Has0xPrefix(srcTransfer.DstUser) {
+				srcTransfer.DstUser = srcTransfer.DstUser[2:]
+			}
+			srcTransfer.DstUser = models.FormatString(srcTransfer.DstUser)
+
 			srcTx.SrcTransfer = srcTransfer
 		}
 		srcTransactions = append(srcTransactions, srcTx)
