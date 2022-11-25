@@ -228,7 +228,13 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				srcTransfer.Asset = models.FormatString(lock.FromAssetHash)
 				srcTransfer.Amount = models.NewBigInt(lock.Amount)
 				srcTransfer.DstChainId = uint64(lock.ToChainId)
-				srcTransfer.DstAsset = models.FormatString(toAssetHash)
+				if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+					aptosAsset, err := hex.DecodeString(toAssetHash)
+					if err == nil {
+						toAssetHash = string(aptosAsset)
+					}
+				}
+				srcTransfer.DstAsset = models.FormatAssert(toAssetHash)
 				srcTransfer.DstUser = models.FormatString(lock.ToAddress)
 				srcTransaction.SrcTransfer = srcTransfer
 				if this.isNFTECCMLockEvent(lockEvent) {

@@ -291,7 +291,7 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 				srcTransfer.To = models.FormatString(contract)
 				srcTransfer.Asset = models.FormatString(GetTokenCodeString(&lockEvent.FromAssetHash))
 				srcTransfer.Amount = models.NewBigInt(Uint128ToBigInt(&lockEvent.Amount))
-				srcTransfer.DstAsset = models.FormatString(hex.EncodeToString(lockEvent.ToAssetHash))
+				srcTransfer.DstAsset = models.FormatAssert(hex.EncodeToString(lockEvent.ToAssetHash))
 				srcTransfer.DstUser = models.FormatString(hex.EncodeToString(lockEvent.ToAddress))
 
 				// source transaction

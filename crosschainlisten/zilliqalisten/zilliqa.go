@@ -1,6 +1,7 @@
 package zilliqalisten
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"poly-bridge/basedef"
@@ -159,6 +160,13 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 						srcTransfer.DstUser = param.Value.(string)[2:]
 					case "toAssetHash":
 						srcTransfer.DstAsset = param.Value.(string)[2:]
+						if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+							aptosAsset, err := hex.DecodeString(srcTransfer.DstAsset)
+							if err == nil {
+								srcTransfer.DstAsset = string(aptosAsset)
+							}
+						}
+						srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
 					case "toChainId":
 						toChainId, _ := strconv.ParseUint(param.Value.(string), 10, 64)
 						srcTransfer.DstChainId = toChainId

@@ -213,7 +213,8 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						if err != nil {
 							continue
 						}
-						srcTransfers = append(srcTransfers, &models.SrcTransfer{
+
+						srcTransfer := &models.SrcTransfer{
 							TxHash:     basedef.HexStringReverse(event.TxHash),
 							ChainId:    this.GetChainId(),
 							Standard:   models.TokenTypeErc20,
@@ -221,10 +222,19 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							Asset:      models.FormatString(strings.ToLower(evt.FromAssetHash.String()[2:])),
 							Amount:     models.NewBigInt(evt.Amount),
 							DstChainId: evt.ToChainId,
-							DstAsset:   models.FormatString(hex.EncodeToString(evt.ToAssetHash)),
+							DstAsset:   hex.EncodeToString(evt.ToAssetHash),
 							DstUser:    models.FormatString(hex.EncodeToString(evt.ToAddress)),
 							From:       models.FormatString(evt.FromAddress.String()[2:]),
-						})
+						}
+						if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+							aptosAsset, err := hex.DecodeString(srcTransfer.DstAsset)
+							if err == nil {
+								srcTransfer.DstAsset = string(aptosAsset)
+							}
+						}
+						srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
+						srcTransfers = append(srcTransfers, srcTransfer)
+
 						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					case this.lockproxyAbiParsed.Events["UnlockEvent"].ID:
 						logs.Info("(lockproxy unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))

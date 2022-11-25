@@ -148,6 +148,16 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						continue
 					}
 
+					if crossChainInfo.DstChain == basedef.APTOS_CROSSCHAIN_ID {
+						aptosAsset, err := hex.DecodeString(crossChainInfo.DstAsset)
+						if err == nil {
+							crossChainInfo.DstAsset = string(aptosAsset)
+						}
+					} else {
+						crossChainInfo.DstAsset = strings.ToLower(crossChainInfo.DstAsset)
+					}
+					crossChainInfo.DstAsset = models.FormatAssert(crossChainInfo.DstAsset)
+
 					param, _ := json.Marshal(payment.Memos)
 
 					srcTransactions = append(srcTransactions, &models.SrcTransaction{
@@ -173,7 +183,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							To:         toAccount,
 							Amount:     models.NewBigInt(amount),
 							DstChainId: crossChainInfo.DstChain,
-							DstAsset:   strings.ToLower(crossChainInfo.DstAsset),
+							DstAsset:   crossChainInfo.DstAsset,
 							DstUser:    models.FormatString(crossChainInfo.DstAddress),
 						},
 					})

@@ -222,6 +222,16 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								}
 								fctransfer.DstUser = notifynew.State.Value[5].Value
 								fctransfer.DstAsset = notifynew.State.Value[4].Value
+
+								if fctransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+									aptosAsset, err := hex.DecodeString(fctransfer.DstAsset)
+									if err == nil {
+										fctransfer.DstAsset = string(aptosAsset)
+									}
+								}
+
+								fctransfer.DstAsset = models.FormatAssert(fctransfer.DstAsset)
+
 								break
 							}
 						}
