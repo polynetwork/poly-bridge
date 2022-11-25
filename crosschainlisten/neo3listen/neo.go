@@ -247,6 +247,16 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								fctransfer.DstChainId = toChainId.Value.(*big.Int).Uint64()
 								fctransfer.DstUser = hex.EncodeToString(dstUser.Value.([]byte))
 								fctransfer.DstAsset = hex.EncodeToString(dstAsset.Value.([]byte))
+
+								if fctransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+									aptosAsset, err := hex.DecodeString(fctransfer.DstAsset)
+									if err == nil {
+										fctransfer.DstAsset = string(aptosAsset)
+									}
+								}
+								fctransfer.DstAsset = models.FormatAssert(fctransfer.DstAsset)
+
+								fctransfer.Standard = this.CheckStandard(notifyNew.Contract[2:], this.neoCfg.ProxyContract, this.neoCfg.NFTProxyContract)
 								break
 							}
 						}

@@ -103,7 +103,14 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransfer.Asset = v.FromAssetHash
 					srcTransfer.Amount = models.NewBigInt(v.Amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
+					if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+						aptosAsset, err := hex.DecodeString(v.ToAssetHash)
+						if err == nil {
+							v.ToAssetHash = string(aptosAsset)
+						}
+					}
 					srcTransfer.DstAsset = v.ToAssetHash
+					srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
 					srcTransfer.DstUser = v.DstUser
 					break
 				}

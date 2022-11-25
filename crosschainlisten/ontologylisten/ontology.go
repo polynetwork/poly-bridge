@@ -178,6 +178,15 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 							toChain, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].(string)), 16)
 							srcTransfer.DstChainId = toChain.Uint64()
 							srcTransfer.DstAsset = statesNew[4].(string)
+
+							if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+								aptosAsset, err := hex.DecodeString(srcTransfer.DstAsset)
+								if err == nil {
+									srcTransfer.DstAsset = string(aptosAsset)
+								}
+							}
+							srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
+
 							srcTransfer.DstUser = statesNew[5].(string)
 							if len(srcTransfer.From) > basedef.ADDRESS_LENGTH {
 								srcTransfer.From = ""

@@ -435,6 +435,13 @@ func FormatString(data string) string {
 	return data
 }
 
+func FormatAssert(data string) string {
+	if len(data) > 120 {
+		return data[:120]
+	}
+	return data
+}
+
 func Format8190(data string) string {
 	if len(data) > 8190 {
 		return data[:8190]
