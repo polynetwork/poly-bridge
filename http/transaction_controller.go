@@ -186,14 +186,22 @@ func (c *TransactionController) TransactionsOfAddress() {
 		c.ServeJSON()
 	}
 
+	compatibleAddresses := []string{}
 	for i := 0; i < len(transactionsOfAddressReq.Addresses); i++ {
 		address := transactionsOfAddressReq.Addresses[i]
 		if strings.HasPrefix(address, "0x00") && len(address) == 66 {
-			// aptos address
-			address = "0x" + strings.TrimPrefix(address, "0x00")
-			transactionsOfAddressReq.Addresses[i] = address
+			// if aptos address with 0x00 (e.g. 0x00abcd) prefix that abcd, 00abcd and 0xabcd are compatible
+			// 0x00abcd abcd 00abcd 0xabcd
+			compatibleAddresses = append(compatibleAddresses, strings.TrimPrefix(address, "0x00"))
+			compatibleAddresses = append(compatibleAddresses, strings.TrimPrefix(address, "0x"))
+			compatibleAddresses = append(compatibleAddresses, "0x"+strings.TrimPrefix(address, "0x00"))
+		} else {
+			if strings.HasPrefix(address, "0x") || strings.HasPrefix(address, "0X") {
+				compatibleAddresses = append(compatibleAddresses, address[2:])
+			}
 		}
 	}
+	transactionsOfAddressReq.Addresses = append(transactionsOfAddressReq.Addresses, compatibleAddresses...)
 
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).
@@ -514,7 +522,7 @@ func (c *TransactionController) GetManualTxData() {
 		c.return400(fmt.Sprintf("%v is not polyhash", manualTxDataReq.PolyHash))
 		return
 	}
-	if polyTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID{
+	if polyTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID {
 		c.return400(fmt.Sprintf("%v can not submit to dst chain", manualTxDataReq.PolyHash))
 		return
 	}
