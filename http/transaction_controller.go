@@ -186,14 +186,22 @@ func (c *TransactionController) TransactionsOfAddress() {
 		c.ServeJSON()
 	}
 
+	compatibleAddresses := []string{}
 	for i := 0; i < len(transactionsOfAddressReq.Addresses); i++ {
 		address := transactionsOfAddressReq.Addresses[i]
 		if strings.HasPrefix(address, "0x00") && len(address) == 66 {
-			// aptos address
-			address = "0x" + strings.TrimPrefix(address, "0x00")
-			transactionsOfAddressReq.Addresses[i] = address
+			// if aptos address with 0x00 (e.g. 0x00abcd) prefix that abcd, 00abcd and 0xabcd are compatible
+			// 0x00abcd abcd 00abcd 0xabcd
+			compatibleAddresses = append(compatibleAddresses, strings.TrimPrefix(address, "0x00"))
+			compatibleAddresses = append(compatibleAddresses, strings.TrimPrefix(address, "0x"))
+			compatibleAddresses = append(compatibleAddresses, "0x"+strings.TrimPrefix(address, "0x00"))
+		} else {
+			if strings.HasPrefix(address, "0x") || strings.HasPrefix(address, "0X") {
+				compatibleAddresses = append(compatibleAddresses, address[2:])
+			}
 		}
 	}
+	transactionsOfAddressReq.Addresses = append(transactionsOfAddressReq.Addresses, compatibleAddresses...)
 
 	srcPolyDstRelations := make([]*models.SrcPolyDstRelation, 0)
 	db.Debug().Table("(?) as u", db.Model(&models.SrcTransfer{}).
