@@ -255,8 +255,6 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 									}
 								}
 								fctransfer.DstAsset = models.FormatAssert(fctransfer.DstAsset)
-
-								fctransfer.Standard = this.CheckStandard(notifyNew.Contract[2:], this.neoCfg.ProxyContract, this.neoCfg.NFTProxyContract)
 								break
 							}
 						}

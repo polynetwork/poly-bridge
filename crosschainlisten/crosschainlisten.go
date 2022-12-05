@@ -100,7 +100,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		basedef.BOBA_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID, basedef.HARMONY_CROSSCHAIN_ID,
 		basedef.KCC_CROSSCHAIN_ID, basedef.BYTOM_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID, basedef.KAVA_CROSSCHAIN_ID,
 		basedef.CUBE_CROSSCHAIN_ID, basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID, basedef.CLOVER_CROSSCHAIN_ID,
-		basedef.CONFLUX_CROSSCHAIN_ID, basedef.ASTAR_CROSSCHAIN_ID, basedef.BRISE_CROSSCHAIN_ID:
+		basedef.CONFLUX_CROSSCHAIN_ID, basedef.ASTAR_CROSSCHAIN_ID, basedef.BRISE_CROSSCHAIN_ID, basedef.DEXIT_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
@@ -353,7 +353,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 								return
 							}
 
-							logs.Error("aptos log")
+							logs.Info("aptos log")
 							marshal, _ := json.Marshal(wrapperTransactions)
 							logs.Info("wrapperTransactions=%s", marshal)
 
@@ -365,10 +365,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 
 							err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
 							if err != nil {
-								logs.Error("UpdateEvents on block %d err: %v", height, err)
+								logs.Error("aptos updateEvents on block %d err: %v", height, err)
 							}
 						}
-
 					}
 				default:
 					for chain.Height < height-ccl.handle.GetDefer() {

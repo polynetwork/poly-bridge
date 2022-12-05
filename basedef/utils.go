@@ -127,6 +127,9 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == BRISE_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == DEXIT_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -251,6 +254,9 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 	} else if chainId == BRISE_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:]), nil
+	} else if chainId == DEXIT_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:]), nil
 	}
 	return value, nil
 }
@@ -343,6 +349,8 @@ func GetChainName(id uint64) string {
 		return "Aptos"
 	case BRISE_CROSSCHAIN_ID:
 		return "Bitgert"
+	case DEXIT_CROSSCHAIN_ID:
+		return "Dexit"
 
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
