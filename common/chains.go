@@ -55,6 +55,7 @@ var (
 	astarSdk       *chainsdk.EthereumSdkPro
 	briseSdk       *chainsdk.EthereumSdkPro
 	aptosSdk       *chainsdk.AptosSdkPro
+	dexitSdk       *chainsdk.EthereumSdkPro
 	config         *conf.Config
 	sdkMap         map[uint64]interface{}
 )
@@ -445,6 +446,15 @@ func newChainSdks(config *conf.Config) {
 		urls := aptosConfig.GetNodesUrl()
 		aptosSdk = chainsdk.NewAptosSdkPro(urls, aptosConfig.ListenSlot, aptosConfig.ChainId)
 		sdkMap[basedef.APTOS_CROSSCHAIN_ID] = aptosSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.DEXIT_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("dexit chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		dexitSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.DEXIT_CROSSCHAIN_ID] = dexitSdk
 	}
 }
 
@@ -974,6 +984,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.DEXIT_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.DEXIT_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("dexit chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := dexitSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -1218,6 +1242,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return briseSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.DEXIT_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.DEXIT_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("dexit chain GetTotalSupply invalid")
+		}
+		return dexitSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -1303,6 +1334,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return briseSdk.Erc20Balance(hash, proxy)
 	case basedef.APTOS_CROSSCHAIN_ID:
 		return aptosSdk.GetBalance(hash, proxy)
+	case basedef.DEXIT_CROSSCHAIN_ID:
+		return dexitSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}

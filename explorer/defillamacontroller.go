@@ -352,3 +352,12 @@ func (c *DefiLlamaController) GetTVLBitgert() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+
+func (c *DefiLlamaController) GetTVLDexit() {
+	tvlAmount, err := getTVLAmount(basedef.DEXIT_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLDexit err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
