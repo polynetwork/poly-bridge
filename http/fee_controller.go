@@ -108,7 +108,6 @@ func (c *FeeController) GetFee() {
 	usdtFee = new(big.Float).Quo(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
-	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 
 	isNftSwap := true
 	if len(getFeeReq.SwapTokenHash) != 0 {
@@ -132,6 +131,7 @@ func (c *FeeController) GetFee() {
 			}
 		}
 	}
+	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 
 	isNative := false
 	nativeTokenAmount := new(big.Float).SetInt64(0)
