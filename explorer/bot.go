@@ -256,7 +256,9 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 		return
 	}
 	o3Hashes := []string{}
+	hash2Tx := make(map[string]*models.SrcTransaction, 0)
 	for _, tx := range srcTransactions {
+		hash2Tx[tx.Hash] = tx
 		if tx.ChainId == basedef.O3_CROSSCHAIN_ID {
 			o3Hashes = append(o3Hashes, tx.Hash)
 		}
@@ -309,6 +311,19 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 		minFee := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		minFee = new(big.Float).Quo(minFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 		minFee = new(big.Float).Quo(minFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+
+		srcTx := hash2Tx[tx.Hash]
+		if srcTx.Standard == models.TokenTypeErc721 {
+			for _, cfg := range conf.GlobalConfig.FeeListenConfig {
+				if cfg.ChainId == tx.DstChainId {
+					if cfg.NftRatio > 0 {
+						nftRatio := new(big.Float).Quo(new(big.Float).SetInt64(cfg.NftRatio), new(big.Float).SetInt64(100))
+						minFee = new(big.Float).Mul(minFee, nftRatio)
+					}
+					break
+				}
+			}
+		}
 
 		// get optimistic L1 fee on ethereum
 		if chainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
