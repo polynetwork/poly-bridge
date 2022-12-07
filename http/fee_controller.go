@@ -123,9 +123,11 @@ func (c *FeeController) GetFee() {
 	if isNftSwap {
 		for _, cfg := range conf.GlobalConfig.FeeListenConfig {
 			if cfg.ChainId == getFeeReq.DstChainId {
-				nftRatio := new(big.Float).Quo(new(big.Float).SetInt64(cfg.NftRatio), new(big.Float).SetInt64(100))
-				usdtFee = new(big.Float).Mul(usdtFee, nftRatio)
-				tokenFee = new(big.Float).Mul(tokenFee, nftRatio)
+				if cfg.NftRatio > 0 {
+					nftRatio := new(big.Float).Quo(new(big.Float).SetInt64(cfg.NftRatio), new(big.Float).SetInt64(100))
+					usdtFee = new(big.Float).Mul(usdtFee, nftRatio)
+					tokenFee = new(big.Float).Mul(tokenFee, nftRatio)
+				}
 				break
 			}
 		}
@@ -577,8 +579,10 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 		if tx.Standard == models.TokenTypeErc721 {
 			for _, cfg := range conf.GlobalConfig.FeeListenConfig {
 				if cfg.ChainId == tx.DstChainId {
-					nftRatio := new(big.Float).Quo(new(big.Float).SetInt64(cfg.NftRatio), new(big.Float).SetInt64(100))
-					feeMin = new(big.Float).Mul(feeMin, nftRatio)
+					if cfg.NftRatio > 0 {
+						nftRatio := new(big.Float).Quo(new(big.Float).SetInt64(cfg.NftRatio), new(big.Float).SetInt64(100))
+						feeMin = new(big.Float).Mul(feeMin, nftRatio)
+					}
 					break
 				}
 			}
