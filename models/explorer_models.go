@@ -672,7 +672,7 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 	allAmountUsdTotal := new(big.Int).SetInt64(0)
 	for _, tokenStatistic := range tokenStatistics {
 		if tokenStatistic.Token != nil && tokenStatistic.Token.TokenBasic != nil &&
-			tokenStatistic.ChainId == tokenStatistic.Token.TokenBasic.ChainId {
+			tokenStatistic.Token.IsValuable == 1 {
 			allAmountUsdTotal.Add(allAmountUsdTotal, &tokenStatistic.InAmountUsd.Int)
 		}
 	}
@@ -692,7 +692,7 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 		}
 		assetTransferStatisticResps := make([]*AssetTransferStatisticResp, 0)
 		for _, tokenStatistic := range tokenStatistics {
-			if tokenStatistic.ChainId == chainStatistic.ChainId && tokenStatistic.ChainId != tokenStatistic.Token.TokenBasic.ChainId {
+			if tokenStatistic.ChainId == chainStatistic.ChainId && (tokenStatistic.Token != nil && tokenStatistic.Token.IsValuable == 0) {
 				amount := new(big.Int).Sub(&tokenStatistic.InAmount.Int, &tokenStatistic.OutAmount.Int)
 				amountBtc := new(big.Int).Sub(&tokenStatistic.InAmountBtc.Int, &tokenStatistic.OutAmountBtc.Int)
 				amountUsd := new(big.Int).Sub(&tokenStatistic.InAmountUsd.Int, &tokenStatistic.OutAmountUsd.Int)
@@ -711,8 +711,12 @@ func MakeTransferInfoResp(tokenStatistics []*TokenStatistic, chainStatistics []*
 					assetTransferStatisticResp.Hash = tokenStatistic.Hash
 					if tokenStatistic.Token.TokenBasic != nil {
 						assetTransferStatisticResp.TokenLogo = tokenStatistic.Token.TokenBasic.Meta
-						assetTransferStatisticResp.SourceChainName = ChainId2Name(tokenStatistic.Token.TokenBasic.ChainId)
-						assetTransferStatisticResp.SourceChainLogo = ChainId2ChainCache(tokenStatistic.Token.TokenBasic.ChainId).ChainLogo
+						for _, v := range tokenStatistic.Token.TokenBasic.Tokens {
+							if v.IsValuable == 1 {
+								assetTransferStatisticResp.SourceChainName = ChainId2Name(v.ChainId)
+								assetTransferStatisticResp.SourceChainLogo = ChainId2ChainCache(v.ChainId).ChainLogo
+							}
+						}
 					} else {
 						logs.Info("MakeTransferInfoResp tokenStatistic_Token_TokenBasic!=nil nil %v,%v", tokenStatistic.ChainId, tokenStatistic.Hash)
 					}
