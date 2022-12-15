@@ -91,18 +91,20 @@ type CheckFeeRequest struct {
 }
 
 type Token struct {
-	Id              int64       `gorm:"primaryKey;autoIncrement"`
-	Hash            string      `gorm:"uniqueIndex:idx_token;size:120;not null"`
-	ChainId         uint64      `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
-	Name            string      `gorm:"size:64;not null"`
-	Precision       uint64      `gorm:"type:bigint(20);not null"`
-	TokenBasicName  string      `gorm:"size:64;not null"`
-	Property        int64       `gorm:"type:bigint(20);not null"`
-	Standard        uint8       `gorm:"type:int(8);not null"`
-	TokenType       string      `gorm:"type:varchar(32)"`
-	AvailableAmount *BigInt     `gorm:"type:varchar(64)"`
-	TokenBasic      *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
-	TokenMaps       []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
+	Id                  int64                 `gorm:"primaryKey;autoIncrement"`
+	Hash                string                `gorm:"uniqueIndex:idx_token;size:120;not null"`
+	ChainId             uint64                `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
+	Name                string                `gorm:"size:64;not null"`
+	Precision           uint64                `gorm:"type:bigint(20);not null"`
+	TokenBasicName      string                `gorm:"size:64;not null"`
+	Property            int64                 `gorm:"type:bigint(20);not null"`
+	Standard            uint8                 `gorm:"type:int(8);not null"`
+	TokenType           string                `gorm:"type:varchar(32)"`
+	IsValuable          uint8                 `gorm:"type:int(8);not null"`
+	AvailableAmount     *BigInt               `gorm:"type:varchar(64)"`
+	TokenBasic          *TokenBasic           `gorm:"foreignKey:TokenBasicName;references:Name"`
+	TokenMaps           []*TokenMap           `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
+	LockTokenStatistics []*LockTokenStatistic `gorm:"foreignKey:Hash,ChainId;references:Hash,ChainId"`
 }
 
 type TokenStatistic struct {

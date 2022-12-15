@@ -257,13 +257,13 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		}
 		price_new := decimal.New(token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 		precision_new := decimal.New(int64(1), int32(token.Precision))
-		if token.TokenBasic.ChainId == statistic.ChainId {
+		if token.IsValuable == 1 {
 			balance, err := getAndRetryBalance(statistic.ChainId, statistic.Hash)
 			if err != nil {
 				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v", statistic.ChainId, statistic.Hash, err)
 			} else {
-				amount_new := decimal.NewFromBigInt(balance, 0)
-				statistic.InAmount = models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt())
+				amountNew := decimal.NewFromBigInt(balance, 0)
+				statistic.InAmount = models.NewBigInt(amountNew.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt())
 			}
 			statistic.OutAmount = models.NewBigIntFromInt(0)
 		} else {
@@ -287,7 +287,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 			logs.Error("Failed to CalculateOutTokenStatistics %w", err)
 		}
 		if out != nil {
-			if statistic.ChainId != token.TokenBasic.ChainId {
+			if token.IsValuable == 0 {
 				amount_new := decimal.NewFromBigInt(&out.OutAmount.Int, 0)
 				statistic.OutAmount = addDecimalBigInt(statistic.OutAmount, models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt()))
 			}

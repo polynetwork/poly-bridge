@@ -103,9 +103,9 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 		proxychainhashMap[b] = true
 	}
 	for _, tokenBasic := range tokenBasics {
-		if tokenBasic.Standard == uint8(0) && tokenBasic.ChainId != uint64(0) && tokenBasic.Tokens != nil {
+		if tokenBasic.Standard == uint8(0) && tokenBasic.Tokens != nil {
 			for _, token := range tokenBasic.Tokens {
-				if token.ChainId == tokenBasic.ChainId {
+				if token.IsValuable == 1 {
 					chainProxySlice := assembleLockToken(token.ChainId, token.Hash, this.chainCfg)
 					for _, v := range chainProxySlice {
 						if _, ok := proxychainhashMap[v]; !ok {

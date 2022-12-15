@@ -438,7 +438,7 @@ func (c *ExplorerController) GetTransferStatistic() {
 			c.ServeJSON()
 		}
 		logs.Info("not redisGetAllTransferResp err", err)
-		res := db.Preload("Token").Preload("Token.TokenBasic").Find(&tokenStatistics)
+		res := db.Preload("Token").Preload("Token.TokenBasic").Preload("Token.TokenBasic.Tokens").Find(&tokenStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transferStatistics does not exist"))
 			c.Ctx.ResponseWriter.WriteHeader(400)
@@ -469,7 +469,7 @@ func (c *ExplorerController) GetTransferStatistic() {
 	} else {
 		res := db.
 			Where("chain_id=?", transferStatisticReq.Chain).
-			Preload("Token").Preload("Token.TokenBasic").
+			Preload("Token").Preload("Token.TokenBasic").Preload("Token.TokenBasic.Tokens").
 			Find(&tokenStatistics)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("transferStatistics does not exist"))
