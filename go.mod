@@ -10,7 +10,7 @@ require (
 	github.com/btcsuite/goleveldb v1.0.0
 	github.com/cosmos/cosmos-sdk v0.39.2
 	github.com/devfans/cogroup v1.1.0
-	github.com/devfans/zion-sdk v0.0.12
+	github.com/devfans/zion-sdk v0.0.24
 	github.com/ethereum/go-ethereum v1.10.11
 	github.com/gateio/gateapi-go/v6 v6.23.2
 	github.com/go-redis/redis v6.14.2+incompatible
@@ -37,6 +37,7 @@ require (
 
 replace (
 	github.com/cosmos/cosmos-sdk => github.com/Switcheo/cosmos-sdk v0.39.2-0.20200814061308-474a0dbbe4ba
+	github.com/ethereum/go-ethereum v1.10.11 => github.com/ethereum/go-ethereum v1.9.25
 	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20210126025041-8d21ec4f0324
 	github.com/polynetwork/kai-relayer => github.com/dogecoindev/kai-relayer v0.0.0-20210609112229-34bf794e78e7
 )

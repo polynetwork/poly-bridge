@@ -21,8 +21,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	zcom "github.com/devfans/zion-sdk/contracts/native/cross_chain_manager/common"
-	"github.com/devfans/zion-sdk/contracts/native/go_abi/cross_chain_manager_abi"
 	"github.com/devfans/zion-sdk/contracts/native/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -31,6 +29,7 @@ import (
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/go_abi/main_chain_lock_proxy_abi"
+	cross_chain_manager_abi "poly-bridge/go_abi/zion_native_ccm"
 	"poly-bridge/models"
 )
 
@@ -96,7 +95,7 @@ func (this *PolyChainListen) getECCMEventByBlockNumber(height uint64, tt uint64)
 	}
 	for crossChainEvents.Next() {
 		ev := crossChainEvents.Event
-		param := new(zcom.ToMerkleValue)
+		param := new(models.ToMerkleValue)
 		value, err := hex.DecodeString(ev.MerkleValueHex)
 		if err != nil {
 			fmt.Println("hex.DecodeString(ev.MerkleValueHex) err", err)

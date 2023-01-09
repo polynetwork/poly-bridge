@@ -34,7 +34,7 @@ func TestHandleSingleBlock(t *testing.T) {
 
 	handler := crosschainlisten.NewChainHandle(cfg)
 
-	wpTxs, srcTxs, polyTxs, dstTxs, err := handler.HandleNewBlock(blockHeight)
+	wpTxs, srcTxs, polyTxs, dstTxs, _, _, err := handler.HandleNewBlock(blockHeight)
 	assert.NoError(t, err)
 
 	err = onlyUpdateEvents(db, wpTxs, srcTxs, polyTxs, dstTxs)
