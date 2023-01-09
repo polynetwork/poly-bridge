@@ -32,6 +32,7 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 
 	wrapperContracts := make([]common.Address, 0)
 	var wrapperV1Contract common.Address
+	var topics []common.Hash
 	nftWrapperContracts := make([]common.Address, 0)
 	ccmContractAddr := common.HexToAddress(this.ethCfg.CCMContract)
 	lockProxyContracts := make([]common.Address, 0)
@@ -73,17 +74,22 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 	filterContracts = append(filterContracts, wrapperContracts...)
 	filterContracts = append(filterContracts, nftWrapperContracts...)
 	filterContracts = append(filterContracts, ccmContractAddr)
-	// ccm listen for relay chain
-	if this.ethCfg.ChainId == basedef.ZIONMAIN_CROSSCHAIN_ID {
-		filterContracts = append(filterContracts, utils.CrossChainManagerContractAddress)
-	}
 	filterContracts = append(filterContracts, lockProxyContracts...)
 	filterContracts = append(filterContracts, nftLockProxyContracts...)
 	if swapContract != common.HexToAddress("") {
 		filterContracts = append(filterContracts, swapContract)
 	}
-
-	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), filterContracts)
+	// ccm listen for relay chain
+	if this.ethCfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
+		filterContracts = append(filterContracts, utils.CrossChainManagerContractAddress)
+	}
+	topics = append(topics, this.eventCrossChainEventId)
+	// ccm event for relay chain
+	if this.ethCfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
+		topics = append(topics, this.eventMakeProofId)
+	}
+	filterTopics := [][]common.Hash{topics}
+	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), filterContracts, filterTopics)
 	if err != nil {
 		logs.Error("fail to filter log, %v", err)
 		return nil, nil, nil, nil, 0, 0, err
@@ -98,13 +104,11 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 		logs.Error("fail to get wrapper tx, %v", err)
 		return nil, nil, nil, nil, 0, 0, err
 	}
-	logs.Info("logs and ccm addr", contractLogs, ccmContractAddr)
 	eccmLockEvents, eccmUnLockEvents, err := this.getBatchECCMEventsByContractAddr(contractLogs, ccmContractAddr)
 	if err != nil {
 		logs.Error("fail to get eccm event, %v", err)
 		return nil, nil, nil, nil, 0, 0, err
 	}
-	fmt.Println("ccm event", eccmLockEvents, eccmUnLockEvents)
 	proxyLockEvents, proxyUnlockEvents, swapEvents, err := this.getProxyEvents(contractLogs, lockProxyContracts, nftLockProxyContracts, swapContract)
 	if err != nil {
 		logs.Error("fail to get proxy event, %v", err)
@@ -280,7 +284,7 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 			//}
 		}
 	}
-	if this.ethCfg.ChainId == basedef.ZIONMAIN_CROSSCHAIN_ID {
+	if this.ethCfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
 		logs.Info("listen relay chain")
 		var polyTransactions []*models.PolyTransaction
 		polyTransactions, err = this.getBatchRelayChainECCMEventByLog(contractLogs)

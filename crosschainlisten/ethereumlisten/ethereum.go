@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -28,6 +29,7 @@ import (
 	"poly-bridge/go_abi/lock_proxy_abi"
 	"poly-bridge/go_abi/swapper_abi"
 	"poly-bridge/go_abi/wrapper_abi"
+	cross_chain_manager_abi "poly-bridge/go_abi/zion_native_ccm"
 	"poly-bridge/models"
 	"strings"
 
@@ -58,6 +60,7 @@ type EthereumChainListen struct {
 	eventRemoveLiquidityEventId          common.Hash
 	eventSwapEventId                     common.Hash
 	eventSwapperLockEventId              common.Hash
+	eventMakeProofId                     common.Hash
 }
 
 func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
@@ -66,6 +69,10 @@ func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 	//
 	sdk := chainsdk.NewEthereumSdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
 	ethListen.ethSdk = sdk
+
+	nodeManagerAbiParsed, _ := abi.JSON(strings.NewReader(cross_chain_manager_abi.ICrossChainManagerABI))
+	ethListen.eventMakeProofId = nodeManagerAbiParsed.Events[cross_chain_manager_abi.EventMakeProof].ID
+
 	return ethListen
 }
 

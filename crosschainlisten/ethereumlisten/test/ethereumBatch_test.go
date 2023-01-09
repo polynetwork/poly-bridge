@@ -20,7 +20,7 @@ func TestEthereumChainListen_HandleNewBatchBlock(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ethListenConfig := config.GetChainListenConfig(basedef.ZIONMAIN_CROSSCHAIN_ID)
+	ethListenConfig := config.GetChainListenConfig(basedef.ZION_CROSSCHAIN_ID)
 	if ethListenConfig == nil {
 		panic("config is not valid")
 	}

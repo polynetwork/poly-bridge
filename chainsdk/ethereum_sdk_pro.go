@@ -627,10 +627,10 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 	return "", fmt.Errorf("catnot get bounded asset hash of %s", dstTokenHash)
 }
 
-func (pro *EthereumSdkPro) FilterLog(FromBlock *big.Int, ToBlock *big.Int, Addresses []common.Address) ([]types.Log, error) {
+func (pro *EthereumSdkPro) FilterLog(FromBlock *big.Int, ToBlock *big.Int, Addresses []common.Address, Topics [][]common.Hash) ([]types.Log, error) {
 	info := pro.GetLatest()
 	if info == nil {
 		return nil, fmt.Errorf("chain:%v FilterLog all node is not working", pro.id)
 	}
-	return info.sdk.FilterLog(FromBlock, ToBlock, Addresses)
+	return info.sdk.FilterLog(FromBlock, ToBlock, Addresses, Topics)
 }

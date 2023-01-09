@@ -272,10 +272,6 @@ func GetChainName(id uint64) string {
 	switch id {
 	case ZION_CROSSCHAIN_ID:
 		return "ZION"
-	case ZIONMAIN_CROSSCHAIN_ID:
-		return "ZIONMAIN"
-	case SIDECHAIN_CROSSCHAIN_ID:
-		return "SIDECHAIN"
 	case ETHEREUM_CROSSCHAIN_ID:
 		return "Ethereum"
 	case ONT_CROSSCHAIN_ID:
