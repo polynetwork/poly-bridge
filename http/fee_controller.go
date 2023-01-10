@@ -180,11 +180,7 @@ func (c *FeeController) GetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				ethChains := make(map[uint64]struct{})
-				for _, chainId := range basedef.ETH_CHAINS {
-					ethChains[chainId] = struct{}{}
-				}
-				if _, ok := ethChains[tokenMap.DstChainId]; ok {
+				if basedef.EthChainSet.Contains(tokenMap.DstChainId) {
 					var dstLockProxies []string
 					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
 						if cfg.ChainId == tokenMap.DstChainId {

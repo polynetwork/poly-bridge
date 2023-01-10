@@ -186,8 +186,8 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.BTC_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 8)
 		return fee_new.Div(precision_new).String() + " BTC"
-	case basedef.ONT_CROSSCHAIN_ID:
-		precision_new := decimal.New(1, 9)
+	case basedef.ONT_CROSSCHAIN_ID, basedef.ONTEVM_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ONG"
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
@@ -241,7 +241,13 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.METIS_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " METIS"
+	case basedef.PIXIE_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " PIX"
 	case basedef.RINKEBY_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " ETH"
+	case basedef.GOERLI_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
 	case basedef.BOBA_CROSSCHAIN_ID:
@@ -265,6 +271,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.STARCOIN_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 9)
 		return fee_new.Div(precision_new).String() + " STC"
+	case basedef.MILKOMEDA_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " milkADA"
 	case basedef.KAVA_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " KAVA"
@@ -280,9 +289,28 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.CLOVER_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " CLV"
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 6)
+		return fee_new.Div(precision_new).String() + " XRP"
 	case basedef.CONFLUX_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " CFX"
+	case basedef.ASTAR_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		feeString := fee_new.Div(precision_new).String()
+		if basedef.ENV == basedef.TESTNET {
+			return feeString + " SBY"
+		}
+		return feeString + " ASTR"
+	case basedef.BRISE_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " BRISE"
+	case basedef.APTOS_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 8)
+		return fee_new.Div(precision_new).String() + " APT"
+	case basedef.DEXIT_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " DXT"
 	default:
 		precision_new := decimal.New(int64(1), 0)
 		return fee_new.Div(precision_new).String()
@@ -419,6 +447,20 @@ func FormatString(data string) string {
 	return data
 }
 
+func FormatAssert(data string) string {
+	if len(data) > 120 {
+		return data[:120]
+	}
+	return data
+}
+
+func Format8190(data string) string {
+	if len(data) > 8190 {
+		return data[:8190]
+	}
+	return data
+}
+
 func GetTokenType(chainId uint64, standard uint8) string {
 	tokenType := ""
 	switch standard {
@@ -432,7 +474,7 @@ func GetTokenType(chainId uint64, standard uint8) string {
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.SWITCHEO_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.ZILLIQA_CROSSCHAIN_ID,
 		basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID,
-		basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID:
+		basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID, basedef.GOERLI_CROSSCHAIN_ID:
 		return "ERC" + "-" + tokenType
 	case basedef.ONT_CROSSCHAIN_ID:
 		if standard == TokenTypeErc721 {
@@ -472,6 +514,17 @@ func GetTokenType(chainId uint64, standard uint8) string {
 			return "Starcoin NFT"
 		}
 		return "Starcoin Token"
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "Ripple NFT"
+		}
+		return "XRP"
+	case basedef.APTOS_CROSSCHAIN_ID:
+		if standard == TokenTypeErc721 {
+			return "NFT"
+		}
+		return "Coin"
+
 	default:
 		return "ERC" + "-" + tokenType
 	}
