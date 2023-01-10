@@ -34,15 +34,15 @@ func TestEthereumListen(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("current directory: %s\n", dir)
-	config := conf.NewConfig("./../../../conf/config_testnet.json")
+	config := conf.NewConfig("./../../../config_zion.json")
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_STAKE, true, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
-	ethListenConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
+	ethListenConfig := config.GetChainListenConfig(basedef.ZION_CROSSCHAIN_ID)
 	if ethListenConfig == nil {
 		panic("config is not valid")
 	}

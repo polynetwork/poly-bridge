@@ -57,9 +57,9 @@ func EthNodeMonitor(config *conf.Config) {
 	for _, chainNodeConfig := range config.ChainNodes {
 		if chainNodeConfig.ChainId == chainId {
 			for _, node := range chainNodeConfig.Nodes {
-				sdk, err := chainsdk.NewEthereumSdk(node.Url)
+				sdk, err := chainsdk.NewEthereumSdk(node)
 				if err != nil || sdk == nil || sdk.GetClient() == nil {
-					logs.Info("node: %s,NewEthereumSdk error: %s", node.Url, err)
+					logs.Info("node: %s,NewEthereumSdk error: %s", node, err)
 					continue
 				}
 				height, err := sdk.GetCurrentBlockHeight()
@@ -70,18 +70,18 @@ func EthNodeMonitor(config *conf.Config) {
 				height -= 1
 				//height = 13881338
 
-				logs.Info("node: %s, height: %d", node.Url, height)
+				logs.Info("node: %s, height: %d", node, height)
 
 				timestamp, err := sdk.GetBlockTimeByNumber(chainId, height)
 				if err != nil {
 					logs.Error("node: %s, GetHeaderTimeByBlockNumber err: %s, ", sdk.GetUrl(), err)
 					continue
 				}
-				logs.Info("node: %s, GetHeaderTimeByBlockNumber: %d, time:%d", node.Url, height, timestamp)
+				logs.Info("node: %s, GetHeaderTimeByBlockNumber: %d, time:%d", node, height, timestamp)
 
 				eccmContractAddress := common.HexToAddress(ccmContractAddr)
 				client := sdk.GetClient()
-				eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
+				eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, client)
 				if err != nil {
 					logs.Error("node: %s, NewEthCrossChainManager error: %s", sdk.GetUrl(), err)
 					continue
@@ -145,9 +145,9 @@ func EthRelayerMonitor(config *conf.Config, relayConfig *conf.RelayerConfig) {
 			for _, node := range chainNodeConfig.Nodes {
 				balanceSuccessMap := make(map[string]float64, 0)
 				balanceFailedMap := make(map[string]string, 0)
-				sdk, err := chainsdk.NewEthereumSdk(node.Url)
+				sdk, err := chainsdk.NewEthereumSdk(node)
 				if err != nil || sdk == nil || sdk.GetClient() == nil {
-					logs.Info("node: %s,NewEthereumSdk error: %s", node.Url, err)
+					logs.Info("node: %s,NewEthereumSdk error: %s", node, err)
 					continue
 				}
 				for _, address := range relayAccount.Address {
@@ -205,9 +205,9 @@ func NeoRelayerMonitor(config *conf.Config, relayConfig *conf.RelayerConfig) {
 			for _, node := range chainNodeConfig.Nodes {
 				balanceSuccessMap := make(map[string]float64, 0)
 				balanceFailedMap := make(map[string]string, 0)
-				sdk := chainsdk.NewNeoSdk(node.Url)
+				sdk := chainsdk.NewNeoSdk(node)
 				if sdk.GetClient() == nil {
-					logs.Info("node: %s,NewNeoSdk error: %s", node.Url)
+					logs.Info("node: %s,NewNeoSdk error: %s", node)
 					continue
 				}
 				for _, address := range relayAccount.Address {
@@ -274,7 +274,7 @@ func OntRelayerMonitor(config *conf.Config, relayConfig *conf.RelayerConfig) {
 				balanceSuccessMap := make(map[string]float64, 0)
 				balanceFailedMap := make(map[string]string, 0)
 				sdk := ontologygosdk.NewOntologySdk()
-				sdk.NewRpcClient().SetAddress(node.Url)
+				sdk.NewRpcClient().SetAddress(node)
 				for _, address := range relayAccount.Address {
 					if _, ok := balanceSuccessMap[address]; ok {
 						continue
@@ -339,9 +339,9 @@ func Neo3RelayerMonitor(config *conf.Config, relayConfig *conf.RelayerConfig) {
 			for _, node := range chainNodeConfig.Nodes {
 				balanceSuccessMap := make(map[string]float64, 0)
 				balanceFailedMap := make(map[string]string, 0)
-				sdk := chainsdk.NewNeo3Sdk(node.Url)
+				sdk := chainsdk.NewNeo3Sdk(node)
 				if sdk.GetClient() == nil {
-					logs.Info("node: %s,NewNeoSdk error: %s", node.Url)
+					logs.Info("node: %s,NewNeoSdk error: %s", node)
 					continue
 				}
 				for _, account := range relayAccount.Neo3Account {

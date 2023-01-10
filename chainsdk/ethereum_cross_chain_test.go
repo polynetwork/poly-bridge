@@ -26,9 +26,9 @@ func TestEthereumSdk_GetBoundAssetHash(t *testing.T) {
 	for _, chainNodeConfig := range config.ChainNodes {
 		if chainNodeConfig.ChainId == dstChainId {
 			for _, node := range chainNodeConfig.Nodes {
-				sdk, err := NewEthereumSdk(node.Url)
+				sdk, err := NewEthereumSdk(node)
 				if err != nil || sdk == nil || sdk.GetClient() == nil {
-					logs.Info("node: %s,NewEthereumSdk error: %s", node.Url, err)
+					logs.Info("node: %s,NewEthereumSdk error: %s", node, err)
 					continue
 				}
 				for _, proxy := range lockProxies {
