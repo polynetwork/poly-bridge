@@ -24,7 +24,6 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"poly-bridge/basedef"
-	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschaindao/explorerdao"
@@ -42,7 +41,7 @@ func TestCrossChain_ExplorerDao(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := explorerdao.NewExplorerDao(config.DBConfig)
+	dao := explorerdao.NewExplorerDao(config.DBConfig, false)
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	wrapperTransactionsData := []byte(`[{"Hash":"336cd94f1ec80280c684606b8c9358f1ad0e9e7e7ce69f0da35c21a66fa0c729","User":"ad79c606bd4ef330ac45df9d2ace4e7e7c6db13f","SrcChainId":2,"BlockHeight":9329385,"Time":1608885420,"DstChainId":4,"FeeTokenHash":"0000000000000000000000000000000000000000","FeeToken":null,"FeeAmount":1000000000000000000000000000000,"Status":0}]`)
 	err = json.Unmarshal(wrapperTransactionsData, &wrapperTransactions)
@@ -81,7 +80,7 @@ func TestCrossChainSrc_ExplorerDao(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_EXPLORER, config.DBConfig)
+	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_EXPLORER, false, config.DBConfig)
 	if dao == nil {
 		panic("server is not valid")
 	}
@@ -163,97 +162,97 @@ func TestQueryPolySrcRelation_ExplorerDao(t *testing.T) {
 	fmt.Printf("src Transaction: %s\n", json)
 }
 
-func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
-	dir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("current directory: %s\n", dir)
-	config := conf.NewConfig("./../../conf/config_testnet.json")
-	if config == nil {
-		panic("read config failed!")
-	}
-	dbCfg := config.DBConfig
-	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	var ethSdk *chainsdk.EthereumSdkPro
-	var bscSdk *chainsdk.EthereumSdkPro
-	var hecoSdk *chainsdk.EthereumSdkPro
-	var neoSdk *chainsdk.NeoSdkPro
-	for _, listenConfig := range config.ChainListenConfig {
-		if listenConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
-			ethSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
-		} else if listenConfig.ChainId == basedef.BSC_CROSSCHAIN_ID {
-			bscSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
-		} else if listenConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
-			hecoSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
-		} else if listenConfig.ChainId == basedef.NEO_CROSSCHAIN_ID {
-			neoSdk = chainsdk.NewNeoSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
-		}
-	}
-	{
-		tokens := make([]*explorerdao.Token, 0)
-		newTokens := make([]*explorerdao.Token, 0)
-		db.Debug().Table("fchain_transfer").Distinct("chain_id as id", "asset as hash").Find(&tokens)
-		for _, token := range tokens {
-			fmt.Printf("chain: %d, token hash: %s\n", token.Id, token.Hash)
-			if token.Hash[0:4] == "0000" || token.Hash[28:32] == "0000" {
-				continue
-			}
-			if token.Id == basedef.ETHEREUM_CROSSCHAIN_ID {
-				hash, name, decimal, symbol, err := ethSdk.Erc20Info(token.Hash)
-				if err != nil {
-					panic(err)
-				}
-				token.Name = name
-				token.Type = "ERC20"
-				token.Desc = symbol
-				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
-				newTokens = append(newTokens, token)
-				fmt.Printf("erc20: %s, name: %s, decimal: %d, symbol: %s\n",
-					hash, name, decimal, symbol)
-			} else if token.Id == basedef.BSC_CROSSCHAIN_ID {
-				hash, name, decimal, symbol, err := bscSdk.Erc20Info(token.Hash)
-				if err != nil {
-					panic(err)
-				}
-				token.Name = name
-				token.Type = "ERC20"
-				token.Desc = symbol
-				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
-				fmt.Printf("bsc: %s, name: %s, decimal: %d, symbol: %s\n",
-					hash, name, decimal, symbol)
-				newTokens = append(newTokens, token)
-			} else if token.Id == basedef.HECO_CROSSCHAIN_ID {
-				hash, name, decimal, symbol, err := hecoSdk.Erc20Info(token.Hash)
-				if err != nil {
-					panic(err)
-				}
-				token.Name = name
-				token.Type = "ERC20"
-				token.Desc = symbol
-				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
-				fmt.Printf("heco: %s, name: %s, decimal: %d, symbol: %s\n",
-					hash, name, decimal, symbol)
-				newTokens = append(newTokens, token)
-			} else if token.Id == basedef.NEO_CROSSCHAIN_ID {
-				hash, name, decimal, err := neoSdk.Nep5Info(token.Hash)
-				if err != nil {
-					panic(err)
-				}
-				token.Name = name
-				token.Type = "NEP5"
-				token.Desc = name
-				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
-				fmt.Printf("nep5: %s, decimal: %d, name: %s\n", hash, decimal, name)
-				newTokens = append(newTokens, token)
-			}
-		}
-		data, _ := json.Marshal(newTokens)
-		fmt.Printf("%s\n", data)
-		db.Debug().Save(newTokens)
-	}
-}
+//func TestUpdateTokenInfo_ExplorerDao(t *testing.T) {
+//	dir, err := os.Getwd()
+//	if err != nil {
+//		panic(err)
+//	}
+//	fmt.Printf("current directory: %s\n", dir)
+//	config := conf.NewConfig("./../../conf/config_testnet.json")
+//	if config == nil {
+//		panic("read config failed!")
+//	}
+//	dbCfg := config.DBConfig
+//	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+//		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{})
+//	if err != nil {
+//		panic(err)
+//	}
+//	var ethSdk *chainsdk.EthereumSdkPro
+//	var bscSdk *chainsdk.EthereumSdkPro
+//	var hecoSdk *chainsdk.EthereumSdkPro
+//	var neoSdk *chainsdk.NeoSdkPro
+//	for _, listenConfig := range config.ChainListenConfig {
+//		if listenConfig.ChainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+//			ethSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
+//		} else if listenConfig.ChainId == basedef.BSC_CROSSCHAIN_ID {
+//			bscSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
+//		} else if listenConfig.ChainId == basedef.HECO_CROSSCHAIN_ID {
+//			hecoSdk = chainsdk.NewEthereumSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
+//		} else if listenConfig.ChainId == basedef.NEO_CROSSCHAIN_ID {
+//			neoSdk = chainsdk.NewNeoSdkPro(listenConfig.Nodes, listenConfig.ListenSlot, listenConfig.ChainId)
+//		}
+//	}
+//	{
+//		tokens := make([]*explorerdao.Token, 0)
+//		newTokens := make([]*explorerdao.Token, 0)
+//		db.Debug().Table("fchain_transfer").Distinct("chain_id as id", "asset as hash").Find(&tokens)
+//		for _, token := range tokens {
+//			fmt.Printf("chain: %d, token hash: %s\n", token.Id, token.Hash)
+//			if token.Hash[0:4] == "0000" || token.Hash[28:32] == "0000" {
+//				continue
+//			}
+//			if token.Id == basedef.ETHEREUM_CROSSCHAIN_ID {
+//				hash, name, decimal, symbol, err := ethSdk.Erc20Info(token.Hash)
+//				if err != nil {
+//					panic(err)
+//				}
+//				token.Name = name
+//				token.Type = "ERC20"
+//				token.Desc = symbol
+//				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
+//				newTokens = append(newTokens, token)
+//				fmt.Printf("erc20: %s, name: %s, decimal: %d, symbol: %s\n",
+//					hash, name, decimal, symbol)
+//			} else if token.Id == basedef.BSC_CROSSCHAIN_ID {
+//				hash, name, decimal, symbol, err := bscSdk.Erc20Info(token.Hash)
+//				if err != nil {
+//					panic(err)
+//				}
+//				token.Name = name
+//				token.Type = "ERC20"
+//				token.Desc = symbol
+//				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
+//				fmt.Printf("bsc: %s, name: %s, decimal: %d, symbol: %s\n",
+//					hash, name, decimal, symbol)
+//				newTokens = append(newTokens, token)
+//			} else if token.Id == basedef.HECO_CROSSCHAIN_ID {
+//				hash, name, decimal, symbol, err := hecoSdk.Erc20Info(token.Hash)
+//				if err != nil {
+//					panic(err)
+//				}
+//				token.Name = name
+//				token.Type = "ERC20"
+//				token.Desc = symbol
+//				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
+//				fmt.Printf("heco: %s, name: %s, decimal: %d, symbol: %s\n",
+//					hash, name, decimal, symbol)
+//				newTokens = append(newTokens, token)
+//			} else if token.Id == basedef.NEO_CROSSCHAIN_ID {
+//				hash, name, decimal, err := neoSdk.Nep5Info(token.Hash)
+//				if err != nil {
+//					panic(err)
+//				}
+//				token.Name = name
+//				token.Type = "NEP5"
+//				token.Desc = name
+//				token.Precision = fmt.Sprintf("%d", basedef.Int64FromFigure(int(decimal)))
+//				fmt.Printf("nep5: %s, decimal: %d, name: %s\n", hash, decimal, name)
+//				newTokens = append(newTokens, token)
+//			}
+//		}
+//		data, _ := json.Marshal(newTokens)
+//		fmt.Printf("%s\n", data)
+//		db.Debug().Save(newTokens)
+//	}
+//}

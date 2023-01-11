@@ -23,6 +23,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaineffect"
 	"poly-bridge/models"
@@ -85,7 +86,7 @@ func TestSwapEffect_Run(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	effect := crosschaineffect.NewEffect(config.EventEffectConfig, config.DBConfig)
+	effect := crosschaineffect.NewEffect(basedef.SERVER_POLY_SWAP, config.EventEffectConfig, config.DBConfig, config.RedisConfig)
 	if effect == nil {
 		panic("monitor is not valid")
 	}
