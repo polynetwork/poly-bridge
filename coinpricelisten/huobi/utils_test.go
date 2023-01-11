@@ -15,6 +15,5 @@ func TestHuobiSdk_GetCoinPrice(t *testing.T) {
 	coins := []models.NameAndmarketId{
 		cube,
 	}
-	fmt.Println(sdk.GetCoinPrice(coins))
-
+	fmt.Println(sdk.GetCoinPriceAndRank(coins))
 }

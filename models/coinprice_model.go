@@ -27,26 +27,28 @@ const (
 )
 
 type TokenBasic struct {
-	Id              int64          `gorm:"primaryKey;autoIncrement"`
-	Name            string         `gorm:"uniqueIndex;size:64;not null"`
-	Precision       uint64         `gorm:"type:bigint(20);not null"`
-	Price           int64          `gorm:"size:64;not null"`
-	ChainId         uint64         `gorm:"type:bigint(20);not null"` //该tokenbasicname的源链ID
-	Ind             uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
-	Time            int64          `gorm:"type:bigint(20);not null"`
-	Property        int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
-	Standard        uint8          `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
-	Meta            string         `gorm:"type:varchar(128)"`
-	TotalAmount     *BigInt        `gorm:"type:varchar(64)"`
-	TotalCount      uint64         `gorm:"type:bigint(20)"`
-	StatsUpdateTime int64          `gorm:"type:bigint(20)"`
-	SocialTwitter   string         `gorm:"type:varchar(256)"`
-	SocialTelegram  string         `gorm:"type:varchar(256)"`
-	SocialWebsite   string         `gorm:"type:varchar(256)"`
-	SocialOther     string         `gorm:"type:varchar(256)"`
-	MetaFetcherType int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: unknown 0, opensea: 1, standard: 2,
-	PriceMarkets    []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
-	Tokens          []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
+	Id               int64          `gorm:"primaryKey;autoIncrement"`
+	Name             string         `gorm:"uniqueIndex;size:64;not null"`
+	Precision        uint64         `gorm:"type:bigint(20);not null"`
+	Price            int64          `gorm:"size:64;not null"`
+	ChainId          uint64         `gorm:"type:bigint(20);not null"` //该tokenbasicname的源链ID
+	Ind              uint64         `gorm:"type:bigint(20);not null"` // 显示价格是否可用
+	Time             int64          `gorm:"type:bigint(20);not null"`
+	Property         int64          `gorm:"type:bigint(20);not null"` // token是否上线, 1为上线
+	Standard         uint8          `gorm:"type:int(8);not null"`     // 0为erc20， 1为erc721
+	Meta             string         `gorm:"type:varchar(128)"`
+	TotalAmount      *BigInt        `gorm:"type:varchar(64)"`
+	TotalCount       uint64         `gorm:"type:bigint(20)"`
+	StatsUpdateTime  int64          `gorm:"type:bigint(20)"`
+	SocialTwitter    string         `gorm:"type:varchar(256)"`
+	SocialTelegram   string         `gorm:"type:varchar(256)"`
+	SocialWebsite    string         `gorm:"type:varchar(256)"`
+	SocialOther      string         `gorm:"type:varchar(256)"`
+	MetaFetcherType  int            `gorm:"type:int(8);not null"` // nft meta profile fetcher type, e.g: unknown 0, opensea: 1, standard: 2,
+	Rank             int            `gorm:"type:int(8);not null"`
+	ImageDisplayType int            `gorm:"type:int(8);not null"` // return token image url type 0 : asset meta url  1: token image url
+	PriceMarkets     []*PriceMarket `gorm:"foreignKey:TokenBasicName;references:Name"`
+	Tokens           []*Token       `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
 type PriceMarket struct {
@@ -58,6 +60,7 @@ type PriceMarket struct {
 	Price          int64       `gorm:"type:bigint(20);not null"`
 	Ind            uint64      `gorm:"type:bigint(20);not null"`
 	Time           int64       `gorm:"type:bigint(20);not null"`
+	Rank           int         `gorm:"type:int(8);not null"`
 	TokenBasic     *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
 }
 
@@ -88,23 +91,25 @@ type CheckFeeRequest struct {
 }
 
 type Token struct {
-	Id              int64       `gorm:"primaryKey;autoIncrement"`
-	Hash            string      `gorm:"uniqueIndex:idx_token;size:66;not null"`
-	ChainId         uint64      `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
-	Name            string      `gorm:"size:64;not null"`
-	Precision       uint64      `gorm:"type:bigint(20);not null"`
-	TokenBasicName  string      `gorm:"size:64;not null"`
-	Property        int64       `gorm:"type:bigint(20);not null"`
-	Standard        uint8       `gorm:"type:int(8);not null"`
-	TokenType       string      `gorm:"type:varchar(32)"`
-	AvailableAmount *BigInt     `gorm:"type:varchar(64)"`
-	TokenBasic      *TokenBasic `gorm:"foreignKey:TokenBasicName;references:Name"`
-	TokenMaps       []*TokenMap `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
+	Id                  int64                 `gorm:"primaryKey;autoIncrement"`
+	Hash                string                `gorm:"uniqueIndex:idx_token;size:120;not null"`
+	ChainId             uint64                `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
+	Name                string                `gorm:"size:64;not null"`
+	Precision           uint64                `gorm:"type:bigint(20);not null"`
+	TokenBasicName      string                `gorm:"size:64;not null"`
+	Property            int64                 `gorm:"type:bigint(20);not null"`
+	Standard            uint8                 `gorm:"type:int(8);not null"`
+	TokenType           string                `gorm:"type:varchar(32)"`
+	IsValuable          uint8                 `gorm:"type:int(8);not null"`
+	AvailableAmount     *BigInt               `gorm:"type:varchar(64)"`
+	TokenBasic          *TokenBasic           `gorm:"foreignKey:TokenBasicName;references:Name"`
+	TokenMaps           []*TokenMap           `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
+	LockTokenStatistics []*LockTokenStatistic `gorm:"foreignKey:Hash,ChainId;references:Hash,ChainId"`
 }
 
 type TokenStatistic struct {
 	Id             int64   `gorm:"primaryKey;autoIncrement"`
-	Hash           string  `gorm:"uniqueIndex:idx_token;size:66;not null"`
+	Hash           string  `gorm:"uniqueIndex:idx_token;size:120;not null"`
 	ChainId        uint64  `gorm:"uniqueIndex:idx_token;type:bigint(20);not null"`
 	InCounter      int64   `gorm:"type:bigint(20)"`
 	InAmount       *BigInt `gorm:"type:varchar(64)"`
@@ -122,9 +127,9 @@ type TokenStatistic struct {
 type TokenMap struct {
 	Id           int64  `gorm:"primaryKey;autoIncrement"`
 	SrcChainId   uint64 `gorm:"uniqueIndex:idx_token_map;type:bigint(20);not null"`
-	SrcTokenHash string `gorm:"uniqueIndex:idx_token_map;size:66;not null"`
+	SrcTokenHash string `gorm:"uniqueIndex:idx_token_map;size:120;not null"`
 	DstChainId   uint64 `gorm:"uniqueIndex:idx_token_map;type:bigint(20);not null"`
-	DstTokenHash string `gorm:"uniqueIndex:idx_token_map;size:66;not null"`
+	DstTokenHash string `gorm:"uniqueIndex:idx_token_map;size:120;not null"`
 	SrcToken     *Token `gorm:"foreignKey:SrcTokenHash,SrcChainId;references:Hash,ChainId"`
 	DstToken     *Token `gorm:"foreignKey:DstTokenHash,DstChainId;references:Hash,ChainId"`
 	Standard     uint8  `gorm:"type:int(8);not null"`
@@ -141,7 +146,7 @@ type WrapperTransactionWithToken struct {
 	DstChainId   uint64  `gorm:"type:bigint(20);not null"`
 	DstUser      string  `gorm:"type:varchar(66);not null"`
 	ServerId     uint64  `gorm:"type:bigint(20);not null"`
-	FeeTokenHash string  `gorm:"size:66;not null"`
+	FeeTokenHash string  `gorm:"size:120;not null"`
 	FeeToken     *Token  `gorm:"foreignKey:FeeTokenHash,SrcChainId;references:Hash,ChainId"`
 	FeeAmount    *BigInt `gorm:"type:varchar(64);not null"`
 	Status       uint64  `gorm:"type:bigint(20);not null"`
