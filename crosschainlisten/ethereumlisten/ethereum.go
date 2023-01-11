@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"github.com/devfans/zion-sdk/contracts/native/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -46,8 +47,14 @@ const (
 )
 
 type EthereumChainListen struct {
-	ethCfg                               *conf.ChainListenConfig
-	ethSdk                               *chainsdk.EthereumSdkPro
+	ethCfg           *conf.ChainListenConfig
+	ethSdk           *chainsdk.EthereumSdkPro
+	ethEventTopicIds *EthereumContractEventId
+	filterContracts  []common.Address
+	filterTopics     [][]common.Hash
+	contractAddr     *EthereumContractAddr
+}
+type EthereumContractEventId struct {
 	eventPolyWrapperLockId               common.Hash
 	eventNftPolyWrapperLockId            common.Hash
 	eventCrossChainEventId               common.Hash
@@ -60,19 +67,122 @@ type EthereumChainListen struct {
 	eventRemoveLiquidityEventId          common.Hash
 	eventSwapEventId                     common.Hash
 	eventSwapperLockEventId              common.Hash
-	eventMakeProofId                     common.Hash
+}
+
+type EthereumContractAddr struct {
+	wrapperV1Contract     common.Address
+	ccmContractAddr       common.Address
+	swapContract          common.Address
+	wrapperContracts      []common.Address
+	lockProxyContracts    []common.Address
+	nftLockProxyContracts []common.Address
+	nftWrapperContracts   []common.Address
 }
 
 func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
+	//init contract filter info
+	//init ethEventTopicIds
+	ethEventTopicIds := &EthereumContractEventId{}
+	ethEventTopicIds.eventPolyWrapperLockId = common.HexToHash("0x2b0591052cc6602e870d3994f0a1b173fdac98c215cb3b0baf84eaca5a0aa81e")
+	ethEventTopicIds.eventNftPolyWrapperLockId = common.HexToHash("0x3a15d8cf4b167dd8963989f8038f2333a4889f74033bb53bfb767a5cced072e2")
+	ethEventTopicIds.eventCrossChainEventId = common.HexToHash("0x6ad3bf15c1988bc04bc153490cab16db8efb9a3990215bf1c64ea6e28be88483")
+	ethEventTopicIds.eventVerifyHeaderAndExecuteTxEventId = common.HexToHash("0x8a4a2663ce60ce4955c595da2894de0415240f1ace024cfbff85f513b656bdae")
+	ethEventTopicIds.eventLockEventId = common.HexToHash("0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5")
+	ethEventTopicIds.eventUnlockEventId = common.HexToHash("0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df")
+	ethEventTopicIds.eventNftLockEventId = common.HexToHash("0x98081b3037dc78e7a7ffa56932222cfc7ea9325ad6a3e7b0b3b4e3e678d7fd13")
+	ethEventTopicIds.eventNftUnlockEventId = common.HexToHash("0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df")
+	ethEventTopicIds.eventAddLiquidityEventId = common.HexToHash("0x7b634860445c375b3604695e3d36b0ca94d7342cacaae46d96b8727e86522d32")
+	ethEventTopicIds.eventRemoveLiquidityEventId = common.HexToHash("0x7ee445799431a22b707efdb3f751a430c4f01f12d902e952200041d81255a41e")
+	ethEventTopicIds.eventSwapEventId = common.HexToHash("0x9e37e0e96b266241aa70174d3c6d60151148a5b4181a57fb3d9475aa39ed0672")
+	ethEventTopicIds.eventSwapperLockEventId = common.HexToHash("0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5")
+	//init EthEventTopicIdArr
+	ethEventTopicIdArr := []common.Hash{
+		ethEventTopicIds.eventPolyWrapperLockId,
+		ethEventTopicIds.eventNftPolyWrapperLockId,
+		ethEventTopicIds.eventCrossChainEventId,
+		ethEventTopicIds.eventVerifyHeaderAndExecuteTxEventId,
+		ethEventTopicIds.eventLockEventId,
+		ethEventTopicIds.eventUnlockEventId,
+		ethEventTopicIds.eventNftLockEventId,
+		ethEventTopicIds.eventNftUnlockEventId,
+		ethEventTopicIds.eventAddLiquidityEventId,
+		ethEventTopicIds.eventRemoveLiquidityEventId,
+		ethEventTopicIds.eventSwapEventId,
+		ethEventTopicIds.eventSwapperLockEventId,
+	}
+
+	wrapperContracts := make([]common.Address, 0)
+	var wrapperV1Contract common.Address
+	//topic ids for filter log
+	nftWrapperContracts := make([]common.Address, 0)
+	ccmContractAddr := common.HexToAddress(cfg.CCMContract)
+	lockProxyContracts := make([]common.Address, 0)
+	nftLockProxyContracts := make([]common.Address, 0)
+	swapContract := common.HexToAddress(cfg.SwapContract)
+
+	for i, v := range cfg.WrapperContract {
+		if len(strings.TrimSpace(v)) == 0 {
+			continue
+		}
+		if i == 0 {
+			wrapperV1Contract = common.HexToAddress(v)
+		}
+		wrapperContracts = append(wrapperContracts, common.HexToAddress(v))
+	}
+
+	for _, v := range cfg.NFTWrapperContract {
+		if len(strings.TrimSpace(v)) == 0 {
+			continue
+		}
+		nftWrapperContracts = append(nftWrapperContracts, common.HexToAddress(v))
+	}
+
+	for _, v := range cfg.ProxyContract {
+		if len(strings.TrimSpace(v)) == 0 {
+			continue
+		}
+		lockProxyContracts = append(lockProxyContracts, common.HexToAddress(v))
+	}
+
+	for _, v := range cfg.NFTProxyContract {
+		if len(strings.TrimSpace(v)) == 0 {
+			continue
+		}
+		nftLockProxyContracts = append(nftLockProxyContracts, common.HexToAddress(v))
+	}
+
+	filterContracts := make([]common.Address, 0)
+	filterContracts = append(filterContracts, wrapperContracts...)
+	filterContracts = append(filterContracts, nftWrapperContracts...)
+	filterContracts = append(filterContracts, ccmContractAddr)
+	filterContracts = append(filterContracts, lockProxyContracts...)
+	filterContracts = append(filterContracts, nftLockProxyContracts...)
+	if swapContract != common.HexToAddress("") {
+		filterContracts = append(filterContracts, swapContract)
+	}
+	//special for relayer chain
+	if cfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
+		// ccm event for relay chain
+		nodeManagerAbiParsed, _ := abi.JSON(strings.NewReader(cross_chain_manager_abi.ICrossChainManagerABI))
+		ethEventTopicIdArr = append(ethEventTopicIdArr, nodeManagerAbiParsed.Events[cross_chain_manager_abi.EventMakeProof].ID)
+		// ccm listen for relay chain
+		filterContracts = append(filterContracts, utils.CrossChainManagerContractAddress)
+	}
 	ethListen := &EthereumChainListen{}
 	ethListen.ethCfg = cfg
-	//
 	sdk := chainsdk.NewEthereumSdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
 	ethListen.ethSdk = sdk
-
-	nodeManagerAbiParsed, _ := abi.JSON(strings.NewReader(cross_chain_manager_abi.ICrossChainManagerABI))
-	ethListen.eventMakeProofId = nodeManagerAbiParsed.Events[cross_chain_manager_abi.EventMakeProof].ID
-
+	ethListen.filterTopics = [][]common.Hash{ethEventTopicIdArr}
+	ethListen.filterContracts = filterContracts
+	ethListen.contractAddr = &EthereumContractAddr{
+		wrapperV1Contract:     wrapperV1Contract,
+		wrapperContracts:      wrapperContracts,
+		nftWrapperContracts:   nftWrapperContracts,
+		ccmContractAddr:       ccmContractAddr,
+		lockProxyContracts:    lockProxyContracts,
+		nftLockProxyContracts: nftLockProxyContracts,
+		swapContract:          swapContract,
+	}
 	return ethListen
 }
 

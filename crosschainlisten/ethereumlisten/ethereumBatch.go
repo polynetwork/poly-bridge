@@ -28,98 +28,27 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 	if backStart > 0 {
 		start = backStart
 	}
-
-	wrapperContracts := make([]common.Address, 0)
-	var wrapperV1Contract common.Address
-	var topics []common.Hash
-	nftWrapperContracts := make([]common.Address, 0)
-	ccmContractAddr := common.HexToAddress(this.ethCfg.CCMContract)
-	lockProxyContracts := make([]common.Address, 0)
-	nftLockProxyContracts := make([]common.Address, 0)
-	swapContract := common.HexToAddress(this.ethCfg.SwapContract)
-
-	for i, v := range this.ethCfg.WrapperContract {
-		if len(strings.TrimSpace(v)) == 0 {
-			continue
-		}
-		if i == 0 {
-			wrapperV1Contract = common.HexToAddress(v)
-		}
-		wrapperContracts = append(wrapperContracts, common.HexToAddress(v))
-	}
-
-	for _, v := range this.ethCfg.NFTWrapperContract {
-		if len(strings.TrimSpace(v)) == 0 {
-			continue
-		}
-		nftWrapperContracts = append(nftWrapperContracts, common.HexToAddress(v))
-	}
-
-	for _, v := range this.ethCfg.ProxyContract {
-		if len(strings.TrimSpace(v)) == 0 {
-			continue
-		}
-		lockProxyContracts = append(lockProxyContracts, common.HexToAddress(v))
-	}
-
-	for _, v := range this.ethCfg.NFTProxyContract {
-		if len(strings.TrimSpace(v)) == 0 {
-			continue
-		}
-		nftLockProxyContracts = append(nftLockProxyContracts, common.HexToAddress(v))
-	}
-
-	filterContracts := make([]common.Address, 0)
-	filterContracts = append(filterContracts, wrapperContracts...)
-	filterContracts = append(filterContracts, nftWrapperContracts...)
-	filterContracts = append(filterContracts, ccmContractAddr)
-	filterContracts = append(filterContracts, lockProxyContracts...)
-	filterContracts = append(filterContracts, nftLockProxyContracts...)
-	if swapContract != common.HexToAddress("") {
-		filterContracts = append(filterContracts, swapContract)
-	}
-	topics = append(topics, this.eventPolyWrapperLockId)
-	topics = append(topics, this.eventSwapperLockEventId)
-	topics = append(topics, this.eventNftPolyWrapperLockId)
-	topics = append(topics, this.eventCrossChainEventId)
-	topics = append(topics, this.eventVerifyHeaderAndExecuteTxEventId)
-	topics = append(topics, this.eventLockEventId)
-	topics = append(topics, this.eventUnlockEventId)
-	topics = append(topics, this.eventNftLockEventId)
-	topics = append(topics, this.eventNftUnlockEventId)
-	topics = append(topics, this.eventAddLiquidityEventId)
-	topics = append(topics, this.eventRemoveLiquidityEventId)
-	topics = append(topics, this.eventSwapEventId)
-	topics = append(topics, this.eventSwapperLockEventId)
-
-	if this.ethCfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
-		// ccm event for relay chain
-		topics = append(topics, this.eventMakeProofId)
-		// ccm listen for relay chain
-		filterContracts = append(filterContracts, utils.CrossChainManagerContractAddress)
-	}
-	filterTopics := [][]common.Hash{topics}
-	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), filterContracts, filterTopics)
+	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), this.filterContracts, this.filterTopics)
 	if err != nil {
 		logs.Error("fail to filter log, %v", err)
 		return nil, nil, nil, nil, 0, 0, err
 	}
 	if len(contractLogs) == 0 {
-		logs.Error("no event log found, %v", err)
+		logs.Info("no event log found")
 		return nil, nil, nil, nil, 0, 0, nil
 	}
 
-	wrapperTransactions, err := this.getWrapperTransactions(contractLogs, wrapperContracts, nftWrapperContracts, wrapperV1Contract)
+	wrapperTransactions, err := this.getWrapperTransactions(contractLogs, this.contractAddr.wrapperContracts, this.contractAddr.nftWrapperContracts, this.contractAddr.wrapperV1Contract)
 	if err != nil {
 		logs.Error("fail to get wrapper tx, %v", err)
 		return nil, nil, nil, nil, 0, 0, err
 	}
-	eccmLockEvents, eccmUnLockEvents, err := this.getBatchECCMEventsByLogAndContractAddr(contractLogs, ccmContractAddr)
+	eccmLockEvents, eccmUnLockEvents, err := this.getBatchECCMEventsByLogAndContractAddr(contractLogs, this.contractAddr.ccmContractAddr)
 	if err != nil {
 		logs.Error("fail to get eccm event, %v", err)
 		return nil, nil, nil, nil, 0, 0, err
 	}
-	proxyLockEvents, proxyUnlockEvents, swapEvents, err := this.getProxyEvents(contractLogs, lockProxyContracts, nftLockProxyContracts, swapContract)
+	proxyLockEvents, proxyUnlockEvents, swapEvents, err := this.getProxyEvents(contractLogs, this.contractAddr.lockProxyContracts, this.contractAddr.nftLockProxyContracts, this.contractAddr.swapContract)
 	if err != nil {
 		logs.Error("fail to get proxy event, %v", err)
 		return nil, nil, nil, nil, 0, 0, err
@@ -340,7 +269,7 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractLogs []types.Log
 		}
 
 		switch v.Topics[0] {
-		case this.eventPolyWrapperLockId:
+		case this.ethEventTopicIds.eventPolyWrapperLockId:
 			evt, err := wrapperContractAbi.ParsePolyWrapperLock(v)
 			if err == nil {
 				wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
@@ -385,7 +314,7 @@ func (this *EthereumChainListen) ParseNFTWrapperEventByLog(contractLogs []types.
 			continue
 		}
 		switch v.Topics[0] {
-		case this.eventNftPolyWrapperLockId:
+		case this.ethEventTopicIds.eventNftPolyWrapperLockId:
 			evt, err := nftWrapperContractAbi.ParsePolyWrapperLock(v)
 			if err == nil {
 				wtx := wrapLockEvent2WrapTx(evt)
@@ -478,7 +407,7 @@ func (this *EthereumChainListen) getBatchECCMEventsByLogAndContractAddr(contract
 			continue
 		}
 		switch v.Topics[0] {
-		case this.eventCrossChainEventId:
+		case this.ethEventTopicIds.eventCrossChainEventId:
 			evt, err := ccmContractAbi.ParseCrossChainEvent(v)
 			if err == nil {
 				user := evt.Sender
@@ -504,7 +433,7 @@ func (this *EthereumChainListen) getBatchECCMEventsByLogAndContractAddr(contract
 					Fee:      Fee,
 				})
 			}
-		case this.eventVerifyHeaderAndExecuteTxEventId:
+		case this.ethEventTopicIds.eventVerifyHeaderAndExecuteTxEventId:
 			evt, err := ccmContractAbi.ParseVerifyHeaderAndExecuteTxEvent(v)
 			if err == nil {
 				Fee := this.GetConsumeGas(evt.Raw.TxHash)
@@ -567,7 +496,7 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractLogs []types.L
 			continue
 		}
 		switch v.Topics[0] {
-		case this.eventLockEventId:
+		case this.ethEventTopicIds.eventLockEventId:
 			evt, err := lockProxyContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
@@ -582,7 +511,7 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractLogs []types.L
 					Amount:        evt.Amount,
 				})
 			}
-		case this.eventUnlockEventId:
+		case this.ethEventTopicIds.eventUnlockEventId:
 			evt, err := lockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
@@ -616,13 +545,13 @@ func (this *EthereumChainListen) ParseNftProxyEventByLog(contractLogs []types.Lo
 			continue
 		}
 		switch v.Topics[0] {
-		case this.eventNftLockEventId:
+		case this.ethEventTopicIds.eventNftLockEventId:
 			evt, err := nftLockProxyContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvent := convertLockProxyEvent(evt)
 				proxyLockEvents = append(proxyLockEvents, proxyLockEvent)
 			}
-		case this.eventNftUnlockEventId:
+		case this.ethEventTopicIds.eventNftUnlockEventId:
 			evt, err := nftLockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvent := convertUnlockProxyEvent(evt)
@@ -651,7 +580,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 			continue
 		}
 		switch v.Topics[0] {
-		case this.eventAddLiquidityEventId:
+		case this.ethEventTopicIds.eventAddLiquidityEventId:
 			evt, err := swapperContractAbi.ParseAddLiquidityEvent(v)
 			if err == nil {
 				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
@@ -669,7 +598,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 					ServerId:      evt.Id,
 				})
 			}
-		case this.eventRemoveLiquidityEventId:
+		case this.ethEventTopicIds.eventRemoveLiquidityEventId:
 			evt, err := swapperContractAbi.ParseRemoveLiquidityEvent(v)
 			if err == nil {
 				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
@@ -687,7 +616,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 					ServerId:      evt.Id,
 				})
 			}
-		case this.eventSwapEventId:
+		case this.ethEventTopicIds.eventSwapEventId:
 			evt, err := swapperContractAbi.ParseSwapEvent(v)
 			if err == nil {
 				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
@@ -705,7 +634,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 					ServerId:      evt.Id,
 				})
 			}
-		case this.eventSwapperLockEventId:
+		case this.ethEventTopicIds.eventSwapperLockEventId:
 			evt, err := swapperContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
