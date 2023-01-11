@@ -46,10 +46,11 @@ var (
 	confluxSdk    *chainsdk.EthereumSdkPro
 	rippleSdk     *chainsdk.RippleSdkPro
 	astarSdk      *chainsdk.EthereumSdkPro
-	briseSdk       *chainsdk.EthereumSdkPro
+	briseSdk      *chainsdk.EthereumSdkPro
 	sdkMap        map[uint64]interface{}
-	aptosSdk       *chainsdk.AptosSdkPro
-	dexitSdk       *chainsdk.EthereumSdkPro
+	aptosSdk      *chainsdk.AptosSdkPro
+	dexitSdk      *chainsdk.EthereumSdkPro
+	cloudtxSdk    *chainsdk.EthereumSdkPro
 	config        *conf.Config
 )
 
@@ -395,6 +396,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		dexitSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.DEXIT_CROSSCHAIN_ID] = dexitSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.CLOUDTX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("cloudtx chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		cloudtxSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.CLOUDTX_CROSSCHAIN_ID] = cloudtxSdk
 	}
 }
 
@@ -883,6 +893,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.CLOUDTX_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CLOUDTX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("cloudtx chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := cloudtxSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -1105,6 +1129,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return dexitSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.CLOUDTX_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.CLOUDTX_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("cloudtx chain GetTotalSupply invalid")
+		}
+		return cloudtxSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -1184,6 +1215,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return briseSdk.Erc20Balance(hash, proxy)
 	case basedef.DEXIT_CROSSCHAIN_ID:
 		return dexitSdk.Erc20Balance(hash, proxy)
+	case basedef.CLOUDTX_CROSSCHAIN_ID:
+		return cloudtxSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}
