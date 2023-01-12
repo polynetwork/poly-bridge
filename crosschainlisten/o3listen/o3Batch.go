@@ -256,6 +256,8 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 					ToAddress:     hex.EncodeToString(evt.ToAddress),
 					Amount:        evt.Amount,
 				})
+			} else {
+				logs.Error("fail to ParseLockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.o3EventTopicIds.eventUnlockEventId:
 			evt, err := swapProxyContractAbi.ParseUnlockEvent(v)
@@ -268,6 +270,8 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 					ToAddress:   strings.ToLower(evt.ToAddress.String()[2:]),
 					Amount:      evt.Amount,
 				})
+			} else {
+				logs.Error("fail to ParseUnlockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.o3EventTopicIds.eventAddLiquidityEventId:
 			evt, err := swapProxyContractAbi.ParseAddLiquidityEvent(v)
@@ -285,6 +289,8 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 					ToAssetHash:  hex.EncodeToString(evt.ToAssetHash),
 					ToAddress:    hex.EncodeToString(evt.ToAddress),
 				})
+			} else {
+				logs.Error("fail to ParseAddLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.o3EventTopicIds.eventRemoveLiquidityEventId:
 			evt, err := swapProxyContractAbi.ParseRemoveLiquidityEvent(v)
@@ -302,6 +308,8 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 					ToAssetHash:  hex.EncodeToString(evt.ToAssetHash),
 					ToAddress:    hex.EncodeToString(evt.ToAddress),
 				})
+			} else {
+				logs.Error("fail to ParseRemoveLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.o3EventTopicIds.eventSwapEventId:
 			evt, err := swapProxyContractAbi.ParseSwapEvent(v)
@@ -319,6 +327,8 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 					ToAssetHash:  hex.EncodeToString(evt.ToAssetHash),
 					ToAddress:    hex.EncodeToString(evt.ToAddress),
 				})
+			} else {
+				logs.Error("fail to ParseSwapEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.o3EventTopicIds.eventRollBackEventId:
 			evt, err := swapProxyContractAbi.ParseRollBackEvent(v)
@@ -335,6 +345,8 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 					ToAssetHash:  hex.EncodeToString(evt.BackAssetHash),
 					ToAddress:    hex.EncodeToString(evt.BackAddress),
 				})
+			} else {
+				logs.Error("fail to ParseRollBackEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		}
 	}
