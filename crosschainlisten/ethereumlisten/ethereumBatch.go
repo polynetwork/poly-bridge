@@ -20,6 +20,7 @@ import (
 	"poly-bridge/go_abi/wrapper_abi"
 	cross_chain_manager_abi "poly-bridge/go_abi/zion_native_ccm"
 	"poly-bridge/models"
+	"poly-bridge/utils/addr"
 	"strings"
 )
 
@@ -264,7 +265,7 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractLogs []types.Log
 
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	for _, v := range contractLogs {
-		if !inSlice(v.Address, wrapperContracts...) {
+		if !addr.InSlice(v.Address, wrapperContracts...) {
 			continue
 		}
 
@@ -310,7 +311,7 @@ func (this *EthereumChainListen) ParseNFTWrapperEventByLog(contractLogs []types.
 
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	for _, v := range contractLogs {
-		if !inSlice(v.Address, nftWrapperContracts...) {
+		if !addr.InSlice(v.Address, nftWrapperContracts...) {
 			continue
 		}
 		switch v.Topics[0] {
@@ -403,7 +404,7 @@ func (this *EthereumChainListen) getBatchECCMEventsByLogAndContractAddr(contract
 	eccmLockEvents := make([]*models.ECCMLockEvent, 0)
 	eccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
 	for _, v := range contractLogs {
-		if !inSlice(v.Address, ccmContract) {
+		if !addr.InSlice(v.Address, ccmContract) {
 			continue
 		}
 		switch v.Topics[0] {
@@ -492,7 +493,7 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractLogs []types.L
 	proxyLockEvents := make([]*models.ProxyLockEvent, 0)
 	proxyUnlockEvents := make([]*models.ProxyUnlockEvent, 0)
 	for _, v := range contractLogs {
-		if !inSlice(v.Address, lockProxyContracts...) {
+		if !addr.InSlice(v.Address, lockProxyContracts...) {
 			continue
 		}
 		switch v.Topics[0] {
@@ -541,7 +542,7 @@ func (this *EthereumChainListen) ParseNftProxyEventByLog(contractLogs []types.Lo
 	proxyLockEvents := make([]*models.ProxyLockEvent, 0)
 	proxyUnlockEvents := make([]*models.ProxyUnlockEvent, 0)
 	for _, v := range contractLogs {
-		if !inSlice(v.Address, nftProxyContracts...) {
+		if !addr.InSlice(v.Address, nftProxyContracts...) {
 			continue
 		}
 		switch v.Topics[0] {
@@ -576,7 +577,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 	proxyLockEvents := make([]*models.ProxyLockEvent, 0)
 
 	for _, v := range contractLogs {
-		if !inSlice(v.Address, swapContract) {
+		if !addr.InSlice(v.Address, swapContract) {
 			continue
 		}
 		switch v.Topics[0] {
@@ -652,13 +653,4 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 		}
 	}
 	return proxyLockEvents, swapLockEvents, nil
-}
-
-func inSlice(a common.Address, b ...common.Address) bool {
-	for _, v := range b {
-		if strings.EqualFold(v.String(), a.String()) {
-			return true
-		}
-	}
-	return false
 }

@@ -43,17 +43,69 @@ const (
 )
 
 type O3ChainListen struct {
-	ethCfg *conf.ChainListenConfig
-	ethSdk *chainsdk.EthereumSdkPro
+	ethCfg          *conf.ChainListenConfig
+	ethSdk          *chainsdk.EthereumSdkPro
+	o3EventTopicIds *O3ContractEventId
+	filterContracts []common.Address
+	filterTopics    [][]common.Hash
+	contractAddr    *O3ContractAddr
+}
+type O3ContractEventId struct {
+	eventCrossChainEventId               common.Hash
+	eventVerifyHeaderAndExecuteTxEventId common.Hash
+	eventLockEventId                     common.Hash
+	eventUnlockEventId                   common.Hash
+	eventAddLiquidityEventId             common.Hash
+	eventRemoveLiquidityEventId          common.Hash
+	eventSwapEventId                     common.Hash
+	eventRollBackEventId                 common.Hash
+}
+
+type O3ContractAddr struct {
+	ccmContractAddr common.Address
+	swapContract    common.Address
 }
 
 func NewO3ChainListen(cfg *conf.ChainListenConfig) *O3ChainListen {
-	ethListen := &O3ChainListen{}
-	ethListen.ethCfg = cfg
-	//
+	o3EventTopicIds := &O3ContractEventId{}
+	o3EventTopicIds.eventCrossChainEventId = common.HexToHash("0x6ad3bf15c1988bc04bc153490cab16db8efb9a3990215bf1c64ea6e28be88483")
+	o3EventTopicIds.eventVerifyHeaderAndExecuteTxEventId = common.HexToHash("0x8a4a2663ce60ce4955c595da2894de0415240f1ace024cfbff85f513b656bdae")
+	o3EventTopicIds.eventLockEventId = common.HexToHash("0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5")
+	o3EventTopicIds.eventUnlockEventId = common.HexToHash("0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df")
+	o3EventTopicIds.eventAddLiquidityEventId = common.HexToHash("0xa184af1adb02eb56c0f9fbbed6a596b24a1f909dc75a1a3371ce1da92ee851a0")
+	o3EventTopicIds.eventRemoveLiquidityEventId = common.HexToHash("0xebe708b5c4cf4393d89ea503656ecc48372f1a5deeb302d22b4e219fb64fe40d")
+	o3EventTopicIds.eventSwapEventId = common.HexToHash("0x8cad61375db78f5b40b47b2bced1c95123d2b8e29bf6cefdb314b83d20af9dbb")
+	o3EventTopicIds.eventRollBackEventId = common.HexToHash("0x1b01a3b7239821e3f9b220a948c8a5036776bfe981b6c7a56056668eb56b502a")
+
+	o3EventTopicIdArr := []common.Hash{
+		o3EventTopicIds.eventCrossChainEventId,
+		o3EventTopicIds.eventVerifyHeaderAndExecuteTxEventId,
+		o3EventTopicIds.eventLockEventId,
+		o3EventTopicIds.eventUnlockEventId,
+		o3EventTopicIds.eventAddLiquidityEventId,
+		o3EventTopicIds.eventRemoveLiquidityEventId,
+		o3EventTopicIds.eventSwapEventId,
+		o3EventTopicIds.eventRollBackEventId,
+	}
+
+	swapContract := common.HexToAddress(cfg.WrapperContract[0])
+	ccmContract := common.HexToAddress(cfg.CCMContract)
+	filterContracts := make([]common.Address, 2)
+	filterContracts[0] = ccmContract
+	filterContracts[1] = swapContract
+
+	o3Listen := &O3ChainListen{}
+	o3Listen.ethCfg = cfg
 	sdk := chainsdk.NewEthereumSdkPro(cfg.Nodes, cfg.ListenSlot, cfg.ChainId)
-	ethListen.ethSdk = sdk
-	return ethListen
+	o3Listen.ethSdk = sdk
+	o3Listen.filterContracts = filterContracts
+	o3Listen.filterTopics = [][]common.Hash{o3EventTopicIdArr}
+	o3Listen.contractAddr = &O3ContractAddr{
+		ccmContractAddr: ccmContract,
+		swapContract:    swapContract,
+	}
+
+	return o3Listen
 }
 
 func (this *O3ChainListen) GetLatestHeight() (uint64, error) {
@@ -83,9 +135,6 @@ func (this *O3ChainListen) GetBatchLength() (uint64, uint64) {
 	return this.ethCfg.MinBatchLength, this.ethCfg.MaxBatchLength
 }
 
-func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
-	return nil, nil, nil, nil, 0, 0, nil
-}
 func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {
@@ -191,6 +240,7 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 					dstTransfer.DstUser = v.ToAddress
 					dstTransfer.Type = v.Type
 					dstTransaction.DstSwap = dstTransfer
+					break
 				}
 			}
 			dstTransactions = append(dstTransactions, dstTransaction)
@@ -207,7 +257,6 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 func (this *O3ChainListen) getECCMEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	return this.getECCMEventByBlockNumberWithContractAddr(this.ethCfg.CCMContract, startHeight, endHeight)
 }
-
 func (this *O3ChainListen) getECCMEventByBlockNumberWithContractAddr(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
 	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
@@ -261,6 +310,26 @@ func (this *O3ChainListen) getECCMEventByBlockNumberWithContractAddr(contractAdd
 		})
 	}
 	return eccmLockEvents, eccmUnlockEvents, nil
+}
+
+func (this *O3ChainListen) getTxSenderByTxHash(txHash common.Hash) (common.Address, error) {
+	client := this.ethSdk.GetClient()
+	if client == nil {
+		return common.Address{}, fmt.Errorf("getTxSenderByTxHash GetClient error: nil")
+	}
+	receipt, err := client.TransactionReceipt(context.Background(), txHash)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("TransactionReceipt error: %v", err)
+	}
+	tx, _, err := client.TransactionByHash(context.Background(), txHash)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("TransactionByHash error: %v", err)
+	}
+	sender, err := client.TransactionSender(context.Background(), tx, receipt.BlockHash, receipt.TransactionIndex)
+	if err != nil {
+		return common.Address{}, fmt.Errorf("TransactionSender error: %v", err)
+	}
+	return sender, nil
 }
 
 func (this *O3ChainListen) getProxyEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ProxyLockEvent, []*models.ProxyUnlockEvent, []*models.SwapUnlockEvent, error) {

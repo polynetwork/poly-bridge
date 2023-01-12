@@ -76,6 +76,7 @@ type SwapLockEvent struct {
 }
 
 type SwapUnlockEvent struct {
+	BlockNumber  uint64
 	Type         uint64
 	TxHash       string
 	ToPoolId     uint64

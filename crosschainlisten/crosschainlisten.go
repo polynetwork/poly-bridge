@@ -237,7 +237,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				}
 				logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			}
-			if basedef.IsETHChain(ccl.handle.GetChainId()) && ccl.handle.GetChainId() != basedef.O3_CROSSCHAIN_ID {
+			if basedef.IsETHChain(ccl.handle.GetChainId()) {
 				for chain.Height < height-ccl.handle.GetDefer() {
 					batchSize := ccl.handle.GetBatchSize() //concurrency size
 					if batchSize == 0 {
