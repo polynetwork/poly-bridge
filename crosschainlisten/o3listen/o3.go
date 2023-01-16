@@ -203,6 +203,7 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 					dstTransfer.DstUser = v.ToAddress
 					dstTransfer.Type = v.Type
 					dstTransaction.DstSwap = dstTransfer
+					break
 				}
 			}
 			dstTransactions = append(dstTransactions, dstTransaction)
