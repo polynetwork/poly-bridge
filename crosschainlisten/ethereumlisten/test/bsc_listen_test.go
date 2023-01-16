@@ -66,7 +66,7 @@ func TestBscListen2(t *testing.T) {
 		panic("config is not valid")
 	}
 	ethListen := ethereumlisten.NewEthereumChainListen(bscListenConfig)
-	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := ethListen.HandleNewBlock(6014032)
+	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, _, _, err := ethListen.HandleNewBlock(6014032)
 	if err != nil {
 		panic(err)
 	}
@@ -74,5 +74,5 @@ func TestBscListen2(t *testing.T) {
 	if dao == nil {
 		panic("server is not valid")
 	}
-	dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+	dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
 }

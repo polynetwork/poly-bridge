@@ -1,6 +1,7 @@
 package zilliqalisten
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"poly-bridge/basedef"
@@ -82,18 +83,18 @@ func (this *ZilliqaChainListen) HandleNewBatchBlock(start, end uint64) ([]*model
 	return nil, nil, nil, nil, 0, 0, nil
 }
 
-func (this *ZilliqaChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *ZilliqaChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.zliSdk.GetBlockByHeight(height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no zilliqa block!")
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no zilliqa block!")
 	}
 	srcTransactions := this.getzilliqaSrcTransactionByBlockNumber(height, block)
 	dstTransactions := this.getzilliqaDstTransactionByBlockNumber(height, block)
 
-	return nil, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
+	return nil, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uint64, block *chainsdk.ZilBlock) []*models.SrcTransaction {
@@ -158,6 +159,13 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 						srcTransfer.DstUser = param.Value.(string)[2:]
 					case "toAssetHash":
 						srcTransfer.DstAsset = param.Value.(string)[2:]
+						if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+							aptosAsset, err := hex.DecodeString(srcTransfer.DstAsset)
+							if err == nil {
+								srcTransfer.DstAsset = string(aptosAsset)
+							}
+						}
+						srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
 					case "toChainId":
 						toChainId, _ := strconv.ParseUint(param.Value.(string), 10, 64)
 						srcTransfer.DstChainId = toChainId

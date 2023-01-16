@@ -120,30 +120,31 @@ func (s *StarcoinChainListen) GetDefer() uint64 {
 func (s *StarcoinChainListen) GetBatchSize() uint64 {
 	return s.starcoinCfg.BatchSize
 }
+
 func (s *StarcoinChainListen) GetBatchLength() (uint64, uint64) {
 	return s.starcoinCfg.MinBatchLength, s.starcoinCfg.MaxBatchLength
 }
 
-func (s *StarcoinChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *StarcoinChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+	return nil, nil, nil, nil, 0, 0, nil
+}
+
+func (s *StarcoinChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := s.starcoinSdk.GetBlockByIndex(height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get starcoin block, height=%d", height)
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get starcoin block, height=%d", height)
 	}
 	blockTime, err := strconv.Atoi(block.BlockHeader.Timestamp)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, fmt.Errorf("parse block time failed. time=%s, err=%s", block.BlockHeader.Timestamp, err)
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("parse block time failed. time=%s, err=%s", block.BlockHeader.Timestamp, err)
 	}
 	blockTime = blockTime / 1000
 
 	wrapperTransactions, srcTransactions, dstTransactions := s.getStarcoinTxs(height, blockTime)
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
-}
-
-func (this *StarcoinChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
-	return nil, nil, nil, nil, 0, 0, nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.DstTransaction) {
@@ -289,7 +290,7 @@ func (s *StarcoinChainListen) getStarcoinTxs(height uint64, blockTime int) ([]*m
 				srcTransfer.To = models.FormatString(contract)
 				srcTransfer.Asset = models.FormatString(GetTokenCodeString(&lockEvent.FromAssetHash))
 				srcTransfer.Amount = models.NewBigInt(Uint128ToBigInt(&lockEvent.Amount))
-				srcTransfer.DstAsset = models.FormatString(hex.EncodeToString(lockEvent.ToAssetHash))
+				srcTransfer.DstAsset = models.FormatAssert(hex.EncodeToString(lockEvent.ToAssetHash))
 				srcTransfer.DstUser = models.FormatString(hex.EncodeToString(lockEvent.ToAddress))
 
 				// source transaction

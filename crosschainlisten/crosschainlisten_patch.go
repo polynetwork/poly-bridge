@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/devfans/cogroup"
+	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao/bridgedao"
 	"time"
@@ -39,6 +40,9 @@ func patchWrapperMissingTx(dao *bridgedao.BridgeDao) {
 	}
 	logs.Info("find %d TXs missing wrapper event", len(txs))
 	for _, tx := range txs {
+		if tx.ChainId == basedef.CONFLUX_CROSSCHAIN_ID {
+			continue
+		}
 		logs.Info("srcTransactions hash: %s missing wrapper_transactions", tx.Hash)
 		handler := handlerMap[tx.ChainId]
 		if handler == nil {
@@ -48,7 +52,7 @@ func patchWrapperMissingTx(dao *bridgedao.BridgeDao) {
 		g := cogroup.Start(context.Background(), 4, 8, false)
 
 		g.Insert(retry(func() error {
-			wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handler.HandleNewBlock(tx.Height)
+			wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails, locks, unlocks, err := handler.HandleNewBlock(tx.Height)
 			if err != nil {
 				logs.Error("HandleNewBlock chain：%s, height: %d err: %v", handler.GetChainName(), tx.Height, err)
 				return err
@@ -59,7 +63,7 @@ func patchWrapperMissingTx(dao *bridgedao.BridgeDao) {
 			logs.Info("src : %+v", srcTransactions)
 			logs.Info("poly : %+v", polyTransactions)
 			logs.Info("dst : %+v", dstTransactions)
-			err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+			err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 			if err != nil {
 				logs.Error("UpdateEvents chain：%s, height: %d err: %v", handler.GetChainName(), tx.Height, err)
 				return err

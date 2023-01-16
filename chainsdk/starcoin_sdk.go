@@ -3,6 +3,7 @@ package chainsdk
 import (
 	"context"
 	"fmt"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/starcoinorg/starcoin-go/client"
 	"math/big"
 )
@@ -84,6 +85,8 @@ func (sdk *StarCoinSdk) GetBalance(tokenHash string, genesisAccountAddress strin
 		Decode: true,
 	}
 	lockRes := new(LockTreasuryResource)
+	logs.Info("genesisAccountAddress=%s", genesisAccountAddress)
+	logs.Info("resType=%s", resType)
 	r, err := sdk.client.GetResource(context.Background(), genesisAccountAddress, resType, getResOption, lockRes)
 	if err != nil {
 		return new(big.Int).SetUint64(0), err

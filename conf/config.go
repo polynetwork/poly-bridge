@@ -94,25 +94,28 @@ type ChainNodes struct {
 }
 
 type ChainListenConfig struct {
-	ChainName          string
-	ChainId            uint64
-	ListenSlot         uint64
-	Defer              uint64
-	BatchSize          uint64
-	MinBatchLength     uint64
-	MaxBatchLength     uint64
-	Nodes              []string
-	ExtendNodes        []string
-	WrapperContract    []string
-	CCMContract        string
-	ProxyContract      []string
-	OtherProxyContract []*OtherItemProxy
-	NFTWrapperContract []string
-	NFTProxyContract   []string
-	NFTQueryContract   string
-	SwapContract       string
-	L1Url              string
-	L1Contract         string
+	ChainName                     string
+	ChainId                       uint64
+	ListenSlot                    uint64
+	Defer                         uint64
+	BatchSize                     uint64
+	MinBatchLength                uint64
+	MaxBatchLength                uint64
+	Nodes                         []string
+	ExtendNodes                   []string
+	WrapperContract               []string
+	CCMContract                   string
+	CrossChainEventCreationNumber string
+	ExecuteTxEventCreationNumber  string
+	ProxyContract                 []string
+	OtherProxyContract            []*OtherItemProxy
+	OtherTVLContract              []*OtherItemProxy
+	NFTWrapperContract            []string
+	NFTProxyContract              []string
+	NFTQueryContract              string
+	SwapContract                  string
+	L1Url                         string
+	L1Contract                    string
 }
 
 type HealthMonitorConfig struct {
@@ -222,12 +225,23 @@ type BotConfig struct {
 type HttpConfig struct {
 	Address string
 	Port    int
+	Timeout int
+}
+
+type Neo3LocalNftFetcherConfig struct {
+	Neo3Fura          string `json:"Neo3fura"`
+	Neo3JsonUrlLocal  string `json:"Neo3JsonUrlLocal"`
+	Neo3ImageUrlLocal string `json:"Neo3ImageUrlLocal"`
 }
 
 type IPPortConfig struct {
 	WBTCIP string
 	USDTIP string
 	DingIP string
+}
+type RiskyCoinHandleConfig struct {
+	RiskyCoinRankThreshold int
+	RiskyCoinRisingRate    int64
 }
 
 type ActivityConfig struct {
@@ -239,30 +253,40 @@ type ActivityConfig struct {
 	AirDropInfoInterval   int64 //AirDropInfo stats interval in seconds
 }
 
+type OperationConfig struct {
+	ApiToken string //Operation api token
+}
+
 type Config struct {
-	Server                string
-	Env                   string
-	RunMode               string
-	Backup                bool
-	LargeTxAmount         int64
-	LogFile               string
-	HttpConfig            *HttpConfig
-	MetricConfig          *HttpConfig
-	ChainNodes            []*ChainNodes
-	ChainListenConfig     []*ChainListenConfig
-	CoinPriceUpdateSlot   int64
-	CoinPriceListenConfig []*CoinPriceListenConfig
-	FeeUpdateSlot         int64
-	FeeListenConfig       []*FeeListenConfig
-	EventEffectConfig     *EventEffectConfig
-	StatsConfig           *StatsConfig
-	DBConfig              *DBConfig
-	BotConfig             *BotConfig
-	RedisConfig           *RedisConfig
-	IPPortConfig          *IPPortConfig
-	NftConfig             *NftConfig
-	RelayUrl              string
-	ActivityConfig        *ActivityConfig
+	Server                    string
+	Env                       string
+	RunMode                   string
+	Backup                    bool
+	LargeTxAmount             int64
+	LogFile                   string
+	ServerLogFile             string
+	HttpLogFile               string
+	MonitorLogFile            string
+	HttpConfig                *HttpConfig
+	Neo3LocalNftFetcherConfig *Neo3LocalNftFetcherConfig
+	MetricConfig              *HttpConfig
+	ChainNodes                []*ChainNodes
+	ChainListenConfig         []*ChainListenConfig
+	CoinPriceUpdateSlot       int64
+	CoinPriceListenConfig     []*CoinPriceListenConfig
+	FeeUpdateSlot             int64
+	RiskyCoinHandleConfig     *RiskyCoinHandleConfig
+	FeeListenConfig           []*FeeListenConfig
+	EventEffectConfig         *EventEffectConfig
+	StatsConfig               *StatsConfig
+	DBConfig                  *DBConfig
+	BotConfig                 *BotConfig
+	RedisConfig               *RedisConfig
+	IPPortConfig              *IPPortConfig
+	NftConfig                 *NftConfig
+	RelayUrl                  string
+	ActivityConfig            *ActivityConfig
+	OperationConfig           *OperationConfig
 }
 
 func (cfg *Config) GetChainListenConfig(chainId uint64) *ChainListenConfig {
@@ -388,14 +412,21 @@ func initEstimateFeeMin() {
 }
 
 type NftConfig struct {
-	Description string
-	ExternalUrl string
-	ColImage    string
-	DfImage     string
-	ColName     string
-	DfName      string
-	IpfsUrl     string
-	Pwd         string
+	TbDescription  string
+	DfDescription  string
+	ColDescription string
+	ExternalUrl    string
+	TbImage        string
+	DfImage        string
+	ColImage       string
+	TbName         string
+	DfName         string
+	ColName        string
+	TbContract     string
+	DfContract     string
+	ColContract    string
+	OpenseaUrl     string
+	IpfsUrl        string
 }
 
 func NewRelayerConfig(filePath string) *RelayerConfig {

@@ -83,6 +83,7 @@ func (this *NeoChainListen) GetDefer() uint64 {
 func (this *NeoChainListen) GetBatchSize() uint64 {
 	return this.neoCfg.BatchSize
 }
+
 func (this *NeoChainListen) GetBatchLength() (uint64, uint64) {
 	return this.neoCfg.MinBatchLength, this.neoCfg.MaxBatchLength
 }
@@ -95,17 +96,18 @@ func (this *NeoChainListen) isListeningContract(contract string, contracts []str
 	}
 	return false
 }
+
 func (this *NeoChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	return nil, nil, nil, nil, 0, 0, nil
 }
 
-func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	if block == nil {
-		return nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get neo block!")
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get neo block!")
 	}
 	tt := block.Time
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
@@ -219,6 +221,16 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 								}
 								fctransfer.DstUser = notifynew.State.Value[5].Value
 								fctransfer.DstAsset = notifynew.State.Value[4].Value
+
+								if fctransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+									aptosAsset, err := hex.DecodeString(fctransfer.DstAsset)
+									if err == nil {
+										fctransfer.DstAsset = string(aptosAsset)
+									}
+								}
+
+								fctransfer.DstAsset = models.FormatAssert(fctransfer.DstAsset)
+
 								break
 							}
 						}
@@ -295,7 +307,7 @@ func (this *NeoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTran
 			}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 type Error struct {

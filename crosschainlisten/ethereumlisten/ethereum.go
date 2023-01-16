@@ -227,7 +227,7 @@ func (this *EthereumChainListen) getPLTUnlock(tx common.Hash) *models.ProxyUnloc
 	}
 }
 
-func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	startHeight := height - 2
 	endHeight := height
 
@@ -235,7 +235,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	for i := startHeight; i <= endHeight; i++ {
 		timestamp, err := this.ethSdk.GetBlockTimeByNumber(i)
 		if err != nil {
-			return nil, nil, nil, nil, 0, 0, err
+			return nil, nil, nil, nil, nil, nil, 0, 0, err
 		}
 		blockTimer[i] = timestamp
 	}
@@ -243,11 +243,11 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	erc20WrapperTransactions, err := this.getWrapperEventByBlockNumber(this.ethCfg.WrapperContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	nftWrapperTransactions, err := this.getNFTWrapperEventByBlockNumber(this.ethCfg.NFTWrapperContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	wrapperTransactions = append(wrapperTransactions, erc20WrapperTransactions...)
 	wrapperTransactions = append(wrapperTransactions, nftWrapperTransactions...)
@@ -260,18 +260,18 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	}
 	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 
 	proxyLockEvents, proxyUnlockEvents := make([]*models.ProxyLockEvent, 0), make([]*models.ProxyUnlockEvent, 0)
 	erc20ProxyLockEvents, erc20ProxyUnlockEvents, err := this.getProxyEventByBlockNumber(startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 
 	nftProxyLockEvents, nftProxyUnlockEvents, err := this.getNFTProxyEventByBlockNumber(this.ethCfg.NFTProxyContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 
 	proxyLockEvents = append(proxyLockEvents, erc20ProxyLockEvents...)
@@ -281,7 +281,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 	swapLockEvents, swapEvents, err := this.getSwapEventByBlockNumber(this.ethCfg.SwapContract, startHeight, endHeight)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	proxyLockEvents = append(proxyLockEvents, swapLockEvents...)
 
@@ -304,7 +304,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			srcTransaction.Key = lockEvent.Txid
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			var lock *models.ProxyLockEvent
-			if srcTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID && !this.isNFTECCMLockEvent(lockEvent) {
+			if (srcTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID || srcTransaction.ChainId == basedef.PLT2_CROSSCHAIN_ID || srcTransaction.ChainId == basedef.BCSPALETTE_CROSSCHAIN_ID || srcTransaction.ChainId == basedef.BCSPALETTE2_CROSSCHAIN_ID) && !this.isNFTECCMLockEvent(lockEvent) {
 				// TODO: with retry later
 				lock, _ = this.GetPaletteLockProxyLockEvent(common.HexToHash("0x" + lockEvent.TxHash))
 			} else {
@@ -326,7 +326,13 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				srcTransfer.Asset = models.FormatString(lock.FromAssetHash)
 				srcTransfer.Amount = models.NewBigInt(lock.Amount)
 				srcTransfer.DstChainId = uint64(lock.ToChainId)
-				srcTransfer.DstAsset = models.FormatString(toAssetHash)
+				if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+					aptosAsset, err := hex.DecodeString(toAssetHash)
+					if err == nil {
+						toAssetHash = string(aptosAsset)
+					}
+				}
+				srcTransfer.DstAsset = models.FormatAssert(toAssetHash)
 				srcTransfer.DstUser = models.FormatString(lock.ToAddress)
 				srcTransaction.SrcTransfer = srcTransfer
 				if this.isNFTECCMLockEvent(lockEvent) {
@@ -388,7 +394,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			dstTransaction.Contract = models.FormatString(unLockEvent.Contract)
 			dstTransaction.PolyHash = unLockEvent.RTxHash
 			var unlock *models.ProxyUnlockEvent
-			if dstTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID && !this.isNFTECCMUnlockEvent(unLockEvent) {
+			if (dstTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID || dstTransaction.ChainId == basedef.PLT2_CROSSCHAIN_ID || dstTransaction.ChainId == basedef.BCSPALETTE_CROSSCHAIN_ID || dstTransaction.ChainId == basedef.BCSPALETTE2_CROSSCHAIN_ID) && !this.isNFTECCMUnlockEvent(unLockEvent) {
 				unlock = this.getPLTUnlock(common.HexToHash("0x" + unLockEvent.TxHash))
 			} else {
 				for _, v := range proxyUnlockEvents {
@@ -419,7 +425,7 @@ func (this *EthereumChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			//}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(proxyLockEvents), len(proxyUnlockEvents), nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(proxyLockEvents), len(proxyUnlockEvents), nil
 }
 
 func (this *EthereumChainListen) getWrapperEventByBlockNumber(contractAddrs []string, startHeight uint64, endHeight uint64) ([]*models.WrapperTransaction, error) {

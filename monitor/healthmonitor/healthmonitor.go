@@ -15,7 +15,7 @@ import (
 	"poly-bridge/monitor/healthmonitor/neo3monitor"
 	"poly-bridge/monitor/healthmonitor/neomonitor"
 	"poly-bridge/monitor/healthmonitor/ontologymonitor"
-	"poly-bridge/monitor/healthmonitor/polymonitor"
+	"poly-bridge/monitor/healthmonitor/ripplemonitor"
 	"poly-bridge/monitor/healthmonitor/zilliqamonitor"
 	"poly-bridge/utils/transactions"
 	"runtime/debug"
@@ -50,7 +50,11 @@ func StartHealthMonitor(config *conf.Config, relayerConfig *conf.RelayerConfig) 
 		healthMonitorConfigMap[cfg.ChainId].CCMContract = cfg.CCMContract
 	}
 	for _, cfg := range relayerConfig.RelayAccountConfig {
-		healthMonitorConfigMap[cfg.ChainId].RelayerAccount = cfg
+		if c, ok := healthMonitorConfigMap[cfg.ChainId]; ok {
+			c.RelayerAccount = cfg
+		} else {
+			logs.Error("relayer config  chainId=%d undefined.", cfg.ChainId)
+		}
 	}
 	for _, monitorConfig := range healthMonitorConfigMap {
 		healthMonitorHandle := NewHealthMonitorHandle(monitorConfig)
@@ -443,7 +447,6 @@ func sendChainStatusDingAlarm(chainStatus basedef.ChainStatus) error {
 		"title":     "List All",
 		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
 	})
-
 	logs.Info(body)
 	logs.Info(buttons)
 	return common.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
@@ -478,16 +481,6 @@ func sendRelayerAccountStatusDingAlarm(relayerStatus *basedef.RelayerAccountStat
 
 func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHandle {
 	switch monitorConfig.ChainId {
-	case basedef.ZION_CROSSCHAIN_ID:
-		return polymonitor.NewPolyHealthMonitor(monitorConfig)
-	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.O3_CROSSCHAIN_ID, basedef.BSC_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID,
-		basedef.OK_CROSSCHAIN_ID, basedef.HECO_CROSSCHAIN_ID, basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID,
-		basedef.XDAI_CROSSCHAIN_ID, basedef.FANTOM_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID,
-		basedef.METIS_CROSSCHAIN_ID, basedef.RINKEBY_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID,
-		basedef.HARMONY_CROSSCHAIN_ID, basedef.KCC_CROSSCHAIN_ID, basedef.BYTOM_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID,
-		basedef.KAVA_CROSSCHAIN_ID, basedef.CUBE_CROSSCHAIN_ID, basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID,
-		basedef.CLOVER_CROSSCHAIN_ID, basedef.CONFLUX_CROSSCHAIN_ID:
-		return ethereummonitor.NewEthereumHealthMonitor(monitorConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neomonitor.NewNeoHealthMonitor(monitorConfig)
 	case basedef.ONT_CROSSCHAIN_ID:
@@ -498,7 +491,12 @@ func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHand
 		return neo3monitor.NewNeo3HealthMonitor(monitorConfig)
 	case basedef.ZILLIQA_CROSSCHAIN_ID:
 		return zilliqamonitor.NewZilliqaHealthMonitor(monitorConfig)
+	case basedef.RIPPLE_CROSSCHAIN_ID:
+		return ripplemonitor.NewRippleHealthMonitor(monitorConfig)
 	default:
+		if basedef.IsETHChain(monitorConfig.ChainId) {
+			return ethereummonitor.NewEthereumHealthMonitor(monitorConfig)
+		}
 		return nil
 	}
 }

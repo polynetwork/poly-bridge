@@ -27,7 +27,7 @@ func TestBridgeDao_WrapperTransactionCheckFee(t *testing.T) {
 	fmt.Println(dao.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions))
 	jsona, _ = json.MarshalIndent(wrapperTransactions, "", "	")
 	fmt.Println(string(jsona))
-	err := dao.UpdateEvents(wrapperTransactions, srcTransactions, nil, nil)
+	err := dao.UpdateEvents(wrapperTransactions, srcTransactions, nil, nil, nil, nil)
 	fmt.Println("err", err)
 }
 

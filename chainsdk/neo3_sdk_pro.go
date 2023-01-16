@@ -109,6 +109,10 @@ func (pro *Neo3SdkPro) GetLatest() *Neo3Info {
 	}
 	return latestInfo
 }
+func (pro *Neo3SdkPro) reset(info *Neo3Info) *Neo3Info {
+	info.latestHeight = 0
+	return pro.GetLatest()
+}
 
 func (pro *Neo3SdkPro) GetBlockCount() (uint64, error) {
 	info := pro.GetLatest()
@@ -172,6 +176,7 @@ func (pro *Neo3SdkPro) Nep17Info(hash string) (string, string, int64, error) {
 func (pro *Neo3SdkPro) Nep17Balance(hash string, addr string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
+		logs.Info("Nep17Balance: info is nil")
 		return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 	}
 	for info != nil {

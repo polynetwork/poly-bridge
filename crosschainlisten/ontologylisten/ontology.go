@@ -89,18 +89,20 @@ func (this *OntologyChainListen) isListeningContract(contract string, contracts 
 	}
 	return false
 }
+
 func (this *OntologyChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
 	return nil, nil, nil, nil, 0, 0, nil
 }
-func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+
+func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.ontSdk.GetBlockByHeight(uint32(height))
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	tt := uint64(block.Header.Timestamp)
 	events, err := this.ontSdk.GetSmartContractEventByBlock(uint32(height))
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)
 	srcTransactions := make([]*models.SrcTransaction, 0)
@@ -177,6 +179,15 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 							toChain, _ := new(big.Int).SetString(basedef.HexStringReverse(statesNew[3].(string)), 16)
 							srcTransfer.DstChainId = toChain.Uint64()
 							srcTransfer.DstAsset = statesNew[4].(string)
+
+							if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+								aptosAsset, err := hex.DecodeString(srcTransfer.DstAsset)
+								if err == nil {
+									srcTransfer.DstAsset = string(aptosAsset)
+								}
+							}
+							srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
+
 							srcTransfer.DstUser = statesNew[5].(string)
 							if len(srcTransfer.From) > basedef.ADDRESS_LENGTH {
 								srcTransfer.From = ""
@@ -253,7 +264,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 			}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 func (this *OntologyChainListen) GetExtendLatestHeight() (uint64, error) {

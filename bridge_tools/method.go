@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/urfave/cli"
@@ -32,6 +33,7 @@ import (
 	"poly-bridge/conf"
 	"poly-bridge/crosschaindao"
 	"poly-bridge/crosschainlisten"
+	"poly-bridge/crosschainlisten/aptoslisten"
 	"poly-bridge/models"
 	"strconv"
 	"strings"
@@ -64,12 +66,18 @@ func executeMethod(method string, ctx *cli.Context) {
 		migrateLockTokenStatisticTable(config)
 	case "updateZilliqaPolyOldData":
 		updateZilliqaPolyOldData(config)
-	case "nft":
-		toolsmethod.Nft(config)
+	case "updateRippleTables":
+		updateRippleTables(config)
+	case "airdrop":
+		toolsmethod.AirDropNft(config)
+	case "createaccount":
+		toolsmethod.CreateAccount()
 	case "migrateAirDropTable":
 		toolsmethod.AirDrop(config)
 	case "updateAirDropAmount":
 		toolsmethod.UpdateAirDropAmount(config)
+	case "updateNeo3WrapperUserAndDstUser":
+		updateNeo3WrapperTransactions(config)
 
 	default:
 		fmt.Printf("Available methods: \n %s", strings.Join([]string{FETCH_BLOCK}, "\n"))
@@ -95,19 +103,24 @@ func retry(f func() error, count int, duration time.Duration) func(context.Conte
 }
 
 func fetchSingleBlock(chainId, height uint64, handle crosschainlisten.ChainHandle, dao crosschaindao.CrossChainDao, save bool) error {
-	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, locks, unlocks, err := handle.HandleNewBlock(height)
+	wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails, locks, unlocks, err := handle.HandleNewBlock(height)
 	if err != nil {
 		logs.Error(fmt.Sprintf("HandleNewBlock %d err: %v", height, err))
 		return err
 	}
+	detailWrapperTxs, err := dao.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
+	if err != nil {
+		return fmt.Errorf("FillTxSpecialChain err", err)
+	}
+	wrapperTransactions = append(wrapperTransactions, detailWrapperTxs...)
 	if save {
 		err = dao.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 		if err != nil {
 			return err
 		}
-		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 		if err != nil {
-			return err
+			return fmt.Errorf("UpdateEvents err", err)
 		}
 	}
 	fmt.Printf(
@@ -137,9 +150,6 @@ func fetchBlock(config *conf.Config) {
 	if endheight < height {
 		endheight = height
 	}
-	if height == 0 {
-		panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
-	}
 
 	dao := crosschaindao.NewCrossChainDao(basedef.SERVER_POLY_BRIDGE, false, config.DBConfig)
 	if dao == nil {
@@ -159,13 +169,58 @@ func fetchBlock(config *conf.Config) {
 	}
 
 	g := cogroup.Start(context.Background(), 4, 8, false)
-	for h := height; h <= endheight; h++ {
-		block := uint64(h)
+
+	if uint64(chain) == basedef.APTOS_CROSSCHAIN_ID {
+		sourceSeq, _ := strconv.Atoi(os.Getenv("SOURCE_SEQ"))
+		dstSeq, _ := strconv.Atoi(os.Getenv("DST_SEQ"))
 		g.Insert(retry(func() error {
-			return fetchSingleBlock(uint64(chain), block, handle, dao, save == "true")
-		}, 0, 2*time.Second))
+			return fetchAptosEvents(handle, dao, uint64(sourceSeq), uint64(dstSeq), save == "true")
+		}, 10, 6*time.Second))
+		g.Wait()
+	} else {
+		if height == 0 {
+			panic(fmt.Sprintf("Invalid param chain %d height %d", chain, height))
+		}
+		for h := height; h <= endheight; h++ {
+			block := uint64(h)
+			g.Insert(retry(func() error {
+				return fetchSingleBlock(uint64(chain), block, handle, dao, save == "true")
+			}, 0, 2*time.Second))
+		}
+		g.Wait()
 	}
-	g.Wait()
+}
+
+func fetchAptosEvents(handle crosschainlisten.ChainHandle, dao crosschaindao.CrossChainDao, sourceSeq, dstSeq uint64, save bool) error {
+	if aptos, ok := handle.(*aptoslisten.AptosChainListen); ok {
+		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := aptos.HandleEvent(nil, sourceSeq, dstSeq, 1)
+		if err != nil {
+			logs.Error("aptos HandleEvent", "err", err)
+			return err
+		}
+		fmt.Printf(
+			"Fetch aptos events success  wrapper %d src %d  dst %d\n",
+			len(wrapperTransactions), len(srcTransactions), len(dstTransactions),
+		)
+
+		marshal, _ := json.Marshal(wrapperTransactions)
+		logs.Info("wrapperTransactions=%s", marshal)
+
+		marshal, _ = json.Marshal(srcTransactions)
+		logs.Info("srcTransactions=%s", marshal)
+
+		marshal, _ = json.Marshal(dstTransactions)
+		logs.Info("dstTransactions=%s", marshal)
+
+		if save {
+			err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
+			if err != nil {
+				logs.Error("aptos UpdateEvents", "err", err)
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func bingfaSWTH(config *conf.Config) {
@@ -212,11 +267,11 @@ func bingfaSWTH(config *conf.Config) {
 	heights = append(heights, dstHeights...)
 
 	for _, height := range heights {
-		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, err := handle.HandleNewBlock(uint64(height))
+		wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, _, _, _, _, err := handle.HandleNewBlock(uint64(height))
 		if err != nil {
 			panic(fmt.Sprintf("bingfaSWTH HandleNewBlock %d err: %v", height, err))
 		}
-		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions)
+		err = dao.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
 		if err != nil {
 			panic(fmt.Sprintf("bingfaSWTH bingfaSWTH panic panicHeight:%v,flagerr is:%v", height, err))
 		}
@@ -344,4 +399,138 @@ func updateZilliqaPolyOldData(config *conf.Config) {
 			break
 		}
 	}
+}
+
+func updateRippleTables(config *conf.Config) {
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Info)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		logs.Error("updateRippleTables: Open mysql err", err)
+		return
+	}
+	{ //PolyTransaction dst_sequence
+		var num int
+		db.Raw("select count(*) from information_schema.columns where table_name = ? and column_name = ?", "poly_transactions", "dst_sequence").Scan(&num)
+		fmt.Println("num", num)
+
+		err = db.Debug().Migrator().AddColumn(&models.PolyTransaction{}, "dst_sequence")
+		if err != nil {
+			logs.Error("table PolyTransaction AddColumn dst_sequence err", err)
+			panic("table PolyTransaction AddColumn dst_sequence err")
+		}
+	}
+	{ //DstTransaction sequence
+		var num int
+		res := db.Debug().Raw("select count(*) from information_schema.columns where table_name = ? and column_name = ?", "dst_transactions", "sequence").Scan(&num)
+		if res.Error != nil {
+			panic("dst_transactions Raw num err")
+		}
+		if num == 0 {
+			logs.Info("dst_transactions not exist sequence")
+			err = db.Debug().Migrator().AddColumn(&models.DstTransaction{}, "sequence")
+			if err != nil {
+				logs.Error("table DstTransaction AddColumn sequence err", err)
+				panic("table DstTransaction AddColumn sequence err")
+			}
+		}
+	}
+	{ //wrapper_details
+		res := db.Debug().Migrator().HasTable(&models.WrapperDetail{})
+		if !res {
+			logs.Info("wrapper_details not exist")
+			err := db.Debug().AutoMigrate(&models.WrapperDetail{})
+			if err != nil {
+				logs.Error("table WrapperDetail AutoMigrate err", err)
+				panic("table WrapperDetail AutoMigrate err")
+			}
+		}
+	}
+	{ //poly_details
+		res := db.Debug().Migrator().HasTable(&models.PolyDetail{})
+		if !res {
+			logs.Info("poly_details not exist")
+			err := db.Debug().AutoMigrate(&models.PolyDetail{})
+			if err != nil {
+				logs.Error("table PolyDetail AutoMigrate err", err)
+				panic("table PolyDetail AutoMigrate err")
+			}
+		}
+	}
+}
+
+type wrapperUsers struct {
+	Id      int
+	Ids     int
+	User    string
+	DstUser string
+	Userf   string
+	Usert   string
+}
+
+func updateNeo3WrapperTransactions(config *conf.Config) {
+	Id, err := strconv.ParseInt(os.Getenv("END_wrapper_id"), 10, 64)
+	if err != nil {
+		panic(fmt.Sprintf("ParseInt err,%v", err))
+	}
+	chainId, err := strconv.Atoi(os.Getenv("CHAINID"))
+	if err != nil {
+		panic(fmt.Sprintf("ParseInt err,%v", err))
+	}
+	Logger := logger.Default
+	dbCfg := config.DBConfig
+	if dbCfg.Debug == true {
+		Logger = Logger.LogMode(logger.Warn)
+	}
+	db, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.Scheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(fmt.Sprintf("db err,%v", err))
+	}
+	srcs := make([]*wrapperUsers, 0)
+	err = db.Raw("select a.id,a.`user`, a.dst_user,b.id  AS ids ,b.`from` AS userf, b.dst_user AS usert from wrapper_transactions a INNER JOIN src_transfers b ON a.hash = b.tx_hash  where  a.id < ? and a.`src_chain_id` = ?", Id, chainId).
+		Find(&srcs).Error
+	if err != nil {
+		panic(fmt.Sprintf("Find srcs err,%v", err))
+	}
+	if len(srcs) > 0 {
+		for _, v := range srcs {
+			if v.Userf == v.User && v.Usert == v.DstUser {
+				continue
+			}
+			if v.Userf == basedef.HexStringReverse(v.User) && v.Usert == basedef.HexStringReverse(v.DstUser) {
+				err = db.Exec("update wrapper_transactions set `user`=?, dst_user=? where id=?", v.Userf, v.Usert, v.Id).
+					Error
+				if err != nil {
+					panic(fmt.Sprintf("update wrapper_transaction err,%v", err))
+				} else {
+					logs.Info("success update wrapper tx id: ", v.Id)
+				}
+			} else if v.Usert == "" {
+				err = db.Exec("update wrapper_transactions set `user`=?, dst_user=? where id=?", v.Userf, basedef.HexStringReverse(v.DstUser), v.Id).
+					Error
+				if err != nil {
+					panic(fmt.Sprintf("update wrapper_transaction err,%v", err))
+				} else {
+					logs.Info("success update wrapper tx id: ", v.Id)
+				}
+				err = db.Exec("update src_transfers set dst_user=? where id=?", basedef.HexStringReverse(v.DstUser), v.Ids).
+					Error
+				if err != nil {
+					panic(fmt.Sprintf("update wrapper_transaction err,%v", err))
+				} else {
+					logs.Info("success update src transfer tx id: ", v.Id)
+				}
+			} else {
+				panic(fmt.Sprintf("invalid tx err,%v, wrapper tx id, %v ", err, v.Id))
+			}
+		}
+	} else {
+		panic(fmt.Sprintf("no tx found"))
+	}
+
 }

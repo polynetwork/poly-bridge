@@ -88,7 +88,13 @@ func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.Wra
 					srcTransfer.Asset = v.FromAssetHash
 					srcTransfer.Amount = models.NewBigInt(v.Amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
-					srcTransfer.DstAsset = toAssetHash
+					if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+						aptosAsset, err := hex.DecodeString(toAssetHash)
+						if err == nil {
+							toAssetHash = string(aptosAsset)
+						}
+					}
+					srcTransfer.DstAsset = models.FormatAssert(toAssetHash)
 					srcTransfer.DstUser = v.ToAddress
 					srcTransaction.SrcTransfer = srcTransfer
 					break

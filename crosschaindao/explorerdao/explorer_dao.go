@@ -179,7 +179,7 @@ func NewExplorerDao(dbCfg *conf.DBConfig, backup bool) *ExplorerDao {
 	return explorerDao
 }
 
-func (dao *ExplorerDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction) error {
+func (dao *ExplorerDao) UpdateEvents(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polySignDetails []*models.PolyDetail) error {
 	if srcTransactions != nil && len(srcTransactions) > 0 {
 		srcTransactionsJson, err := json.Marshal(srcTransactions)
 		if err != nil {
@@ -378,6 +378,8 @@ func (dao *ExplorerDao) tokenType(chainId uint64) string {
 		return "bep20"
 	} else if chainId == basedef.ONT_CROSSCHAIN_ID {
 		return "oep4"
+	} else if chainId == basedef.ONTEVM_CROSSCHAIN_ID {
+		return "erc20"
 	} else if chainId == basedef.OK_CROSSCHAIN_ID {
 		return "kip20"
 	} else {
@@ -423,7 +425,11 @@ type AssetStatistic struct {
 	TokenBasicName string
 }
 type ChainInfo struct {
-	Id   uint64 `gorm:"column:id"`
-	Txin int64  `gorm:"column:txin"`
+	Id    uint64 `gorm:"column:id"`
+	Txin  int64  `gorm:"column:txin"`
 	Txout int64  `gorm:"column:txout"`
+}
+
+func (dao *ExplorerDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
+	return
 }

@@ -131,26 +131,27 @@ func (this *O3ChainListen) GetDefer() uint64 {
 func (this *O3ChainListen) GetBatchSize() uint64 {
 	return this.ethCfg.BatchSize
 }
+
 func (this *O3ChainListen) GetBatchLength() (uint64, uint64) {
 	return this.ethCfg.MinBatchLength, this.ethCfg.MaxBatchLength
 }
 
-func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	blockHeader, err := this.ethSdk.GetHeaderByNumber(height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	if blockHeader == nil {
-		return nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no ethereum block!")
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no ethereum block!")
 	}
 	tt := blockHeader.Time
-	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(height, height)
+	eccmLockEvents, eccmUnLockEvents, err := this.getECCMEventByBlockNumber(this.ethCfg.CCMContract, height, height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	proxyLockEvents, proxyUnlockEvents, swapUnlockEvents, err := this.getProxyEventByBlockNumber(this.ethCfg.WrapperContract[0], height, height)
 	if err != nil {
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	//
 	srcTransactions := make([]*models.SrcTransaction, 0)
@@ -182,7 +183,13 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 					srcTransfer.Asset = v.FromAssetHash
 					srcTransfer.Amount = models.NewBigInt(v.Amount)
 					srcTransfer.DstChainId = uint64(v.ToChainId)
-					srcTransfer.DstAsset = toAssetHash
+					if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+						aptosAsset, err := hex.DecodeString(toAssetHash)
+						if err == nil {
+							toAssetHash = string(aptosAsset)
+						}
+					}
+					srcTransfer.DstAsset = models.FormatAssert(toAssetHash)
 					srcTransfer.DstUser = v.ToAddress
 					srcTransaction.SrcTransfer = srcTransfer
 					break
@@ -251,13 +258,10 @@ func (this *O3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTrans
 			*/
 		}
 	}
-	return nil, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
+	return nil, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
-func (this *O3ChainListen) getECCMEventByBlockNumber(startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
-	return this.getECCMEventByBlockNumberWithContractAddr(this.ethCfg.CCMContract, startHeight, endHeight)
-}
-func (this *O3ChainListen) getECCMEventByBlockNumberWithContractAddr(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
+func (this *O3ChainListen) getECCMEventByBlockNumber(contractAddr string, startHeight uint64, endHeight uint64) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
 	eccmContractAddress := common.HexToAddress(contractAddr)
 	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, this.ethSdk.GetClient())
 	if err != nil {
