@@ -117,7 +117,7 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 		blockTimer[v.BlockNumber] = 0
 	}
 
-	for k, _ := range blockTimer {
+	for k := range blockTimer {
 		timestamp, err := this.ethSdk.GetBlockTimeByNumber(k)
 		if err != nil {
 			return nil, nil, nil, nil, 0, 0, err
@@ -176,6 +176,8 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 					aptosAsset, err := hex.DecodeString(toAssetHash)
 					if err == nil {
 						toAssetHash = string(aptosAsset)
+					} else {
+						logs.Error("fail to decode Aptos toAssetHash, chain: %s, hash: %s,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), srcTransfer.TxHash, err)
 					}
 				}
 				srcTransfer.DstAsset = models.FormatAssert(toAssetHash)
@@ -330,6 +332,8 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractlogs []types.Log
 					ServerId:    evt.Id.Uint64(),
 					BlockHeight: evt.Raw.BlockNumber,
 				})
+			} else {
+				logs.Error("fail to ParsePolyWrapperLock, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		}
 	}
@@ -337,7 +341,7 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractlogs []types.Log
 	return wrapperTransactions, nil
 }
 
-func (e *EthereumChainListen) ParseNFTWrapperEventByLog(contractlogs []types.Log, nftWrapperContracts []common.Address) ([]*models.WrapperTransaction, error) {
+func (this *EthereumChainListen) ParseNFTWrapperEventByLog(contractlogs []types.Log, nftWrapperContracts []common.Address) ([]*models.WrapperTransaction, error) {
 	if len(nftWrapperContracts) == 0 {
 		return nil, nil
 	}
@@ -352,11 +356,13 @@ func (e *EthereumChainListen) ParseNFTWrapperEventByLog(contractlogs []types.Log
 			continue
 		}
 		switch v.Topics[0] {
-		case e.eventNftPolyWrapperLockId:
+		case this.eventNftPolyWrapperLockId:
 			evt, err := nftWrapperContractAbi.ParsePolyWrapperLock(v)
 			if err == nil {
 				wtx := wrapLockEvent2WrapTx(evt)
 				wrapperTransactions = append(wrapperTransactions, wtx)
+			} else {
+				logs.Error("fail to ParsePolyWrapperLock, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		}
 	}
@@ -406,6 +412,8 @@ func (this *EthereumChainListen) getECCMEvents(contractlogs []types.Log, ccmCont
 					Height:   evt.Raw.BlockNumber,
 					Fee:      Fee,
 				})
+			} else {
+				logs.Error("fail to ParseCrossChainEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.eventVerifyHeaderAndExecuteTxEventId:
 			evt, err := ccmContractAbi.ParseVerifyHeaderAndExecuteTxEvent(v)
@@ -420,6 +428,8 @@ func (this *EthereumChainListen) getECCMEvents(contractlogs []types.Log, ccmCont
 					Height:   evt.Raw.BlockNumber,
 					Fee:      Fee,
 				})
+			} else {
+				logs.Error("fail to ParseVerifyHeaderAndExecuteTxEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		}
 	}
@@ -483,6 +493,8 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractlogs []types.L
 					ToAddress:     hex.EncodeToString(evt.ToAddress),
 					Amount:        evt.Amount,
 				})
+			} else {
+				logs.Error("fail to ParseLockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.eventUnlockEventId:
 			evt, err := lockProxyContractAbi.ParseUnlockEvent(v)
@@ -495,6 +507,8 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractlogs []types.L
 					ToAddress:   strings.ToLower(evt.ToAddress.String()[2:]),
 					Amount:      evt.Amount,
 				})
+			} else {
+				logs.Error("fail to ParseUnlockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		}
 	}
@@ -523,12 +537,16 @@ func (this *EthereumChainListen) ParseNftProxyEventByLog(contractlogs []types.Lo
 			if err == nil {
 				proxyLockEvent := convertLockProxyEvent(evt)
 				proxyLockEvents = append(proxyLockEvents, proxyLockEvent)
+			} else {
+				logs.Error("fail to ParseLockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.eventNftUnlockEventId:
 			evt, err := nftLockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvent := convertUnlockProxyEvent(evt)
 				proxyUnlockEvents = append(proxyUnlockEvents, proxyUnlockEvent)
+			} else {
+				logs.Error("fail to convertUnlockProxyEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		}
 	}
@@ -570,6 +588,8 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractlogs []types.L
 					Fee:           evt.Fee,
 					ServerId:      evt.Id,
 				})
+			} else {
+				logs.Error("fail to ParseAddLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.eventRemoveLiquidityEventId:
 			evt, err := swapperContractAbi.ParseRemoveLiquidityEvent(v)
@@ -588,6 +608,8 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractlogs []types.L
 					Fee:           evt.Fee,
 					ServerId:      evt.Id,
 				})
+			} else {
+				logs.Error("fail to ParseRemoveLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.eventSwapEventId:
 			evt, err := swapperContractAbi.ParseSwapEvent(v)
@@ -606,6 +628,8 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractlogs []types.L
 					Fee:           evt.Fee,
 					ServerId:      evt.Id,
 				})
+			} else {
+				logs.Error("fail to ParseSwapEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		case this.eventSwapperLockEventId:
 			evt, err := swapperContractAbi.ParseLockEvent(v)
@@ -621,6 +645,8 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractlogs []types.L
 					ToAddress:     hex.EncodeToString(evt.ToAddress),
 					Amount:        evt.Amount,
 				})
+			} else {
+				logs.Error("fail to ParseLockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
 		}
 	}
