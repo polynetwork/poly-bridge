@@ -37,6 +37,11 @@ type FeeController struct {
 	web.Controller
 }
 
+var (
+	riskyCoinRankThreshold int
+	riskyCoinRisingRate    *big.Float
+)
+
 var dstLockProxyMap = make(map[string]string, 0)
 
 func (c *FeeController) GetFee() {
@@ -70,13 +75,62 @@ func (c *FeeController) GetFee() {
 		c.ServeJSON()
 		return
 	}
+	chainFeeToken := new(models.Token)
+	res = db.Where("chain_id = ? and token_basic_name = ?", chainFee.ChainId, chainFee.TokenBasicName).
+		First(chainFeeToken)
+	if res.RowsAffected == 0 {
+		c.Data["json"] = models.MakeErrorRsp(fmt.Sprintf("chain: %d does not have fee", getFeeReq.DstChainId))
+		c.Ctx.ResponseWriter.WriteHeader(400)
+		c.ServeJSON()
+		return
+	}
+	//check if rank of src token is risky, if so, change the proxyFee value
 	proxyFee := new(big.Float).SetInt(&chainFee.ProxyFee.Int)
+	//check if any coin marked as dying in redis
+	if exists, _ := cacheRedis.Redis.Exists(cacheRedis.MarkTokenAsDying + token.TokenBasicName); exists {
+		logs.Info("this token is dying", token.TokenBasicName)
+		if val, err := cacheRedis.Redis.Get(cacheRedis.MarkTokenAsDying + token.TokenBasicName); err == nil {
+			manualRatio, ok := big.NewFloat(0.0).SetString(val)
+			if ok {
+				proxyFee.Mul(proxyFee, manualRatio)
+			} else {
+				logs.Error("get dying token manualRatio fail, tokenbasicname: %s", token.TokenBasicName)
+			}
+		}
+	} else {
+		if token.TokenBasic.Rank > riskyCoinRankThreshold {
+			proxyFee.Mul(proxyFee, riskyCoinRisingRate)
+		}
+	}
 	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.FEE_PRECISION))
-	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+	proxyFee = new(big.Float).Quo(proxyFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFeeToken.Precision))))
 	usdtFee := new(big.Float).Mul(proxyFee, new(big.Float).SetInt64(chainFee.TokenBasic.Price))
 	usdtFee = new(big.Float).Quo(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
+
+	isNftSwap := true
+	if len(getFeeReq.SwapTokenHash) != 0 {
+		swapToken := new(models.Token)
+		res := db.Where("hash = ? and chain_id = ?", getFeeReq.SwapTokenHash, getFeeReq.SrcChainId, getFeeReq.SrcChainId).First(swapToken)
+		if res.RowsAffected != 0 {
+			if swapToken.Standard == models.TokenTypeErc20 {
+				isNftSwap = false
+			}
+		}
+	}
+	if isNftSwap {
+		for _, cfg := range conf.GlobalConfig.FeeListenConfig {
+			if cfg.ChainId == getFeeReq.DstChainId {
+				if cfg.NftRatio > 0 {
+					nftRatio := new(big.Float).Quo(new(big.Float).SetInt64(cfg.NftRatio), new(big.Float).SetInt64(100))
+					usdtFee = new(big.Float).Mul(usdtFee, nftRatio)
+					tokenFee = new(big.Float).Mul(tokenFee, nftRatio)
+				}
+				break
+			}
+		}
+	}
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
 
 	isNative := false
@@ -177,10 +231,14 @@ func (c *FeeController) GetFee() {
 			return
 		}
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
-		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
+		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.PLT2_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.BCSPALETTE_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.BCSPALETTE2_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				if basedef.EthChainSet.Contains(tokenMap.DstChainId) {
+				ethChains := make(map[uint64]struct{})
+				for _, chainId := range basedef.ETH_CHAINS {
+					ethChains[chainId] = struct{}{}
+				}
+				if _, ok := ethChains[tokenMap.DstChainId]; ok {
 					var dstLockProxies []string
 					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
 						if cfg.ChainId == tokenMap.DstChainId {
@@ -327,7 +385,7 @@ func (c *FeeController) OldGetFee() {
 			return
 		}
 		tokenBalance, _ := new(big.Int).SetString("100000000000000000000000000000", 10)
-		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID {
+		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.PLT2_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
 				if tokenMap.SrcChainId == basedef.METIS_CROSSCHAIN_ID && (strings.EqualFold(tokenMap.SrcTokenHash, "deaddeaddeaddeaddeaddeaddeaddeaddead0000") || strings.EqualFold(tokenMap.SrcTokenHash, "F3eCc2FF57DF74aE638551b060864717EFE493d2")) && tokenMap.DstChainId == basedef.BSC_CROSSCHAIN_ID {
@@ -434,7 +492,9 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 	key2Txhash := make(map[string]string, 0)
 	isPolyProxy := make(map[string]bool, 0)
 
+	hash2Tx := make(map[string]*models.SrcTransaction, 0)
 	for _, srcTransaction := range srcTransactions {
+		hash2Tx[srcTransaction.Hash] = srcTransaction
 		prefix := srcTransaction.Key[0:8]
 		if _, in := conf.PolyProxy[strings.ToUpper(srcTransaction.Contract)]; in {
 			isPolyProxy[srcTransaction.Key] = true
@@ -514,6 +574,20 @@ func (c *FeeController) checkFee(Checks []*models.CheckFeeReq) []*models.CheckFe
 		feeMin := new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.FEE_PRECISION))
 		feeMin = new(big.Float).Quo(feeMin, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
+
+		tx := hash2Tx[check.Hash]
+		if tx.Standard == models.TokenTypeErc721 {
+			for _, cfg := range conf.GlobalConfig.FeeListenConfig {
+				if cfg.ChainId == tx.DstChainId {
+					if cfg.NftRatio > 0 {
+						nftRatio := new(big.Float).Quo(new(big.Float).SetInt64(cfg.NftRatio), new(big.Float).SetInt64(100))
+						feeMin = new(big.Float).Mul(feeMin, nftRatio)
+					}
+					break
+				}
+			}
+		}
+
 		if feePay.Cmp(feeMin) >= 0 {
 			checkFee.PayState = 1
 		} else {
@@ -652,4 +726,14 @@ func (c *FeeController) CheckSwapFee(Checks []*models.CheckFeeReq) []*models.Che
 		checkFees = append(checkFees, checkFee)
 	}
 	return checkFees
+}
+
+func SetCoinRankFilterInfo(RiskyCoinHandleConfig *conf.RiskyCoinHandleConfig) {
+	if RiskyCoinHandleConfig == nil {
+		riskyCoinRisingRate = big.NewFloat(1)
+		riskyCoinRankThreshold = 100
+	} else {
+		riskyCoinRankThreshold = RiskyCoinHandleConfig.RiskyCoinRankThreshold
+		riskyCoinRisingRate = big.NewFloat(float64(RiskyCoinHandleConfig.RiskyCoinRisingRate) / 100)
+	}
 }

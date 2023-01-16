@@ -19,9 +19,11 @@ package http
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"poly-bridge/conf"
 )
 
-func GetRouter() web.LinkNamespace {
+func GetRouter(config *conf.Config) web.LinkNamespace {
+	SetCoinRankFilterInfo(config.RiskyCoinHandleConfig)
 	ns := web.NSNamespace("/bridge",
 		web.NSRouter("/", &InfoController{}, "*:Get"),
 		web.NSRouter("/token/", &TokenController{}, "post:Token"),
@@ -32,7 +34,6 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/tokenmapreverse/", &TokenMapController{}, "post:TokenMapReverse"),
 		web.NSRouter("/getfee/", &FeeController{}, "post:GetFee"),
 		web.NSRouter("/oldgetfee/", &FeeController{}, "post:OldGetFee"),
-		web.NSRouter("/checkfee/", &FeeController{}, "post:CheckFee"),
 		web.NSRouter("/newcheckfee/", &FeeController{}, "post:NewCheckFee"),
 		web.NSRouter("/checkswapfee/", &FeeController{}, "post:CheckSwapFee"),
 		web.NSRouter("/transactions/", &TransactionController{}, "post:Transactions"),
@@ -43,12 +44,14 @@ func GetRouter() web.LinkNamespace {
 		web.NSRouter("/transactionsofstate/", &TransactionController{}, "post:TransactionsOfState"),
 		web.NSRouter("/transactionsofunfinished/", &TransactionController{}, "post:TransactionsOfUnfinished"),
 		web.NSRouter("/transactionsofasset/", &TransactionController{}, "post:TransactionsOfAsset"),
+		web.NSRouter("/transactionswithoutwrapper/", &TransactionController{}, "post:TransactionsWithoutWrapper"),
 		web.NSRouter("/expecttime/", &StatisticController{}, "post:ExpectTime"),
 		web.NSRouter("/gettokenasset/", &TokenAssetController{}, "post:Gettokenasset"),
 		web.NSRouter("/getmanualtxdata/", &TransactionController{}, "post:GetManualTxData"),
 		web.NSRouter("/chainhealth/", &ChainHealthController{}, "post:Health"),
 		web.NSRouter("/wrappercheck/", &WrapperController{}, "post:WrapperCheck"),
 		web.NSRouter("/airdropofaddress/", &AirDropController{}, "post:AirDropOfAddress"),
+		web.NSRouter("/airdropclaim/", &AirDropController{}, "post:AirDropClaim"),
 	)
 	return ns
 }

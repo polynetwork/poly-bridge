@@ -3,6 +3,10 @@ package models
 import (
 	"fmt"
 	"poly-bridge/basedef"
+	"poly-bridge/common"
+	"poly-bridge/conf"
+	"strconv"
+	"strings"
 )
 
 type AirDropInfo struct {
@@ -23,7 +27,6 @@ type AirDropRank struct {
 	BindAddr    string
 	BindChainId uint64
 	Amount      int64
-	IsClaim     bool
 	Rank        int64
 }
 
@@ -58,7 +61,7 @@ type AirDropRsp struct {
 	Users []*AirDropRspData
 }
 
-func MakeAirDropRsp(addressReq AirDropReq, airDropRanks []*AirDropRank) *AirDropRsp {
+func MakeAirDropRsp(addressReq AirDropReq, airDropInfos []*AirDropInfo, airDropRanks []*AirDropRank) *AirDropRsp {
 	airDropRsp := new(AirDropRsp)
 	for _, v := range addressReq.Users {
 		user := &AirDropRspData{
@@ -68,17 +71,108 @@ func MakeAirDropRsp(addressReq AirDropReq, airDropRanks []*AirDropRank) *AirDrop
 			0,
 			"0",
 		}
-		for _, airDropRank := range airDropRanks {
-			if v.Address == airDropRank.User {
-				if basedef.IsETHChain(airDropRank.BindChainId) {
-					user.AirDropAddr = basedef.Hash2Address(airDropRank.BindChainId, airDropRank.BindAddr)
+		for _, airDropInfo := range airDropInfos {
+			if strings.EqualFold(v.Address, airDropInfo.User) {
+				if basedef.IsETHChain(airDropInfo.BindChainId) {
+					user.AirDropAddr = basedef.Hash2Address(airDropInfo.BindChainId, airDropInfo.BindAddr)
 				}
-				user.Rank = airDropRank.Rank
-				user.Amount = fmt.Sprintf("%.2f", float64(airDropRank.Amount)/10000.0)
+				for _, airDropRank := range airDropRanks {
+					if strings.EqualFold(airDropInfo.BindAddr, airDropRank.BindAddr) {
+						user.Rank = airDropRank.Rank
+						user.Amount = fmt.Sprintf("%.2f", float64(airDropRank.Amount)/10000.0)
+						break
+					}
+				}
+				break
+			}
+			if strings.EqualFold(v.Address, airDropInfo.BindAddr) {
+				if basedef.IsETHChain(airDropInfo.BindChainId) {
+					user.AirDropAddr = basedef.Hash2Address(airDropInfo.BindChainId, airDropInfo.BindAddr)
+				}
+				for _, airDropRank := range airDropRanks {
+					if strings.EqualFold(airDropInfo.BindAddr, airDropRank.BindAddr) {
+						user.Rank = airDropRank.Rank
+						user.Amount = fmt.Sprintf("%.2f", float64(airDropRank.Amount)/10000.0)
+						break
+					}
+				}
 				break
 			}
 		}
 		airDropRsp.Users = append(airDropRsp.Users, user)
 	}
 	return airDropRsp
+}
+
+type AirDropClaimReq struct {
+	AirDropAddrs []string
+}
+
+type AirDropClaimNft struct {
+	AirDropAddr     string
+	NftTbId         int64
+	NftDfId         int64
+	NftTbSig        string
+	NftDfSig        string
+	NftTbContract   string
+	NftDfContract   string
+	NftTbIpfsUri    string
+	NftDfIpfsUri    string
+	NftTbOpenseaUrl string
+	NftDfOpenseaUrl string
+	IsClaimTb       bool
+	IsClaimDf       bool
+}
+
+type AirDropClaimRsp struct {
+	AirDropClaimNft []*AirDropClaimNft
+}
+
+func MakeAirDropClaimRsp(airDropNfts []*AirDropNft) (*AirDropClaimRsp, map[int]bool) {
+	claimFlag := make(map[int]bool, 0)
+	airDropClaimRsp := new(AirDropClaimRsp)
+	for i, v := range airDropNfts {
+		airDropClaimNft := new(AirDropClaimNft)
+		airDropClaimNft.AirDropAddr = basedef.Hash2Address(v.BindChainId, v.BindAddr)
+		if v.Rank <= 100 {
+			airDropClaimNft.NftTbId = v.NftTbId
+			airDropClaimNft.IsClaimTb = v.IsClaimTb
+			airDropClaimNft.NftTbContract = conf.GlobalConfig.NftConfig.TbContract
+			if !v.IsClaimTb {
+				_, err := common.GetNftOwner(v.BindChainId, airDropClaimNft.NftTbContract, int(airDropClaimNft.NftTbId))
+				if err != nil {
+					airDropClaimNft.NftTbSig = v.NftTbSig
+					txtTbName := strings.ReplaceAll(conf.GlobalConfig.NftConfig.TbName, " ", "_")
+					airDropClaimNft.NftTbIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + txtTbName + "_" + strconv.Itoa(int(v.NftTbId))
+				} else {
+					v.IsClaimTb = true
+					airDropClaimNft.IsClaimTb = true
+					claimFlag[i] = true
+				}
+			}
+			if v.IsClaimTb {
+				airDropClaimNft.NftTbOpenseaUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.TbContract + "/" + strconv.Itoa(int(airDropClaimNft.NftTbId))
+			}
+		}
+		airDropClaimNft.NftDfId = v.NftDfId
+		airDropClaimNft.IsClaimDf = v.IsClaimDf
+		airDropClaimNft.NftDfContract = conf.GlobalConfig.NftConfig.DfContract
+		if !v.IsClaimDf {
+			_, err := common.GetNftOwner(v.BindChainId, airDropClaimNft.NftDfContract, int(airDropClaimNft.NftDfId))
+			if err != nil {
+				airDropClaimNft.NftDfSig = v.NftDfSig
+				txtDfName := strings.ReplaceAll(conf.GlobalConfig.NftConfig.DfName, " ", "_")
+				airDropClaimNft.NftDfIpfsUri = conf.GlobalConfig.NftConfig.IpfsUrl + txtDfName + "_" + strconv.Itoa(int(v.NftDfId))
+			} else {
+				v.IsClaimDf = true
+				airDropClaimNft.IsClaimDf = true
+				claimFlag[i] = true
+			}
+		}
+		if v.IsClaimDf {
+			airDropClaimNft.NftDfOpenseaUrl = conf.GlobalConfig.NftConfig.OpenseaUrl + conf.GlobalConfig.NftConfig.DfContract + "/" + strconv.Itoa(int(airDropClaimNft.NftDfId))
+		}
+		airDropClaimRsp.AirDropClaimNft = append(airDropClaimRsp.AirDropClaimNft, airDropClaimNft)
+	}
+	return airDropClaimRsp, claimFlag
 }

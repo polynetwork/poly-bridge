@@ -173,6 +173,7 @@ type FeeListenConfig struct {
 	MinFee        int64
 	GasLimit      int64
 	EthL1GasLimit int64
+	NftRatio      int64
 }
 
 type StatsConfig struct {

@@ -82,9 +82,13 @@ func (c *FeeController) NewCheckFee() {
 				if v.SrcTransaction.ChainId == basedef.NEO_CROSSCHAIN_ID ||
 					v.SrcTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID ||
 					v.SrcTransaction.ChainId == basedef.NEO3_CROSSCHAIN_ID ||
-					v.SrcTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID {
+					v.SrcTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID{
 					v.Status = SKIP
 					logs.Info("check fee poly_hash %s SKIP, because it is a NEO/NEO3 tx with no wrapper_transactions", k)
+					continue
+				} else if v.SrcTransaction.ChainId == basedef.RIPPLE_CROSSCHAIN_ID {
+					v.Status = MISSING
+					logs.Info("check fee poly_hash %s MISSING, chain is ripple, src_transaction but not wrapper_transaction", k)
 					continue
 				} else {
 					v.Status = NOT_PAID
@@ -117,13 +121,14 @@ func (c *FeeController) NewCheckFee() {
 					continue
 				}
 
-				L1MinFee, _, _, _, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
+				L1MinFee, _, _, l1FeeWei, err := fee.GetL1Fee(ethChainFee, chainFee.ChainId)
 				if err != nil {
 					v.Status = NOT_PAID
 					logs.Info("check fee poly_hash %s NOT_PAID, get L1 fee failed. err=%v", k, err)
 					continue
 				}
 				feeMin = new(big.Float).Add(feeMin, L1MinFee)
+				gasPay = new(big.Float).Sub(gasPay, l1FeeWei)
 			}
 
 			v.Paid, _ = feePay.Float64()

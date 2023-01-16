@@ -96,7 +96,7 @@ func run(ctx *cli.Context) {
 	web.AddNamespace(
 		web.NewNamespace("/v1",
 			nft_http.Init(config),
-			http.GetRouter(),
+			http.GetRouter(config),
 			explorer.GetRouter(),
 		),
 	)

@@ -19,7 +19,7 @@ type chainhashproxy struct {
 	ItemProxy string
 }
 
-var itemProxy2ItemName map[string]string
+var itemTVLContractMap map[string]string
 
 func assembleLockToken(chainid uint64, hash string, chainCfg []*conf.ChainListenConfig) []chainhashproxy {
 	x := make([]chainhashproxy, 0)
@@ -44,6 +44,14 @@ func assembleLockToken(chainid uint64, hash string, chainCfg []*conf.ChainListen
 				}
 				x = append(x, a)
 			}
+			for _, tvlContract := range chain.OtherTVLContract {
+				a := chainhashproxy{
+					chainid,
+					hash,
+					tvlContract.ItemProxy,
+				}
+				x = append(x, a)
+			}
 		}
 	}
 	return x
@@ -53,7 +61,16 @@ func initItemProxyMap(chainCfg []*conf.ChainListenConfig) {
 	mapItemProxy := make(map[string]string)
 	for _, chain := range chainCfg {
 		for _, other := range chain.OtherProxyContract {
+			if len(strings.TrimSpace(other.ItemProxy)) == 0 {
+				continue
+			}
 			mapItemProxy[other.ItemProxy] = other.ItemName
+		}
+		for _, otherTVL := range chain.OtherTVLContract {
+			if len(strings.TrimSpace(otherTVL.ItemProxy)) == 0 {
+				continue
+			}
+			mapItemProxy[otherTVL.ItemProxy] = otherTVL.ItemName
 		}
 		for _, proxy := range chain.ProxyContract {
 			if len(strings.TrimSpace(proxy)) == 0 {
@@ -62,7 +79,7 @@ func initItemProxyMap(chainCfg []*conf.ChainListenConfig) {
 			mapItemProxy[proxy] = "poly"
 		}
 	}
-	itemProxy2ItemName = mapItemProxy
+	itemTVLContractMap = mapItemProxy
 }
 
 func (this *Stats) computeLockTokenStatistics() (err error) {
@@ -86,9 +103,9 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 		proxychainhashMap[b] = true
 	}
 	for _, tokenBasic := range tokenBasics {
-		if tokenBasic.Standard == uint8(0) && tokenBasic.ChainId != uint64(0) && tokenBasic.Tokens != nil {
+		if tokenBasic.Standard == uint8(0) && tokenBasic.Tokens != nil {
 			for _, token := range tokenBasic.Tokens {
-				if token.ChainId == tokenBasic.ChainId {
+				if token.IsValuable == 1 {
 					chainProxySlice := assembleLockToken(token.ChainId, token.Hash, this.chainCfg)
 					for _, v := range chainProxySlice {
 						if _, ok := proxychainhashMap[v]; !ok {
@@ -97,7 +114,7 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 							lockTokenStatistic.ChainId = v.chainId
 							lockTokenStatistic.Hash = v.hash
 							lockTokenStatistic.ItemProxy = v.ItemProxy
-							lockTokenStatistic.ItemName = itemProxy2ItemName[v.ItemProxy]
+							lockTokenStatistic.ItemName = itemTVLContractMap[v.ItemProxy]
 							lockTokenStatistic.InAmount = models.NewBigIntFromInt(0)
 							lockTokenStatistics = append(lockTokenStatistics, lockTokenStatistic)
 						}
