@@ -183,6 +183,7 @@ func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 		nftLockProxyContracts: nftLockProxyContracts,
 		swapContract:          swapContract,
 	}
+	ethListen.ethEventTopicIds = ethEventTopicIds
 	return ethListen
 }
 

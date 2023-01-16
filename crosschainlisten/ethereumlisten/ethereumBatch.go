@@ -135,6 +135,8 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 					aptosAsset, err := hex.DecodeString(toAssetHash)
 					if err == nil {
 						toAssetHash = string(aptosAsset)
+					} else {
+						logs.Error("fail to decode Aptos toAssetHash, chain: %s, hash: %s,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), srcTransfer.TxHash, err)
 					}
 				}
 				srcTransfer.DstAsset = models.FormatAssert(toAssetHash)

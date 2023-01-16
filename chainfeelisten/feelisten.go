@@ -107,7 +107,7 @@ type FeeListen struct {
 }
 
 func NewFeeListen(feeUpdateSlot int64, fees []ChainFee, db chainfeedao.ChainFeeDao) *FeeListen {
-	feeListen := &FeeListen{}
+	feeListen = &FeeListen{}
 	feeListen.feeUpdateSlot = feeUpdateSlot
 	feeListen.db = db
 	feeListen.exit = make(chan bool, 0)

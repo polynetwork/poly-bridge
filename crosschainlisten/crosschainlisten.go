@@ -463,14 +463,15 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 
 					if amount.Cmp(decimal.NewFromInt(ccl.config.LargeTxAmount)) >= 0 {
 						//cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
-						if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, v.Hash); err != nil {
-							logs.Error("Save LargeTx[hash: %s] err: %s", v.Hash, err)
+						hash := v.Hash
+						if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, hash); err != nil {
+							logs.Error("Save LargeTx[hash: %s] err: %s", hash, err)
 						}
 						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.LargeTxAmount, amount); err != nil {
 							logs.Error("send LargeTxAmount alarm err:", err)
 						} else {
-							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(v.Hash), "done", time.Hour); err != nil {
-								logs.Error("mark large TX hash: %s alarm done err: %s", v.Hash, err)
+							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(hash), "done", time.Hour); err != nil {
+								logs.Error("mark large TX hash: %s alarm done err: %s", hash, err)
 							}
 						}
 					}
