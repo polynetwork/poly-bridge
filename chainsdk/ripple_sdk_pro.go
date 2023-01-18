@@ -68,7 +68,7 @@ func (pro *RippleSdkPro) NodeSelection() {
 func (pro *RippleSdkPro) nodeSelection() {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("node selection, recover info: %s", string(debug.Stack()))
+			logs.Error("node selection, recover info: %s,  err: %s", string(debug.Stack()), r)
 		}
 	}()
 	logs.Debug("node selection of chain : %d......", pro.id)

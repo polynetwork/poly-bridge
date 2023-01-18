@@ -86,7 +86,7 @@ func (h *HealthMonitor) Start(config *conf.Config) {
 func (h *HealthMonitor) NodeMonitor(config *conf.Config) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("NodeMonitor restart, recover info: %s", string(debug.Stack()))
+			logs.Error("NodeMonitor restart, recover info: %s,  err: %s", string(debug.Stack()), r)
 		}
 	}()
 
@@ -272,7 +272,7 @@ func (h *HealthMonitor) dealChainAlarm(nodeStatuses []basedef.NodeStatus, lastHi
 func (h *HealthMonitor) RelayerAccountMonitor(config *conf.Config) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("%s RelayerAccountMonitor recover info: %s", h.handle.GetChainName(), string(debug.Stack()))
+			logs.Error("%s RelayerAccountMonitor recover info: %s,  err: %s", h.handle.GetChainName(), string(debug.Stack()), r)
 		}
 	}()
 	logs.Info("start %s RelayerBalanceMonitor", h.handle.GetChainName())

@@ -192,7 +192,7 @@ func (ccl *CrossChainListen) HandleNewBatchBlock(start, end uint64) (w []*models
 func (ccl *CrossChainListen) listenChain() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("%s listenChain service start, recover info: %s", ccl.handle.GetChainName(), string(debug.Stack()))
+			logs.Error("%s listenChain service start, recover info: %s,  err: %s", ccl.handle.GetChainName(), string(debug.Stack()), r)
 			exit = false
 		}
 	}()
@@ -202,7 +202,8 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 	}
 	height, err := ccl.handle.GetLatestHeight()
 	if err != nil || height == 0 {
-		panic(fmt.Sprintf("chain %s, err: %v", ccl.handle.GetChainName(), err))
+		logs.Error("chain %s, err: %v", ccl.handle.GetChainName(), err)
+		return false
 	}
 	if chain.Height == 0 {
 		chain.Height = height

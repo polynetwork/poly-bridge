@@ -100,7 +100,7 @@ func (eff *CrossChainEffect) Check() {
 func (eff *CrossChainEffect) check() (exit bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("service start, recover info: %s", string(debug.Stack()))
+			logs.Error("service start, recover info: %s,  err: %s", string(debug.Stack()), r)
 			exit = false
 		}
 	}()

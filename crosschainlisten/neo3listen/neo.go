@@ -106,7 +106,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	var errTxHash string
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("Neo N3 chain listen issue: %s, %v, hash: %s", string(debug.Stack()), height, errTxHash)
+			logs.Error("Neo N3 chain listen issue: %s, %v, hash: %s", string(debug.Stack()), r, height, errTxHash)
 		}
 	}()
 	block, err := this.neoSdk.GetBlockByIndex(height)
