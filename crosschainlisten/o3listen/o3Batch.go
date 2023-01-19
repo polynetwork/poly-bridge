@@ -171,7 +171,7 @@ func (this *O3ChainListen) getBatchECCMEventsByLogAndContractAddr(contractLogs [
 		return nil, nil, nil
 	}
 
-	ccmContractAbi, err := eccm_abi.NewEthCrossChainManagerImplemetation(ccmContract, nil)
+	ccmContractAbi, err := eccm_abi.NewEthCrossChainManager(ccmContract, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("getECCMEvents NewEthCrossChainManager, error: %s", err.Error())
 	}

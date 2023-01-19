@@ -239,7 +239,7 @@ func (this *EthereumChainListen) getNFTECCMEventByBlockNumber(
 	error,
 ) {
 
-	eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmAddr, this.ethSdk.GetClient())
+	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmAddr, this.ethSdk.GetClient())
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}

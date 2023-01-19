@@ -45,7 +45,7 @@ func NewOntevmChainListen(cfg *conf.ChainListenConfig) *OntevmChainListen {
 
 	sdk := chainsdk.NewOntologySdkPro(cfg.ExtendNodes, cfg.ListenSlot, cfg.ChainId)
 	ontevmListen.ontSdk = sdk
-	ccmAbiParsed, _ := abi.JSON(strings.NewReader(eccm_abi.EthCrossChainManagerImplemetationABI))
+	ccmAbiParsed, _ := abi.JSON(strings.NewReader(eccm_abi.EthCrossChainManagerABI))
 	ontevmListen.ccmAbiParsed = ccmAbiParsed
 	lockproxyAbiParsed, _ := abi.JSON(strings.NewReader(lock_proxy_abi.LockProxyABI))
 	ontevmListen.lockproxyAbiParsed = lockproxyAbiParsed
@@ -160,7 +160,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 					switch topic {
 					case this.ccmAbiParsed.Events["CrossChainEvent"].ID:
 						logs.Info("(ccm lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
-						var evt eccm_abi.EthCrossChainManagerImplemetationCrossChainEvent
+						var evt eccm_abi.EthCrossChainManagerCrossChainEvent
 						err = this.ccmAbiParsed.UnpackIntoInterface(&evt, "CrossChainEvent", storageLog.Data)
 						if err != nil {
 							continue
@@ -180,7 +180,7 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					case this.ccmAbiParsed.Events["VerifyHeaderAndExecuteTxEvent"].ID:
 						logs.Info("(ccm unlock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, basedef.HexStringReverse(event.TxHash))
-						var evt eccm_abi.EthCrossChainManagerImplemetationVerifyHeaderAndExecuteTxEvent
+						var evt eccm_abi.EthCrossChainManagerVerifyHeaderAndExecuteTxEvent
 						err = this.ccmAbiParsed.UnpackIntoInterface(&evt, "VerifyHeaderAndExecuteTxEvent", storageLog.Data)
 						if err != nil {
 							continue

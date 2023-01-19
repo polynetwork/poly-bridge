@@ -81,7 +81,7 @@ func EthNodeMonitor(config *conf.Config) {
 
 				eccmContractAddress := common.HexToAddress(ccmContractAddr)
 				client := sdk.GetClient()
-				eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, client)
+				eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
 				if err != nil {
 					logs.Error("node: %s, NewEthCrossChainManager error: %s", sdk.GetUrl(), err)
 					continue

@@ -523,7 +523,7 @@ func (this *EthereumChainListen) getECCMEventByBlockNumberWithContractAddr(eccmC
 
 	eccmLockEvents := make([]*models.ECCMLockEvent, 0)
 	eccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
-	eccmContract, err := eccm_abi.NewEthCrossChainManagerImplemetation(eccmContractAddress, client)
+	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccmContractAddress, client)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GetSmartContractEventByBlock, error: %s", err.Error())
 	}
