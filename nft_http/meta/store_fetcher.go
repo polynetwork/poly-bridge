@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm/clause"
 	"poly-bridge/models"
 	. "poly-bridge/nft_http/meta/common"
+	"poly-bridge/nft_http/meta/neo3local"
 	"poly-bridge/nft_http/meta/standard"
 )
 
@@ -21,9 +22,10 @@ type MetaFetcher interface {
 type FetcherType int
 
 const (
-	FetcherTypeUnknown  = 0
-	FetcherTypeOpensea  = 1
-	FetcherTypeStandard = 2
+	FetcherTypeUnknown   = 0
+	FetcherTypeOpensea   = 1
+	FetcherTypeStandard  = 2
+	FetcherTypeNeo3Local = 3
 )
 
 var ErrFetcherNotExist = errors.New("fetcher not exist")
@@ -32,6 +34,8 @@ func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (fetcher Meta
 	switch fetcherTyp {
 	case FetcherTypeStandard, FetcherTypeOpensea:
 		fetcher = standard.NewFetcher(assetName, baseUri)
+	case FetcherTypeNeo3Local:
+		fetcher = neo3local.NewFetcher(assetName, baseUri)
 	default:
 		fetcher = nil
 	}
@@ -39,16 +43,14 @@ func NewFetcher(fetcherTyp FetcherType, assetName, baseUri string) (fetcher Meta
 }
 
 type StoreFetcher struct {
-	fetcher      map[FetcherType]MetaFetcher
-	assetFetcher map[uint64]map[string]FetcherType // mapping asset to fetcher type
+	assetFetcher map[uint64]map[string]MetaFetcher // mapping asset to fetcher type
 	db           *gorm.DB
 }
 
 func NewStoreFetcher(orm *gorm.DB) *StoreFetcher {
 	sf := new(StoreFetcher)
 	sf.db = orm
-	sf.fetcher = make(map[FetcherType]MetaFetcher)
-	sf.assetFetcher = make(map[uint64]map[string]FetcherType)
+	sf.assetFetcher = make(map[uint64]map[string]MetaFetcher)
 	return sf
 }
 
@@ -57,11 +59,10 @@ func (s *StoreFetcher) Register(ft FetcherType, chainId uint64, asset string, ba
 	if fetcher == nil {
 		return
 	}
-	s.fetcher[ft] = fetcher
 	if _, ok := s.assetFetcher[chainId]; !ok {
-		s.assetFetcher[chainId] = make(map[string]FetcherType)
+		s.assetFetcher[chainId] = make(map[string]MetaFetcher)
 	}
-	s.assetFetcher[chainId][asset] = ft
+	s.assetFetcher[chainId][asset] = fetcher
 }
 
 func (s *StoreFetcher) selectFetcher(chainId uint64, asset string) MetaFetcher {
@@ -69,12 +70,7 @@ func (s *StoreFetcher) selectFetcher(chainId uint64, asset string) MetaFetcher {
 		return nil
 	}
 
-	typ, ok := s.assetFetcher[chainId][asset]
-	if !ok {
-		return nil
-	}
-
-	fetcher, ok := s.fetcher[typ]
+	fetcher, ok := s.assetFetcher[chainId][asset]
 	if !ok {
 		return nil
 	}

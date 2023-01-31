@@ -18,7 +18,9 @@
 package controllers
 
 import (
+	"poly-bridge/basedef"
 	"poly-bridge/models"
+	nftdb "poly-bridge/nft_http/db"
 
 	"github.com/beego/beego/v2/server/web"
 )
@@ -32,11 +34,15 @@ func (c *TransactionController) TransactionsOfAddress() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
-
 	wrapTxs := make([]*models.WrapperTransaction, 0)
+	//convert for neo3
+	for _, addr := range req.Addresses {
+		potentialNeoAddr := basedef.HexStringReverse(addr)
+		req.Addresses = append(req.Addresses, potentialNeoAddr)
+	}
 	if req.State == -1 {
 		db.Model(&models.WrapperTransaction{}).
 			Where("standard = ? and (user in ? or dst_user in ? )", models.TokenTypeErc721, req.Addresses, req.Addresses).
@@ -114,7 +120,7 @@ func (c *TransactionController) TransactionsOfState() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
 
@@ -195,7 +201,7 @@ func findSrcPolyDstRelation(wrapTxs []*models.WrapperTransaction) []*SrcPolyDstR
 			v.DstTransaction = dstTx
 			v.DstHash = dstTx.Hash
 		}
-		feeToken := findFeeToken(v.WrapperTransaction.SrcChainId, v.WrapperTransaction.FeeTokenHash)
+		feeToken := nftdb.FindFeeToken(v.WrapperTransaction.SrcChainId, v.WrapperTransaction.FeeTokenHash)
 		if feeToken != nil {
 			v.FeeTokenHash = feeToken.Hash
 			v.FeeToken = feeToken

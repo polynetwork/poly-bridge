@@ -405,6 +405,7 @@ func (pro *EthereumSdkPro) Erc20Balance(erc20 string, addr string) (*big.Int, er
 	}
 	return new(big.Int).SetUint64(0), fmt.Errorf("all node is not working")
 }
+
 func (pro *EthereumSdkPro) Erc20TotalSupply(erc20 string) (*big.Int, error) {
 	info := pro.GetLatest()
 	if info == nil {
@@ -447,72 +448,13 @@ func (pro *EthereumSdkPro) WaitTransactionConfirm(hash common.Hash) bool {
 	return false
 }
 
-func (pro *EthereumSdkPro) NFTBalance(asset, owner common.Address) (balance *big.Int, err error) {
-	info := pro.GetLatest()
-	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
-	}
-
-	for info != nil {
-		if balance, err = info.sdk.GetNFTBalance(asset, owner); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
-	return
-}
-
 func (pro *EthereumSdkPro) GetNFTOwner(asset string, tokenId *big.Int) (owner common.Address, err error) {
 	assetAddr := common.HexToAddress(asset)
 	info := pro.GetLatest()
 	if info == nil {
 		return EmptyAddress, fmt.Errorf("all node is not working")
 	}
-
-	for info != nil {
-		if owner, err = info.sdk.GetNFTOwner(assetAddr, tokenId); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (pro *EthereumSdkPro) GetTokensByIndex(
-	inquirer, asset, owner common.Address,
-	start, length int,
-) (res map[string]string, err error) {
-
-	info := pro.GetLatest()
-	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
-	}
-
-	for info != nil {
-		if res, err = info.sdk.GetOwnerNFTsByIndex(inquirer, asset, owner, start, length); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (pro *EthereumSdkPro) GetNFTUrl(asset common.Address, tokenId *big.Int) (url string, err error) {
-	info := pro.GetLatest()
-	if info == nil {
-		return "", fmt.Errorf("all node is not working")
-	}
-
-	for info != nil {
-		if url, err = info.sdk.GetNFTTokenUri(asset, tokenId); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
+	owner, err = info.sdk.GetNFTOwner(assetAddr, tokenId)
 	return
 }
 
@@ -527,61 +469,6 @@ func (pro *EthereumSdkPro) GetTokensById(
 
 	for info != nil {
 		if res, err = info.sdk.GetNFTsById(inquirer, asset, tokenIdList); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (pro *EthereumSdkPro) GetAndCheckTokenUrl(
-	inquirer, asset, owner common.Address,
-	tokenId *big.Int,
-) (url string, err error) {
-
-	info := pro.GetLatest()
-	if info == nil {
-		return "", fmt.Errorf("all node is not working")
-	}
-
-	for info != nil {
-		if url, err = info.sdk.GetAndCheckNFTUrl(inquirer, asset, owner, tokenId); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (pro *EthereumSdkPro) GetUnCrossChainNFTsByIndex(
-	inquirer, asset common.Address,
-	lockProxies []common.Address,
-	start, length int,
-) (mp map[string]string, err error) {
-
-	info := pro.GetLatest()
-	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
-	}
-	for info != nil {
-		if mp, err = info.sdk.GetUnCrossChainNFTsByIndex(inquirer, asset, lockProxies, start, length); err != nil {
-			info = pro.reset(info)
-		} else {
-			return
-		}
-	}
-	return
-}
-
-func (pro *EthereumSdkPro) GetNFTURLs(asset common.Address, tokenIds []*big.Int) (res map[string]string, err error) {
-	info := pro.GetLatest()
-	if info == nil {
-		return nil, fmt.Errorf("all node is not working")
-	}
-	for info != nil {
-		if res, err = info.sdk.GetOwnerNFTUrls(asset, tokenIds); err != nil {
 			info = pro.reset(info)
 		} else {
 			return
@@ -613,14 +500,24 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 			addrHash := (boundAsset.Hex())[2:]
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
 
-			if chainId == basedef.STARCOIN_CROSSCHAIN_ID {
+			switch chainId {
+			case basedef.STARCOIN_CROSSCHAIN_ID:
 				srcTokenHashByteString := strings.ToLower(hex.EncodeToString([]byte(srcTokenHash)))
-				logs.Info("srcTokenHashByteString =%s", srcTokenHashByteString)
 				if strings.Contains(srcTokenHashByteString, strings.ToLower(addrHash)) {
 					return proxy, nil
 				}
-			} else if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
-				return proxy, nil
+			case basedef.APTOS_CROSSCHAIN_ID:
+				srcTokenHashByteString := strings.ToLower(hex.EncodeToString([]byte(fmt.Sprintf("0x1::coin::Coin<%s>", srcTokenHash))))
+				logs.Info("aptos GetBoundLockProxy")
+				logs.Info("srcTokenHashByteString %s", srcTokenHashByteString)
+				logs.Info("bind asset %s", strings.ToLower(addrHash))
+				if strings.Contains(srcTokenHashByteString, strings.ToLower(addrHash)) {
+					return proxy, nil
+				}
+			default:
+				if strings.EqualFold(addrHash, srcTokenHash) || strings.EqualFold(basedef.HexStringReverse(addrHash), srcTokenHash) {
+					return proxy, nil
+				}
 			}
 		}
 	}

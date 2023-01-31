@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"poly-bridge/nft_http/db"
 	mcm "poly-bridge/nft_http/meta/common"
 	"sort"
 	"testing"
@@ -14,12 +15,12 @@ func Test_getItemsWithChainData(t *testing.T) {
 	chainId := uint64(701)
 	tokenIdUrlMap := make(map[string]string)
 	tokenIdUrlMap["3"] = "https://ikzttp.mypinata.cloud/ipfs/QmQFkLSQysj94s5GvTHPyzTxrawwtjgiiYS2TBLgrvw8CW/3"
-	list := make([]*Item, 0)
+	list := make([]*nftdb.Item, 0)
 
 	// get cache if exist
 	profileReqs := make([]*mcm.FetchRequestParams, 0)
 	for tokenId, url := range tokenIdUrlMap {
-		cache, ok := GetItemCache(chainId, asset, tokenId)
+		cache, ok := nftdb.GetItemCache(chainId, asset, tokenId)
 		if ok {
 			list = append(list, cache)
 			delete(tokenIdUrlMap, tokenId)
@@ -33,7 +34,7 @@ func Test_getItemsWithChainData(t *testing.T) {
 		profileReqs = append(profileReqs, req)
 	}
 
-	// fetch meta data list and show rpc time
+	// fetch metadata list and show rpc time
 	tBeforeBatchFetch := time.Now().UnixNano()
 	profiles, err := fetcher.BatchFetch(chainId, name, profileReqs)
 	if err != nil {
@@ -46,13 +47,13 @@ func Test_getItemsWithChainData(t *testing.T) {
 	// convert to items
 	for _, v := range profiles {
 		tokenId := v.NftTokenId
-		item := new(Item).instance(name, tokenId, v)
+		item := new(nftdb.Item).Instance(name, tokenId, v)
 		list = append(list, item)
-		SetItemCache(chainId, asset, tokenId, item)
+		nftdb.SetItemCache(chainId, asset, tokenId, item)
 		delete(tokenIdUrlMap, tokenId)
 	}
-	for tokenId, _ := range tokenIdUrlMap {
-		item := new(Item).instance(name, tokenId, nil)
+	for tokenId := range tokenIdUrlMap {
+		item := new(nftdb.Item).Instance(name, tokenId, nil)
 		list = append(list, item)
 	}
 

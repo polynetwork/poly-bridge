@@ -343,7 +343,7 @@ func (s *EthereumSdk) GetECCDOwnership(eccdAddr common.Address) (common.Address,
 
 func (s *EthereumSdk) TransferECCMOwnership(key *ecdsa.PrivateKey, eccm, ccmp common.Address) (common.Hash, error) {
 
-	eccmContract, err := eccm_abi.NewEthCrossChainManagerTransactor(eccm, s.backend())
+	eccmContract, err := eccm_abi.NewEthCrossChainManager(eccm, s.backend())
 	if err != nil {
 		return EmptyHash, err
 	}
@@ -362,7 +362,7 @@ func (s *EthereumSdk) TransferECCMOwnership(key *ecdsa.PrivateKey, eccm, ccmp co
 }
 
 func (s *EthereumSdk) GetECCMOwnership(eccmAddr common.Address) (common.Address, error) {
-	eccm, err := eccm_abi.NewEthCrossChainManagerCaller(eccmAddr, s.backend())
+	eccm, err := eccm_abi.NewEthCrossChainManager(eccmAddr, s.backend())
 	if err != nil {
 		return EmptyAddress, err
 	}

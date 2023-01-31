@@ -21,7 +21,7 @@ func (c *ExplorerController) Transactions() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
 
@@ -65,7 +65,7 @@ func (c *ExplorerController) TransactionsOfAddress() {
 	if !input(&c.Controller, &req) {
 		return
 	}
-	if !checkPageSize(&c.Controller, req.PageSize) {
+	if !checkPageSize(&c.Controller, req.PageSize, 10) {
 		return
 	}
 
@@ -109,6 +109,9 @@ func (c *ExplorerController) TransactionsOfAddress() {
 	list := make([]*TransactionBriefRsp, 0)
 	for _, v := range relations {
 		tk := selectNFTAsset(v.SrcAsset)
+		if tk == nil {
+			continue
+		}
 		data := new(TransactionBriefRsp).instance(tk.TokenBasicName, v)
 		list = append(list, data)
 	}
@@ -162,7 +165,6 @@ func (c *ExplorerController) TransactionDetail() {
 
 	data := new(TransactionDetailRsp).instance(relations[0])
 	fillMetaInfo(data)
-
 	output(&c.Controller, data)
 }
 
@@ -180,16 +182,27 @@ func fillMetaInfo(data *TransactionDetailRsp) {
 		return
 	}
 
-	asset := selectNFTAsset(data.SrcTransaction.AssetHash)
-	tokenId, ok := string2Big(data.Transaction.TokenId)
-	if !ok {
-		return
-	}
-	item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
-	if err != nil {
-		logs.Error("fillMetaInfo err: %v", err)
-		return
-	}
+	tokenId := data.Transaction.TokenId
 
-	data.Meta = item
+	asset := selectNFTAsset(data.SrcTransaction.AssetHash)
+	if asset != nil {
+		item, err := getSingleItem(sdk, inquirer, asset, tokenId, "")
+		if err != nil {
+			//src nft has been destroyed
+			logs.Error("get item form src chain err, will try from dst chain : %v", err)
+			dstSdk, dstInquirer, _, err := selectNodeAndWrapper(data.DstTransaction.ChainId)
+			if err != nil {
+				return
+			}
+			dstAsset := selectNFTAsset(data.DstTransaction.AssetHash)
+			if dstAsset != nil {
+				item, err = getSingleItem(dstSdk, dstInquirer, dstAsset, tokenId, "")
+				if err != nil {
+					logs.Error("get item form dst chain err: %v", err)
+					return
+				}
+			}
+		}
+		data.Meta = item
+	}
 }
