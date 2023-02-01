@@ -35,7 +35,7 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 		return nil, nil, nil, nil, 0, 0, err
 	}
 	if len(contractLogs) == 0 {
-		logs.Info("no event log found")
+		//logs.Info("no event log found")
 		return nil, nil, nil, nil, 0, 0, nil
 	}
 

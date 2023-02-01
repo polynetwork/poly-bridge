@@ -292,9 +292,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 								ch <- false
 								return
 							}
-							logs.Info("HandleNewBlock [chainName: %s, height: %d, start: %d, end: %d ]. "+
-								"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
-								chain.Name, height, start, end, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
+							//logs.Info("HandleNewBlock [chainName: %s, height: %d, start: %d, end: %d ]. "+
+							//	"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
+							//	chain.Name, height, start, end, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
 							err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 							if err != nil {
 								logs.Error("check fee on block %d err: %v", height, err)
@@ -383,9 +383,9 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 									ch <- false
 									return
 								}
-								logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
-									"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d, len(wrapperDetails)=%d, len(polyDetails)=%d",
-									chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), len(wrapperDetails), len(polyDetails))
+								//logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
+								//	"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d, len(wrapperDetails)=%d, len(polyDetails)=%d",
+								//	chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), len(wrapperDetails), len(polyDetails))
 
 								detailWrapperTxs, err := ccl.db.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 								if err != nil {

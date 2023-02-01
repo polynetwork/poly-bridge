@@ -628,7 +628,6 @@ func (dao *BridgeDao) FilterMissingWrapperTransactions() ([]*models.SrcTransacti
 }
 
 func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction) error {
-	logs.Info("check fee for poly wrapper Transaction when listening new block ")
 	if len(wrapperTransactions) == 0 {
 		return nil
 	}
