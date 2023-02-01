@@ -571,7 +571,7 @@ func MakeTransactionRsp(transaction *SrcPolyDstRelation, chainsMap map[uint64]*C
 	}
 	polyTransactionState := &TransactionStateRsp{
 		Hash:    "",
-		ChainId: 0,
+		ChainId: 1,
 		Blocks:  0,
 		Time:    0,
 	}
