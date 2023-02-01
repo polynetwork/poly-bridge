@@ -268,8 +268,8 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 						logs.Error("invalid onto event log, fail to parse chainId err, %s, height %d", err, height)
 					}
 					dstTransaction.SrcChainId = uint64(chainId)
-					dstTransaction.Contract = basedef.HexStringReverse(states[4].(string))
-					dstTransaction.PolyHash = basedef.HexStringReverse(states[1].(string))
+					dstTransaction.Contract = states[4].(string)
+					dstTransaction.PolyHash = states[1].(string)
 					dstTransaction.DstTransfer = dstTransfer
 					dstTransactions = append(dstTransactions, dstTransaction)
 				default:

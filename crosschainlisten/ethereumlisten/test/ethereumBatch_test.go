@@ -71,7 +71,7 @@ func TestEthereumChainListen_HandleNewBlock3(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	a, b, c, d, _, _, _, _, err := chainHandle.HandleNewBlock(17214676)
+	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(17217880)
 	if err != nil {
 		fmt.Println("err", err)
 	}
@@ -83,4 +83,8 @@ func TestEthereumChainListen_HandleNewBlock3(t *testing.T) {
 	fmt.Println("c", string(e))
 	e, _ = json.MarshalIndent(d, "", "	")
 	fmt.Println("d", string(e))
+	e, _ = json.MarshalIndent(z, "", "	")
+	fmt.Println("z", string(e))
+	e, _ = json.MarshalIndent(x, "", "	")
+	fmt.Println("x", string(e))
 }
