@@ -20,15 +20,17 @@ package ontologylisten
 import (
 	"encoding/hex"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/ontio/ontology-go-sdk/utils"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
 	"poly-bridge/models"
+	"strconv"
 )
 
 const (
-	_ont_crosschainlock   = "makeFromOntProof"
+	_ont_crosschainlock   = "cross_chain"
 	_ont_crosschainunlock = "verifyToOntProof"
 	_ont_lock             = "lock"
 	_ont_unlock           = "unlock"
@@ -150,7 +152,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 				switch contractMethod {
 				case _ont_crosschainlock:
 					logs.Info("(lock) from chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
-					if len(states) < 7 {
+					if len(states) < 6 {
 						continue
 					}
 					srcTransfer := &models.SrcTransfer{}
@@ -209,15 +211,23 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					srcTransaction.Time = tt
 					srcTransaction.Height = height
 					srcTransaction.User = srcTransfer.From
-					srcTransaction.DstChainId = uint64(states[2].(float64))
-					srcTransaction.Contract = basedef.HexStringReverse(states[5].(string))
-					srcTransaction.Key = states[4].(string)
-					srcTransaction.Param = states[6].(string)
+					dstChainId, err := strconv.ParseUint(states[4].(string), 10, 32)
+					if err != nil {
+						logs.Error("invalid onto event log, fail to parse dstChainId err, %s, height %d", err, height)
+					}
+					srcTransaction.DstChainId = dstChainId
+					contract, err := utils.AddressFromBase58(states[3].(string))
+					if err != nil {
+						logs.Error("invalid onto event log, fail to parse contractArr err, %s, height %d", err, height)
+					}
+					srcTransaction.Contract = contract.ToHexString()
+					srcTransaction.Key = states[2].(string)
+					srcTransaction.Param = states[5].(string)
 					srcTransaction.SrcTransfer = srcTransfer
 					srcTransactions = append(srcTransactions, srcTransaction)
 				case _ont_crosschainunlock:
 					logs.Info("(unlock) to chain: %s, height: %d, txhash: %s", this.GetChainName(), height, event.TxHash)
-					if len(states) < 6 {
+					if len(states) < 5 {
 						continue
 					}
 					dstTransfer := &models.DstTransfer{}
@@ -235,7 +245,7 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 							dstTransfer.ChainId = this.GetChainId()
 							dstTransfer.TxHash = event.TxHash
 							dstTransfer.Time = tt
-							dstTransfer.From = states[5].(string)
+							dstTransfer.From = states[4].(string)
 							dstTransfer.To = statesNew[2].(string)
 							dstTransfer.Asset = basedef.HexStringReverse(statesNew[1].(string))
 							if len(dstTransfer.Asset) < 20 {
@@ -253,8 +263,12 @@ func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 					dstTransaction.Fee = models.NewBigIntFromInt(int64(event.GasConsumed))
 					dstTransaction.Time = tt
 					dstTransaction.Height = height
-					dstTransaction.SrcChainId = uint64(states[3].(float64))
-					dstTransaction.Contract = basedef.HexStringReverse(states[5].(string))
+					chainId, err := strconv.ParseInt(states[3].(string), 10, 64)
+					if err != nil {
+						logs.Error("invalid onto event log, fail to parse chainId err, %s, height %d", err, height)
+					}
+					dstTransaction.SrcChainId = uint64(chainId)
+					dstTransaction.Contract = basedef.HexStringReverse(states[4].(string))
 					dstTransaction.PolyHash = basedef.HexStringReverse(states[1].(string))
 					dstTransaction.DstTransfer = dstTransfer
 					dstTransactions = append(dstTransactions, dstTransaction)
