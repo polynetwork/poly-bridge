@@ -53,6 +53,9 @@ func GetL1Fee(ethChainFee *models.ChainFee, chainId uint64) (l1MinFee, l1ProxyFe
 }
 
 func CheckFeeCal(chainFee *models.ChainFee, feeToken *models.Token, feeAmount *models.BigInt) (feePay, feeMin, gasPay *big.Float) {
+	if feeToken == nil || feeToken.TokenBasic == nil || chainFee == nil || chainFee.TokenBasic == nil {
+		return new(big.Float), new(big.Float), new(big.Float)
+	}
 	x := new(big.Int).Mul(&feeAmount.Int, big.NewInt(feeToken.TokenBasic.Price))
 	feePay = new(big.Float).Quo(new(big.Float).SetInt(x), new(big.Float).SetInt64(basedef.Int64FromFigure(int(feeToken.Precision))))
 	gasPay = feePay

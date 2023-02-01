@@ -672,6 +672,9 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 		}
 		//money paid in wrapper
 		feePay, feeMin, gasPay := fee.CheckFeeCal(chainFee, token, v.FeeAmount)
+		if feePay.Cmp(new(big.Float)) == 0 {
+			logs.Error("fail to cal check fee, empty token or chainFee, chainId %d", v.SrcChainId)
+		}
 		// get optimistic L1 fee on ethereum
 		if chainFee.ChainId == basedef.OPTIMISTIC_CROSSCHAIN_ID {
 			ethChainFee, ok := chain2Fees[basedef.ETHEREUM_CROSSCHAIN_ID]
