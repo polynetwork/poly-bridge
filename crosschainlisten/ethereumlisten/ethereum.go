@@ -163,7 +163,7 @@ func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 	//special for relayer chain
 	if cfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
 		// ccm event for relay chain
-		nodeManagerAbiParsed, _ := abi.JSON(strings.NewReader(cross_chain_manager_abi.ICrossChainManagerABI))
+		nodeManagerAbiParsed, _ := abi.JSON(strings.NewReader(cross_chain_manager_abi.CrossChainManagerAbiABI))
 		ethEventTopicIdArr = append(ethEventTopicIdArr, nodeManagerAbiParsed.Events[cross_chain_manager_abi.EventMakeProof].ID)
 		// ccm listen for relay chain
 		filterContracts = append(filterContracts, utils.CrossChainManagerContractAddress)

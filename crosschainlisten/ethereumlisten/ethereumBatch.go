@@ -344,7 +344,7 @@ func (this *EthereumChainListen) getBatchRelayChainECCMEventByLog(contractLogs [
 	if client == nil {
 		return nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
 	}
-	eccmContract, err := cross_chain_manager_abi.NewICrossChainManagerFilterer(eccmContractAddress, client)
+	eccmContract, err := cross_chain_manager_abi.NewCrossChainManagerAbiFilterer(eccmContractAddress, client)
 	if err != nil {
 		return nil, err
 	}
@@ -391,9 +391,9 @@ func (this *EthereumChainListen) getBatchRelayChainECCMEventByLog(contractLogs [
 			SrcHash: func() string {
 				switch param.FromChainID {
 				case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
-					return basedef.HexStringReverse(hex.EncodeToString(param.MakeTxParam.CrossChainID))
+					return basedef.HexStringReverse(hex.EncodeToString(param.MakeTxParam.TxHash))
 				default:
-					return hex.EncodeToString(param.MakeTxParam.CrossChainID)
+					return hex.EncodeToString(param.MakeTxParam.TxHash)
 				}
 			}(),
 			Time: timeCur,
@@ -455,7 +455,7 @@ func (this *EthereumChainListen) getBatchECCMEventsByLogAndContractAddr(contract
 				eccmUnlockEvents = append(eccmUnlockEvents, &models.ECCMUnlockEvent{
 					Method:   _eth_crosschainunlock,
 					TxHash:   evt.Raw.TxHash.String()[2:],
-					RTxHash:  basedef.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
+					RTxHash:  hex.EncodeToString(evt.CrossChainTxHash),
 					Contract: hex.EncodeToString(evt.ToContract),
 					FChainId: uint32(evt.FromChainID),
 					Height:   evt.Raw.BlockNumber,
