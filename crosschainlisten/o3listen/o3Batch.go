@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	backStart := start*2 - end - 1
 	if backStart > 0 {
 		start = backStart
@@ -23,17 +23,17 @@ func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.Wra
 	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), this.filterContracts, this.filterTopics)
 	if err != nil {
 		logs.Error("fail to filter log, %v", err)
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	eccmLockEvents, eccmUnLockEvents, err := this.getBatchECCMEventsByLogAndContractAddr(contractLogs, this.contractAddr.ccmContractAddr)
 	if err != nil {
 		logs.Error("fail to get eccm event, %v", err)
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	proxyLockEvents, proxyUnlockEvents, swapUnlockEvents, err := this.getSwapProxyEventByLog(contractLogs, this.contractAddr.swapContract)
 	if err != nil {
 		logs.Error("fail to get proxy event, %v", err)
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	blockTimer := make(map[uint64]uint64, 0)
 	for _, v := range eccmLockEvents {
@@ -55,7 +55,7 @@ func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.Wra
 		timestamp, err := this.ethSdk.GetBlockTimeByNumber(k)
 		if err != nil {
 			logs.Error("fail to get block time, %v", err)
-			return nil, nil, nil, nil, 0, 0, err
+			return nil, nil, nil, nil, nil, nil, 0, 0, err
 		}
 		blockTimer[k] = timestamp
 	}
@@ -163,7 +163,7 @@ func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.Wra
 			*/
 		}
 	}
-	return nil, srcTransactions, nil, dstTransactions, len(srcTransactions), len(dstTransactions), nil
+	return nil, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
 func (this *O3ChainListen) getBatchECCMEventsByLogAndContractAddr(contractLogs []types.Log, ccmContract common.Address) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {

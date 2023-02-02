@@ -80,7 +80,7 @@ type ChainHandle interface {
 	GetExtendLatestHeight() (uint64, error)
 	GetLatestHeight() (uint64, error)
 	HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error)
-	HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error)
+	HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error)
 	GetChainListenSlot() uint64
 	GetChainId() uint64
 	GetChainName() string
@@ -178,10 +178,10 @@ func (ccl *CrossChainListen) HandleNewBlock(height uint64) (w []*models.WrapperT
 	return
 }
 
-func (ccl *CrossChainListen) HandleNewBatchBlock(start, end uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, err error) {
+func (ccl *CrossChainListen) HandleNewBatchBlock(start, end uint64) (w []*models.WrapperTransaction, s []*models.SrcTransaction, p []*models.PolyTransaction, d []*models.DstTransaction, wd []*models.WrapperDetail, pd []*models.PolyDetail, err error) {
 	// chain := ccl.handle.GetChainId()
 	// var locks, unlocks int
-	w, s, p, d, _, _, err = ccl.handle.HandleNewBatchBlock(start, end)
+	w, s, p, d, wd, pd, _, _, err = ccl.handle.HandleNewBatchBlock(start, end)
 	if err != nil {
 		return
 	}
@@ -286,23 +286,31 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							continue
 						}
 						go func(start uint64, end uint64) {
-							wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, err := ccl.HandleNewBatchBlock(start, end)
+							wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails, err := ccl.HandleNewBatchBlock(start, end)
 							if err != nil {
-								logs.Error("HandleNewBlock chain：%s, height: %d err: %v", ccl.handle.GetChainName(), height, err)
+								logs.Error("HandleNewBlock chain：%s, height: from %d to %d err: %v", ccl.handle.GetChainName(), start, end, err)
 								ch <- false
 								return
 							}
 							//logs.Info("HandleNewBlock [chainName: %s, height: %d, start: %d, end: %d ]. "+
 							//	"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d",
 							//	chain.Name, height, start, end, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions))
-							err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
+
+							detailWrapperTxs, err := ccl.db.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 							if err != nil {
-								logs.Error("check fee on block %d err: %v", height, err)
+								logs.Error("FillTxSpecialChain on chain:%s height: from %d to %d err: %v", ccl.handle.GetChainName(), start, end, err)
 								ch <- false
 							}
-							err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, nil)
+							wrapperTransactions = append(wrapperTransactions, detailWrapperTxs...)
+
+							err = ccl.db.WrapperTransactionCheckFee(wrapperTransactions, srcTransactions)
 							if err != nil {
-								logs.Error("UpdateEvents on block %d err: %v", height, err)
+								logs.Error("check fee on chain:%s height: from %d to %d err: %v", ccl.handle.GetChainName(), start, end, err)
+								ch <- false
+							}
+							err = ccl.db.UpdateEvents(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
+							if err != nil {
+								logs.Error("UpdateEvents on chain:%s height: from %d to %d err: %v", ccl.handle.GetChainName(), start, end, err)
 								ch <- false
 							} else {
 								if !ccl.config.Backup {

@@ -22,7 +22,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/devfans/zion-sdk/contracts/native/utils"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
 	"poly-bridge/conf"
@@ -30,7 +29,6 @@ import (
 	"poly-bridge/go_abi/lock_proxy_abi"
 	"poly-bridge/go_abi/swapper_abi"
 	"poly-bridge/go_abi/wrapper_abi"
-	cross_chain_manager_abi "poly-bridge/go_abi/zion_native_ccm"
 	"poly-bridge/models"
 	"strings"
 
@@ -44,15 +42,34 @@ const (
 	_eth_crosschainunlock = "CrossChainUnlockEvent"
 	_eth_lock             = "LockEvent"
 	_eth_unlock           = "UnlockEvent"
+
+	//ripple topic
+	RippleTxEventTopicId  = "0xdc5a7a51ad95eb87bc70191f6b497dec6619c6669a89b2edfed188b271e948ae"
+	MultiSignEventTopicId = "0x162a93de0c236723115fd6139780a23fb76844208fcc6a7a51d803138cbe11a0"
+	//zion relay chain topic
+	MakeProofEventTopicId = "0x25680d41ae78d1188140c6547c9b1890e26bbfa2e0c5b5f1d81aef8985f4d49d"
+
+	//eth topic
+	EventPolyWrapperLockId               = "0x2b0591052cc6602e870d3994f0a1b173fdac98c215cb3b0baf84eaca5a0aa81e"
+	EventNftPolyWrapperLockId            = "0x3a15d8cf4b167dd8963989f8038f2333a4889f74033bb53bfb767a5cced072e2"
+	EventCrossChainEventId               = "0x6ad3bf15c1988bc04bc153490cab16db8efb9a3990215bf1c64ea6e28be88483"
+	EventVerifyHeaderAndExecuteTxEventId = "0x8a4a2663ce60ce4955c595da2894de0415240f1ace024cfbff85f513b656bdae"
+	EventLockEventId                     = "0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5"
+	EventUnlockEventId                   = "0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df"
+	EventNftLockEventId                  = "0x98081b3037dc78e7a7ffa56932222cfc7ea9325ad6a3e7b0b3b4e3e678d7fd13"
+	EventNftUnlockEventId                = "0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df"
+	EventAddLiquidityEventId             = "0x7b634860445c375b3604695e3d36b0ca94d7342cacaae46d96b8727e86522d32"
+	EventRemoveLiquidityEventId          = "0x7ee445799431a22b707efdb3f751a430c4f01f12d902e952200041d81255a41e"
+	EventSwapEventId                     = "0x9e37e0e96b266241aa70174d3c6d60151148a5b4181a57fb3d9475aa39ed0672"
+	EventSwapperLockEventId              = "0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5"
 )
 
 type EthereumChainListen struct {
-	ethCfg           *conf.ChainListenConfig
-	ethSdk           *chainsdk.EthereumSdkPro
-	ethEventTopicIds *EthereumContractEventId
-	filterContracts  []common.Address
-	filterTopics     [][]common.Hash
-	contractAddr     *EthereumContractAddr
+	ethCfg          *conf.ChainListenConfig
+	ethSdk          *chainsdk.EthereumSdkPro
+	filterContracts []common.Address
+	filterTopics    [][]common.Hash
+	contractAddr    *EthereumContractAddr
 }
 type EthereumContractEventId struct {
 	eventPolyWrapperLockId               common.Hash
@@ -68,7 +85,6 @@ type EthereumContractEventId struct {
 	eventSwapEventId                     common.Hash
 	eventSwapperLockEventId              common.Hash
 }
-
 type EthereumContractAddr struct {
 	wrapperV1Contract     common.Address
 	ccmContractAddr       common.Address
@@ -81,34 +97,21 @@ type EthereumContractAddr struct {
 
 func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 	//init contract filter info
-	//init ethEventTopicIds
-	ethEventTopicIds := &EthereumContractEventId{}
-	ethEventTopicIds.eventPolyWrapperLockId = common.HexToHash("0x2b0591052cc6602e870d3994f0a1b173fdac98c215cb3b0baf84eaca5a0aa81e")
-	ethEventTopicIds.eventNftPolyWrapperLockId = common.HexToHash("0x3a15d8cf4b167dd8963989f8038f2333a4889f74033bb53bfb767a5cced072e2")
-	ethEventTopicIds.eventCrossChainEventId = common.HexToHash("0x6ad3bf15c1988bc04bc153490cab16db8efb9a3990215bf1c64ea6e28be88483")
-	ethEventTopicIds.eventVerifyHeaderAndExecuteTxEventId = common.HexToHash("0x8a4a2663ce60ce4955c595da2894de0415240f1ace024cfbff85f513b656bdae")
-	ethEventTopicIds.eventLockEventId = common.HexToHash("0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5")
-	ethEventTopicIds.eventUnlockEventId = common.HexToHash("0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df")
-	ethEventTopicIds.eventNftLockEventId = common.HexToHash("0x98081b3037dc78e7a7ffa56932222cfc7ea9325ad6a3e7b0b3b4e3e678d7fd13")
-	ethEventTopicIds.eventNftUnlockEventId = common.HexToHash("0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df")
-	ethEventTopicIds.eventAddLiquidityEventId = common.HexToHash("0x7b634860445c375b3604695e3d36b0ca94d7342cacaae46d96b8727e86522d32")
-	ethEventTopicIds.eventRemoveLiquidityEventId = common.HexToHash("0x7ee445799431a22b707efdb3f751a430c4f01f12d902e952200041d81255a41e")
-	ethEventTopicIds.eventSwapEventId = common.HexToHash("0x9e37e0e96b266241aa70174d3c6d60151148a5b4181a57fb3d9475aa39ed0672")
-	ethEventTopicIds.eventSwapperLockEventId = common.HexToHash("0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5")
+
 	//init EthEventTopicIdArr
 	ethEventTopicIdArr := []common.Hash{
-		ethEventTopicIds.eventPolyWrapperLockId,
-		ethEventTopicIds.eventNftPolyWrapperLockId,
-		ethEventTopicIds.eventCrossChainEventId,
-		ethEventTopicIds.eventVerifyHeaderAndExecuteTxEventId,
-		ethEventTopicIds.eventLockEventId,
-		ethEventTopicIds.eventUnlockEventId,
-		ethEventTopicIds.eventNftLockEventId,
-		ethEventTopicIds.eventNftUnlockEventId,
-		ethEventTopicIds.eventAddLiquidityEventId,
-		ethEventTopicIds.eventRemoveLiquidityEventId,
-		ethEventTopicIds.eventSwapEventId,
-		ethEventTopicIds.eventSwapperLockEventId,
+		common.HexToHash(EventPolyWrapperLockId),
+		common.HexToHash(EventNftPolyWrapperLockId),
+		common.HexToHash(EventCrossChainEventId),
+		common.HexToHash(EventVerifyHeaderAndExecuteTxEventId),
+		common.HexToHash(EventLockEventId),
+		common.HexToHash(EventUnlockEventId),
+		common.HexToHash(EventNftLockEventId),
+		common.HexToHash(EventNftUnlockEventId),
+		common.HexToHash(EventAddLiquidityEventId),
+		common.HexToHash(EventRemoveLiquidityEventId),
+		common.HexToHash(EventSwapEventId),
+		common.HexToHash(EventSwapperLockEventId),
 	}
 
 	wrapperContracts := make([]common.Address, 0)
@@ -163,8 +166,11 @@ func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 	//special for relayer chain
 	if cfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
 		// ccm event for relay chain
-		nodeManagerAbiParsed, _ := abi.JSON(strings.NewReader(cross_chain_manager_abi.CrossChainManagerAbiABI))
-		ethEventTopicIdArr = append(ethEventTopicIdArr, nodeManagerAbiParsed.Events[cross_chain_manager_abi.EventMakeProof].ID)
+		//nodeManagerAbiParsed, _ := abi.JSON(strings.NewReader(cross_chain_manager_abi.CrossChainManagerAbiABI))
+		//ethEventTopicIdArr = append(ethEventTopicIdArr, nodeManagerAbiParsed.Events[cross_chain_manager_abi.EventMakeProof].ID)
+		ethEventTopicIdArr = append(ethEventTopicIdArr, common.HexToHash(MakeProofEventTopicId))
+		//event for ripple
+		ethEventTopicIdArr = append(ethEventTopicIdArr, common.HexToHash(RippleTxEventTopicId), common.HexToHash(MultiSignEventTopicId))
 		// ccm listen for relay chain
 		filterContracts = append(filterContracts, utils.CrossChainManagerContractAddress)
 	}
@@ -183,7 +189,6 @@ func NewEthereumChainListen(cfg *conf.ChainListenConfig) *EthereumChainListen {
 		nftLockProxyContracts: nftLockProxyContracts,
 		swapContract:          swapContract,
 	}
-	ethListen.ethEventTopicIds = ethEventTopicIds
 	return ethListen
 }
 

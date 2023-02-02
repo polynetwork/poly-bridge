@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
+func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	backStart := start*2 - end - 1
 	if backStart > 0 {
 		start = backStart
@@ -32,27 +32,27 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), this.filterContracts, this.filterTopics)
 	if err != nil {
 		logs.Error("fail to filter log, %v", err)
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	if len(contractLogs) == 0 {
 		//logs.Info("no event log found")
-		return nil, nil, nil, nil, 0, 0, nil
+		return nil, nil, nil, nil, nil, nil, 0, 0, nil
 	}
 
 	wrapperTransactions, err := this.getWrapperTransactions(contractLogs, this.contractAddr.wrapperContracts, this.contractAddr.nftWrapperContracts, this.contractAddr.wrapperV1Contract)
 	if err != nil {
 		logs.Error("fail to get wrapper tx, %v", err)
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	eccmLockEvents, eccmUnLockEvents, err := this.getBatchECCMEventsByLogAndContractAddr(contractLogs, this.contractAddr.ccmContractAddr)
 	if err != nil {
 		logs.Error("fail to get eccm event, %v", err)
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	proxyLockEvents, proxyUnlockEvents, swapEvents, err := this.getProxyEvents(contractLogs, this.contractAddr.lockProxyContracts, this.contractAddr.nftLockProxyContracts, this.contractAddr.swapContract)
 	if err != nil {
 		logs.Error("fail to get proxy event, %v", err)
-		return nil, nil, nil, nil, 0, 0, err
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 
 	blockTimer := make(map[uint64]uint64, 0)
@@ -79,7 +79,7 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 		timestamp, err := this.ethSdk.GetBlockTimeByNumber(k)
 		if err != nil {
 			logs.Error("fail to get block time, %v", err)
-			return nil, nil, nil, nil, 0, 0, err
+			return nil, nil, nil, nil, nil, nil, 0, 0, err
 		}
 		blockTimer[k] = timestamp
 	}
@@ -236,14 +236,15 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 	if this.ethCfg.ChainId == basedef.ZION_CROSSCHAIN_ID {
 		logs.Info("listen relay chain")
 		var polyTransactions []*models.PolyTransaction
-		polyTransactions, err = this.getBatchRelayChainECCMEventByLog(contractLogs)
+		var polyDetails []*models.PolyDetail
+		polyTransactions, polyDetails, err = this.getBatchRelayChainCCMEventByLog(contractLogs)
 		if err != nil {
 			logs.Error("fail to get relay chain event by log, %v", err)
-			return wrapperTransactions, srcTransactions, nil, dstTransactions, len(proxyLockEvents), len(proxyUnlockEvents), err
+			return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, polyDetails, len(proxyLockEvents), len(proxyUnlockEvents), err
 		}
-		return wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, len(proxyLockEvents), len(proxyUnlockEvents), nil
+		return wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, nil, polyDetails, len(proxyLockEvents), len(proxyUnlockEvents), nil
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, len(proxyLockEvents), len(proxyUnlockEvents), nil
+	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(proxyLockEvents), len(proxyUnlockEvents), nil
 }
 
 func (this *EthereumChainListen) getWrapperTransactions(contractLogs []types.Log, wrapperContracts []common.Address, nftWrapperContracts []common.Address, wrapperV1Contract common.Address) ([]*models.WrapperTransaction, error) {
@@ -277,8 +278,8 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractLogs []types.Log
 			continue
 		}
 
-		switch v.Topics[0] {
-		case this.ethEventTopicIds.eventPolyWrapperLockId:
+		switch v.Topics[0].String() {
+		case EventPolyWrapperLockId:
 			evt, err := wrapperContractAbi.ParsePolyWrapperLock(v)
 			if err == nil {
 				wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
@@ -324,8 +325,8 @@ func (this *EthereumChainListen) ParseNFTWrapperEventByLog(contractLogs []types.
 		if !addr.InSlice(v.Address, nftWrapperContracts...) {
 			continue
 		}
-		switch v.Topics[0] {
-		case this.ethEventTopicIds.eventNftPolyWrapperLockId:
+		switch v.Topics[0].String() {
+		case EventNftPolyWrapperLockId:
 			evt, err := nftWrapperContractAbi.ParsePolyWrapperLock(v)
 			if err == nil {
 				wtx := wrapLockEvent2WrapTx(evt)
@@ -338,69 +339,120 @@ func (this *EthereumChainListen) ParseNFTWrapperEventByLog(contractLogs []types.
 	return wrapperTransactions, nil
 }
 
-func (this *EthereumChainListen) getBatchRelayChainECCMEventByLog(contractLogs []types.Log) ([]*models.PolyTransaction, error) {
-	eccmContractAddress := utils.CrossChainManagerContractAddress
+func (this *EthereumChainListen) getBatchRelayChainCCMEventByLog(contractLogs []types.Log) ([]*models.PolyTransaction, []*models.PolyDetail, error) {
+	ccmContractAddress := utils.CrossChainManagerContractAddress
 	client := this.ethSdk.GetClient()
 	if client == nil {
-		return nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
+		return nil, nil, fmt.Errorf("getECCMEventByBlockNumber GetClient error: nil")
 	}
-	eccmContract, err := cross_chain_manager_abi.NewCrossChainManagerAbiFilterer(eccmContractAddress, client)
+	ccmContract, err := cross_chain_manager_abi.NewCrossChainManagerAbiFilterer(ccmContractAddress, client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	polyTransactions := make([]*models.PolyTransaction, 0)
+	polyDetails := make([]*models.PolyDetail, 0)
 	for _, v := range contractLogs {
-		crossChainEvent, parseErr := eccmContract.ParseMakeProof(v)
-		if parseErr != nil {
-			return nil, fmt.Errorf("ParseMakeProof err :%s", parseErr.Error())
-		}
 		var timeCur, heightCur uint64
-		var value []byte
-		param := new(models.ToMerkleValue)
-		value, err = hex.DecodeString(crossChainEvent.MerkleValueHex)
-		if err != nil {
-			fmt.Println("hex.DecodeString(ev.MerkleValueHex) err", err)
-			return nil, err
-		}
-		err = rlp.DecodeBytes(value, param)
-		if err != nil {
-			err = fmt.Errorf("rlp decode poly merkle value error %v", err)
-			//return nil, err
-			fmt.Println(err)
-			return nil, err
-		}
-		evt := crossChainEvent
-		fee := this.GetConsumeGas(crossChainEvent.Raw.TxHash)
-
-		if evt.BlockHeight != heightCur {
-			heightCur = evt.BlockHeight
+		if v.BlockNumber != heightCur {
+			heightCur = v.BlockNumber
 			timeCur, err = this.ethSdk.GetBlockTimeByNumber(heightCur)
 			if err != nil {
 				fmt.Println(err)
-				return nil, err
+				return nil, nil, err
 			}
 		}
-		polyTransactions = append(polyTransactions, &models.PolyTransaction{
-			Hash:       evt.Raw.TxHash.String()[2:],
-			ChainId:    this.GetChainId(),
-			State:      1,
-			Fee:        models.NewBigIntFromInt(int64(fee)),
-			Height:     evt.Raw.BlockNumber,
-			DstChainId: param.MakeTxParam.ToChainID,
-			SrcChainId: param.FromChainID,
-			SrcHash: func() string {
-				switch param.FromChainID {
-				case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
-					return basedef.HexStringReverse(hex.EncodeToString(param.MakeTxParam.TxHash))
-				default:
-					return hex.EncodeToString(param.MakeTxParam.TxHash)
-				}
-			}(),
-			Time: timeCur,
-		})
+		switch v.Topics[0].String() {
+		case RippleTxEventTopicId:
+			event, parseErr := ccmContract.ParseRippleTx(v)
+			if parseErr != nil {
+				return nil, nil, fmt.Errorf("ParseRippleTx err :%s", parseErr.Error())
+			}
+			polyDetails = append(polyDetails, &models.PolyDetail{
+				ChainId:    basedef.ZION_CROSSCHAIN_ID,
+				Hash:       v.TxHash.String()[2:],
+				State:      1,
+				Fee:        &models.BigInt{*big.NewInt(0)},
+				Time:       timeCur,
+				Height:     heightCur,
+				SrcChainId: event.FromChainId,
+				DstChainId: event.ToChainId,
+				SrcHash: func() string {
+					switch event.FromChainId {
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+						return basedef.HexStringReverse(event.TxHash)
+					default:
+						return event.TxHash
+					}
+				}(),
+				DstSequence: uint64(event.Sequence),
+			})
+		case MultiSignEventTopicId:
+			event, parseErr := ccmContract.ParseMultiSign(v)
+			if parseErr != nil {
+				return nil, nil, fmt.Errorf("ParseMultiSign err :%s", parseErr.Error())
+			}
+			polyTransactions = append(polyTransactions, &models.PolyTransaction{
+				Hash:       v.TxHash.String()[2:],
+				ChainId:    basedef.ZION_CROSSCHAIN_ID,
+				State:      1,
+				Fee:        &models.BigInt{*big.NewInt(0)},
+				Height:     heightCur,
+				DstChainId: event.ToChainId,
+				SrcChainId: event.FromChainId,
+				SrcHash: func() string {
+					switch event.FromChainId {
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+						return basedef.HexStringReverse(event.TxHash)
+					default:
+						return event.TxHash
+					}
+				}(),
+				Time: timeCur,
+			})
+		case MakeProofEventTopicId:
+			crossChainEvent, parseErr := ccmContract.ParseMakeProof(v)
+			if parseErr != nil {
+				return nil, nil, fmt.Errorf("ParseMakeProof err :%s", parseErr.Error())
+			}
+			var value []byte
+			param := new(models.ToMerkleValue)
+			value, err = hex.DecodeString(crossChainEvent.MerkleValueHex)
+			if err != nil {
+				fmt.Println("hex.DecodeString(ev.MerkleValueHex) err", err)
+				return nil, nil, err
+			}
+			err = rlp.DecodeBytes(value, param)
+			if err != nil {
+				err = fmt.Errorf("rlp decode poly merkle value error %v", err)
+				//return nil, err
+				fmt.Println(err)
+				return nil, nil, err
+			}
+			evt := crossChainEvent
+			fee := this.GetConsumeGas(crossChainEvent.Raw.TxHash)
+
+			polyTransactions = append(polyTransactions, &models.PolyTransaction{
+				Hash:       evt.Raw.TxHash.String()[2:],
+				ChainId:    this.GetChainId(),
+				State:      1,
+				Fee:        models.NewBigIntFromInt(int64(fee)),
+				Height:     evt.Raw.BlockNumber,
+				DstChainId: param.MakeTxParam.ToChainID,
+				SrcChainId: param.FromChainID,
+				SrcHash: func() string {
+					switch param.FromChainID {
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+						return basedef.HexStringReverse(hex.EncodeToString(param.MakeTxParam.TxHash))
+					default:
+						return hex.EncodeToString(param.MakeTxParam.TxHash)
+					}
+				}(),
+				Time: timeCur,
+			})
+		}
 	}
 
-	return polyTransactions, nil
+	return polyTransactions, polyDetails, nil
 }
 
 func (this *EthereumChainListen) getBatchECCMEventsByLogAndContractAddr(contractLogs []types.Log, ccmContract common.Address) ([]*models.ECCMLockEvent, []*models.ECCMUnlockEvent, error) {
@@ -419,8 +471,8 @@ func (this *EthereumChainListen) getBatchECCMEventsByLogAndContractAddr(contract
 		if !addr.InSlice(v.Address, ccmContract) {
 			continue
 		}
-		switch v.Topics[0] {
-		case this.ethEventTopicIds.eventCrossChainEventId:
+		switch v.Topics[0].String() {
+		case EventCrossChainEventId:
 			evt, err := ccmContractAbi.ParseCrossChainEvent(v)
 			if err == nil {
 				user := evt.Sender
@@ -448,7 +500,7 @@ func (this *EthereumChainListen) getBatchECCMEventsByLogAndContractAddr(contract
 			} else {
 				logs.Error("fail to ParseCrossChainEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.ethEventTopicIds.eventVerifyHeaderAndExecuteTxEventId:
+		case EventVerifyHeaderAndExecuteTxEventId:
 			evt, err := ccmContractAbi.ParseVerifyHeaderAndExecuteTxEvent(v)
 			if err == nil {
 				Fee := this.GetConsumeGas(evt.Raw.TxHash)
@@ -512,8 +564,8 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractLogs []types.L
 		if !addr.InSlice(v.Address, lockProxyContracts...) {
 			continue
 		}
-		switch v.Topics[0] {
-		case this.ethEventTopicIds.eventLockEventId:
+		switch v.Topics[0].String() {
+		case EventLockEventId:
 			evt, err := lockProxyContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
@@ -530,7 +582,7 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractLogs []types.L
 			} else {
 				logs.Error("fail to ParseLockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.ethEventTopicIds.eventUnlockEventId:
+		case EventUnlockEventId:
 			evt, err := lockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
@@ -565,8 +617,8 @@ func (this *EthereumChainListen) ParseNftProxyEventByLog(contractLogs []types.Lo
 		if !addr.InSlice(v.Address, nftProxyContracts...) {
 			continue
 		}
-		switch v.Topics[0] {
-		case this.ethEventTopicIds.eventNftLockEventId:
+		switch v.Topics[0].String() {
+		case EventNftLockEventId:
 			evt, err := nftLockProxyContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvent := convertLockProxyEvent(evt)
@@ -574,7 +626,7 @@ func (this *EthereumChainListen) ParseNftProxyEventByLog(contractLogs []types.Lo
 			} else {
 				logs.Error("fail to ParseLockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.ethEventTopicIds.eventNftUnlockEventId:
+		case EventNftUnlockEventId:
 			evt, err := nftLockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvent := convertUnlockProxyEvent(evt)
@@ -604,8 +656,8 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 		if !addr.InSlice(v.Address, swapContract) {
 			continue
 		}
-		switch v.Topics[0] {
-		case this.ethEventTopicIds.eventAddLiquidityEventId:
+		switch v.Topics[0].String() {
+		case EventAddLiquidityEventId:
 			evt, err := swapperContractAbi.ParseAddLiquidityEvent(v)
 			if err == nil {
 				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
@@ -625,7 +677,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 			} else {
 				logs.Error("fail to ParseAddLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.ethEventTopicIds.eventRemoveLiquidityEventId:
+		case EventRemoveLiquidityEventId:
 			evt, err := swapperContractAbi.ParseRemoveLiquidityEvent(v)
 			if err == nil {
 				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
@@ -645,7 +697,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 			} else {
 				logs.Error("fail to ParseRemoveLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.ethEventTopicIds.eventSwapEventId:
+		case EventSwapEventId:
 			evt, err := swapperContractAbi.ParseSwapEvent(v)
 			if err == nil {
 				swapLockEvents = append(swapLockEvents, &models.SwapLockEvent{
@@ -665,7 +717,7 @@ func (this *EthereumChainListen) ParseSwapProxyEventByLog(contractLogs []types.L
 			} else {
 				logs.Error("fail to ParseSwapEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.ethEventTopicIds.eventSwapperLockEventId:
+		case EventSwapperLockEventId:
 			evt, err := swapperContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{

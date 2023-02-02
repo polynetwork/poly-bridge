@@ -87,8 +87,8 @@ func (this *OntevmChainListen) GetBatchLength() (uint64, uint64) {
 	return this.ontevmCfg.MinBatchLength, this.ontevmCfg.MaxBatchLength
 }
 
-func (this *OntevmChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
-	return nil, nil, nil, nil, 0, 0, nil
+func (this *OntevmChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
+	return nil, nil, nil, nil, nil, nil, 0, 0, nil
 }
 
 func (this *OntevmChainListen) isListeningContract(contract string, contracts ...string) bool {

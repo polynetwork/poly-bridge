@@ -63,8 +63,8 @@ func (this *SwitcheoChainListen) GetBatchLength() (uint64, uint64) {
 	return this.swthCfg.MinBatchLength, this.swthCfg.MaxBatchLength
 }
 
-func (this *SwitcheoChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, int, int, error) {
-	return nil, nil, nil, nil, 0, 0, nil
+func (this *SwitcheoChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
+	return nil, nil, nil, nil, nil, nil, 0, 0, nil
 }
 
 func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {

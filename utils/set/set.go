@@ -3,6 +3,7 @@ package set
 import (
 	"bytes"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"sync"
 )
 
@@ -12,6 +13,14 @@ type HashSet struct {
 }
 
 func NewSetFromUint64(data []uint64) *HashSet {
+	set := &HashSet{m: make(map[interface{}]bool)}
+	for _, v := range data {
+		set.Add(v)
+	}
+	return set
+}
+
+func NewSetFromHash(data []common.Hash) *HashSet {
 	set := &HashSet{m: make(map[interface{}]bool)}
 	for _, v := range data {
 		set.Add(v)
