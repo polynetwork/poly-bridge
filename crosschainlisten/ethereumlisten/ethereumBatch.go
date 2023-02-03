@@ -441,7 +441,7 @@ func (this *EthereumChainListen) getBatchRelayChainCCMEventByLog(contractLogs []
 				SrcChainId: param.FromChainID,
 				SrcHash: func() string {
 					switch param.FromChainID {
-					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID, basedef.ONT_CROSSCHAIN_ID:
+					case basedef.NEO_CROSSCHAIN_ID, basedef.NEO3_CROSSCHAIN_ID:
 						return basedef.HexStringReverse(hex.EncodeToString(param.MakeTxParam.TxHash))
 					default:
 						return hex.EncodeToString(param.MakeTxParam.TxHash)

@@ -78,16 +78,16 @@ func TestEthereumChainListen_HandleNewBlock3(t *testing.T) {
 		panic(err)
 	}
 	fmt.Printf("current directory: %s\n", dir)
-	config := conf.NewConfig("./config.json")
+	config := conf.NewConfig("../../../config_testnet_local_zion.json")
 	if config == nil {
 		panic("read config failed!")
 	}
-	ethListenConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
-	if ethListenConfig == nil {
+	ListenConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
+	if ListenConfig == nil {
 		panic("config is not valid")
 	}
-	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(17217880)
+	chainHandle := crosschainlisten.NewChainHandle(ListenConfig)
+	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(17220751)
 	if err != nil {
 		fmt.Println("err", err)
 	}

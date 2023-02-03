@@ -193,8 +193,8 @@ func (this *OntevmChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							Fee:        models.NewBigInt(fee),
 							Height:     height,
 							SrcChainId: evt.FromChainID,
-							Contract:   models.FormatString(basedef.HexStringReverse(hex.EncodeToString(evt.ToContract))),
-							PolyHash:   basedef.HexStringReverse(hex.EncodeToString(evt.CrossChainTxHash)),
+							Contract:   models.FormatString(hex.EncodeToString(evt.ToContract)),
+							PolyHash:   hex.EncodeToString(evt.CrossChainTxHash),
 						})
 						txHash2User[basedef.HexStringReverse(event.TxHash)] = ""
 					}

@@ -642,7 +642,7 @@ func (dao *BridgeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.W
 	var feePayFloat64, feeMinFloat64, PaidGasFloat64 float64
 	for _, v := range wrapperTransactions {
 		wrapperTx := new(models.WrapperTransaction)
-		res := dao.db.Where("hash = ?").First(wrapperTx)
+		res := dao.db.Where("hash = ?", v.Hash).First(wrapperTx)
 		if res.RowsAffected != 0 {
 			v.IsPaid = wrapperTx.IsPaid
 			v.PaidGas = wrapperTx.PaidGas
