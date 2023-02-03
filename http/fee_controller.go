@@ -234,11 +234,7 @@ func (c *FeeController) GetFee() {
 		if tokenMap.DstChainId != basedef.PLT_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.PLT2_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.BCSPALETTE_CROSSCHAIN_ID && tokenMap.DstChainId != basedef.BCSPALETTE2_CROSSCHAIN_ID {
 			tokenBalance, err = cacheRedis.Redis.GetTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 			if err != nil {
-				ethChains := make(map[uint64]struct{})
-				for _, chainId := range basedef.ETH_CHAINS {
-					ethChains[chainId] = struct{}{}
-				}
-				if _, ok := ethChains[tokenMap.DstChainId]; ok {
+				if basedef.IsETHChain(tokenMap.DstChainId) {
 					var dstLockProxies []string
 					for _, cfg := range conf.GlobalConfig.ChainListenConfig {
 						if cfg.ChainId == tokenMap.DstChainId {
@@ -251,7 +247,7 @@ func (c *FeeController) GetFee() {
 					dstLockProxy, ok := dstLockProxyMap[lockProxyKey]
 					if !ok || len(dstLockProxy) == 0 {
 						dstLockProxy, err = common.GetBoundLockProxy(dstLockProxies, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, tokenMap.SrcChainId, tokenMap.DstChainId)
-						logs.Info("GetBoundLockProxy srcChain=%d, srcTokenHash=%s, dstTokenHash=%s dstLockProxy=%s, err=%s", tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, dstLockProxy, err)
+						logs.Info("GetBoundLockProxy srcChain=%d, srcTokenHash=%s, dstTokenHash=%s dstLockProxy=%s, err=%v", tokenMap.SrcChainId, tokenMap.SrcTokenHash, tokenMap.DstTokenHash, dstLockProxy, err)
 						if err == nil {
 							dstLockProxyMap[lockProxyKey] = dstLockProxy
 						}
@@ -261,7 +257,6 @@ func (c *FeeController) GetFee() {
 				} else {
 					tokenBalance, err = common.GetBalance(tokenMap.DstChainId, tokenMap.DstTokenHash)
 				}
-
 				if err != nil {
 					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 					if err != nil {

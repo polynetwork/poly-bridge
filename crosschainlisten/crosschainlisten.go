@@ -51,6 +51,10 @@ import (
 
 var chainListens = make([]*CrossChainListen, 0)
 
+func GetChainSdk() {
+
+}
+
 func StartCrossChainListen(config *conf.Config) {
 	dao := crosschaindao.NewCrossChainDao(config.Server, config.Backup, config.DBConfig)
 	if dao == nil {

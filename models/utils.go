@@ -415,7 +415,10 @@ func GetZkSyncL1Height(zkChain, l1Chain *Chain) (height uint64, err error) {
 		}
 		l1Latest = l1Chain.Height
 
-		sdk := bcommon.GetSdk(basedef.ETHEREUM_CROSSCHAIN_ID)
+		sdk, errSdk := bcommon.GetSdk(basedef.ETHEREUM_CROSSCHAIN_ID)
+		if errSdk != nil {
+			return 0, errSdk
+		}
 		if pro, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
 			l1Client = pro.GetClient()
 		} else {

@@ -20,6 +20,7 @@ package chainsdk
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/polynetwork/bridge-common/chains/eth"
 	"math"
 	"math/big"
 	"poly-bridge/basedef"
@@ -482,14 +483,12 @@ func (pro *EthereumSdkPro) reset(info *EthereumInfo) *EthereumInfo {
 	return pro.GetLatest()
 }
 
-func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash, dstTokenHash string, chainId uint64) (string, error) {
-	info := pro.GetLatest()
+func GetBoundLockProxy(lockProxies []string, srcTokenHash, dstTokenHash string, srChainId uint64, sdk *eth.SDK) (string, error) {
 	dstTokenAddress := common.HexToAddress(dstTokenHash)
-
-	if info != nil {
+	if sdk.Available() {
 		for _, proxy := range lockProxies {
 			proxyAddr := common.HexToAddress(proxy)
-			boundAsset, err := info.sdk.GetBoundAssetHash(dstTokenAddress, proxyAddr, chainId)
+			boundAsset, err := GetBoundAssetHash(dstTokenAddress, proxyAddr, srChainId, sdk)
 			if err != nil || boundAsset == nil {
 				logs.Info("GetBoundAssetHash err:%s", err)
 				continue
@@ -500,7 +499,7 @@ func (pro *EthereumSdkPro) GetBoundLockProxy(lockProxies []string, srcTokenHash,
 			addrHash := (boundAsset.Hex())[2:]
 			logs.Info("GetBoundAssetHash addrHash=%s", addrHash)
 
-			switch chainId {
+			switch srChainId {
 			case basedef.STARCOIN_CROSSCHAIN_ID:
 				srcTokenHashByteString := strings.ToLower(hex.EncodeToString([]byte(srcTokenHash)))
 				if strings.Contains(srcTokenHashByteString, strings.ToLower(addrHash)) {

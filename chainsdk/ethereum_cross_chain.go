@@ -23,6 +23,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/polynetwork/bridge-common/chains/eth"
 	"math/big"
 	"poly-bridge/go_abi/eccd_abi"
 	"poly-bridge/go_abi/eccm_abi"
@@ -722,11 +723,11 @@ func (s *EthereumSdk) backend() bind.ContractBackend {
 	return s.rawClient
 }
 
-func (s *EthereumSdk) GetBoundAssetHash(
+func GetBoundAssetHash(
 	assetHash, lockProxy common.Address,
-	chainId uint64,
+	chainId uint64, sdk *eth.SDK,
 ) (*common.Address, error) {
-	proxy, err := erc20lp.NewLockProxy(lockProxy, s.backend())
+	proxy, err := erc20lp.NewLockProxy(lockProxy, sdk.Node())
 	opts := &bind.CallOpts{
 		From:    lockProxy,
 		Context: context.Background(),

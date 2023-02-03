@@ -27,7 +27,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/polynetwork/bridge-common/chains/eth"
 	"poly-bridge/basedef"
+	erc20 "poly-bridge/go_abi/mintable_erc20_abi"
 
 	//"github.com/polynetwork/eth-contracts/go_abi/erc20_abi"
 	"math/big"
@@ -234,6 +236,24 @@ func (s *EthereumSdk) EstimateGas(msg ethereum.CallMsg) (uint64, error) {
 //	}
 //	return balance.Uint64(), nil
 //}
+
+func GetEthErc20Balance(token, owner string, client *eth.Client) (balance *big.Int, err error) {
+	tokenAddress := common.HexToAddress(token)
+	ownerAddr := common.HexToAddress(owner)
+	if basedef.IsNativeTokenAddress(token) {
+		var result hexutil.Big
+		ctx := context.Background()
+		err = client.Rpc.CallContext(ctx, &result, "eth_getBalance", "0x"+owner, "latest")
+		balance = (*big.Int)(&result)
+	} else {
+		var contract *erc20.ERC20Extended
+		contract, err = erc20.NewERC20Mintable(tokenAddress, client)
+		if err == nil {
+			balance, err = contract.BalanceOf(nil, ownerAddr)
+		}
+	}
+	return
+}
 
 func (s *EthereumSdk) EthBalance(addr string) (*big.Int, error) {
 	var result hexutil.Big
