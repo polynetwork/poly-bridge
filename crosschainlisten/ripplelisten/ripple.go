@@ -113,6 +113,9 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						fee = feeAmount
 					}
 				}
+				if txData.MetaData.DeliveredAmount == nil {
+					continue
+				}
 				nonNative, err := txData.MetaData.DeliveredAmount.NonNative()
 				if err != nil {
 					logs.Error("chian :%v, height: %v, txhasah: %v, txData.MetaData.DeliveredAmount.NonNative() err: %v", this.GetChainName(), height, payment.Hash.String(), err)

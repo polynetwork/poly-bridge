@@ -82,12 +82,12 @@ func TestEthereumChainListen_HandleNewBlock3(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ListenConfig := config.GetChainListenConfig(basedef.ONT_CROSSCHAIN_ID)
+	ListenConfig := config.GetChainListenConfig(basedef.RIPPLE_CROSSCHAIN_ID)
 	if ListenConfig == nil {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ListenConfig)
-	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(17220751)
+	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(34992923)
 	if err != nil {
 		fmt.Println("err", err)
 	}

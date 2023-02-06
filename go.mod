@@ -40,5 +40,8 @@ replace (
 	github.com/ethereum/go-ethereum v1.10.11 => github.com/ethereum/go-ethereum v1.9.25
 	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20210126025041-8d21ec4f0324
 	github.com/polynetwork/kai-relayer => github.com/dogecoindev/kai-relayer v0.0.0-20210609112229-34bf794e78e7
-	github.com/rubblelabs/ripple v0.0.0-20220222071018-38c1a8b14c18 => github.com/siovanus/ripple v0.0.0-20220406100637-81f6afe283d9
+	//github.com/rubblelabs/ripple v0.0.0-20220222071018-38c1a8b14c18 => github.com/siovanus/ripple v0.0.0-20220406100637-81f6afe283d9
+	github.com/polynetwork/ripple-sdk => github.com/siovanus/ripple-sdk v0.0.0-20230113103625-9795771fe0fc
+	github.com/rubblelabs/ripple => github.com/siovanus/ripple v0.0.0-20230113075118-4a31480c1af2
+
 )
