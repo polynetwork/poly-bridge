@@ -18,6 +18,7 @@
 package chainsdk
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
@@ -35,6 +36,7 @@ import (
 	"poly-bridge/conf"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Neo3Sdk struct {
@@ -60,6 +62,12 @@ type NeoRpcRequest struct {
 	Method  string      `json:"method"`
 	Params  interface{} `json:"params"`
 	Id      int         `json:"id"`
+}
+
+type GetBatchApplicationLogResponse struct {
+	rpc.RpcResponse
+	rpc.ErrorResponse
+	Result *models.RpcApplicationLog `json:"result"`
 }
 
 type GetAssetsHeldByContractHashAddressRsp struct {
@@ -88,6 +96,19 @@ func NewNeo3Sdk(url string) *Neo3Sdk {
 		client: rpc.NewClient(url),
 		url:    url,
 	}
+}
+
+func newBatchRequest(method string, params [][]interface{}) []NeoRpcRequest {
+	req := make([]NeoRpcRequest, len(params))
+	for id, v := range params {
+		req[id] = NeoRpcRequest{
+			JsonRpc: "2.0",
+			Method:  method,
+			Params:  v,
+			Id:      id,
+		}
+	}
+	return req
 }
 
 func (sdk *Neo3Sdk) GetClient() *rpc.RpcClient {
@@ -120,6 +141,55 @@ func (sdk *Neo3Sdk) GetApplicationLog(txId string) (*models.RpcApplicationLog, e
 		return nil, fmt.Errorf("%s", res.ErrorResponse.Error.Message)
 	}
 	return &res.Result, nil
+}
+
+func (sdk *Neo3Sdk) GetBatchApplicationLog(txId []string) ([]*models.RpcApplicationLog, error) {
+	var res []GetBatchApplicationLogResponse
+	var applicationLogs []*models.RpcApplicationLog
+	var params [][]interface{}
+	for _, v := range txId {
+		params = append(params, []interface{}{v})
+	}
+	err := sdk.makeBatchRequest("getapplicationlog", params, &res)
+	if err != nil {
+		return nil, err
+	}
+	for i, v := range res {
+		if res[i].ErrorResponse.Error.Message != "" {
+			return nil, fmt.Errorf("%s", res[i].ErrorResponse.Error.Message)
+		}
+		applicationLogs = append(applicationLogs, v.Result)
+	}
+
+	return applicationLogs, nil
+}
+
+func (sdk *Neo3Sdk) makeBatchRequest(method string, params [][]interface{}, out interface{}) error {
+	request := newBatchRequest(method, params)
+	jsonValue, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", sdk.client.Endpoint.String(), bytes.NewBuffer(jsonValue))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("content-type", "application/json")
+	req.Header.Set("Connection", "close")
+	req.Close = true
+	httpClient := &http.Client{
+		Timeout: time.Second * 60,
+	}
+	res, err := httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(&out)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (sdk *Neo3Sdk) GetTransactionHeight(hash string) (uint64, error) {

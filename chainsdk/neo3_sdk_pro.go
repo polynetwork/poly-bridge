@@ -156,6 +156,23 @@ func (pro *Neo3SdkPro) GetApplicationLog(txId string) (*models.RpcApplicationLog
 	return nil, fmt.Errorf("all node is not working")
 }
 
+func (pro *Neo3SdkPro) GetBatchApplicationLog(txId []string) ([]*models.RpcApplicationLog, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		logs, err := info.sdk.GetBatchApplicationLog(txId)
+		if err != nil && !strings.Contains(err.Error(), "json: cannot") {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return logs, nil
+		}
+	}
+	return nil, fmt.Errorf("all node is not working")
+}
+
 func (pro *Neo3SdkPro) Nep17Info(hash string) (string, string, int64, error) {
 	info := pro.GetLatest()
 	if info == nil {

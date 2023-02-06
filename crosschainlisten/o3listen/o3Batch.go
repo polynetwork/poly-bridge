@@ -16,9 +16,8 @@ import (
 )
 
 func (this *O3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
-	backStart := start*2 - end - 1
-	if backStart > 0 {
-		start = backStart
+	if start*2 > end+1 {
+		start = start*2 - end - 1
 	}
 	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), this.filterContracts, this.filterTopics)
 	if err != nil {

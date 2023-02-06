@@ -35,7 +35,7 @@ import (
 
 const (
 	_neo_crosschainlock   = "CrossChainLockEvent"
-	_neo_crosschainunlock = "CrossChainUnlockEvent"
+	_neo_crosschainunlock = "VerifyAndExecuteTxSuccess"
 	_neo_lock             = "Lock"
 	_neo_lock2            = "LockEvent"
 	_neo_unlock           = "UnlockEvent"
@@ -103,10 +103,10 @@ func (this *Neo3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.W
 }
 
 func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
-	var errTxHash string
+	var currTxHash string
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error("Neo N3 chain listen issue: %s, %v, hash: %s", string(debug.Stack()), r, height, errTxHash)
+			logs.Error("Neo N3 chain listen issue: %s, %v, hash: %s", string(debug.Stack()), r, height, currTxHash)
 		}
 	}()
 	block, err := this.neoSdk.GetBlockByIndex(height)
@@ -124,12 +124,18 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	wrapperContracts := make([]string, 0)
 	wrapperContracts = append(wrapperContracts, this.neoCfg.WrapperContract...)
 	wrapperContracts = append(wrapperContracts, this.neoCfg.NFTWrapperContract...)
-	for _, tx := range block.Tx {
-		errTxHash = tx.Hash
-		appLog, err := this.neoSdk.GetApplicationLog(tx.Hash)
-		if err != nil || appLog == nil {
-			continue
-		}
+	txHashArr := make([]string, len(block.Tx))
+	for i, v := range block.Tx {
+		txHashArr[i] = v.Hash
+	}
+	appLogs, err := this.neoSdk.GetBatchApplicationLog(txHashArr)
+
+	if err != nil {
+		logs.Error("fail to get neo3 application log, block: %d, err: %v", height, err)
+		return nil, nil, nil, nil, nil, nil, 0, 0, nil
+	}
+	for txId, appLog := range appLogs {
+		currTxHash = txHashArr[txId][2:]
 		for _, exeitem := range appLog.Executions {
 			if exeitem.VMState == "FAULT" {
 				continue
@@ -151,7 +157,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					eventName := notify.EventName
 					switch eventName {
 					case _poly_wrapper_lock:
-						logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), tx.Hash[2:])
+						logs.Info("(wrapper) from chain: %s, txhash: %s", this.GetChainName(), currTxHash)
 						if len(states) < 7 {
 							continue
 						}
@@ -174,7 +180,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						encodeUserString := states[1].Value.(string)
 						decodeUserBytes, err := base64.StdEncoding.DecodeString(encodeUserString)
 						if err != nil {
-							logs.Error("txhash: %s decode wrapper user: %s err: %s", tx.Hash[2:], encodeUserString, err)
+							logs.Error("txhash: %s decode wrapper user: %s err: %s", currTxHash, encodeUserString, err)
 							continue
 						}
 						user := hex.EncodeToString(decodeUserBytes)
@@ -182,7 +188,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						encodeDstUserString := states[3].Value.(string)
 						decodeDstUserBytes, err := base64.StdEncoding.DecodeString(encodeDstUserString)
 						if err != nil {
-							logs.Error("txhash: %s decode wrapper dst user: %s err: %s", tx.Hash[2:], encodeDstUserString, err)
+							logs.Error("txhash: %s decode wrapper dst user: %s err: %s", currTxHash, encodeDstUserString, err)
 							continue
 						}
 						dstUser := hex.EncodeToString(decodeDstUserBytes)
@@ -194,7 +200,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(states[5].Value.(string)), 16)
 						}
 						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
-							Hash:         tx.Hash[2:],
+							Hash:         currTxHash,
 							User:         user,
 							DstChainId:   tchainId.Uint64(),
 							DstUser:      dstUser,
@@ -221,7 +227,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 					eventName := notify.EventName
 					switch eventName {
 					case _neo_crosschainlock:
-						logs.Info("(lock) from chain: %s, height:%d, txhash: %s", this.GetChainName(), height, tx.Hash[2:])
+						logs.Info("(lock) from chain: %s, height:%d, txhash: %s", this.GetChainName(), height, currTxHash)
 						if len(states) < 5 {
 							continue
 						}
@@ -253,7 +259,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								dstUser, _ := statesNew[4].ToParameter()
 								dstAsset, _ := statesNew[3].ToParameter()
 								fctransfer.ChainId = this.GetChainId()
-								fctransfer.TxHash = tx.Hash[2:]
+								fctransfer.TxHash = currTxHash
 								fctransfer.Time = uint64(tt)
 								fctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								fctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
@@ -283,7 +289,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						}
 						fctx := &models.SrcTransaction{}
 						fctx.ChainId = this.GetChainId()
-						fctx.Hash = tx.Hash[2:]
+						fctx.Hash = currTxHash
 						fctx.State = 1
 						fctx.Fee = models.NewBigInt(big.NewInt(int64(basedef.String2Float64(exeitem.GasConsumed))))
 						fctx.Time = uint64(tt)
@@ -297,12 +303,12 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						fctx.SrcTransfer = fctransfer
 						srcTransactions = append(srcTransactions, fctx)
 					case _neo_crosschainunlock:
-						logs.Info("(unlock) to chain: %s, height:%d, txhash: %s", this.GetChainName(), height, tx.Hash[2:])
+						logs.Info("(unlock) to chain: %s, height:%d, txhash: %s", this.GetChainName(), height, currTxHash)
 						if len(states) < 3 {
 							continue
 						}
-						aaa, _ := states[0].ToParameter()
-						fromChainId := new(big.Int).SetBytes(basedef.HexReverse(aaa.Value.([]byte)))
+
+						fromChainId, _ := states[0].ToParameter()
 						contract, _ := states[1].ToParameter()
 						polyHash, _ := states[2].ToParameter()
 						tctransfer := &models.DstTransfer{}
@@ -326,7 +332,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 								amount, _ := statesNew[2].ToParameter()
 								asset, _ := statesNew[0].ToParameter()
 								tctransfer.ChainId = this.GetChainId()
-								tctransfer.TxHash = tx.Hash[2:]
+								tctransfer.TxHash = currTxHash
 								tctransfer.Time = uint64(tt)
 								tctransfer.From = hex.EncodeToString(fromAddress.Value.([]byte))
 								tctransfer.To = hex.EncodeToString(toAddress.Value.([]byte))
@@ -342,14 +348,14 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						}
 						tctx := &models.DstTransaction{}
 						tctx.ChainId = this.GetChainId()
-						tctx.Hash = tx.Hash[2:]
+						tctx.Hash = currTxHash
 						tctx.State = 1
 						tctx.Fee = models.NewBigInt(big.NewInt(int64(basedef.String2Float64(exeitem.GasConsumed))))
 						tctx.Time = uint64(tt)
 						tctx.Height = height
-						tctx.SrcChainId = fromChainId.Uint64()
+						tctx.SrcChainId = fromChainId.Value.(*big.Int).Uint64()
 						tctx.Contract = basedef.HexStringReverse(hex.EncodeToString(contract.Value.([]byte)))
-						tctx.PolyHash = basedef.HexStringReverse(hex.EncodeToString(polyHash.Value.([]byte)))
+						tctx.PolyHash = hex.EncodeToString(polyHash.Value.([]byte))
 						tctx.Standard = tctransfer.Standard
 						tctx.DstTransfer = tctransfer
 						dstTransactions = append(dstTransactions, tctx)

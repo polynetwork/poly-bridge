@@ -25,14 +25,14 @@ func TestEthereumChainListen_HandleNewBatchBlock(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	_, _, polyTransactions, _, _, polyDetails, _, _, err := chainHandle.HandleNewBatchBlock(437101, 437501)
+	_, _, polyTransactions, _, _, polyDetails, _, _, err := chainHandle.HandleNewBatchBlock(1, 3)
 	if err != nil {
-		fmt.Println("err", err)
+		fmt.Println("handle err", err)
 	}
-	a, _ := json.MarshalIndent(polyTransactions, "", "	")
+	a, err := json.MarshalIndent(polyTransactions, "", "	")
 	fmt.Println("tx", string(a))
 	if err != nil {
-		fmt.Println("err", err)
+		fmt.Println("marshal err", err)
 	}
 	a, _ = json.MarshalIndent(polyDetails, "", "	")
 
@@ -82,12 +82,12 @@ func TestEthereumChainListen_HandleNewBlock3(t *testing.T) {
 	if config == nil {
 		panic("read config failed!")
 	}
-	ListenConfig := config.GetChainListenConfig(basedef.RIPPLE_CROSSCHAIN_ID)
+	ListenConfig := config.GetChainListenConfig(basedef.NEO3_CROSSCHAIN_ID)
 	if ListenConfig == nil {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ListenConfig)
-	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(34992923)
+	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(147736)
 	if err != nil {
 		fmt.Println("err", err)
 	}

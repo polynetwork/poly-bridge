@@ -25,9 +25,9 @@ import (
 )
 
 func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
-	backStart := start*2 - end - 1
-	if backStart > 0 {
-		start = backStart
+	//make sure every block handled twice
+	if start*2 > end+1 {
+		start = start*2 - end - 1
 	}
 	contractLogs, err := this.ethSdk.FilterLog(big.NewInt(int64(start)), big.NewInt(int64(end)), this.filterContracts, this.filterTopics)
 	if err != nil {
@@ -357,7 +357,6 @@ func (this *EthereumChainListen) getBatchRelayChainCCMEventByLog(contractLogs []
 			heightCur = v.BlockNumber
 			timeCur, err = this.ethSdk.GetBlockTimeByNumber(heightCur)
 			if err != nil {
-				fmt.Println(err)
 				return nil, nil, err
 			}
 		}
@@ -418,14 +417,11 @@ func (this *EthereumChainListen) getBatchRelayChainCCMEventByLog(contractLogs []
 			param := new(models.ToMerkleValue)
 			value, err = hex.DecodeString(crossChainEvent.MerkleValueHex)
 			if err != nil {
-				fmt.Println("hex.DecodeString(ev.MerkleValueHex) err", err)
-				return nil, nil, err
+				return nil, nil, fmt.Errorf("hex.DecodeString(ev.MerkleValueHex) err %v", err)
 			}
 			err = rlp.DecodeBytes(value, param)
 			if err != nil {
 				err = fmt.Errorf("rlp decode poly merkle value error %v", err)
-				//return nil, err
-				fmt.Println(err)
 				return nil, nil, err
 			}
 			evt := crossChainEvent

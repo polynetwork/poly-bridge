@@ -267,7 +267,6 @@ func (s *EthereumSdk) FilterLog(FromBlock *big.Int, ToBlock *big.Int, Addresses 
 	filterQuery.FromBlock = FromBlock
 	filterQuery.ToBlock = ToBlock
 	filterQuery.Addresses = Addresses
-	//todo 检查topic ，检查为啥 不带topic会报错
 	filterQuery.Topics = Topics
 	return s.rawClient.FilterLogs(ctx, filterQuery)
 }
