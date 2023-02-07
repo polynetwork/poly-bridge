@@ -186,9 +186,6 @@ func (ccl *CrossChainListen) HandleNewBatchBlock(start, end uint64) (w []*models
 	// chain := ccl.handle.GetChainId()
 	// var locks, unlocks int
 	w, s, p, d, wd, pd, _, _, err = ccl.handle.HandleNewBatchBlock(start, end)
-	if err != nil {
-		return
-	}
 	// logs.Error("Possible inconsistent chain %d height %d wrapper %d/%d src %d/%d dst %d/%d", chain, height, len(w), locks, len(s), locks, len(d), unlocks)
 	return
 }
@@ -272,6 +269,8 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				}
 			case basedef.ONTEVM_CROSSCHAIN_ID:
 				ccl.singleBlockHandle(chain, height)
+			case basedef.NEO3_CROSSCHAIN_ID:
+				ccl.batchBlockHandle(chain, height)
 			default:
 				if basedef.IsETHChain(ccl.handle.GetChainId()) {
 					ccl.batchBlockHandle(chain, height)

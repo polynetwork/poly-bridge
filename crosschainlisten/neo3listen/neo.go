@@ -22,8 +22,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/joeqian10/neo3-gogogo/helper"
+	neo3Models "github.com/joeqian10/neo3-gogogo/rpc/models"
 	"math/big"
+	"poly-bridge/crosschainlisten/batchlisten"
 	"runtime/debug"
+	"sync"
 
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -99,16 +102,48 @@ func (this *Neo3ChainListen) isListeningContract(contract string, contracts []st
 }
 
 func (this *Neo3ChainListen) HandleNewBatchBlock(start, end uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
-	return nil, nil, nil, nil, nil, nil, 0, 0, nil
+	if start*2 > end+1 {
+		start = start*2 - end - 1
+	}
+	var (
+		wg   sync.WaitGroup
+		size = int(end - start + 1)
+		c    = make(chan struct{})
+	)
+	blockIndexArr := make([]uint64, size)
+	for i := 0; i < size; i++ {
+		blockIndexArr[i] = uint64(i) + start
+	}
+	blocks, err := this.neoSdk.GetBatchBlockByIndex(blockIndexArr)
+	if err != nil {
+		return nil, nil, nil, nil, nil, nil, 0, 0, err
+	}
+	if len(blocks) == 0 {
+		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get neo block")
+	}
+	wrapperContracts := make([]string, 0)
+	wrapperContracts = append(wrapperContracts, this.neoCfg.WrapperContract...)
+	wrapperContracts = append(wrapperContracts, this.neoCfg.NFTWrapperContract...)
+	b := batchlisten.NewBatchListen(size, func() {
+		c <- struct{}{}
+	})
+	wg.Add(size)
+	for i := range blocks {
+		go func(v int) {
+			defer wg.Done()
+			err = this.handleSingleBlockLog(blockIndexArr[v], blocks[v], wrapperContracts, b)
+		}(i)
+		if err != nil {
+			logs.Error("Neo N3 chain listen err, height %d, hash: %s", blockIndexArr[i], blocks[i].Hash)
+		}
+	}
+	wg.Wait()
+	b.Close()
+	<-c
+	return b.WrapperTransactions, b.SrcTransactions, nil, b.DstTransactions, nil, nil, 0, 0, err
 }
 
 func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
-	var currTxHash string
-	defer func() {
-		if r := recover(); r != nil {
-			logs.Error("Neo N3 chain listen issue: %s, %v, hash: %s", string(debug.Stack()), r, height, currTxHash)
-		}
-	}()
 	block, err := this.neoSdk.GetBlockByIndex(height)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, 0, 0, err
@@ -116,23 +151,37 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 	if block == nil {
 		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("can not get neo block!")
 	}
-	tt := block.Time / 1000
-	wrapperTransactions := make([]*models.WrapperTransaction, 0)
-	srcTransactions := make([]*models.SrcTransaction, 0)
-	dstTransactions := make([]*models.DstTransaction, 0)
-
 	wrapperContracts := make([]string, 0)
 	wrapperContracts = append(wrapperContracts, this.neoCfg.WrapperContract...)
 	wrapperContracts = append(wrapperContracts, this.neoCfg.NFTWrapperContract...)
+	c := make(chan struct{})
+	b := batchlisten.NewBatchListen(1, func() {
+		c <- struct{}{}
+	})
+	err = this.handleSingleBlockLog(height, block, wrapperContracts, b)
+	b.Close()
+	<-c
+	return b.WrapperTransactions, b.SrcTransactions, nil, b.DstTransactions, nil, nil, 0, 0, err
+}
+
+func (this *Neo3ChainListen) handleSingleBlockLog(height uint64, block *neo3Models.RpcBlock, wrapperContracts []string, b *batchlisten.BatchListen) error {
+	var currTxHash string
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error("Neo N3 chain listen issue: %s, height %d, hash: %s", string(debug.Stack()), r, height, currTxHash)
+		}
+	}()
+	if len(block.Tx) == 0 {
+		return nil
+	}
+	tt := block.Time / 1000
 	txHashArr := make([]string, len(block.Tx))
 	for i, v := range block.Tx {
 		txHashArr[i] = v.Hash
 	}
 	appLogs, err := this.neoSdk.GetBatchApplicationLog(txHashArr)
-
 	if err != nil {
-		logs.Error("fail to get neo3 application log, block: %d, err: %v", height, err)
-		return nil, nil, nil, nil, nil, nil, 0, 0, nil
+		return fmt.Errorf("fail to get neo3 application log, block: %d, err: %v", height, err)
 	}
 	for txId, appLog := range appLogs {
 		currTxHash = txHashArr[txId][2:]
@@ -199,7 +248,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						} else {
 							amount, _ = new(big.Int).SetString(basedef.HexStringReverse(states[5].Value.(string)), 16)
 						}
-						wrapperTransactions = append(wrapperTransactions, &models.WrapperTransaction{
+						b.AddWrapperTx(&models.WrapperTransaction{
 							Hash:         currTxHash,
 							User:         user,
 							DstChainId:   tchainId.Uint64(),
@@ -301,7 +350,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						fctx.Param = hex.EncodeToString(param.Value.([]byte))
 						fctx.Standard = fctransfer.Standard
 						fctx.SrcTransfer = fctransfer
-						srcTransactions = append(srcTransactions, fctx)
+						b.AddSrcTx(fctx)
 					case _neo_crosschainunlock:
 						logs.Info("(unlock) to chain: %s, height:%d, txhash: %s", this.GetChainName(), height, currTxHash)
 						if len(states) < 3 {
@@ -358,7 +407,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 						tctx.PolyHash = hex.EncodeToString(polyHash.Value.([]byte))
 						tctx.Standard = tctransfer.Standard
 						tctx.DstTransfer = tctransfer
-						dstTransactions = append(dstTransactions, tctx)
+						b.AddDstTx(tctx)
 					default:
 						logs.Warn("ignore method: %s", eventName)
 					}
@@ -366,7 +415,7 @@ func (this *Neo3ChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTra
 			}
 		}
 	}
-	return wrapperTransactions, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
+	return nil
 }
 
 type Error struct {

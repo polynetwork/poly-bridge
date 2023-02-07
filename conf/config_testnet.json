@@ -627,7 +627,7 @@
     "EffectSlot": 1,
     "TimeStatisticSlot": 3600
   },
-  "CoinPriceUpdateSlot": 5,
+  "CoinPriceUpdateSlot": 60,
   "CoinPriceListenConfig": [
     {
       "MarketName": "coinmarketcap",

@@ -139,6 +139,23 @@ func (pro *Neo3SdkPro) GetBlockByIndex(index uint64) (*models.RpcBlock, error) {
 	return nil, fmt.Errorf("all node is not working")
 }
 
+func (pro *Neo3SdkPro) GetBatchBlockByIndex(index []uint64) ([]*models.RpcBlock, error) {
+	info := pro.GetLatest()
+	if info == nil {
+		return nil, fmt.Errorf("all node is not working")
+	}
+	for info != nil {
+		blocks, err := info.sdk.GetBatchBlockByIndex(index)
+		if err != nil {
+			info.latestHeight = 0
+			info = pro.GetLatest()
+		} else {
+			return blocks, nil
+		}
+	}
+	return nil, fmt.Errorf("all node is not working")
+}
+
 func (pro *Neo3SdkPro) GetApplicationLog(txId string) (*models.RpcApplicationLog, error) {
 	info := pro.GetLatest()
 	if info == nil {
@@ -161,16 +178,18 @@ func (pro *Neo3SdkPro) GetBatchApplicationLog(txId []string) ([]*models.RpcAppli
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
 	}
+	var err error
+	var applicationLogs []*models.RpcApplicationLog
 	for info != nil {
-		logs, err := info.sdk.GetBatchApplicationLog(txId)
+		applicationLogs, err = info.sdk.GetBatchApplicationLog(txId)
 		if err != nil && !strings.Contains(err.Error(), "json: cannot") {
 			info.latestHeight = 0
 			info = pro.GetLatest()
 		} else {
-			return logs, nil
+			return applicationLogs, nil
 		}
 	}
-	return nil, fmt.Errorf("all node is not working")
+	return nil, fmt.Errorf("fail to get application log, err %v", err)
 }
 
 func (pro *Neo3SdkPro) Nep17Info(hash string) (string, string, int64, error) {

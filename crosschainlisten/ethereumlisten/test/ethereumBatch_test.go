@@ -87,7 +87,7 @@ func TestEthereumChainListen_HandleNewBlock3(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ListenConfig)
-	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(147736)
+	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBlock(147000)
 	if err != nil {
 		fmt.Println("err", err)
 	}

@@ -64,6 +64,11 @@ type NeoRpcRequest struct {
 	Id      int         `json:"id"`
 }
 
+type GetBatchBlockResponse struct {
+	rpc.RpcResponse
+	rpc.ErrorResponse
+	Result *models.RpcBlock `json:"result"`
+}
 type GetBatchApplicationLogResponse struct {
 	rpc.RpcResponse
 	rpc.ErrorResponse
@@ -135,6 +140,26 @@ func (sdk *Neo3Sdk) GetBlockByIndex(index uint64) (*models.RpcBlock, error) {
 	return &res.Result, nil
 }
 
+func (sdk *Neo3Sdk) GetBatchBlockByIndex(index []uint64) ([]*models.RpcBlock, error) {
+	var res []GetBatchBlockResponse
+	var blocks []*models.RpcBlock
+	var params [][]interface{}
+	for _, v := range index {
+		params = append(params, []interface{}{int(v), true})
+	}
+	err := sdk.makeBatchRequest("getblock", params, &res)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range res {
+		if v.ErrorResponse.Error.Message != "" {
+			return nil, fmt.Errorf("%s", v.ErrorResponse.Error.Message)
+		}
+		blocks = append(blocks, v.Result)
+	}
+	return blocks, nil
+}
+
 func (sdk *Neo3Sdk) GetApplicationLog(txId string) (*models.RpcApplicationLog, error) {
 	res := sdk.client.GetApplicationLog(txId)
 	if res.ErrorResponse.Error.Message != "" {
@@ -152,11 +177,11 @@ func (sdk *Neo3Sdk) GetBatchApplicationLog(txId []string) ([]*models.RpcApplicat
 	}
 	err := sdk.makeBatchRequest("getapplicationlog", params, &res)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http request err: %s", err)
 	}
-	for i, v := range res {
-		if res[i].ErrorResponse.Error.Message != "" {
-			return nil, fmt.Errorf("%s", res[i].ErrorResponse.Error.Message)
+	for _, v := range res {
+		if v.ErrorResponse.Error.Message != "" {
+			return nil, fmt.Errorf("http request err, resp msg: %s", v.ErrorResponse.Error.Message)
 		}
 		applicationLogs = append(applicationLogs, v.Result)
 	}
@@ -182,12 +207,12 @@ func (sdk *Neo3Sdk) makeBatchRequest(method string, params [][]interface{}, out 
 	}
 	res, err := httpClient.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("http cliend do err %v", err)
 	}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(&out)
 	if err != nil {
-		return err
+		return fmt.Errorf("json decode http resp body err %v", err)
 	}
 	return nil
 }
