@@ -54,7 +54,7 @@ func TestEthereumChainListen_HandleNewBatchBlock2(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBatchBlock(26852504, 26852504)
+	a, b, c, d, z, x, _, _, err := chainHandle.HandleNewBatchBlock(27018614, 27018614)
 	if err != nil {
 		fmt.Println("err", err)
 	}
