@@ -406,7 +406,8 @@ func (this *EthereumChainListen) getBatchRelayChainCCMEventByLog(contractLogs []
 						return event.TxHash
 					}
 				}(),
-				Time: timeCur,
+				Time:        timeCur,
+				DstSequence: uint64(event.Sequence),
 			})
 		case MakeProofEventTopicId:
 			crossChainEvent, parseErr := ccmContract.ParseMakeProof(v)

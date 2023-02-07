@@ -25,7 +25,7 @@ func TestEthereumChainListen_HandleNewBatchBlock(t *testing.T) {
 		panic("config is not valid")
 	}
 	chainHandle := crosschainlisten.NewChainHandle(ethListenConfig)
-	_, _, polyTransactions, _, _, polyDetails, _, _, err := chainHandle.HandleNewBatchBlock(1, 3)
+	_, _, polyTransactions, _, _, polyDetails, _, _, err := chainHandle.HandleNewBatchBlock(582378, 582384)
 	if err != nil {
 		fmt.Println("handle err", err)
 	}
