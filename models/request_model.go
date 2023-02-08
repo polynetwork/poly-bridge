@@ -711,6 +711,7 @@ func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap
 		TransferAmount: transferAmount,
 		DstUser:        dstUser,
 		TokenHash:      transaction.TokenHash,
+		FeeAmount:      "0",
 	}
 	switch {
 	case transaction.PolyTransaction == nil && transaction.DstTransaction == nil:
