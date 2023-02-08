@@ -807,6 +807,9 @@ func MakeTransactionRspWithoutWrapper(transaction *SrcPolyDstRelation, chainsMap
 		}
 	}
 	if transaction.DstTransaction != nil {
+		if transaction.SrcTransaction.ChainId == basedef.RIPPLE_CROSSCHAIN_ID {
+			transactionRsp.State = basedef.STATE_FINISHED
+		}
 		dstTransactionState.Hash = transaction.DstTransaction.Hash
 		dstTransactionState.ChainId = transaction.DstTransaction.ChainId
 		dstTransactionState.Time = transaction.DstTransaction.Time
