@@ -221,7 +221,7 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 		fmt.Println("aptos dst from_chain_id", event.Data["from_chain_id"])
 		//dstTx.SrcChainId, _ = strconv.ParseUint(event.Data["from_chain_id"].(string), 0, 32)
 		dstTx.Contract = event.GUID.AccountAddress
-		dstTx.PolyHash = basedef.HexStringReverse(event.Data["cross_chain_tx_hash"].(string)[2:])
+		dstTx.PolyHash = event.Data["cross_chain_tx_hash"].(string)[2:]
 
 		// dst transfer
 		if unLockEvent := a.aptosSdk.GetLatest().Sdk.GetUnLockEvent(tx.Events); unLockEvent != nil {
