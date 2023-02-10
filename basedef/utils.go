@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/beego/beego/v2/core/logs"
-	cosmos_types "github.com/cosmos/cosmos-sdk/types"
+	//cosmos_types "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/joeqian10/neo-gogogo/helper"
 	"github.com/joeqian10/neo3-gogogo/crypto"
@@ -64,8 +64,9 @@ func Hash2Address(chainId uint64, value string) string {
 		addr, _ := ontcommon.AddressFromHexString(value)
 		return addr.ToBase58()
 	case SWITCHEO_CROSSCHAIN_ID:
-		addr, _ := cosmos_types.AccAddressFromHex(value)
-		return addr.String()
+		//addr, _ := cosmos_types.AccAddressFromHexUnsafe(value)
+		//return addr.String()
+		return value
 	case NEO3_CROSSCHAIN_ID:
 		addrHex, _ := hex.DecodeString(value)
 		addr := neo3_helper.UInt160FromBytes(addrHex)
@@ -139,12 +140,12 @@ func Address2Hash(chainId uint64, value string) (string, error) {
 		return HexStringReverse(addrHex), nil
 	case SWITCHEO_CROSSCHAIN_ID:
 		//cosmos_types.
-		addr, err := cosmos_types.AccAddressFromBech32(value)
-		if err != nil {
-			return value, err
-		}
-		hash := fmt.Sprint(addr)
-		return hash, nil
+		//addr, err := cosmos_types.AccAddressFromBech32(value)
+		//if err != nil {
+		//	return value, err
+		//}
+		//hash := fmt.Sprint(addr)
+		return value, nil
 	case NEO3_CROSSCHAIN_ID:
 		scriptHash, err := crypto.AddressToScriptHash(value, neo3_helper.DefaultAddressVersion)
 		if err != nil {

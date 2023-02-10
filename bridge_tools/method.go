@@ -337,7 +337,7 @@ func migrateLockTokenStatisticTable(config *conf.Config) {
 	err = db.Debug().AutoMigrate(
 		&models.LockTokenStatistic{},
 	)
-	checkError(err, "Creating tables")
+	//checkError(err, "Creating tables")
 }
 
 func updateZilliqaPolyOldData(config *conf.Config) {

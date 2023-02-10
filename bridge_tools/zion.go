@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -26,11 +27,11 @@ func zionSetUp(cfg *conf.Config) {
 	if err != nil {
 		panic(err)
 	}
-	poly, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-		dbCfg.PolyScheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
-	if err != nil {
-		panic(err)
-	}
+	//poly, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+	//	dbCfg.PolyScheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	step := os.Getenv("STEP")
 	if step == "" {
@@ -41,7 +42,7 @@ func zionSetUp(cfg *conf.Config) {
 	case "createTables":
 		createZionTables(db)
 	case "migrateBridgeBasicTables":
-		migrateBridgeBasicTables(poly, db)
+		//migrateBridgeBasicTables(poly, db)
 	default:
 		logs.Error("Invalid step %s", step)
 	}
@@ -76,5 +77,6 @@ func createZionTables(db *gorm.DB) {
 		//&models.wrapper_details
 		&models.WrapperTransaction{},
 	)
-	checkError(err, "Creating tables")
+	fmt.Println(err)
+	//checkError(err, "Creating tables")
 }

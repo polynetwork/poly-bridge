@@ -2,12 +2,13 @@ package chainsdk
 
 import (
 	"fmt"
+	ctypes "github.com/tendermint/tendermint/rpc/coretypes"
 	"runtime/debug"
 	"sync"
 	"time"
 
 	"github.com/beego/beego/v2/core/logs"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+	//ctypes "github.com/tendermint/tendermint/rpc/corety"
 )
 
 type SwitcheoInfo struct {
@@ -75,7 +76,7 @@ func (pro *SwitcheoSdkPro) selection() {
 	for url, info := range pro.infos {
 		height, err := info.sdk.GetCurrentBlockHeight()
 		if err != nil {
-			logs.Error("get current block height err, chain: %v, url: %s", pro.id, url)
+			logs.Error("get current block height err, chain: %v, url: %s, err: %v", pro.id, url, err)
 		}
 		pro.mutex.Lock()
 		info.latestHeight = height

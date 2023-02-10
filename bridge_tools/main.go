@@ -167,7 +167,7 @@ func startServer(ctx *cli.Context) {
 		}
 		startTransactions(config)
 	case 6:
-		merge()
+		//merge()
 	case 7:
 		configServerFile := ctx.GlobalString(getFlagName(configServerPathFlag))
 		serverConfig := serverconf.NewConfig(configServerFile)
