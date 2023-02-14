@@ -2,6 +2,7 @@ package zilliqalisten
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"poly-bridge/basedef"
@@ -16,6 +17,7 @@ import (
 const (
 	zilliqa_cross_chain                       = "CrossChainEvent"
 	zilliqa_lock                              = "Lock"
+	zilliqa_transfer_to_proxy                 = "TransferZRC2ToLockProxy"
 	ziliqa_verify_header_and_execute_tx_event = "VerifyHeaderAndExecuteTxEvent"
 	zilliqa_unlock                            = "Unlock"
 )
@@ -97,6 +99,15 @@ func (this *ZilliqaChainListen) HandleNewBlock(height uint64) ([]*models.Wrapper
 	return nil, srcTransactions, nil, dstTransactions, nil, nil, len(srcTransactions), len(dstTransactions), nil
 }
 
+type txData struct {
+	Tag    string `json:"_tag"`
+	Params []struct {
+		Vname string `json:"vname"`
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"params"`
+}
+
 func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uint64, block *chainsdk.ZilBlock) []*models.SrcTransaction {
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	for _, transaction := range block.Transactions {
@@ -110,7 +121,8 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 		srcTransaction := new(models.SrcTransaction)
 		srcTransfer := new(models.SrcTransfer)
 		for _, event := range events {
-			if event.EventName == zilliqa_cross_chain {
+			switch event.EventName {
+			case zilliqa_cross_chain:
 				// 1. contract address should be cross chain manager
 				// 2. event name should be CrossChainEvent
 				// zilliqa address bech32.ToBech32Address(event.Address)
@@ -140,38 +152,22 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 							srcTransaction.Contract = param.Value.(string)[2:]
 						}
 					}
+
 				}
-			} else if event.EventName == zilliqa_lock {
+			case zilliqa_lock:
 				srcTransfer.TxHash = transaction.ID
 				srcTransfer.ChainId = this.GetChainId()
 				srcTransfer.Time = block.Timestamp
 				srcTransfer.To = event.Address[2:]
 				for _, param := range event.Params {
 					switch param.VName {
-					case "fromAssetHash":
+					case "fromAssetDenom":
 						srcTransfer.Asset = param.Value.(string)[2:]
-					case "fromAddress":
-						srcTransfer.From = param.Value.(string)[2:]
-					case "amount":
-						amount, _ := decimal.NewFromString(param.Value.(string))
-						srcTransfer.Amount = models.NewBigInt(amount.BigInt())
-					case "toAddress":
-						srcTransfer.DstUser = param.Value.(string)[2:]
-					case "toAssetHash":
-						srcTransfer.DstAsset = param.Value.(string)[2:]
-						if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
-							aptosAsset, err := hex.DecodeString(srcTransfer.DstAsset)
-							if err == nil {
-								srcTransfer.DstAsset = string(aptosAsset)
-							}
-						}
-						srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
 					case "toChainId":
 						toChainId, _ := strconv.ParseUint(param.Value.(string), 10, 64)
 						srcTransfer.DstChainId = toChainId
 					}
 				}
-
 				for _, contract := range this.zliCfg.NFTProxyContract {
 					if strings.EqualFold(contract, event.Address[2:]) {
 						srcTransfer.Standard = models.TokenTypeErc721
@@ -181,7 +177,34 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 			}
 		}
 		if srcTransaction.Hash != "" {
+			data := transaction.Data.(string)
+			txD := txData{}
+			err := json.Unmarshal([]byte(data), &txD)
+			if err != nil {
+				logs.Error("fail to marshal tx data, %v", err)
+				continue
+			}
+			txDataMap := extractZilliqatxData(txD)
+			for k, v := range txDataMap {
+				switch k {
+				case "toAddress":
+					srcTransfer.DstUser = v[2:]
+				case "toAssetDenom":
+					srcTransfer.DstAsset = v[2:]
+					if srcTransfer.DstChainId == basedef.APTOS_CROSSCHAIN_ID {
+						aptosAsset, err := hex.DecodeString(srcTransfer.DstAsset)
+						if err == nil {
+							srcTransfer.DstAsset = string(aptosAsset)
+						}
+					}
+					srcTransfer.DstAsset = models.FormatAssert(srcTransfer.DstAsset)
+				case "amount":
+					amount, _ := decimal.NewFromString(v)
+					srcTransfer.Amount = models.NewBigInt(amount.BigInt())
+				}
+			}
 			if srcTransfer.TxHash == srcTransaction.Hash {
+				srcTransfer.From = srcTransaction.User
 				srcTransaction.Standard = srcTransfer.Standard
 				srcTransaction.SrcTransfer = srcTransfer
 			}
@@ -189,6 +212,17 @@ func (this *ZilliqaChainListen) getzilliqaSrcTransactionByBlockNumber(height uin
 		}
 	}
 	return srcTransactions
+}
+
+func extractZilliqatxData(data txData) map[string]string {
+	if data.Tag != zilliqa_lock {
+		return nil
+	}
+	m := make(map[string]string)
+	for _, v := range data.Params {
+		m[v.Vname] = v.Value
+	}
+	return m
 }
 
 func (this *ZilliqaChainListen) getzilliqaDstTransactionByBlockNumber(height uint64, block *chainsdk.ZilBlock) []*models.DstTransaction {

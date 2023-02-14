@@ -356,6 +356,22 @@ func (c *ExplorerController) GetCrossTx() {
 		}
 	}
 
+	if srcTransaction.DstChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
+		relatedPolyTransaction := new(models.PolyTransaction)
+		err = db.Where("src_hash = ?", relation.DstHash).First(relatedPolyTransaction).Error
+		if err == nil && relatedPolyTransaction != nil {
+			relation.RelatedPolyHash = relatedPolyTransaction.Hash
+		}
+	}
+
+	if srcTransaction.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID {
+		relatedDstTransaction := new(models.DstTransaction)
+		err = db.Where("hash = ?", relation.SrcHash).First(relatedDstTransaction).Error
+		if err == nil && relatedDstTransaction != nil {
+			relation.RelatedPolyHash = relatedDstTransaction.PolyHash
+		}
+	}
+
 	if srcTransaction.DstChainId == basedef.O3_CROSSCHAIN_ID {
 		relatedPolyTransaction := new(models.PolyTransaction)
 		err = db.Where("src_hash = ?", relation.DstHash).First(relatedPolyTransaction).Error
