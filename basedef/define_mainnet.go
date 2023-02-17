@@ -52,7 +52,6 @@ const (
 	STARCOIN_CROSSCHAIN_ID   = uint64(31)
 	KAVA_CROSSCHAIN_ID       = uint64(32)
 	CUBE_CROSSCHAIN_ID       = uint64(35)
-	ZKSYNC_CROSSCHAIN_ID     = uint64(100940)
 	CELO_CROSSCHAIN_ID       = uint64(36)
 	CLOVER_CROSSCHAIN_ID     = uint64(37)
 	CONFLUX_CROSSCHAIN_ID    = uint64(38)
@@ -62,6 +61,7 @@ const (
 	BRISE_CROSSCHAIN_ID      = uint64(42)
 	DEXIT_CROSSCHAIN_ID      = uint64(43)
 	CLOUDTX_CROSSCHAIN_ID    = uint64(44)
+	ZKSYNC_CROSSCHAIN_ID     = uint64(45)
 
 	ENV = "mainnet"
 )
