@@ -40,12 +40,20 @@ const (
 	_eth_crosschainunlock = "CrossChainUnlockEvent"
 	_eth_lock             = "LockEvent"
 	_eth_unlock           = "UnlockEvent"
+
+	EventCrossChainEventId               = "0x6ad3bf15c1988bc04bc153490cab16db8efb9a3990215bf1c64ea6e28be88483"
+	EventVerifyHeaderAndExecuteTxEventId = "0x8a4a2663ce60ce4955c595da2894de0415240f1ace024cfbff85f513b656bdae"
+	EventLockEventId                     = "0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5"
+	EventUnlockEventId                   = "0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df"
+	EventAddLiquidityEventId             = "0xa184af1adb02eb56c0f9fbbed6a596b24a1f909dc75a1a3371ce1da92ee851a0"
+	EventRemoveLiquidityEventId          = "0xebe708b5c4cf4393d89ea503656ecc48372f1a5deeb302d22b4e219fb64fe40d"
+	EventSwapEventId                     = "0x8cad61375db78f5b40b47b2bced1c95123d2b8e29bf6cefdb314b83d20af9dbb"
+	EventRollBackEventId                 = "0x1b01a3b7239821e3f9b220a948c8a5036776bfe981b6c7a56056668eb56b502a"
 )
 
 type O3ChainListen struct {
 	ethCfg          *conf.ChainListenConfig
 	ethSdk          *chainsdk.EthereumSdkPro
-	o3EventTopicIds *O3ContractEventId
 	filterContracts []common.Address
 	filterTopics    [][]common.Hash
 	contractAddr    *O3ContractAddr
@@ -67,25 +75,16 @@ type O3ContractAddr struct {
 }
 
 func NewO3ChainListen(cfg *conf.ChainListenConfig) *O3ChainListen {
-	o3EventTopicIds := &O3ContractEventId{}
-	o3EventTopicIds.eventCrossChainEventId = common.HexToHash("0x6ad3bf15c1988bc04bc153490cab16db8efb9a3990215bf1c64ea6e28be88483")
-	o3EventTopicIds.eventVerifyHeaderAndExecuteTxEventId = common.HexToHash("0x8a4a2663ce60ce4955c595da2894de0415240f1ace024cfbff85f513b656bdae")
-	o3EventTopicIds.eventLockEventId = common.HexToHash("0x8636abd6d0e464fe725a13346c7ac779b73561c705506044a2e6b2cdb1295ea5")
-	o3EventTopicIds.eventUnlockEventId = common.HexToHash("0xd90288730b87c2b8e0c45bd82260fd22478aba30ae1c4d578b8daba9261604df")
-	o3EventTopicIds.eventAddLiquidityEventId = common.HexToHash("0xa184af1adb02eb56c0f9fbbed6a596b24a1f909dc75a1a3371ce1da92ee851a0")
-	o3EventTopicIds.eventRemoveLiquidityEventId = common.HexToHash("0xebe708b5c4cf4393d89ea503656ecc48372f1a5deeb302d22b4e219fb64fe40d")
-	o3EventTopicIds.eventSwapEventId = common.HexToHash("0x8cad61375db78f5b40b47b2bced1c95123d2b8e29bf6cefdb314b83d20af9dbb")
-	o3EventTopicIds.eventRollBackEventId = common.HexToHash("0x1b01a3b7239821e3f9b220a948c8a5036776bfe981b6c7a56056668eb56b502a")
 
 	o3EventTopicIdArr := []common.Hash{
-		o3EventTopicIds.eventCrossChainEventId,
-		o3EventTopicIds.eventVerifyHeaderAndExecuteTxEventId,
-		o3EventTopicIds.eventLockEventId,
-		o3EventTopicIds.eventUnlockEventId,
-		o3EventTopicIds.eventAddLiquidityEventId,
-		o3EventTopicIds.eventRemoveLiquidityEventId,
-		o3EventTopicIds.eventSwapEventId,
-		o3EventTopicIds.eventRollBackEventId,
+		common.HexToHash(EventCrossChainEventId),
+		common.HexToHash(EventVerifyHeaderAndExecuteTxEventId),
+		common.HexToHash(EventLockEventId),
+		common.HexToHash(EventUnlockEventId),
+		common.HexToHash(EventAddLiquidityEventId),
+		common.HexToHash(EventRemoveLiquidityEventId),
+		common.HexToHash(EventSwapEventId),
+		common.HexToHash(EventRollBackEventId),
 	}
 
 	swapContract := common.HexToAddress(cfg.WrapperContract[0])

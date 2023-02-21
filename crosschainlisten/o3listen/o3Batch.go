@@ -181,8 +181,8 @@ func (this *O3ChainListen) getBatchECCMEventsByLogAndContractAddr(contractLogs [
 		if !addr.InSlice(v.Address, ccmContract) {
 			continue
 		}
-		switch v.Topics[0] {
-		case this.o3EventTopicIds.eventCrossChainEventId:
+		switch v.Topics[0].String() {
+		case EventCrossChainEventId:
 			evt, err := ccmContractAbi.ParseCrossChainEvent(v)
 			if err == nil {
 				user := evt.Sender
@@ -208,7 +208,7 @@ func (this *O3ChainListen) getBatchECCMEventsByLogAndContractAddr(contractLogs [
 					Fee:      Fee,
 				})
 			}
-		case this.o3EventTopicIds.eventVerifyHeaderAndExecuteTxEventId:
+		case EventVerifyHeaderAndExecuteTxEventId:
 			evt, err := ccmContractAbi.ParseVerifyHeaderAndExecuteTxEvent(v)
 			if err == nil {
 				Fee := this.GetConsumeGas(evt.Raw.TxHash)
@@ -246,8 +246,8 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 		if !addr.InSlice(v.Address, swapContract) {
 			continue
 		}
-		switch v.Topics[0] {
-		case this.o3EventTopicIds.eventLockEventId:
+		switch v.Topics[0].String() {
+		case EventLockEventId:
 			evt, err := swapProxyContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
@@ -264,7 +264,7 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 			} else {
 				logs.Error("fail to ParseLockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.o3EventTopicIds.eventUnlockEventId:
+		case EventUnlockEventId:
 			evt, err := swapProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
@@ -278,7 +278,7 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 			} else {
 				logs.Error("fail to ParseUnlockEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.o3EventTopicIds.eventAddLiquidityEventId:
+		case EventAddLiquidityEventId:
 			evt, err := swapProxyContractAbi.ParseAddLiquidityEvent(v)
 			if err == nil {
 				swapUnLockEvents = append(swapUnLockEvents, &models.SwapUnlockEvent{
@@ -297,7 +297,7 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 			} else {
 				logs.Error("fail to ParseAddLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.o3EventTopicIds.eventRemoveLiquidityEventId:
+		case EventRemoveLiquidityEventId:
 			evt, err := swapProxyContractAbi.ParseRemoveLiquidityEvent(v)
 			if err == nil {
 				swapUnLockEvents = append(swapUnLockEvents, &models.SwapUnlockEvent{
@@ -316,7 +316,7 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 			} else {
 				logs.Error("fail to ParseRemoveLiquidityEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.o3EventTopicIds.eventSwapEventId:
+		case EventSwapEventId:
 			evt, err := swapProxyContractAbi.ParseSwapEvent(v)
 			if err == nil {
 				swapUnLockEvents = append(swapUnLockEvents, &models.SwapUnlockEvent{
@@ -335,7 +335,7 @@ func (this *O3ChainListen) getSwapProxyEventByLog(contractLogs []types.Log, swap
 			} else {
 				logs.Error("fail to ParseSwapEvent, chain: %s, contractAddr: %s, height: %d,  err: %v", basedef.GetChainName(this.ethCfg.ChainId), v.Address, v.BlockNumber, err)
 			}
-		case this.o3EventTopicIds.eventRollBackEventId:
+		case EventRollBackEventId:
 			evt, err := swapProxyContractAbi.ParseRollBackEvent(v)
 			if err == nil {
 				swapUnLockEvents = append(swapUnLockEvents, &models.SwapUnlockEvent{
