@@ -250,6 +250,9 @@ func FormatFee(chain uint64, fee *BigInt) string {
 	case basedef.GOERLI_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
+	case basedef.SEPOLIA_CROSSCHAIN_ID:
+		precision_new := decimal.New(1, 18)
+		return fee_new.Div(precision_new).String() + " ETH"
 	case basedef.BOBA_CROSSCHAIN_ID:
 		precision_new := decimal.New(1, 18)
 		return fee_new.Div(precision_new).String() + " ETH"
@@ -478,7 +481,7 @@ func GetTokenType(chainId uint64, standard uint8) string {
 	case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.SWITCHEO_CROSSCHAIN_ID, basedef.PLT_CROSSCHAIN_ID, basedef.ZILLIQA_CROSSCHAIN_ID,
 		basedef.MATIC_CROSSCHAIN_ID, basedef.ARBITRUM_CROSSCHAIN_ID, basedef.XDAI_CROSSCHAIN_ID, basedef.AVAX_CROSSCHAIN_ID,
 		basedef.FANTOM_CROSSCHAIN_ID, basedef.OPTIMISTIC_CROSSCHAIN_ID, basedef.METIS_CROSSCHAIN_ID, basedef.BOBA_CROSSCHAIN_ID,
-		basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID, basedef.GOERLI_CROSSCHAIN_ID:
+		basedef.RINKEBY_CROSSCHAIN_ID, basedef.OASIS_CROSSCHAIN_ID, basedef.GOERLI_CROSSCHAIN_ID, basedef.SEPOLIA_CROSSCHAIN_ID:
 		return "ERC" + "-" + tokenType
 	case basedef.ONT_CROSSCHAIN_ID:
 		if standard == TokenTypeErc721 {
