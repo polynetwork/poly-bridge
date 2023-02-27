@@ -27,11 +27,11 @@ func zionSetUp(cfg *conf.Config) {
 	if err != nil {
 		panic(err)
 	}
-	//poly, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
-	//	dbCfg.PolyScheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
-	//if err != nil {
-	//	panic(err)
-	//}
+	poly, err := gorm.Open(mysql.Open(dbCfg.User+":"+dbCfg.Password+"@tcp("+dbCfg.URL+")/"+
+		dbCfg.PolyScheme+"?charset=utf8"), &gorm.Config{Logger: Logger})
+	if err != nil {
+		panic(err)
+	}
 
 	step := os.Getenv("STEP")
 	if step == "" {
@@ -42,7 +42,7 @@ func zionSetUp(cfg *conf.Config) {
 	case "createTables":
 		createZionTables(db)
 	case "migrateBridgeBasicTables":
-		//migrateBridgeBasicTables(poly, db)
+		migrateBridgeBasicTables(poly, db)
 	default:
 		logs.Error("Invalid step %s", step)
 	}
@@ -78,5 +78,5 @@ func createZionTables(db *gorm.DB) {
 		&models.WrapperTransaction{},
 	)
 	fmt.Println(err)
-	//checkError(err, "Creating tables")
+	checkError(err, "Creating tables")
 }
