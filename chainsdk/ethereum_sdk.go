@@ -248,5 +248,6 @@ func (s *EthereumSdk) FilterLog(FromBlock *big.Int, ToBlock *big.Int, Addresses 
 	filterQuery.FromBlock = FromBlock
 	filterQuery.ToBlock = ToBlock
 	filterQuery.Addresses = Addresses
+	filterQuery.Topics = [][]common.Hash{}
 	return s.rawClient.FilterLogs(ctx, filterQuery)
 }
