@@ -371,6 +371,15 @@ func (c *DefiLlamaController) GetTVLCloudTx() {
 	c.ServeJSON()
 }
 
+func (c *DefiLlamaController) GetTVLXinFin() {
+	tvlAmount, err := getTVLAmount(basedef.XINFIN_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLXinFin err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}
+
 func (c *DefiLlamaController) GetTVLNautilus() {
 	tvlAmount, err := getTVLAmount(basedef.NAUTILUS_CROSSCHAIN_ID)
 	if err != nil {
