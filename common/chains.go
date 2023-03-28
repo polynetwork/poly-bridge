@@ -509,7 +509,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
-			panic("chain is invalid")
+			return nil, fmt.Errorf("chain is invalid")
 		}
 		for _, v := range ethereumConfig.ProxyContract {
 			if len(strings.TrimSpace(v)) == 0 {
