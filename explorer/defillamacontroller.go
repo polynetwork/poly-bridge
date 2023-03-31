@@ -388,3 +388,12 @@ func (c *DefiLlamaController) GetTVLNautilus() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+
+func (c *DefiLlamaController) GetTVLGoshen() {
+	tvlAmount, err := getTVLAmount(basedef.GOSHEN_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLGoshen err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}

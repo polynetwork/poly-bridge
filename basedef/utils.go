@@ -151,6 +151,9 @@ func Hash2Address(chainId uint64, value string) string {
 	} else if chainId == NAUTILUS_CROSSCHAIN_ID {
 		addr := common.HexToAddress(value)
 		return strings.ToLower(addr.String()[2:])
+	} else if chainId == GOSHEN_CROSSCHAIN_ID {
+		addr := common.HexToAddress(value)
+		return strings.ToLower(addr.String()[2:])
 	}
 	return value
 }
@@ -421,6 +424,8 @@ func GetChainName(id uint64) string {
 		return "XinFin"
 	case NAUTILUS_CROSSCHAIN_ID:
 		return "Nautilus"
+	case GOSHEN_CROSSCHAIN_ID:
+		return "Goshen"
 
 	default:
 		return fmt.Sprintf("Unknown(%d)", id)
