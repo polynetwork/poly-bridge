@@ -103,7 +103,7 @@ func (c *FeeController) GetFee() {
 	isNftSwap := true
 	if len(getFeeReq.SwapTokenHash) != 0 {
 		swapToken := new(models.Token)
-		res := db.Where("hash = ? and chain_id = ?", getFeeReq.SwapTokenHash, getFeeReq.SrcChainId, getFeeReq.SrcChainId).First(swapToken)
+		res := db.Where("hash = ? and chain_id = ?", getFeeReq.SwapTokenHash, getFeeReq.SrcChainId).First(swapToken)
 		if res.RowsAffected != 0 {
 			if swapToken.Standard == models.TokenTypeErc20 {
 				isNftSwap = false
