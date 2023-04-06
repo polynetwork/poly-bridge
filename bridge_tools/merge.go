@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/cosmos/cosmos-sdk/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -58,14 +57,6 @@ func AddressAsHash(chainId uint64, value string) string {
 }
 
 func merge() {
-
-	{
-		config := types.GetConfig()
-		config.SetBech32PrefixForAccount("swth", "swthpub")
-		config.SetBech32PrefixForValidator("swthvaloper", "swthvaloperpub")
-		config.SetBech32PrefixForConsensusNode("swthvalcons", "swthvalconspub")
-	}
-
 	configFile := os.Getenv("MERGE_CONFIG")
 	if configFile == "" {
 		configFile = "./merge.json"
