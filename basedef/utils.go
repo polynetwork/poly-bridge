@@ -264,6 +264,8 @@ func GetChainName(id uint64) string {
 		return "Astar"
 	case GOERLI_CROSSCHAIN_ID:
 		return "Goerli"
+	case Sepolia_CROSSCHAIN_ID:
+		return "Sepolia"
 	case APTOS_CROSSCHAIN_ID:
 		return "Aptos"
 	case BRISE_CROSSCHAIN_ID:
