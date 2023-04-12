@@ -768,20 +768,6 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
-	if chainId == basedef.RINKEBY_CROSSCHAIN_ID {
-		rinkebyConfig := config.GetChainListenConfig(basedef.RINKEBY_CROSSCHAIN_ID)
-		if rinkebyConfig == nil {
-			panic("rinkeby chain is invalid")
-		}
-		for _, v := range rinkebyConfig.ProxyContract {
-			if len(strings.TrimSpace(v)) == 0 {
-				continue
-			}
-			balance, err := rinkebySdk.Erc20Balance(hash, v)
-			maxFun(balance)
-			errMap[err] = true
-		}
-	}
 	if chainId == basedef.GOERLI_CROSSCHAIN_ID {
 		goerliConfig := config.GetChainListenConfig(basedef.GOERLI_CROSSCHAIN_ID)
 		if goerliConfig == nil {
