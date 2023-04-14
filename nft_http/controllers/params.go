@@ -4,7 +4,6 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
-	"strings"
 )
 
 type PolyBridgeInfoResp struct {
@@ -418,16 +417,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.SrcTransaction.ChainExplorerUrl = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainExplorerUrl
 		s.SrcTransaction.FeeName = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainFeeName
 		s.SrcTransaction.FeeLogo = models.ChainId2ChainCache(r.SrcTransaction.ChainId).ChainFeeLogo
-
 		s.SrcTransaction.Fee = models.FormatFee(r.SrcTransaction.ChainId, r.SrcTransaction.Fee)
-
-		switch s.SrcTransaction.ChainId {
-		case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.ZILLIQA_CROSSCHAIN_ID:
-			s.SrcTransaction.Hash = "0x" + s.SrcTransaction.Hash
-		case basedef.SWITCHEO_CROSSCHAIN_ID:
-			s.SrcTransaction.Hash = strings.ToUpper(s.SrcTransaction.Hash)
-		default:
-		}
 	}
 
 	if r.DstTransaction != nil {
@@ -457,16 +447,7 @@ func (s *TransactionDetailRsp) instance(r *TransactionDetailRelation) *Transacti
 		s.DstTransaction.ChainExplorerUrl = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainExplorerUrl
 		s.DstTransaction.FeeName = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainFeeName
 		s.DstTransaction.FeeLogo = models.ChainId2ChainCache(r.DstTransaction.ChainId).ChainFeeLogo
-
 		s.DstTransaction.Fee = models.FormatFee(r.DstTransaction.ChainId, r.DstTransaction.Fee)
-
-		switch s.DstTransaction.ChainId {
-		case basedef.ETHEREUM_CROSSCHAIN_ID, basedef.ZILLIQA_CROSSCHAIN_ID:
-			s.DstTransaction.Hash = "0x" + s.DstTransaction.Hash
-		case basedef.SWITCHEO_CROSSCHAIN_ID:
-			s.DstTransaction.Hash = strings.ToUpper(s.DstTransaction.Hash)
-		default:
-		}
 	}
 
 	if r.PolyTransaction != nil {
