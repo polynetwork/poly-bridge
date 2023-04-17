@@ -1119,7 +1119,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 }
 
 func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
-	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID {
+	if chainId == basedef.ETHEREUM_CROSSCHAIN_ID && basedef.ENV == basedef.MAINNET {
 		ethereumConfig := config.GetChainListenConfig(basedef.ETHEREUM_CROSSCHAIN_ID)
 		if ethereumConfig == nil {
 			panic("chain is invalid")
@@ -1402,7 +1402,10 @@ type ProxyBalance struct {
 func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error) {
 	switch chainId {
 	case basedef.ETHEREUM_CROSSCHAIN_ID:
-		return ethereumSdk.Erc20Balance(hash, proxy)
+		if basedef.ENV == basedef.MAINNET {
+			return ethereumSdk.Erc20Balance(hash, proxy)
+		}
+		return new(big.Int).SetUint64(0), nil
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.Erc20Balance(hash, proxy)
 	case basedef.BSC_CROSSCHAIN_ID:
