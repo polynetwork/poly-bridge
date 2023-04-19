@@ -19,6 +19,7 @@ package ontologylisten
 
 import (
 	"encoding/hex"
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/ontio/ontology-go-sdk/utils"
 	"math/big"
@@ -99,11 +100,13 @@ func (this *OntologyChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 func (this *OntologyChainListen) HandleNewBlock(height uint64) ([]*models.WrapperTransaction, []*models.SrcTransaction, []*models.PolyTransaction, []*models.DstTransaction, []*models.WrapperDetail, []*models.PolyDetail, int, int, error) {
 	block, err := this.ontSdk.GetBlockByHeight(uint32(height))
 	if err != nil {
+		err = fmt.Errorf("ontSdk.GetBlockByHeight of height:%d err:%s", height, err)
 		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	tt := uint64(block.Header.Timestamp)
 	events, err := this.ontSdk.GetSmartContractEventByBlock(uint32(height))
 	if err != nil {
+		err = fmt.Errorf("ontSdk.GetSmartContractEventByBlock of height:%d err:%s", height, err)
 		return nil, nil, nil, nil, nil, nil, 0, 0, err
 	}
 	wrapperTransactions := make([]*models.WrapperTransaction, 0)

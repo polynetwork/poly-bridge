@@ -15,7 +15,7 @@ require (
 	github.com/joeqian10/neo-gogogo v1.4.0
 	github.com/joeqian10/neo3-gogogo v1.2.1
 	github.com/novifinancial/serde-reflection/serde-generate/runtime/golang v0.0.0-20211013011333-6820d5b97d8c
-	github.com/ontio/ontology v1.11.1-0.20200812075204-26cf1fa5dd47
+	github.com/ontio/ontology v1.14.0-beta.0.20210818114002-fedaf66010a7
 	github.com/ontio/ontology-crypto v1.2.1
 	github.com/ontio/ontology-go-sdk v1.11.4
 	github.com/polynetwork/bridge-common v0.0.0-20230112035625-bfadb7cf548b
@@ -34,6 +34,7 @@ require (
 )
 
 replace (
+	github.com/ethereum/go-ethereum => github.com/ethereum/go-ethereum v1.9.25
 	//github.com/cosmos/cosmos-sdk => github.com/Switcheo/cosmos-sdk v0.46.8
 	//github.com/gogo/protobuf v1.3.3 => github.com/cosmos/gogoproto v1.4.4
 	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20210126025041-8d21ec4f0324
@@ -41,5 +42,4 @@ replace (
 	//github.com/rubblelabs/ripple v0.0.0-20220222071018-38c1a8b14c18 => github.com/siovanus/ripple v0.0.0-20220406100637-81f6afe283d9
 	github.com/polynetwork/ripple-sdk => github.com/siovanus/ripple-sdk v0.0.0-20230113103625-9795771fe0fc
 	github.com/rubblelabs/ripple => github.com/siovanus/ripple v0.0.0-20230113075118-4a31480c1af2
-
 )
