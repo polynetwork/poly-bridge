@@ -24,6 +24,7 @@ import (
 	"poly-bridge/basedef"
 	"poly-bridge/conf"
 	"poly-bridge/utils/decimal"
+	"poly-bridge/utils/number"
 	"strings"
 	"time"
 )
@@ -334,7 +335,7 @@ type GetFeeRsp struct {
 }
 
 func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount *big.Float, tokenAmount *big.Float, tokenAmountWithPrecision *big.Float,
-	swapTokenHash string, tokenBalance *big.Int, tokenBalanceValue *big.Float, isNative bool, nativeTokenAmount *big.Float, feeTokenPricison uint64) *GetFeeRsp {
+	swapTokenHash string, tokenBalance *big.Int, tokenBalancePrecision int, isNative bool, nativeTokenAmount *big.Float, feeTokenPricison uint64) *GetFeeRsp {
 	getFeeRsp := &GetFeeRsp{
 		SrcChainId:               srcChainId,
 		Hash:                     hash,
@@ -343,7 +344,7 @@ func MakeGetFeeRsp(srcChainId uint64, hash string, dstChainId uint64, usdtAmount
 		TokenAmount:              tokenAmount.String(),
 		TokenAmountWithPrecision: fmt.Sprintf("%.*f", 0, tokenAmountWithPrecision),
 		SwapTokenHash:            swapTokenHash,
-		Balance:                  fmt.Sprintf("%v", tokenBalanceValue),
+		Balance:                  number.BigIntDiv10X(tokenBalance, tokenBalancePrecision),
 		BalanceWithPrecision:     tokenBalance.String(),
 		IsNative:                 isNative,
 		NativeTokenAmount:        fmt.Sprintf("%v", nativeTokenAmount),

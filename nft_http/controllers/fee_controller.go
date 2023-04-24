@@ -69,6 +69,6 @@ func (c *FeeController) GetFee() {
 	tokenFee := new(big.Float).Mul(usdtFee, new(big.Float).SetInt64(basedef.PRICE_PRECISION))
 	tokenFee = new(big.Float).Quo(tokenFee, new(big.Float).SetInt64(token.TokenBasic.Price))
 	tokenFeeWithPrecision := new(big.Float).Mul(tokenFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(token.Precision))))
-	c.Data["json"] = models.MakeGetFeeRsp(req.SrcChainId, req.Hash, req.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision, "", new(big.Int).SetUint64(0), fzero, false, fzero, feeTokenPricison)
+	c.Data["json"] = models.MakeGetFeeRsp(req.SrcChainId, req.Hash, req.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision, "", new(big.Int).SetUint64(0), 0, false, fzero, feeTokenPricison)
 	c.ServeJSON()
 }

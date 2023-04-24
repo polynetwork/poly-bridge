@@ -211,13 +211,13 @@ func (c *FeeController) GetFee() {
 		res := db.Where("src_token_hash = ? and src_chain_id = ? and dst_chain_id = ?", getFeeReq.SwapTokenHash, getFeeReq.SrcChainId, getFeeReq.DstChainId).Preload("DstToken").First(tokenMap)
 		if res.RowsAffected == 0 {
 			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-				getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), new(big.Float).SetUint64(0), isNative, nativeTokenAmount, feeTokenPrecison)
+				getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), 0, isNative, nativeTokenAmount, feeTokenPrecison)
 			c.ServeJSON()
 			return
 		}
 		if tokenMap.DstChainId != getFeeReq.DstChainId || tokenMap.DstToken == nil {
 			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-				getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), new(big.Float).SetUint64(0), isNative, nativeTokenAmount, feeTokenPrecison)
+				getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), 0, isNative, nativeTokenAmount, feeTokenPrecison)
 			c.ServeJSON()
 			return
 		}
@@ -257,7 +257,7 @@ func (c *FeeController) GetFee() {
 					tokenBalance, err = cacheRedis.Redis.GetLongTokenBalance(tokenMap.SrcChainId, tokenMap.DstChainId, tokenMap.DstTokenHash)
 					if err != nil {
 						c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-							getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), new(big.Float).SetUint64(0), isNative, nativeTokenAmount, feeTokenPrecison)
+							getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), 0, isNative, nativeTokenAmount, feeTokenPrecison)
 						c.ServeJSON()
 						return
 					}
@@ -272,20 +272,12 @@ func (c *FeeController) GetFee() {
 				}
 			}
 		}
-		balance, result := new(big.Float).SetString(tokenBalance.String())
-		if !result {
-			c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-				getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), new(big.Float).SetUint64(0), isNative, nativeTokenAmount, feeTokenPrecison)
-			c.ServeJSON()
-			return
-		}
-		tokenBalanceValue := new(big.Float).Quo(balance, new(big.Float).SetInt64(basedef.Int64FromFigure(int(tokenMap.DstToken.Precision))))
 		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-			getFeeReq.SwapTokenHash, tokenBalance, tokenBalanceValue, isNative, nativeTokenAmount, feeTokenPrecison)
+			getFeeReq.SwapTokenHash, tokenBalance, int(tokenMap.DstToken.Precision), isNative, nativeTokenAmount, feeTokenPrecison)
 		c.ServeJSON()
 	} else {
 		c.Data["json"] = models.MakeGetFeeRsp(getFeeReq.SrcChainId, getFeeReq.Hash, getFeeReq.DstChainId, usdtFee, tokenFee, tokenFeeWithPrecision,
-			getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), new(big.Float).SetUint64(0), isNative, nativeTokenAmount, feeTokenPrecison)
+			getFeeReq.SwapTokenHash, new(big.Int).SetUint64(0), 0, isNative, nativeTokenAmount, feeTokenPrecison)
 		c.ServeJSON()
 	}
 }
