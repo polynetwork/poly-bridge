@@ -3,7 +3,6 @@ package crosschainstats
 import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
-	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/common"
 	"poly-bridge/conf"
@@ -137,9 +136,10 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 		}
 		price_new := decimal.New(token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 		precision_new := decimal.New(int64(1), int32(token.Precision))
-		balance, err := getAndRetryProxyBalance(lockTokenStatistic.ChainId, lockTokenStatistic.Hash, lockTokenStatistic.ItemProxy)
+		balance, err := common.GetProxyBalance(lockTokenStatistic.ChainId, lockTokenStatistic.Hash, lockTokenStatistic.ItemProxy)
 		if err != nil {
-			logs.Info("getAndRetryProxyBalance chainId: %v, Hash: %v, err:%v", lockTokenStatistic.ChainId, lockTokenStatistic.Hash, err)
+			logs.Error("computeLockTokenStatistics GetProxyBalance err chainId: %v, Hash: %v, err:%v", lockTokenStatistic.ChainId, lockTokenStatistic.Hash, err)
+			time.Sleep(time.Millisecond * 500)
 		} else {
 			amount_new := decimal.NewFromBigInt(balance, 0)
 			lockTokenStatistic.InAmount = models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt())
@@ -156,18 +156,4 @@ func (this *Stats) computeLockTokenStatistics() (err error) {
 	}
 	logs.Info("end computeLockTokenStatistics")
 	return nil
-}
-
-func getAndRetryProxyBalance(chainId uint64, hash string, itemProxy string) (*big.Int, error) {
-	balance, err := common.GetProxyBalance(chainId, hash, itemProxy)
-	if err != nil {
-		for i := 0; i < 4; i++ {
-			time.Sleep(time.Second)
-			balance, err = common.GetProxyBalance(chainId, hash, itemProxy)
-			if err == nil {
-				break
-			}
-		}
-	}
-	return balance, err
 }
