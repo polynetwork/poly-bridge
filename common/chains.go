@@ -1144,7 +1144,7 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		BSC_GetTotalSupply++
 		if BSC_GetTotalSupply%100==0||BSC_GetTotalSupply%100==1{
-			log.Info("*****++BSC_GetTotalSupply",BSC_GetTotalSupply)
+			logs.Info("*****++BSC_GetTotalSupply",BSC_GetTotalSupply)
 		}
 		return bscSdk.Erc20TotalSupply(hash)
 	}
@@ -1426,7 +1426,7 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	case basedef.BSC_CROSSCHAIN_ID:
 		BSC_GetProxyBalance++
 		if BSC_GetProxyBalance%100==0||BSC_GetProxyBalance%100==1{
-			log.Info("*****++BSC_GetProxyBalance",BSC_GetProxyBalance)
+			logs.Info("*****++BSC_GetProxyBalance",BSC_GetProxyBalance)
 		}
 		return bscSdk.Erc20Balance(hash, proxy)
 	case basedef.HECO_CROSSCHAIN_ID:
@@ -1523,7 +1523,7 @@ func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Addres
 	case basedef.BSC_CROSSCHAIN_ID:
 		BSC_GetNftOwner++
 		if BSC_GetNftOwner%100==0||BSC_GetNftOwner%100==1{
-			log.Info("*****++BSC_GetNftOwner",BSC_GetNftOwner)
+			logs.Info("*****++BSC_GetNftOwner",BSC_GetNftOwner)
 		}
 		return bscSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	case basedef.HECO_CROSSCHAIN_ID:
@@ -1551,7 +1551,7 @@ func GetBoundLockProxy(lockProxies []string, srcTokenHash, DstTokenHash string, 
 			if dstChainId==basedef.BSC_CROSSCHAIN_ID{
 				BSC_GetBoundLockProxy++
 				if BSC_GetBoundLockProxy%100==0||BSC_GetBoundLockProxy%100==1{
-					log.Info("*****++BSC_GetBoundLockProxy",BSC_GetBoundLockProxy)
+					logs.Info("*****++BSC_GetBoundLockProxy",BSC_GetBoundLockProxy)
 				}
 			}
 			return value.GetBoundLockProxy(lockProxies, srcTokenHash, DstTokenHash, srcChainId)
