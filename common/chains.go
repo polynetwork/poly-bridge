@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/log"
 	"math/big"
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -63,6 +64,12 @@ var (
 	goshenSdk      *chainsdk.EthereumSdkPro
 	config         *conf.Config
 	sdkMap         map[uint64]interface{}
+	BSC_GetBalance int
+	BSC_GetTotalSupply int
+	BSC_GetProxyBalance int
+	BSC_GetNftOwner int
+	BSC_GetBoundLockProxy int
+
 )
 
 func GetSdk(chainId uint64) interface{} {
@@ -556,6 +563,10 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			balance, err := bscSdk.Erc20Balance(hash, v)
 			maxFun(balance)
 			errMap[err] = true
+			BSC_GetBalance++
+			if BSC_GetBalance%100==0||BSC_GetBalance%100==1{
+				log.Info("*****++BSC_GetBalance",BSC_GetBalance)
+			}
 		}
 	}
 	if chainId == basedef.HECO_CROSSCHAIN_ID {
@@ -1131,6 +1142,10 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		if bscConfig == nil {
 			panic("chain is invalid")
 		}
+		BSC_GetTotalSupply++
+		if BSC_GetTotalSupply%100==0||BSC_GetTotalSupply%100==1{
+			log.Info("*****++BSC_GetTotalSupply",BSC_GetTotalSupply)
+		}
 		return bscSdk.Erc20TotalSupply(hash)
 	}
 	if chainId == basedef.HECO_CROSSCHAIN_ID {
@@ -1409,6 +1424,10 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.Erc20Balance(hash, proxy)
 	case basedef.BSC_CROSSCHAIN_ID:
+		BSC_GetProxyBalance++
+		if BSC_GetProxyBalance%100==0||BSC_GetProxyBalance%100==1{
+			log.Info("*****++BSC_GetProxyBalance",BSC_GetProxyBalance)
+		}
 		return bscSdk.Erc20Balance(hash, proxy)
 	case basedef.HECO_CROSSCHAIN_ID:
 		return hecoSdk.Erc20Balance(hash, proxy)
@@ -1502,6 +1521,10 @@ func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Addres
 	case basedef.MATIC_CROSSCHAIN_ID:
 		return maticSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	case basedef.BSC_CROSSCHAIN_ID:
+		BSC_GetNftOwner++
+		if BSC_GetNftOwner%100==0||BSC_GetNftOwner%100==1{
+			log.Info("*****++BSC_GetNftOwner",BSC_GetNftOwner)
+		}
 		return bscSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
 	case basedef.HECO_CROSSCHAIN_ID:
 		return hecoSdk.GetNFTOwner(asset, big.NewInt(int64(tokenId)))
@@ -1525,6 +1548,12 @@ func GetNftOwner(chainId uint64, asset string, tokenId int) (owner common.Addres
 func GetBoundLockProxy(lockProxies []string, srcTokenHash, DstTokenHash string, srcChainId, dstChainId uint64) (string, error) {
 	if sdk, exist := sdkMap[dstChainId]; exist {
 		if value, ok := sdk.(*chainsdk.EthereumSdkPro); ok {
+			if dstChainId==basedef.BSC_CROSSCHAIN_ID{
+				BSC_GetBoundLockProxy++
+				if BSC_GetBoundLockProxy%100==0||BSC_GetBoundLockProxy%100==1{
+					log.Info("*****++BSC_GetBoundLockProxy",BSC_GetBoundLockProxy)
+				}
+			}
 			return value.GetBoundLockProxy(lockProxies, srcTokenHash, DstTokenHash, srcChainId)
 		}
 	}
