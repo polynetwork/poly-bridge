@@ -258,13 +258,7 @@ func (this *Stats) computeTokenStatistics() (err error) {
 		price_new := decimal.New(token.TokenBasic.Price, 0).Div(decimal.NewFromInt(basedef.PRICE_PRECISION))
 		precision_new := decimal.New(int64(1), int32(token.Precision))
 		if token.TokenBasic.ChainId == statistic.ChainId {
-			balance, err := getAndRetryBalance(statistic.ChainId, statistic.Hash)
-			if err != nil {
-				logs.Info("CheckAsset chainId: %v, Hash: %v, err:%v", statistic.ChainId, statistic.Hash, err)
-			} else {
-				amount_new := decimal.NewFromBigInt(balance, 0)
-				statistic.InAmount = models.NewBigInt(amount_new.Div(precision_new).Mul(decimal.NewFromInt32(100)).BigInt())
-			}
+			statistic.InAmount = models.NewBigIntFromInt(0)
 			statistic.OutAmount = models.NewBigIntFromInt(0)
 		} else {
 			in, err := this.dao.CalculateInTokenStatistics(statistic.ChainId, statistic.Hash, statistic.LastInCheckId, nowInId)
@@ -563,18 +557,4 @@ type AssetDetail struct {
 	Price      int64
 	Amount_usd string
 	Reason     string
-}
-
-func getAndRetryBalance(chainId uint64, hash string) (*big.Int, error) {
-	balance, err := common.GetBalance(chainId, hash)
-	if err != nil {
-		for i := 0; i < 4; i++ {
-			time.Sleep(time.Second)
-			balance, err = common.GetBalance(chainId, hash)
-			if err == nil {
-				break
-			}
-		}
-	}
-	return balance, err
 }
