@@ -101,7 +101,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		basedef.KCC_CROSSCHAIN_ID, basedef.BYTOM_CROSSCHAIN_ID, basedef.HSC_CROSSCHAIN_ID, basedef.KAVA_CROSSCHAIN_ID,
 		basedef.CUBE_CROSSCHAIN_ID, basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID, basedef.CLOVER_CROSSCHAIN_ID,
 		basedef.CONFLUX_CROSSCHAIN_ID, basedef.ASTAR_CROSSCHAIN_ID, basedef.BRISE_CROSSCHAIN_ID, basedef.DEXIT_CROSSCHAIN_ID,
-		basedef.CLOUDTX_CROSSCHAIN_ID:
+		basedef.CLOUDTX_CROSSCHAIN_ID, basedef.XINFIN_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
