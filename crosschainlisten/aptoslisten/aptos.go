@@ -9,6 +9,7 @@ import (
 	"poly-bridge/crosschaindao"
 	"poly-bridge/models"
 	"strconv"
+	"strings"
 )
 
 type AptosChainListen struct {
@@ -141,7 +142,7 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 		srcTx.Time = txTime
 
 		srcTx.Height, _ = strconv.ParseUint(block.BlockHeight, 0, 32)
-		srcTx.User = tx.Sender
+		srcTx.User = strings.TrimPrefix(tx.Sender, "0x")
 		srcTx.Contract = event.GUID.AccountAddress[2:]
 		srcTx.Key = event.Data["tx_id"].(string)[2:]
 		srcTx.Param = event.Data["raw_data"].(string)
@@ -153,7 +154,7 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 			srcTransfer.ChainId = a.GetChainId()
 			srcTransfer.DstChainId, _ = strconv.ParseUint(lockEvent.Data["to_chain_id"].(string), 0, 32)
 			srcTransfer.TxHash = tx.Hash[2:]
-			srcTransfer.From = tx.Sender
+			srcTransfer.From = strings.TrimPrefix(tx.Sender, "0x")
 			srcTransfer.To = event.GUID.AccountAddress
 			srcTransfer.Asset = tx.Payload.TypeArguments[0]
 			amount, _ := strconv.ParseInt(tx.Payload.Arguments[0].(string), 0, 32)
@@ -179,11 +180,12 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 		wrapperTx := &models.WrapperTransaction{}
 		if lockWithFeeEvent := a.aptosSdk.GetLatest().Sdk.GetLockWithFeeEvent(tx.Events); lockWithFeeEvent != nil {
 			wrapperTx.Hash = tx.Hash[2:]
+			wrapperTx.User = strings.TrimPrefix(tx.Sender, "0x")
 			wrapperTx.SrcChainId = a.GetChainId()
 			wrapperTx.BlockHeight = srcTx.Height
 			wrapperTx.Time = txTime
 			wrapperTx.DstChainId, _ = strconv.ParseUint(lockWithFeeEvent.Data["to_chain_id"].(string), 0, 32)
-			wrapperTx.DstUser = models.FormatString(lockWithFeeEvent.Data["to_address"].(string))
+			wrapperTx.DstUser = models.FormatString(strings.TrimPrefix(lockWithFeeEvent.Data["to_address"].(string), "0x"))
 			wrapperTx.FeeTokenHash = "0x1::aptos_coin::AptosCoin"
 			feeAmount, _ := strconv.ParseInt(lockWithFeeEvent.Data["fee_amount"].(string), 0, 32)
 			wrapperTx.FeeAmount = models.NewBigIntFromInt(feeAmount)
@@ -230,7 +232,7 @@ func (a *AptosChainListen) HandleEvent(db crosschaindao.CrossChainDao, crossChai
 			dstTransfer.Time = txTime
 			dstTransfer.ChainId = a.GetChainId()
 			dstTransfer.From = event.GUID.AccountAddress
-			dstTransfer.To = models.FormatString(unLockEvent.Data["to_address"].(string))
+			dstTransfer.To = models.FormatString(strings.TrimPrefix(unLockEvent.Data["to_address"].(string), "0x"))
 			dstTransfer.Asset = tx.Payload.TypeArguments[0]
 			amount, _ := strconv.ParseInt(unLockEvent.Data["amount"].(string), 0, 32)
 			dstTransfer.Amount = models.NewBigIntFromInt(amount)
