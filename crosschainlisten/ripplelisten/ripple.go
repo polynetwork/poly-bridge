@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rubblelabs/ripple/data"
 	"math/big"
 	"poly-bridge/basedef"
@@ -126,6 +127,13 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 				}
 
 				if isContract(toAccount, this.rippleCfg.CCMContract) {
+					user, err := data.NewAccountFromAddress(fromAccount)
+					if err != nil {
+						logs.Error("chian :%v, height: %v, txhasah: %v, fromAccount:%s, data.NewAccountFromAddress err: %v", this.GetChainName(), height, payment.Hash.String(), fromAccount, err)
+					}
+					userEthFromat := common.HexToAddress(hex.EncodeToString(user.Bytes()))
+					userHexString := strings.TrimPrefix(strings.ToLower(userEthFromat.String()), "0x")
+
 					type CrossChainInfo struct {
 						DstChain   uint64
 						DstAddress string
@@ -170,7 +178,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 						Time:       time,
 						Fee:        models.NewBigInt(fee),
 						Height:     height,
-						User:       fromAccount,
+						User:       userHexString,
 						DstChainId: crossChainInfo.DstChain,
 						Contract:   toAccount,
 						Key:        hash,
@@ -181,7 +189,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							Standard:   models.TokenTypeErc20,
 							Time:       time,
 							Asset:      this.GetXRP(),
-							From:       fromAccount,
+							From:       userHexString,
 							To:         toAccount,
 							Amount:     models.NewBigInt(amount),
 							DstChainId: crossChainInfo.DstChain,
@@ -191,6 +199,13 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 					})
 				} else if isContract(fromAccount, this.rippleCfg.CCMContract) {
 					//dstTx
+					toUser, err := data.NewAccountFromAddress(toAccount)
+					if err != nil {
+						logs.Error("chian :%v, height: %v, txhasah: %v, fromAccount:%s, data.NewAccountFromAddress err: %v", this.GetChainName(), height, payment.Hash.String(), fromAccount, err)
+					}
+					toUserEthFromat := common.HexToAddress(hex.EncodeToString(toUser.Bytes()))
+					toUserHexString := strings.TrimPrefix(strings.ToLower(toUserEthFromat.String()), "0x")
+
 					dstTransactions = append(dstTransactions, &models.DstTransaction{
 						Hash:       hash,
 						ChainId:    this.GetChainId(),
@@ -210,7 +225,7 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							Time:     time,
 							Asset:    this.GetXRP(),
 							From:     fromAccount,
-							To:       toAccount,
+							To:       toUserHexString,
 						},
 					})
 				} else if isContract(toAccount, this.rippleCfg.WrapperContract...) {
@@ -228,16 +243,24 @@ func (this *RippleChainListen) HandleNewBlock(height uint64) ([]*models.WrapperT
 							wrapperInfo := new(WrapperInfo)
 							err = json.Unmarshal(memoData, wrapperInfo)
 							if err == nil {
+								userHexString := wrapperInfo.SrcAddress
+								userRipple, err := data.NewAccountFromAddress(wrapperInfo.SrcAddress)
+								if err == nil {
+									userEthFromat := common.HexToAddress(hex.EncodeToString(userRipple.Bytes()))
+									userHexString = strings.TrimPrefix(strings.ToLower(userEthFromat.String()), "0x")
+								}
+								logs.Error("chian :%v, height: %v, txhasah: %v, wrapperInfo.SrcAddress:%s, data.NewAccountFromAddress err: %v", this.GetChainName(), height, wrapperInfo.SrcAddress, fromAccount, err)
+
 								wrapperDetails = append(wrapperDetails, &models.WrapperDetail{
 									WrapperHash:  strings.ToLower(models.FormatString(wrapperInfo.LockTxHash)),
 									Hash:         hash,
-									User:         models.FormatString(wrapperInfo.SrcAddress),
+									User:         models.FormatString(userHexString),
 									SrcChainId:   this.GetChainId(),
 									Standard:     models.TokenTypeErc20,
 									BlockHeight:  height,
 									Time:         time,
 									DstChainId:   wrapperInfo.DstChain,
-									DstUser:      models.FormatString(wrapperInfo.DstAddress),
+									DstUser:      models.FormatString(strings.TrimPrefix(strings.ToLower(wrapperInfo.DstAddress), "0x")),
 									ServerId:     0,
 									FeeTokenHash: this.GetXRP(),
 									FeeAmount:    models.NewBigInt(amount),
