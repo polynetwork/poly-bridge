@@ -574,7 +574,7 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 			BSC_GetBalance++
 			if BSC_GetBalance%100==0||BSC_GetBalance%100==1{
-				log.Info("*****++BSC_GetBalance",BSC_GetBalance)
+				logs.Info("*****++BSC_GetBalance",BSC_GetBalance)
 			}
 		}
 	}
