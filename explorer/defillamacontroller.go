@@ -397,3 +397,11 @@ func (c *DefiLlamaController) GetTVLGoshen() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+func (c *DefiLlamaController) GetTVLCronos() {
+	tvlAmount, err := getTVLAmount(basedef.CRONOS_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLCronos err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}

@@ -104,7 +104,7 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		basedef.CUBE_CROSSCHAIN_ID, basedef.ZKSYNC_CROSSCHAIN_ID, basedef.CELO_CROSSCHAIN_ID, basedef.CLOVER_CROSSCHAIN_ID,
 		basedef.CONFLUX_CROSSCHAIN_ID, basedef.PLT2_CROSSCHAIN_ID, basedef.ASTAR_CROSSCHAIN_ID, basedef.GOERLI_CROSSCHAIN_ID,
 		basedef.BRISE_CROSSCHAIN_ID, basedef.DEXIT_CROSSCHAIN_ID, basedef.CLOUDTX_CROSSCHAIN_ID, basedef.SEPOLIA_CROSSCHAIN_ID,
-		basedef.XINFIN_CROSSCHAIN_ID, basedef.NAUTILUS_CROSSCHAIN_ID, basedef.GOSHEN_CROSSCHAIN_ID:
+		basedef.XINFIN_CROSSCHAIN_ID, basedef.NAUTILUS_CROSSCHAIN_ID, basedef.GOSHEN_CROSSCHAIN_ID, basedef.CRONOS_CROSSCHAIN_ID:
 		return ethereumlisten.NewEthereumChainListen(chainListenConfig)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neolisten.NewNeoChainListen(chainListenConfig)
@@ -397,7 +397,6 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 								logs.Info("HandleNewBlock [chainName: %s, height: %d]. "+
 									"len(wrapperTransactions)=%d, len(srcTransactions)=%d, len(polyTransactions)=%d, len(dstTransactions)=%d, len(wrapperDetails)=%d, len(polyDetails)=%d",
 									chain.Name, height, len(wrapperTransactions), len(srcTransactions), len(polyTransactions), len(dstTransactions), len(wrapperDetails), len(polyDetails))
-
 								detailWrapperTxs, err := ccl.db.FillTxSpecialChain(wrapperTransactions, srcTransactions, polyTransactions, dstTransactions, wrapperDetails, polyDetails)
 								if err != nil {
 									logs.Error("FillTxSpecialChain on block %d err: %v", height, err)
