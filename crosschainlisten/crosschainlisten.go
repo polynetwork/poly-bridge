@@ -574,6 +574,7 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 	)
 
 	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.LargeTxChatId, text)
+	msg.ParseMode = tgbotapi.ModeMarkdown
 
 	_, err = common.SendTgBotMessage(msg)
 	if err != nil {
