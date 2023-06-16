@@ -18,15 +18,14 @@
 package explorer
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"math/big"
-	"net/http"
 	"os"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
+	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/models"
 	"poly-bridge/utils/decimal"
@@ -439,8 +438,8 @@ func (c *BotController) CheckTxs() {
 }
 
 func (c *BotController) RunChecks() {
-	if conf.GlobalConfig.BotConfig == nil || conf.GlobalConfig.BotConfig.DingUrl == "" {
-		panic("Invalid ding url")
+	if conf.GlobalConfig.BotConfig == nil || conf.GlobalConfig.BotConfig.TxStatusChatId == 0 {
+		panic("Invalid TxStatusChatId")
 	}
 	interval := conf.GlobalConfig.BotConfig.Interval
 	if interval == 0 {
@@ -510,9 +509,13 @@ func (c *BotController) checkTxs() (err error) {
 			continue
 		}
 
-		title := fmt.Sprintf("Asset %s(%s->%s): %s", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
-		body := fmt.Sprintf(
-			"## %s\n- Amount %v\n- Time %v\n- Duration %v\n- Fee %v(%v min:%v)\n- Hash %v\n- Poly %v\n- ProxyProject %v\n",
+		baseUrl := conf.GlobalConfig.BotConfig.BaseUrl
+		apiToken := conf.GlobalConfig.BotConfig.ApiToken
+
+		title := fmt.Sprintf("*Asset %s(%s->%s): %s*", entry.Asset, entry.SrcChainName, entry.DstChainName, entry.Status)
+
+		text := fmt.Sprintf(
+			"%s\n*Amount*: %v\n*Time*: %v\n*Duration*: %v\n*Fee*: %v(%v min:%v)\n*Hash*: %v\n*Poly*: %v\n*ProxyProject*: %v\n",
 			title,
 			entry.Amount,
 			entry.Time,
@@ -525,32 +528,17 @@ func (c *BotController) checkTxs() (err error) {
 			entry.ProxyProject,
 		)
 
-		baseUrl := conf.GlobalConfig.BotConfig.BaseUrl
-		apiToken := conf.GlobalConfig.BotConfig.ApiToken
-		btns := []map[string]string{
-			map[string]string{
-				"title":     "List All",
-				"actionURL": baseUrl + conf.GlobalConfig.BotConfig.DetailUrl,
-			},
-			map[string]string{
-				"title":     "Mark As Skipped",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=skip", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
-			},
-			map[string]string{
-				"title":     "Mark As Waiting",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s&status=wait", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
-			},
-			map[string]string{
-				"title":     "Mark/Unmark As Paid",
-				"actionURL": fmt.Sprintf("%stoken=%s&tx=%s", baseUrl+conf.GlobalConfig.BotConfig.MarkAsPaidUrl, apiToken, entry.Hash),
-			},
-			map[string]string{
-				"title":     "Open",
-				"actionURL": baseUrl + conf.GlobalConfig.BotConfig.TxUrl + entry.Hash,
-			},
-		}
+		text = fmt.Sprintf("%s\n[Skip](%s)     [Wait](%s)     [(un)markAsPaid](%s)     [List All](%s)\n%s",
+			text,
+			fmt.Sprintf("%stoken=%s&tx=%s&status=skip", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
+			fmt.Sprintf("%stoken=%s&tx=%s&status=wait", baseUrl+conf.GlobalConfig.BotConfig.FinishUrl, apiToken, entry.Hash),
+			fmt.Sprintf("%stoken=%s&tx=%s", baseUrl+conf.GlobalConfig.BotConfig.MarkAsPaidUrl, apiToken, entry.Hash),
+			baseUrl+conf.GlobalConfig.BotConfig.DetailUrl,
+			"-----------------------------------------",
+		)
 
-		err = c.PostDingCard(title, body, btns)
+		msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.TxStatusChatId, text)
+		_, err := common.SendTgBotMessage(msg)
 		if err != nil {
 			logs.Error("send tx stuck ding alarm error. hash: %s, err:", tx.SrcHash, err)
 		} else {
@@ -560,50 +548,6 @@ func (c *BotController) checkTxs() (err error) {
 		}
 	}
 
-	return nil
-}
-
-func (c *BotController) PostDingCard(title, body string, btns interface{}) error {
-	payload := map[string]interface{}{}
-	payload["msgtype"] = "actionCard"
-	card := map[string]interface{}{}
-	card["title"] = title
-	card["text"] = body
-	card["hideAvatar"] = 0
-	card["btns"] = btns
-	payload["actionCard"] = card
-	return c.postDing(payload)
-}
-
-func (c *BotController) PostDingMarkDown(title, body string) error {
-	payload := map[string]interface{}{}
-	payload["msgtype"] = "markdown"
-	payload["markdown"] = map[string]string{
-		"title": title,
-		"text":  fmt.Sprintf("%s\n%s", title, body),
-	}
-	return c.postDing(payload)
-}
-
-func (c *BotController) postDing(payload interface{}) error {
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-	req, err := http.NewRequest("POST", conf.GlobalConfig.BotConfig.DingUrl, bytes.NewBuffer(data))
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	logs.Info("PostDing response Body:", string(respBody))
 	return nil
 }
 

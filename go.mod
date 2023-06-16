@@ -34,6 +34,7 @@ require (
 	github.com/urfave/cli v1.22.4
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/gorm v1.20.8
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.0.0-20221020003552-4126fa611266
 )
 
 replace (

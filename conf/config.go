@@ -244,10 +244,11 @@ type EventEffectConfig struct {
 }
 
 type BotConfig struct {
-	DingUrl                                   string
-	LargeTxDingUrl                            string
-	NodeStatusDingUrl                         string
-	RelayerAccountStatusDingUrl               string
+	TgBotApiToken                             string
+	LargeTxChatId                             int64
+	NodeStatusChatId                          int64
+	RelayerAccountStatusChatId                int64
+	TxStatusChatId                            int64
 	CheckFrom                                 int64
 	Interval                                  int64
 	BaseUrl                                   string
