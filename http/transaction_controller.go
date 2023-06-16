@@ -522,7 +522,7 @@ func (c *TransactionController) GetManualTxData() {
 		c.return400(fmt.Sprintf("%v is not polyhash", manualTxDataReq.PolyHash))
 		return
 	}
-	if polyTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID {
+	if polyTransaction.DstChainId == basedef.ONT_CROSSCHAIN_ID || polyTransaction.DstChainId == basedef.NEO_CROSSCHAIN_ID {
 		c.return400(fmt.Sprintf("%v can not submit to dst chain", manualTxDataReq.PolyHash))
 		return
 	}
@@ -545,6 +545,9 @@ func (c *TransactionController) GetManualTxData() {
 		return
 	}
 	url := relayUrl + "/api/v1/composetx?hash=" + manualTxDataReq.PolyHash
+	if polyTransaction.DstChainId == basedef.NEO3_CROSSCHAIN_ID {
+		url = neo3relayUrl + "/api/v1/composetx?hash=" + manualTxDataReq.PolyHash
+	}
 	for i := 0; i < 2; i++ {
 		resp, err := http.Get(url)
 		if err != nil {

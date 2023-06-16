@@ -331,6 +331,7 @@ type Config struct {
 	IPPortConfig              *IPPortConfig
 	NftConfig                 *NftConfig
 	RelayUrl                  string
+	Neo3RelayUrl          	  string
 	ActivityConfig            *ActivityConfig
 	OperationConfig           *OperationConfig
 }

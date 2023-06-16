@@ -28,6 +28,7 @@ import (
 
 var db *gorm.DB
 var relayUrl string
+var neo3relayUrl string
 var contractCheck map[uint64]([]string)
 
 func Init() {
@@ -48,6 +49,7 @@ func Init() {
 	if relayUrl == "" {
 		panic("relayUrl is null")
 	}
+	neo3relayUrl = conf.GlobalConfig.Neo3RelayUrl
 
 	contractCheck = make(map[uint64]([]string), 0)
 	for _, chainListen := range conf.GlobalConfig.ChainListenConfig {
