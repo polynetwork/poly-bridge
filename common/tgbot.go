@@ -8,7 +8,7 @@ import (
 
 var bot *tgbotapi.BotAPI
 
-func init() {
+func TgBotInit() {
 	var err error
 	if len(conf.GlobalConfig.BotConfig.TgBotApiToken) == 0 {
 		panic("TgBotApiToken is empty")

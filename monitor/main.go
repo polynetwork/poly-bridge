@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"poly-bridge/basedef"
 	"poly-bridge/cacheRedis"
+	"poly-bridge/common"
 	"poly-bridge/conf"
 	"poly-bridge/monitor/healthmonitor"
 	"runtime"
@@ -53,6 +54,10 @@ func StartServer(ctx *cli.Context) {
 		logs.Error("startServer - read server config failed!")
 		return
 	}
+
+	// TG bot
+	common.TgBotInit()
+
 	relayerConfig := conf.NewRelayerConfig(relayerConfigFile)
 	if relayerConfig == nil {
 		logs.Error("startServer - read relayer config failed!")

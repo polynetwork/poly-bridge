@@ -87,6 +87,9 @@ func startServer(ctx *cli.Context) {
 	//initialize redis
 	cacheRedis.Init()
 
+	// TG bot
+	common.TgBotInit()
+
 	metrics.Init("bridge")
 	basedef.ConfirmEnv(config.Env)
 	common.SetupChainsSDK(config)
