@@ -313,7 +313,7 @@ func (c *BotController) checkFees(hashes []string) (fees map[string]models.Check
 		minFee = new(big.Float).Quo(minFee, new(big.Float).SetInt64(basedef.Int64FromFigure(int(chainFee.TokenBasic.Precision))))
 
 		srcTx := hash2Tx[tx.Hash]
-		if srcTx.Standard == models.TokenTypeErc721 {
+		if srcTx != nil && srcTx.Standard == models.TokenTypeErc721 {
 			for _, cfg := range conf.GlobalConfig.FeeListenConfig {
 				if cfg.ChainId == tx.DstChainId {
 					if cfg.NftRatio > 0 {
