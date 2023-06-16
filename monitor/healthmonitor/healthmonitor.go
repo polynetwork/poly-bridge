@@ -423,6 +423,7 @@ func sendNodeStatusDingAlarm(nodeStatus *basedef.NodeStatus, isRecover bool) err
 
 	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.NodeStatusChatId, text)
 	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.DisableWebPagePreview = true
 	_, err := common.SendTgBotMessage(msg)
 	return err
 }
@@ -448,6 +449,7 @@ func sendChainStatusDingAlarm(chainStatus basedef.ChainStatus) error {
 
 	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.NodeStatusChatId, text)
 	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.DisableWebPagePreview = true
 	_, err := common.SendTgBotMessage(msg)
 	return err
 }
@@ -476,6 +478,7 @@ func sendRelayerAccountStatusDingAlarm(relayerStatus *basedef.RelayerAccountStat
 
 	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.RelayerAccountStatusChatId, text)
 	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.DisableWebPagePreview = true
 	_, err := common.SendTgBotMessage(msg)
 	return err
 }

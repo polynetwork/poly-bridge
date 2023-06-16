@@ -539,7 +539,8 @@ func (c *BotController) checkTxs() (err error) {
 
 		msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.TxStatusChatId, text)
 		msg.ParseMode = tgbotapi.ModeMarkdown
-		_, err := common.SendTgBotMessage(msg)
+		msg.DisableWebPagePreview = true
+		_, err = common.SendTgBotMessage(msg)
 		if err != nil {
 			logs.Error("send tx stuck ding alarm error. hash: %s, err:", tx.SrcHash, err)
 		} else {
