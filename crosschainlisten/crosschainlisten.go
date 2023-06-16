@@ -20,6 +20,7 @@ package crosschainlisten
 import (
 	"encoding/json"
 	"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"math"
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
@@ -472,9 +473,7 @@ func (ccl *CrossChainListen) checkLargeTransaction(srcTransactions []*models.Src
 						if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, v.Hash); err != nil {
 							logs.Error("Save LargeTx[hash: %s] err: %s", v.Hash, err)
 						}
-						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.LargeTxAmount, amount); err != nil {
-							logs.Error("send LargeTxAmount alarm err:", err)
-						} else {
+						if err := ccl.sendLargeTransactionDingAlarm(v, token, ccl.config.LargeTxAmount, amount); err == nil {
 							if _, err := cacheRedis.Redis.Set(cacheRedis.LargeTxAlarmPrefix+strings.ToLower(v.Hash), "done", time.Hour); err != nil {
 								logs.Error("mark large TX hash: %s alarm done err: %s", v.Hash, err)
 							}
@@ -525,7 +524,7 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		}
 	}
 
-	title := fmt.Sprintf("Large transaction exceeding %s USD (%s->%s)", exceedingAmount, srcChainName, dstChainName)
+	title := fmt.Sprintf("*Large transaction exceeding %s USD (%s->%s)*\n", exceedingAmount, srcChainName, dstChainName)
 	//ss += "Asset " + token.Name + "(" + srcChainName + "->" + dstChainName + ")\n"
 	txType := "SWAP"
 	if srcTransaction.SrcSwap != nil {
@@ -551,29 +550,31 @@ func (ccl *CrossChainListen) sendLargeTransactionDingAlarm(srcTransaction *model
 		User:      srcTransaction.User,
 		Time:      time.Unix(int64(srcTransaction.Time), 0).Format("2006-01-02 15:04:05"),
 	}
-	body := fmt.Sprintf("## %s\n- Asset: %s\n- Type: %s\n- Amount: %s %s (%s USD)\n- Hash: %s\n- User: %s\n- Time: %s\n",
+
+	text := fmt.Sprintf("%s\n*Asset*: %s\n*Type*: %s\n*Amount*: %s (%s USD)\n*Hash*: %s\n*User*: %s\n*Time*: %s\n",
 		title,
 		largeTx.Asset,
 		largeTx.Type,
-		largeTx.Amount, largeTx.Asset, largeTx.USDAmount,
+		largeTx.Amount,
+		largeTx.USDAmount,
 		largeTx.Hash,
 		largeTx.User,
 		largeTx.Time,
 	)
-	logs.Info(body)
-	//cacheRedis.Redis.Unlink(cacheRedis.LargeTxList)
-	//if largeTxJson, err := json.Marshal(largeTx); err == nil {
-	//	value := string(largeTxJson)
-	//	if err := cacheRedis.Redis.RPush(cacheRedis.LargeTxList, value); err != nil {
-	//		logs.Error("Save LargeTx[hash: %s] err: %s", srcTransaction.Hash, err)
-	//	}
-	//}
 
-	btns := []map[string]string{
-		{
-			"title":     "List All",
-			"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListLargeTxUrl, conf.GlobalConfig.BotConfig.ApiToken),
-		},
+	text = fmt.Sprintf("%s\n[List All](%s)\n%s",
+		text,
+		fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListLargeTxUrl, conf.GlobalConfig.BotConfig.ApiToken),
+		"-----------------------------------------",
+	)
+
+	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.LargeTxChatId, text)
+	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.DisableWebPagePreview = true
+
+	_, err = common.SendTgBotMessage(msg)
+	if err != nil {
+		logs.Error("send large transaction alarm failed. hash=%s, err:%s", largeTx.Hash, err.Error())
 	}
-	return common.PostDingCard(title, body, btns, conf.GlobalConfig.BotConfig.LargeTxDingUrl)
+	return err
 }

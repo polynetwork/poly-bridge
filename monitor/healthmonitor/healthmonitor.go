@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -382,10 +383,10 @@ func sendNodeStatusDingAlarm(nodeStatus *basedef.NodeStatus, isRecover bool) err
 	title := ""
 	status := ""
 	if isRecover {
-		title = fmt.Sprintf("%s Node Recover", nodeStatus.ChainName)
+		title = fmt.Sprintf("*%s Node Recover*\n", nodeStatus.ChainName)
 		status = basedef.StatusOk
 	} else {
-		title = fmt.Sprintf("%s Node Alarm", nodeStatus.ChainName)
+		title = fmt.Sprintf("*%s Node Alarm*\n", nodeStatus.ChainName)
 		if len(nodeStatus.Status) == 0 {
 			status = basedef.StatusOk
 		} else {
@@ -395,7 +396,8 @@ func sendNodeStatusDingAlarm(nodeStatus *basedef.NodeStatus, isRecover bool) err
 		}
 
 	}
-	body := fmt.Sprintf("## %s\n- Node: %s\n- Height: %d\n- Status: %s\n- Time: %s\n",
+
+	text := fmt.Sprintf("%s\n*Node*: %s\n*Height*: %d\n*Status*: %s\n*Time*: %s\n",
 		title,
 		nodeStatus.Url,
 		nodeStatus.Height,
@@ -403,31 +405,27 @@ func sendNodeStatusDingAlarm(nodeStatus *basedef.NodeStatus, isRecover bool) err
 		time.Unix(nodeStatus.Time, 0).Format("2006-01-02 15:04:05"),
 	)
 
-	buttons := make([]map[string]string, 0)
 	if !isRecover {
-		buttons = append(buttons, []map[string]string{
-			{
-				"title":     "Ignore For 1 Day",
-				"actionURL": fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 1),
-			},
-			{
-				"title":     "Ignore For 10 Day",
-				"actionURL": fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 10),
-			},
-			{
-				"title":     "Cancel Ignore",
-				"actionURL": fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 0),
-			},
-		}...)
+		text = fmt.Sprintf("%s\n[Ignore For 1 Day](%s)    [Cancel Ignore](%s)    [List All](%s)\n%s",
+			text,
+			fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 1),
+			fmt.Sprintf("%stoken=%s&node=%s&day=%d", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.IgnoreNodeStatusAlarmUrl, conf.GlobalConfig.BotConfig.ApiToken, nodeStatus.Url, 0),
+			fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+			"-----------------------------------------",
+		)
+	} else {
+		text = fmt.Sprintf("%s\n[List All](%s)\n%s",
+			text,
+			fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+			"-----------------------------------------",
+		)
 	}
-	buttons = append(buttons, map[string]string{
-		"title":     "List All",
-		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
-	})
 
-	logs.Info(body)
-	logs.Info(buttons)
-	return common.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
+	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.NodeStatusChatId, text)
+	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.DisableWebPagePreview = true
+	_, err := common.SendTgBotMessage(msg)
+	return err
 }
 
 func sendChainStatusDingAlarm(chainStatus basedef.ChainStatus) error {
@@ -435,34 +433,36 @@ func sendChainStatusDingAlarm(chainStatus basedef.ChainStatus) error {
 	for k, v := range chainStatus.StatusTimeMap {
 		status = fmt.Sprintf("%s\n%s %s", status, k, time.Unix(v, 0).Format("2006-01-02 15:04:05"))
 	}
-	title := fmt.Sprintf("%s Alarm!!!", chainStatus.ChainName)
-	body := fmt.Sprintf("## %s\n- Height: %d\n- Status: %s\n- Time: %s\n",
+	title := fmt.Sprintf("*%s Alarm!!!*", chainStatus.ChainName)
+
+	text := fmt.Sprintf("%s\n*Height*: %d\n*Status*: %s\n*Time*: %s\n",
 		title,
 		chainStatus.Height,
 		status,
 		time.Unix(chainStatus.Time, 0).Format("2006-01-02 15:04:05"),
 	)
+	text = fmt.Sprintf("%s\n[List All](%s)\n%s",
+		text,
+		fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+		"-----------------------------------------",
+	)
 
-	buttons := make([]map[string]string, 0)
-	buttons = append(buttons, map[string]string{
-		"title":     "List All",
-		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
-	})
-
-	logs.Info(body)
-	logs.Info(buttons)
-	return common.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.NodeStatusDingUrl)
+	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.NodeStatusChatId, text)
+	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.DisableWebPagePreview = true
+	_, err := common.SendTgBotMessage(msg)
+	return err
 }
 
 func sendRelayerAccountStatusDingAlarm(relayerStatus *basedef.RelayerAccountStatus, isRecover bool) error {
 	title := ""
 	if isRecover {
-		title = fmt.Sprintf("%s relayer refilled", relayerStatus.ChainName)
+		title = fmt.Sprintf("*%s relayer refilled*", relayerStatus.ChainName)
 	} else {
-		title = fmt.Sprintf("%s relayer insufficient", relayerStatus.ChainName)
+		title = fmt.Sprintf("*%s relayer insufficient*", relayerStatus.ChainName)
 	}
 
-	body := fmt.Sprintf("## %s\n- Address: %s\n- Balance: %f\n-  Threshold:%f\n- Time: %s\n",
+	text := fmt.Sprintf("%s\n*Address*: %s\n*Balance*: %f\n*Threshold*:%f\n*Time*: %s\n",
 		title,
 		relayerStatus.Address,
 		relayerStatus.Balance,
@@ -470,15 +470,17 @@ func sendRelayerAccountStatusDingAlarm(relayerStatus *basedef.RelayerAccountStat
 		time.Unix(time.Now().Unix(), 0).Format("2006-01-02 15:04:05"),
 	)
 
-	buttons := make([]map[string]string, 0)
-	buttons = append(buttons, map[string]string{
-		"title":     "List All",
-		"actionURL": fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListRelayerAccountStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
-	})
+	text = fmt.Sprintf("%s\n[List All](%s)\n%s",
+		text,
+		fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+		"-----------------------------------------",
+	)
 
-	logs.Info(body)
-	logs.Info(buttons)
-	return common.PostDingCard(title, body, buttons, conf.GlobalConfig.BotConfig.RelayerAccountStatusDingUrl)
+	msg := tgbotapi.NewMessage(conf.GlobalConfig.BotConfig.RelayerAccountStatusChatId, text)
+	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.DisableWebPagePreview = true
+	_, err := common.SendTgBotMessage(msg)
+	return err
 }
 
 func NewHealthMonitorHandle(monitorConfig *conf.HealthMonitorConfig) MonitorHandle {
