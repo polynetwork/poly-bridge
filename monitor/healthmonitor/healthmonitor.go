@@ -472,7 +472,7 @@ func sendRelayerAccountStatusDingAlarm(relayerStatus *basedef.RelayerAccountStat
 
 	text = fmt.Sprintf("%s\n[List All](%s)\n%s",
 		text,
-		fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListNodeStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
+		fmt.Sprintf("%stoken=%s", conf.GlobalConfig.BotConfig.BaseUrl+conf.GlobalConfig.BotConfig.ListRelayerAccountStatusUrl, conf.GlobalConfig.BotConfig.ApiToken),
 		"-----------------------------------------",
 	)
 
