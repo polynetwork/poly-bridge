@@ -1,6 +1,7 @@
 package cacheRedis
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -71,6 +72,9 @@ func GetRedisClient(redisConfig *conf.RedisConfig) (*RedisCache, error) {
 		WriteTimeout: redisConfig.WriteTimeout * time.Second,
 		PoolSize:     redisConfig.PoolSize,
 		IdleTimeout:  redisConfig.IdleTimeout * time.Second,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
 	}
 	return &RedisCache{
 		c:      goredis.NewClient(options),
