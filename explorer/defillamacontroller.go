@@ -405,3 +405,11 @@ func (c *DefiLlamaController) GetTVLCronos() {
 	c.Data["json"] = tvlAmount
 	c.ServeJSON()
 }
+func (c *DefiLlamaController) GetTVLOKB() {
+	tvlAmount, err := getTVLAmount(basedef.OKB_CROSSCHAIN_ID)
+	if err != nil {
+		logs.Error("GetTVLOKB err", err)
+	}
+	c.Data["json"] = tvlAmount
+	c.ServeJSON()
+}

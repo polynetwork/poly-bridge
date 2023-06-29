@@ -61,7 +61,8 @@ var (
 	xinfinSdk      *chainsdk.EthereumSdkPro
 	nautilusSdk    *chainsdk.EthereumSdkPro
 	goshenSdk      *chainsdk.EthereumSdkPro
-	cronosSdk     *chainsdk.EthereumSdkPro
+	cronosSdk      *chainsdk.EthereumSdkPro
+	okbSdk		   *chainsdk.EthereumSdkPro
 	config         *conf.Config
 	sdkMap         map[uint64]interface{}
 	BSC_GetBalance int
@@ -521,6 +522,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		cronosSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.CRONOS_CROSSCHAIN_ID] = cronosSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.OKB_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("okb chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		okbSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.OKB_CROSSCHAIN_ID] = okbSdk
 	}
 }
 
@@ -1138,6 +1148,20 @@ func GetBalance(chainId uint64, hash string) (*big.Int, error) {
 			errMap[err] = true
 		}
 	}
+	if chainId == basedef.OKB_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.OKB_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("okb chain is invalid")
+		}
+		for _, v := range chainConfig.ProxyContract {
+			if len(strings.TrimSpace(v)) == 0 {
+				continue
+			}
+			balance, err := okbSdk.Erc20Balance(hash, v)
+			maxFun(balance)
+			errMap[err] = true
+		}
+	}
 	if maxBalance.Cmp(big.NewInt(0)) > 0 {
 		return maxBalance, nil
 	}
@@ -1435,6 +1459,13 @@ func GetTotalSupply(chainId uint64, hash string) (*big.Int, error) {
 		}
 		return cronosSdk.Erc20TotalSupply(hash)
 	}
+	if chainId == basedef.OKB_CROSSCHAIN_ID {
+		chainConfig := config.GetChainListenConfig(basedef.OKB_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("okb chain GetTotalSupply invalid")
+		}
+		return okbSdk.Erc20TotalSupply(hash)
+	}
 	return new(big.Int).SetUint64(0), nil
 }
 
@@ -1541,6 +1572,8 @@ func GetProxyBalance(chainId uint64, hash string, proxy string) (*big.Int, error
 		return goshenSdk.Erc20Balance(hash, proxy)
 	case basedef.CRONOS_CROSSCHAIN_ID:
 		return cronosSdk.Erc20Balance(hash, proxy)
+	case basedef.OKB_CROSSCHAIN_ID:
+		return okbSdk.Erc20Balance(hash, proxy)
 	default:
 		return new(big.Int).SetUint64(0), nil
 	}

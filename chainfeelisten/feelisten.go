@@ -85,7 +85,7 @@ func NewChainFee(cfg *conf.FeeListenConfig, feeUpdateSlot int64) ChainFee {
 		basedef.CLOVER_CROSSCHAIN_ID, basedef.CONFLUX_CROSSCHAIN_ID, basedef.PLT2_CROSSCHAIN_ID, basedef.ASTAR_CROSSCHAIN_ID,
 		basedef.GOERLI_CROSSCHAIN_ID, basedef.BRISE_CROSSCHAIN_ID, basedef.DEXIT_CROSSCHAIN_ID, basedef.CLOUDTX_CROSSCHAIN_ID,
 		basedef.SEPOLIA_CROSSCHAIN_ID, basedef.XINFIN_CROSSCHAIN_ID, basedef.NAUTILUS_CROSSCHAIN_ID, basedef.GOSHEN_CROSSCHAIN_ID,
-		basedef.CRONOS_CROSSCHAIN_ID:
+		basedef.CRONOS_CROSSCHAIN_ID, basedef.OKB_CROSSCHAIN_ID:
 		return ethereumfee.NewEthereumFee(cfg, feeUpdateSlot)
 	case basedef.NEO_CROSSCHAIN_ID:
 		return neofee.NewNeoFee(cfg, feeUpdateSlot)
