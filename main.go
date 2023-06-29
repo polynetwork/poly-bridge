@@ -85,6 +85,9 @@ func run(ctx *cli.Context) {
 		},
 	))
 
+	// TG bot
+	common.TgBotInit()
+
 	// bridge http
 	http.Init()
 	// explorer http
