@@ -18,7 +18,12 @@
 package chainsdk
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"math/big"
+	"net/http"
+	"net/url"
 
 	"github.com/beego/beego/v2/core/logs"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -77,12 +82,121 @@ func (client *SwitcheoSDK) Status() (*ctypes.ResultStatus, error) {
 	return client.client.Status()
 }
 
-func (client *SwitcheoSDK) Block(height *int64) (*ctypes.ResultBlock, error) {
-	return client.client.Block(height)
+func (client *SwitcheoSDK) Health() error {
+	_, err := client.client.Health()
+	return err
 }
 
-func (client *SwitcheoSDK) TxSearch(query string, prove bool, page, perPage int, orderBy string) (*ctypes.ResultTxSearch, error) {
-	return client.client.TxSearch(query, prove, page, perPage, orderBy)
+type BlockResponse struct {
+	Jsonrpc string `json:"jsonrpc"`
+	ID      int    `json:"id"`
+	Result  struct {
+		BlockID struct {
+			Hash  string `json:"hash"`
+			Parts struct {
+				Total int    `json:"total"`
+				Hash  string `json:"hash"`
+			} `json:"parts"`
+		} `json:"block_id"`
+		Block struct {
+			Header struct {
+				Version struct {
+					Block string `json:"block"`
+				} `json:"version"`
+				ChainID     string `json:"chain_id"`
+				Height      string `json:"height"`
+				Time        string `json:"time"`
+				LastBlockID struct {
+					Hash string `json:"hash"`
+				} `json:"last_block_id"`
+			} `json:"header"`
+		} `json:"block"`
+	} `json:"result"`
+}
+
+func (client *SwitcheoSDK) Block(height int64) (*BlockResponse, error) {
+	method := "block"
+	params := url.Values{}
+	params.Add("height", fmt.Sprintf("\"%d\"", height))
+	fullURL := func() string {
+		if client.url[len(client.url)-1] == '/' {
+			return client.url
+		}
+		return client.url + "/"
+	}() + method + "?" + params.Encode()
+	response, err := http.Get(fullURL)
+	if err != nil {
+		return nil, fmt.Errorf("error making the request: %v", err)
+	}
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading the response body: %v", err)
+	}
+	blockResponse := new(BlockResponse)
+	err = json.Unmarshal(body, blockResponse)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling JSON: %v", err)
+	}
+	return blockResponse, nil
+}
+
+type TxSearchResponse struct {
+	Jsonrpc string `json:"jsonrpc"`
+	ID      int    `json:"id"`
+	Result  struct {
+		Txs []struct {
+			Hash     string `json:"hash"`
+			Height   string `json:"height"`
+			Index    int    `json:"index"`
+			TxResult struct {
+				GasWanted string `json:"gas_wanted"`
+				GasUsed   string `json:"gas_used"`
+				Events    []struct {
+					Type       string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+					Attributes []struct {
+						Key   []byte `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+						Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+						Index bool   `protobuf:"varint,3,opt,name=index,proto3" json:"index,omitempty"`
+					} `protobuf:"bytes,2,rep,name=attributes,proto3" json:"attributes,omitempty"`
+				} `json:"events"`
+				Codespace string `json:"codespace"`
+			} `json:"tx_result"`
+			Tx string `json:"tx"`
+		} `json:"txs"`
+		TotalCount string `json:"total_count"`
+	} `json:"result"`
+}
+
+func (client *SwitcheoSDK) TxSearch(query string, prove bool, page, perPage int, orderBy string) (*TxSearchResponse, error) {
+	method := "tx_search"
+	params := url.Values{}
+	params.Add("query", fmt.Sprintf("\"%s\"", query))
+	params.Add("prove", fmt.Sprintf("%t", prove))
+	params.Add("page", fmt.Sprintf("%d", page))
+	params.Add("per_page", fmt.Sprintf("%d", perPage))
+	params.Add("order_by", fmt.Sprintf("\"%s\"", orderBy))
+	fullURL := func() string {
+		if client.url[len(client.url)-1] == '/' {
+			return client.url
+		}
+		return client.url + "/"
+	}() + method + "?" + params.Encode()
+	response, err := http.Get(fullURL)
+	if err != nil {
+		return nil, fmt.Errorf("error making the request: %v", err)
+	}
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading the response body: %v", err)
+	}
+	txSearchResponse := new(TxSearchResponse)
+	err = json.Unmarshal(body, txSearchResponse)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling JSON: %v", err)
+	}
+	return txSearchResponse, nil
 }
 
 func (client *SwitcheoSDK) GetGas(tx []byte) uint64 {

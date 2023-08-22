@@ -54,7 +54,7 @@ func (s *SwitcheoMonitor) NodeMonitor() ([]basedef.NodeStatus, error) {
 		if err == nil {
 			status.Height = height
 			s.nodeHeight[url] = height
-			err = s.CheckAbiCall(sdk, url)
+			err = sdk.Health()
 		}
 		if err != nil {
 			status.Status = append(status.Status, err.Error())
@@ -78,37 +78,4 @@ func (s *SwitcheoMonitor) GetCurrentHeight(sdk *chainsdk.SwitcheoSDK, url string
 	}
 	logs.Info("%s node: %s, latest height: %d", s.GetChainName(), url, height)
 	return height, nil
-}
-
-func (s *SwitcheoMonitor) CheckAbiCall(sdk *chainsdk.SwitcheoSDK, url string) error {
-	height := s.nodeHeight[url] - 1
-	index := int64(height)
-	block, err := sdk.Block(&index)
-	if err != nil {
-		e := fmt.Errorf("call Block err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, e))
-		return e
-	}
-	if block == nil {
-		e := fmt.Errorf("there is no %s block", s.GetChainName())
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, e))
-		return e
-	}
-
-	lockQuery := fmt.Sprintf("tx.height=%d AND make_from_cosmos_proof.status='1'", height)
-	_, err = sdk.TxSearch(lockQuery, false, 1, 100, "asc")
-	if err != nil {
-		e := fmt.Errorf("call TxSearch get lock events err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, e))
-		return e
-	}
-
-	unlockQuery := fmt.Sprintf("tx.height=%d", height)
-	_, err = sdk.TxSearch(unlockQuery, false, 1, 100, "asc")
-	if err != nil {
-		e := fmt.Errorf("call TxSearch get unlock events err: %s", err)
-		logs.Error(fmt.Sprintf("%s node: %s, %s ", s.GetChainName(), url, e))
-		return e
-	}
-	return nil
 }
