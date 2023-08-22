@@ -3,9 +3,10 @@ package switcheolisten
 import (
 	"encoding/hex"
 	"fmt"
-	"poly-bridge/utils/decimal"
+	"math/big"
 	"strconv"
 	"strings"
+	"time"
 
 	"poly-bridge/basedef"
 	"poly-bridge/chainsdk"
@@ -18,8 +19,8 @@ import (
 const (
 	_switcheo_crosschainlock   = "make_from_cosmos_proof"
 	_switcheo_crosschainunlock = "verify_to_cosmos_proof"
-	_switcheo_lock             = "lock"
-	_switcheo_unlock           = "unlock"
+	_switcheo_lock             = "Switcheo.carbon.lockproxy.LockEvent"
+	_switcheo_unlock           = "Switcheo.carbon.lockproxy.UnlockEvent"
 )
 
 type SwitcheoChainListen struct {
@@ -75,7 +76,8 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 	if block == nil {
 		return nil, nil, nil, nil, nil, nil, 0, 0, fmt.Errorf("there is no switcheo block!")
 	}
-	tt := uint64(block.Block.Time.Unix())
+	parsedTime, _ := time.Parse(time.RFC3339Nano, block.Result.Block.Header.Time)
+	tt := uint64(parsedTime.Unix())
 	srcTransactions := make([]*models.SrcTransaction, 0)
 	dstTransactions := make([]*models.DstTransaction, 0)
 
@@ -91,7 +93,7 @@ func (this *SwitcheoChainListen) HandleNewBlock(height uint64) ([]*models.Wrappe
 
 	for _, lockEvent := range ccmLockEvent {
 		if lockEvent.Method == _switcheo_crosschainlock {
-			logs.Info("from chain: %d, height: %d, txhash: %s\n", this.GetChainName(), height, lockEvent.TxHash)
+			logs.Info("from chain: %v, height: %d, txhash: %s\n", this.GetChainName(), height, lockEvent.TxHash)
 			srcTransfer := &models.SrcTransfer{}
 			for _, v := range lockEvents {
 				if v.TxHash == lockEvent.TxHash {
@@ -173,8 +175,9 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 	if err != nil {
 		return ccmLockEvents, lockEvents, err
 	}
-	if res.TotalCount != 0 {
-		pages := ((res.TotalCount - 1) / 100) + 1
+	totalCount, _ := strconv.ParseInt(res.Result.TotalCount, 10, 32)
+	if totalCount > 0 {
+		pages := int((totalCount-1)/100) + 1
 		for p := 1; p <= pages; p++ {
 			if p > 1 {
 				res, err = client.TxSearch(height, query, false, p, 100, "asc")
@@ -182,7 +185,7 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 					return ccmLockEvents, lockEvents, err
 				}
 			}
-			for _, tx := range res.Txs {
+			for _, tx := range res.Result.Txs {
 				for _, e := range tx.TxResult.Events {
 					if e.Type == _switcheo_crosschainlock {
 						tchainId, _ := strconv.ParseUint(string(e.Attributes[5].Value), 10, 32)
@@ -190,27 +193,30 @@ func (this *SwitcheoChainListen) getCosmosCCMLockEventByBlockNumber(height uint6
 						ccmLockEvents = append(ccmLockEvents, &models.ECCMLockEvent{
 							Method:   _switcheo_crosschainlock,
 							Txid:     string(e.Attributes[1].Value),
-							TxHash:   strings.ToLower(tx.Hash.String()),
+							TxHash:   strings.ToLower(tx.Hash),
 							User:     string(e.Attributes[3].Value),
 							Tchain:   uint32(tchainId),
 							Contract: string(e.Attributes[4].Value),
 							Height:   height,
 							Value:    value,
-							Fee:      uint64(tx.TxResult.GasUsed),
+							Fee: func() uint64 {
+								x, _ := strconv.ParseUint(tx.TxResult.GasUsed, 10, 64)
+								return x
+							}(),
 						})
 					} else if e.Type == _switcheo_lock {
-						tchainId, _ := strconv.ParseUint(string(e.Attributes[1].Value), 10, 32)
-						amount, _ := decimal.NewFromString(string(e.Attributes[6].Value))
+						tchainId, _ := strconv.ParseUint(strings.Trim(string(e.Attributes[10].Value), "\\\""), 10, 32)
+						amount, _ := new(big.Int).SetString(strings.Trim(string(e.Attributes[0].Value), "\\\""), 10)
 						lockEvents = append(lockEvents, &models.ProxyLockEvent{
 							Method:        _switcheo_lock,
-							TxHash:        strings.ToLower(tx.Hash.String()),
-							FromAddress:   string(e.Attributes[4].Value),
-							FromAssetHash: string(e.Attributes[0].Value),
+							TxHash:        strings.ToLower(tx.Hash),
+							FromAddress:   strings.Trim(string(e.Attributes[4].Value), "\\\""),
+							FromAssetHash: strings.Trim(string(e.Attributes[5].Value), "\\\""),
 							ToChainId:     uint32(tchainId),
-							ToAssetHash:   string(e.Attributes[3].Value),
-							ToAddress:     string(e.Attributes[7].Value),
-							Amount:        amount.BigInt(),
-							DstUser:       string(e.Attributes[5].Value),
+							ToAssetHash:   strings.Trim(string(e.Attributes[9].Value), "\\\""),
+							ToAddress:     strings.Trim(string(e.Attributes[6].Value), "\\\""),
+							Amount:        amount,
+							DstUser:       strings.Trim(string(e.Attributes[8].Value), "\\\""),
 						})
 					}
 				}
@@ -225,13 +231,14 @@ func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uin
 	client := this.swthSdk
 	ccmUnlockEvents := make([]*models.ECCMUnlockEvent, 0)
 	unlockEvents := make([]*models.ProxyUnlockEvent, 0)
-	query := fmt.Sprintf("tx.height=%d", height)
+	query := fmt.Sprintf("tx.height=%d AND verify_to_cosmos_proof.from_chain_id>=0", height)
 	res, err := client.TxSearch(height, query, false, 1, 100, "asc")
 	if err != nil {
 		return ccmUnlockEvents, unlockEvents, err
 	}
-	if res.TotalCount != 0 {
-		pages := ((res.TotalCount - 1) / 100) + 1
+	totalCount, _ := strconv.ParseInt(res.Result.TotalCount, 10, 32)
+	if totalCount > 0 {
+		pages := int((totalCount-1)/100) + 1
 		for p := 1; p <= pages; p++ {
 			if p > 1 {
 				res, err = client.TxSearch(height, query, false, p, 100, "asc")
@@ -239,27 +246,31 @@ func (this *SwitcheoChainListen) getCosmosCCMUnlockEventByBlockNumber(height uin
 					return ccmUnlockEvents, unlockEvents, err
 				}
 			}
-			for _, tx := range res.Txs {
+			for _, tx := range res.Result.Txs {
 				for _, e := range tx.TxResult.Events {
 					if e.Type == _switcheo_crosschainunlock {
 						fchainId, _ := strconv.ParseUint(string(e.Attributes[2].Value), 10, 32)
 						ccmUnlockEvents = append(ccmUnlockEvents, &models.ECCMUnlockEvent{
 							Method:   _switcheo_crosschainunlock,
-							TxHash:   strings.ToLower(tx.Hash.String()),
+							TxHash:   strings.ToLower(tx.Hash),
 							RTxHash:  basedef.HexStringReverse(string(e.Attributes[0].Value)),
 							FChainId: uint32(fchainId),
 							Contract: string(e.Attributes[3].Value),
 							Height:   height,
-							Fee:      uint64(tx.TxResult.GasUsed),
+							Fee: func() uint64 {
+								x, _ := strconv.ParseUint(tx.TxResult.GasUsed, 10, 64)
+								return x
+							}(),
 						})
 					} else if e.Type == _switcheo_unlock {
-						amount, _ := decimal.NewFromString(string(e.Attributes[2].Value))
+						amount, _ := new(big.Int).SetString(strings.Trim(string(e.Attributes[0].Value), "\\\""), 10)
 						unlockEvents = append(unlockEvents, &models.ProxyUnlockEvent{
+							BlockNumber: height,
 							Method:      _switcheo_unlock,
-							TxHash:      strings.ToLower(tx.Hash.String()),
-							ToAssetHash: string(e.Attributes[0].Value),
-							ToAddress:   string(e.Attributes[1].Value),
-							Amount:      amount.BigInt(),
+							TxHash:      strings.ToLower(tx.Hash),
+							ToAssetHash: strings.Trim(string(e.Attributes[7].Value), "\\\""),
+							ToAddress:   strings.Trim(string(e.Attributes[6].Value), "\\\""),
+							Amount:      amount,
 						})
 					}
 				}

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/core/logs"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 type SwitcheoInfo struct {
@@ -48,7 +47,7 @@ func (pro *SwitcheoSdkPro) GetInfoByHeight(height uint64) (*SwitcheoInfo, error)
 	}
 	for info != nil {
 		index := int64(height)
-		_, err := info.sdk.Block(&index)
+		_, err := info.sdk.Block(index)
 		if err != nil {
 			info.latestHeight = 0
 			info = pro.GetLatest()
@@ -59,13 +58,13 @@ func (pro *SwitcheoSdkPro) GetInfoByHeight(height uint64) (*SwitcheoInfo, error)
 	return nil, fmt.Errorf("all node is not working")
 }
 
-func (pro *SwitcheoSdkPro) GetBlockByHeight(height uint64) (*ctypes.ResultBlock, error) {
+func (pro *SwitcheoSdkPro) GetBlockByHeight(height uint64) (*BlockResponse, error) {
 	info, err := pro.GetInfoByHeight(height)
 	if err != nil {
 		logs.Error("GetInfoByHeight err: %v", err)
 	} else {
 		index := int64(height)
-		block, _ := info.sdk.Block(&index)
+		block, _ := info.sdk.Block(index)
 		return block, nil
 	}
 	return nil, fmt.Errorf("all node is not working")
@@ -129,7 +128,7 @@ func (pro *SwitcheoSdkPro) GetLatest() *SwitcheoInfo {
 	return latestInfo
 }
 
-func (pro *SwitcheoSdkPro) TxSearch(height uint64, query string, prove bool, page, perPage int, orderBy string) (*ctypes.ResultTxSearch, error) {
+func (pro *SwitcheoSdkPro) TxSearch(height uint64, query string, prove bool, page, perPage int, orderBy string) (*TxSearchResponse, error) {
 	info, _ := pro.GetInfoByHeight(height)
 	if info == nil {
 		return nil, fmt.Errorf("all node is not working")
