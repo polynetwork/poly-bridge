@@ -63,7 +63,7 @@ const (
 	CLOUDTX_CROSSCHAIN_ID    = uint64(44)
 	ZKSYNC_CROSSCHAIN_ID     = uint64(45)
 	XINFIN_CROSSCHAIN_ID     = uint64(46)
-	ONTEVM_CROSSCHAIN_ID     = uint64(1000333)
+	ONTEVM_CROSSCHAIN_ID     = uint64(47)
 
 	ENV = "mainnet"
 )
