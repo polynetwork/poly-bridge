@@ -27,6 +27,7 @@ import (
 	"poly-bridge/crosschainlisten/aptoslisten"
 	"poly-bridge/crosschainlisten/ripplelisten"
 	"poly-bridge/crosschainlisten/starcoinlisten"
+	"poly-bridge/crosschainlisten/ontevmlisten"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"poly-bridge/utils/decimal"
 	"runtime/debug"
@@ -108,6 +109,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return neolisten.NewNeoChainListen(chainListenConfig)
 	case basedef.ONT_CROSSCHAIN_ID:
 		return ontologylisten.NewOntologyChainListen(chainListenConfig)
+	case basedef.ONTEVM_CROSSCHAIN_ID:
+		return ontevmlisten.NewOntevmChainListen(chainListenConfig)
 	case basedef.O3_CROSSCHAIN_ID:
 		return o3listen.NewO3ChainListen(chainListenConfig)
 	case basedef.SWITCHEO_CROSSCHAIN_ID:
@@ -257,7 +260,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				}
 				logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			}
-			if basedef.IsETHChain(ccl.handle.GetChainId()) && ccl.handle.GetChainId() != basedef.O3_CROSSCHAIN_ID {
+			if basedef.IsETHChain(ccl.handle.GetChainId()) && ccl.handle.GetChainId() != basedef.O3_CROSSCHAIN_ID && ccl.handle.GetChainId() != basedef.ONTEVM_CROSSCHAIN_ID {
 				for chain.Height < height-ccl.handle.GetDefer() {
 					batchSize := ccl.handle.GetBatchSize() //concurrency size
 					if batchSize == 0 {
