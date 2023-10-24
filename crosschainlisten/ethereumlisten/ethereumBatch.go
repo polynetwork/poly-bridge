@@ -150,15 +150,10 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 			srcTransaction.Key = lockEvent.Txid
 			srcTransaction.Param = hex.EncodeToString(lockEvent.Value)
 			var lock *models.ProxyLockEvent
-			if (srcTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID || srcTransaction.ChainId == basedef.PLT2_CROSSCHAIN_ID || srcTransaction.ChainId == basedef.BCSPALETTE_CROSSCHAIN_ID || srcTransaction.ChainId == basedef.BCSPALETTE2_CROSSCHAIN_ID) && !this.isNFTECCMLockEvent(lockEvent) {
-				// TODO: with retry later
-				lock, _ = this.GetPaletteLockProxyLockEvent(common.HexToHash("0x" + lockEvent.TxHash))
-			} else {
-				for _, v := range proxyLockEvents {
-					if v.TxHash == lockEvent.TxHash {
-						lock = v
-						break
-					}
+			for _, v := range proxyLockEvents {
+				if v.TxHash == lockEvent.TxHash {
+					lock = v
+					break
 				}
 			}
 			if lock != nil {
@@ -240,14 +235,10 @@ func (this *EthereumChainListen) HandleNewBatchBlock(start, end uint64) ([]*mode
 			dstTransaction.Contract = models.FormatString(unLockEvent.Contract)
 			dstTransaction.PolyHash = unLockEvent.RTxHash
 			var unlock *models.ProxyUnlockEvent
-			if (dstTransaction.ChainId == basedef.PLT_CROSSCHAIN_ID || dstTransaction.ChainId == basedef.PLT2_CROSSCHAIN_ID || dstTransaction.ChainId == basedef.BCSPALETTE_CROSSCHAIN_ID || dstTransaction.ChainId == basedef.BCSPALETTE2_CROSSCHAIN_ID) && !this.isNFTECCMUnlockEvent(unLockEvent) {
-				unlock = this.getPLTUnlock(common.HexToHash("0x" + unLockEvent.TxHash))
-			} else {
-				for _, v := range proxyUnlockEvents {
-					if v.TxHash == unLockEvent.TxHash {
-						unlock = v
-						break
-					}
+			for _, v := range proxyUnlockEvents {
+				if v.TxHash == unLockEvent.TxHash {
+					unlock = v
+					break
 				}
 			}
 			if unlock != nil {
@@ -320,6 +311,8 @@ func (this *EthereumChainListen) ParseWrapperEventByLog(contractlogs []types.Log
 							switch this.GetChainId() {
 							case basedef.METIS_CROSSCHAIN_ID:
 								return "deaddeaddeaddeaddeaddeaddeaddeaddead0000"
+							case basedef.PLT_CROSSCHAIN_ID, basedef.PLT2_CROSSCHAIN_ID, basedef.BCSPALETTE_CROSSCHAIN_ID, basedef.BCSPALETTE2_CROSSCHAIN_ID:
+								return models.FormatString(strings.ToLower(evt.FromAsset.String()[2:]))
 							default:
 								return "0000000000000000000000000000000000000000"
 							}
@@ -469,7 +462,7 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractlogs []types.L
 			continue
 		}
 		switch v.Topics[0] {
-		case this.eventLockEventId:
+		case this.eventLockEventId, this.GetPaletteLockProxyLockEventId():
 			evt, err := lockProxyContractAbi.ParseLockEvent(v)
 			if err == nil {
 				proxyLockEvents = append(proxyLockEvents, &models.ProxyLockEvent{
@@ -484,7 +477,7 @@ func (this *EthereumChainListen) ParseLockProxyEventByLog(contractlogs []types.L
 					Amount:        evt.Amount,
 				})
 			}
-		case this.eventUnlockEventId:
+		case this.eventUnlockEventId, this.GetPaletteLockProxyUnLockEventId():
 			evt, err := lockProxyContractAbi.ParseUnlockEvent(v)
 			if err == nil {
 				proxyUnlockEvents = append(proxyUnlockEvents, &models.ProxyUnlockEvent{
