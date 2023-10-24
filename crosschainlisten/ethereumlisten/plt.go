@@ -67,6 +67,16 @@ func init() {
 	}
 }
 
+func (this *EthereumChainListen) GetPaletteLockProxyLockEventId() common.Hash {
+	abEvent := pltLockABIMap["lock"]
+	return abEvent.ID
+}
+
+func (this *EthereumChainListen) GetPaletteLockProxyUnLockEventId() common.Hash {
+	abEvent := pltLockABIMap["unlock"]
+	return abEvent.ID
+}
+
 func (this *EthereumChainListen) GetPaletteLockProxyLockEvent(hash common.Hash) (ev *models.ProxyLockEvent, err error) {
 	var (
 		receipt   *types.Receipt
