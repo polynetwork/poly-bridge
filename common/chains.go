@@ -144,7 +144,6 @@ func newChainSdks(config *conf.Config) {
 		ontologySdk = chainsdk.NewOntologySdkPro(urls, ontConfig.ListenSlot, ontConfig.ChainId)
 		sdkMap[basedef.ONT_CROSSCHAIN_ID] = ontologySdk
 	}
-	/*Ontevm is not on the main network before it is linked.
 	{
 		ontevmConfig := config.GetChainListenConfig(basedef.ONTEVM_CROSSCHAIN_ID)
 		if ontevmConfig == nil {
@@ -154,7 +153,6 @@ func newChainSdks(config *conf.Config) {
 		ontevmSdk = chainsdk.NewEthereumSdkPro(urls, ontevmConfig.ListenSlot, ontevmConfig.ChainId)
 		sdkMap[basedef.ONTEVM_CROSSCHAIN_ID] = ontevmSdk
 	}
-	*/
 	if basedef.ENV == basedef.MAINNET {
 		swthConfig := config.GetChainListenConfig(basedef.SWITCHEO_CROSSCHAIN_ID)
 		if swthConfig == nil {
