@@ -16,6 +16,7 @@ var (
 	MARKET_COINCHECK     = "coincheck"
 	MARKET_GATEIO        = "gateio"
 	MARKET_SELF          = "self"
+	MARKET_CUBESCAN      = "cubescan"
 )
 
 const (
