@@ -3,6 +3,7 @@ module poly-bridge
 go 1.14
 
 require (
+	github.com/block-vision/sui-go-sdk v1.0.5
 	github.com/Zilliqa/gozilliqa-sdk v1.2.1-0.20210927032600-4c733f2cb879
 	github.com/antihax/optional v1.0.0
 	github.com/beego/beego/v2 v2.0.1
@@ -38,6 +39,7 @@ require (
 )
 
 replace (
+	github.com/block-vision/sui-go-sdk => github.com/yandc/sui-go-sdk v1.0.5
 	github.com/cosmos/cosmos-sdk => github.com/Switcheo/cosmos-sdk v0.39.2-0.20200814061308-474a0dbbe4ba
 	github.com/joeqian10/neo-gogogo => github.com/blockchain-develop/neo-gogogo v0.0.0-20210126025041-8d21ec4f0324
 	github.com/rubblelabs/ripple v0.0.0-20220222071018-38c1a8b14c18 => github.com/siovanus/ripple v0.0.0-20220406100637-81f6afe283d9

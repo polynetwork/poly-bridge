@@ -83,6 +83,10 @@ func (eff *BridgeEffect) Effect() error {
 	if err != nil {
 		logs.Error("update hash- err: %s", err)
 	}
+	err = eff.updateBfcHash()
+	if err != nil {
+		logs.Error("updateBfcHash hash- err: %s", err)
+	}
 	err = eff.updateDstHash()
 	if err != nil {
 		logs.Error("update dsthash- err: %s", err)
@@ -164,6 +168,33 @@ func (eff *BridgeEffect) updateHash() error {
 		}
 	}
 	logs.Info("Update hash finished with at most %d * 500 checked", index+1)
+	return nil
+}
+
+func (eff *BridgeEffect) updateBfcHash() error {
+	batch := 500
+	index := 0
+
+	for {
+		polySrcRelations := make([]*models.PolySrcRelation, 0)
+		eff.db.Table("poly_transactions").Where("poly_transactions.src_chain_id = ? and poly_transactions.time > ? and poly_transactions.key = ?", basedef.BFC_CROSSCHAIN_ID, 1622476800, "").Select("poly_transactions.hash as poly_hash, src_transactions.hash as src_hash").Joins("inner join src_transactions on poly_transactions.src_hash = src_transactions.key and poly_transactions.src_chain_id = src_transactions.chain_id").Preload("SrcTransaction").Preload("PolyTransaction").Limit(batch).Offset(batch * index).Order("poly_transactions.time desc").Find(&polySrcRelations)
+		updatePolyTransactions := make([]*models.PolyTransaction, 0)
+		for _, polySrcRelation := range polySrcRelations {
+			if polySrcRelation.SrcTransaction != nil {
+				polySrcRelation.PolyTransaction.Key = polySrcRelation.PolyTransaction.SrcHash
+				polySrcRelation.PolyTransaction.SrcHash = polySrcRelation.SrcHash
+				updatePolyTransactions = append(updatePolyTransactions, polySrcRelation.PolyTransaction)
+			}
+		}
+		if len(updatePolyTransactions) > 0 {
+			logs.Info("updateBfcHash now min PolyTransaction.id", updatePolyTransactions[0].Id)
+			eff.db.Save(updatePolyTransactions)
+			index++
+		} else {
+			break
+		}
+	}
+	logs.Info("Update updateBfcHash finished with at most %d * 500 checked", index+1)
 	return nil
 }
 

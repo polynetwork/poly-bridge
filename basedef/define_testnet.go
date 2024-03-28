@@ -64,6 +64,7 @@ const (
 	CLOUDTX_CROSSCHAIN_ID    = uint64(1030)
 	XINFIN_CROSSCHAIN_ID     = uint64(1050)
 	ONTEVM_CROSSCHAIN_ID     = uint64(334)
+	BFC_CROSSCHAIN_ID        = uint64(1200)
 	ENV                      = "testnet"
 )
 

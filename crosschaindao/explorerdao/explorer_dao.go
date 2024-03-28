@@ -433,3 +433,7 @@ type ChainInfo struct {
 func (dao *ExplorerDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
 	return
 }
+
+func (dao *ExplorerDao) GetLatestTx(chainId uint64) (string, string) {
+	return "", ""
+}

@@ -25,9 +25,10 @@ import (
 	"poly-bridge/cacheRedis"
 	"poly-bridge/common"
 	"poly-bridge/crosschainlisten/aptoslisten"
+	"poly-bridge/crosschainlisten/bfclisten"
+	"poly-bridge/crosschainlisten/ontevmlisten"
 	"poly-bridge/crosschainlisten/ripplelisten"
 	"poly-bridge/crosschainlisten/starcoinlisten"
-	"poly-bridge/crosschainlisten/ontevmlisten"
 	"poly-bridge/crosschainlisten/zilliqalisten"
 	"poly-bridge/utils/decimal"
 	"runtime/debug"
@@ -125,6 +126,8 @@ func NewChainHandle(chainListenConfig *conf.ChainListenConfig) ChainHandle {
 		return ripplelisten.NewRippleChainListen(chainListenConfig)
 	case basedef.APTOS_CROSSCHAIN_ID:
 		return aptoslisten.NewAptosChainListen(chainListenConfig)
+	case basedef.BFC_CROSSCHAIN_ID:
+		return bfclisten.NewBfcChainListen(chainListenConfig)
 
 	default:
 		return nil
@@ -241,24 +244,79 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 				}
 				logs.Info("backup ListenChain - chain %s db height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			} else {
-				height, err = ccl.handle.GetLatestHeight()
-				if err != nil || height == 0 || height == math.MaxUint64 {
-					logs.Error("listenChain - cannot get chain %s height, err: %s", ccl.handle.GetChainName(), err)
-					continue
+				switch ccl.handle.GetChainId() {
+				case basedef.BFC_CROSSCHAIN_ID:
+					h := ccl.handle
+					if bfc, ok := h.(*bfclisten.BfcChainListen); ok {
+						srcTxHash, dstTxHash := ccl.db.GetLatestTx(basedef.BFC_CROSSCHAIN_ID)
+						logs.Info("ListenChain - chain %s GetLatestTx crossChainEventCursor is: %s, VerifyHeaderAndExecuteTxEventCursor is: %s", ccl.handle.GetChainName(), srcTxHash, dstTxHash)
+
+						crossChainEvent, err := bfc.QueryCrossChainEvent(srcTxHash, bfc.BfcCfg.CCMContract)
+						switch err {
+						case nil:
+							if len(crossChainEvent.Data) > 0 {
+								srcTransactions, err := bfc.HandleSrcEvent(crossChainEvent, srcTxHash)
+								switch err {
+								case nil:
+									if len(srcTransactions) > 0 {
+										err = ccl.db.UpdateEvents(nil, srcTransactions, nil, nil, nil, nil)
+										if err != nil {
+											logs.Error("listenChain - cannot get chain %s UpdateEvents srcTransactions, srcTransaction hash %s, err: %s", ccl.handle.GetChainName(), srcTransactions[0].Hash, err)
+										}
+									}
+								default:
+									logs.Error("listenChain - cannot get chain %s HandleSrcEvent, cursor %s, err: %s", ccl.handle.GetChainName(), srcTxHash, err)
+								}
+							}
+						default:
+							logs.Error("listenChain - cannot get chain %s QueryCrossChainEvent, cursor %s, err: %s", ccl.handle.GetChainName(), srcTxHash, err)
+						}
+
+						verifyHeaderAndExecuteTxEvent, err := bfc.QueryVerifyHeaderAndExecuteTxEvent(dstTxHash, bfc.BfcCfg.CCMContract)
+						switch err {
+						case nil:
+							if len(verifyHeaderAndExecuteTxEvent.Data) > 0 {
+								dstTransactions, err := bfc.HandleDstEvent(verifyHeaderAndExecuteTxEvent, dstTxHash)
+								switch err {
+								case nil:
+									if len(dstTransactions) > 0 {
+										err = ccl.db.UpdateEvents(nil, nil, nil, dstTransactions, nil, nil)
+										if err != nil {
+											logs.Error("listenChain - cannot get chain %s UpdateEvents dstTransactions, dstTransactions hash %s, err: %s", ccl.handle.GetChainName(), dstTransactions[0].Hash, err)
+										}
+									}
+								default:
+									logs.Error("listenChain - cannot get chain %s HandleDstEvent, cursor %s, err: %s", ccl.handle.GetChainName(), dstTxHash, err)
+								}
+							}
+						default:
+							logs.Error("listenChain - cannot get chain %s QueryVerifyHeaderAndExecuteTxEvent, cursor %s, err: %s", ccl.handle.GetChainName(), dstTxHash, err)
+						}
+						if len(crossChainEvent.Data) == 0 && len(verifyHeaderAndExecuteTxEvent.Data) == 0 {
+							continue
+						}
+					}
+
+				default:
+					height, err = ccl.handle.GetLatestHeight()
+					if err != nil || height == 0 || height == math.MaxUint64 {
+						logs.Error("listenChain - cannot get chain %s height, err: %s", ccl.handle.GetChainName(), err)
+						continue
+					}
+					extendHeight, err := ccl.handle.GetExtendLatestHeight()
+					if err != nil || extendHeight == 0 {
+						logs.Error("ListenChain - cannot get chain %s extend height, err: %s", ccl.handle.GetChainName(), err)
+					} else if extendHeight >= height+21 {
+						logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
+					}
+					metrics.Record(height, "%v.lastest_height", chain.ChainId)
+					metrics.Record(extendHeight, "%v.watch_height", chain.ChainId)
+					metrics.Record(chain.Height, "%v.height", chain.ChainId)
+					if chain.Height >= height-ccl.handle.GetDefer() {
+						continue
+					}
+					logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 				}
-				extendHeight, err := ccl.handle.GetExtendLatestHeight()
-				if err != nil || extendHeight == 0 {
-					logs.Error("ListenChain - cannot get chain %s extend height, err: %s", ccl.handle.GetChainName(), err)
-				} else if extendHeight >= height+21 {
-					logs.Error("ListenChain - chain %s node is too slow, node height: %d, really height: %d", ccl.handle.GetChainName(), height, extendHeight)
-				}
-				metrics.Record(height, "%v.lastest_height", chain.ChainId)
-				metrics.Record(extendHeight, "%v.watch_height", chain.ChainId)
-				metrics.Record(chain.Height, "%v.height", chain.ChainId)
-				if chain.Height >= height-ccl.handle.GetDefer() {
-					continue
-				}
-				logs.Info("ListenChain - chain %s latest height is %d, listen height: %d", ccl.handle.GetChainName(), height, chain.Height)
 			}
 			if basedef.IsETHChain(ccl.handle.GetChainId()) && ccl.handle.GetChainId() != basedef.O3_CROSSCHAIN_ID && ccl.handle.GetChainId() != basedef.ONTEVM_CROSSCHAIN_ID {
 				for chain.Height < height-ccl.handle.GetDefer() {
@@ -374,6 +432,7 @@ func (ccl *CrossChainListen) listenChain() (exit bool) {
 							}
 						}
 					}
+				case basedef.BFC_CROSSCHAIN_ID:
 				default:
 					for chain.Height < height-ccl.handle.GetDefer() {
 						batchSize := ccl.handle.GetBatchSize()

@@ -64,6 +64,7 @@ const (
 	ZKSYNC_CROSSCHAIN_ID     = uint64(45)
 	XINFIN_CROSSCHAIN_ID     = uint64(46)
 	ONTEVM_CROSSCHAIN_ID     = uint64(47)
+	BFC_CROSSCHAIN_ID        = uint64(1001200)
 
 	ENV = "mainnet"
 )
