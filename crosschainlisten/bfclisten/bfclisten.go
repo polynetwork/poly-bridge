@@ -180,7 +180,7 @@ func (b *BfcChainListen) handleSrcTransaction(crossChainEvent suimodels.Paginate
 			return uint64(dstChainId)
 		}()
 		srcTransaction.Contract = strings.TrimPrefix(b.BfcCfg.CCMContract, "0x")
-		srcTransaction.Key = hex.EncodeToString(param.CrossChainID)
+		srcTransaction.Key = convertToHex(event.ParsedJson, "tx_id")
 		srcTransaction.Param = hex.EncodeToString(rawData)
 		return srcTransaction, nil
 	}
