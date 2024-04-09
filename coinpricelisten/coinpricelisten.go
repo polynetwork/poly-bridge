@@ -28,6 +28,7 @@ import (
 	"poly-bridge/coinpricelisten/cubescan"
 	"poly-bridge/coinpricelisten/gateio"
 	"poly-bridge/coinpricelisten/huobi"
+	"poly-bridge/coinpricelisten/pltelfrate"
 	"poly-bridge/coinpricelisten/self"
 	"poly-bridge/conf"
 	"poly-bridge/models"
@@ -82,6 +83,8 @@ func NewPriceMarket(cfg *conf.CoinPriceListenConfig) PriceMarket {
 		return huobi.NewHuobiSdk()
 	case basedef.MARKET_CUBESCAN:
 		return cubescan.NewCubescanSdk()
+	case basedef.MARKET_ELFRATE:
+		return pltelfrate.NewElfRateSdk(cfg)
 	default:
 		return nil
 	}
