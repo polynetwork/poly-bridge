@@ -34,10 +34,10 @@ func (c *FeeController) NewCheckFee() {
 	}
 	srcHashs := make([]string, 0)
 	for k, v := range mapCheckFeesReq {
-		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID {
-			//switcheo || zilliqa
+		if v.ChainId == basedef.SWITCHEO_CROSSCHAIN_ID || v.ChainId == basedef.ZILLIQA_CROSSCHAIN_ID || v.ChainId == basedef.BFC_CROSSCHAIN_ID{
+			//switcheo || zilliqa || benfen
 			v.Status = SKIP
-			logs.Info("check fee poly_hash %s SKIP,is switcheo or zilliqa", k)
+			logs.Info("check fee poly_hash %s SKIP,is switcheo, zilliqa or benfen", k)
 			continue
 		}
 		srcTransaction, err := checkFeeSrcTransaction(v.ChainId, v.TxId)

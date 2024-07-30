@@ -134,3 +134,7 @@ func (dao *StakeDao) WrapperTransactionCheckFee(wrapperTransactions []*models.Wr
 func (dao *StakeDao) FillTxSpecialChain(wrapperTransactions []*models.WrapperTransaction, srcTransactions []*models.SrcTransaction, polyTransactions []*models.PolyTransaction, dstTransactions []*models.DstTransaction, wrapperDetails []*models.WrapperDetail, polyDetails []*models.PolyDetail) (detailWrapperTxs []*models.WrapperTransaction, err error) {
 	return
 }
+
+func (dao *StakeDao) GetLatestTx(chainId uint64) (string, string) {
+	return "", ""
+}

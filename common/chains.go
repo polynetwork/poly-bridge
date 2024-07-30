@@ -52,6 +52,7 @@ var (
 	cloudtxSdk    *chainsdk.EthereumSdkPro
 	xinfinSdk     *chainsdk.EthereumSdkPro
 	ontevmSdk     *chainsdk.EthereumSdkPro
+	bfcSdk        *chainsdk.BfcSdkPro
 	sdkMap        map[uint64]interface{}
 	config        *conf.Config
 )
@@ -425,6 +426,15 @@ func newChainSdks(config *conf.Config) {
 		urls := chainConfig.GetNodesUrl()
 		xinfinSdk = chainsdk.NewEthereumSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
 		sdkMap[basedef.XINFIN_CROSSCHAIN_ID] = xinfinSdk
+	}
+	{
+		chainConfig := config.GetChainListenConfig(basedef.BFC_CROSSCHAIN_ID)
+		if chainConfig == nil {
+			panic("bfc chain is invalid")
+		}
+		urls := chainConfig.GetNodesUrl()
+		bfcSdk = chainsdk.NewBfcSdkPro(urls, chainConfig.ListenSlot, chainConfig.ChainId)
+		sdkMap[basedef.BFC_CROSSCHAIN_ID] = bfcSdk
 	}
 }
 
